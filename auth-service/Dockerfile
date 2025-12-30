@@ -1,17 +1,12 @@
+# syntax=docker/dockerfile:1.4
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
-# Copy the entire project to build the parent POM first
 WORKDIR /root
+
+# Copy only POM files first for better layer caching
 COPY pom.xml .
-COPY common ./common
-COPY eureka-server ./eureka-server
-COPY api-gateway ./api-gateway
-COPY auth-service ./auth-service
-COPY user-service ./user-service
-COPY vehicle-service ./vehicle-service
-COPY ride-service ./ride-service
-COPY notification-service ./notification-service
-COPY trip-service ./trip-service
+COPY common/pom.xml ./common/
+COPY auth-service/pom.xml ./auth-service/
 
 # Configure Maven to use Google's mirror for better reliability
 RUN mkdir -p /root/.m2 && \
@@ -30,15 +25,29 @@ RUN mkdir -p /root/.m2 && \
   </mirrors> \
   </settings>' > /root/.m2/settings.xml
 
-# Install parent POM and common module, then build auth-service WITH RETRY
-RUN (mvn -N install || (sleep 10 && mvn -N install) || (sleep 30 && mvn -N install)) && \
-  cd common && \
-  (mvn clean install -DskipTests || (sleep 10 && mvn clean install -DskipTests) || (sleep 30 && mvn clean install -DskipTests)) && \
-  cd ../auth-service && \
-  (mvn clean package -DskipTests || (sleep 10 && mvn clean package -DskipTests) || (sleep 30 && mvn clean package -DskipTests))
+# Download dependencies (cached layer)
+RUN --mount=type=cache,target=/root/.m2 \
+  mvn -N install && \
+  cd common && mvn dependency:go-offline -DskipTests
+
+# Copy source code
+COPY common/src ./common/src
+COPY auth-service/src ./auth-service/src
+
+# Build with cached dependencies
+RUN --mount=type=cache,target=/root/.m2 \
+  cd common && mvn clean install -DskipTests && \
+  cd ../auth-service && mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
+
+# Install CA certificates for MongoDB Atlas SSL/TLS connections
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends ca-certificates ca-certificates-java && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /root/auth-service/target/*.jar app.jar
 EXPOSE 10000
