@@ -16,7 +16,7 @@ import java.util.Date;
 @Document
 @AllArgsConstructor
 @NoArgsConstructor
-public class Users {
+public class User {
 
     @Id
     private String userId;
