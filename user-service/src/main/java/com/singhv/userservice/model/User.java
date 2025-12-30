@@ -26,6 +26,8 @@ public class User {
     @NotBlank
     private String phoneNumber;
 
+    @NotBlank
+    private String password;
 
     @Positive
     private int age;

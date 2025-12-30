@@ -51,7 +51,7 @@ The application is now divided into the following microservices:
 ## Getting Started
 
 ### Prerequisites
-- Java 17+
+- Java 21
 - Maven 3.6+
 - Docker and Docker Compose
 - MongoDB (or use Docker Compose)
