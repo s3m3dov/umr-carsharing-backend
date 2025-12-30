@@ -35,7 +35,7 @@ public class JoinTripController {
         
         ResponseDTO<String> response = joinTripService.joinTrip(request);
         
-        if (response.getSuccess()) {
+        if (response.isSuccess()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
