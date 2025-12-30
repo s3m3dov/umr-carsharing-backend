@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Trips {
+public class Trip {
 
     @Id
     private String tripId;  // Remove @NotBlank - MongoDB auto-generates this

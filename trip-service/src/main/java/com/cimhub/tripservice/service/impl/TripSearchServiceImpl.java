@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.service.impl;
 
 import com.cimhub.tripservice.dto.TripViewDTO;
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.TimezoneConversionService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class TripSearchServiceImpl {
      * @return List of trips with times converted to user's timezone
      */
     public List<TripViewDTO> searchAvailableTrips(String userTimezone) {
-        List<Trips> allTrips = tripsRepository.findAll();
+        List<Trip> allTrips = tripsRepository.findAll();
 
         return allTrips.stream()
                 .filter(trip -> "OFFERED".equals(trip.getTripStatus()))
@@ -39,7 +39,7 @@ public class TripSearchServiceImpl {
     /**
      * Convert Trip entity to TripViewDTO with timezone conversion
      */
-    private TripViewDTO convertToViewDTO(Trips trip, String userTimezone) {
+    private TripViewDTO convertToViewDTO(Trip trip, String userTimezone) {
         // Convert UTC time to original trip timezone
         ZonedDateTime tripTimeInOriginalZone = timezoneService.convertToTripTimezone(
                 trip.getTripStartDateTimeUTC(),

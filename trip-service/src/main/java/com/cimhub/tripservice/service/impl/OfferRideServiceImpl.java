@@ -5,7 +5,7 @@ import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
 import com.cimhub.tripservice.dto.OSRM.Route;
 import com.cimhub.tripservice.dto.OfferRideRequestDTO;
 import com.cimhub.tripservice.dto.OfferRideResponseDTO;
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.routes.OSMRoute;
@@ -15,7 +15,6 @@ import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -43,7 +42,7 @@ public class OfferRideServiceImpl implements OfferRideService {
         Instant rangeStart = tripStartInstant.minus(12, ChronoUnit.HOURS);
         Instant rangeEnd = tripStartInstant.plus(12, ChronoUnit.HOURS);
 
-        List<Trips> existingTrips = tripsRepository.findByDriverIdAndTripStartDateTimeUTCBetween(
+        List<Trip> existingTrips = tripsRepository.findByDriverIdAndTripStartDateTimeUTCBetween(
                 offerRideRequest.getUserId(),
                 rangeStart,
                 rangeEnd
@@ -104,7 +103,7 @@ public class OfferRideServiceImpl implements OfferRideService {
         );
 
         // Create a new trip - store in UTC for universal consistency
-        Trips newTrip = Trips.builder()
+        Trip newTrip = Trip.builder()
                 .driverId(offerRideRequest.getUserId())
                 .tripStatus("OFFERED")
                 .vehicleNumber(requestContent.getVehicleNumber())
@@ -122,7 +121,7 @@ public class OfferRideServiceImpl implements OfferRideService {
                 .pricePerKm(10.0)
                 .build();
 
-        Trips savedTrip = tripsRepository.save(newTrip);
+        Trip savedTrip = tripsRepository.save(newTrip);
 
         // Build response with timezone information and route data
         responseContent.setTripId(savedTrip.getTripId());

@@ -3,7 +3,7 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.RequestDTO;
 import com.cimhub.common.dto.ResponseDTO;
 import com.cimhub.tripservice.dto.FindRideRequestDTO;
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.TripGeospatialService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class FindRideController {
      * @return List of matching trips
      */
     @PostMapping("/find-ride")
-    public ResponseEntity<ResponseDTO<List<Trips>>> findRide(
+    public ResponseEntity<ResponseDTO<List<Trip>>> findRide(
             @RequestBody RequestDTO<FindRideRequestDTO> request,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
@@ -42,7 +42,7 @@ public class FindRideController {
         // Validate required fields
         if (rideRequest.getPickupPoint() == null || rideRequest.getDestinationPoint() == null) {
             log.error("Missing required pickup or destination point");
-            ResponseDTO<List<Trips>> errorResponse = new ResponseDTO<>();
+            ResponseDTO<List<Trip>> errorResponse = new ResponseDTO<>();
             errorResponse.setSuccess(false);
             errorResponse.setErrorMessage("Pickup point and destination point are required");
             return ResponseEntity.badRequest().body(errorResponse);
@@ -63,13 +63,13 @@ public class FindRideController {
         
          String rideStartTime = rideRequest.getRideStartTime();
         Integer requestedSeats = rideRequest.getRequestedSeats();
-        List<Trips> matchingTrips = geoService.findTripsMatchingRoute(
+        List<Trip> matchingTrips = geoService.findTripsMatchingRoute(
                 pickupLat, pickupLon, sourceRadius,
                 destLat, destLon, destRadius, rideStartTime, requestedSeats, effectiveUserId
         );
         log.info("Found {} matching trips for user: {}", matchingTrips.size(), effectiveUserId);
 
-        ResponseDTO<List<Trips>> response = new ResponseDTO<>();
+        ResponseDTO<List<Trip>> response = new ResponseDTO<>();
         response.setSuccess(true);
         response.setResponseContent(matchingTrips);
 

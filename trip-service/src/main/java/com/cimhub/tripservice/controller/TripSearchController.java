@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.TripGeospatialService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +32,13 @@ public class TripSearchController {
      * Example: GET /api/trips/search/near-source?latitude=48.1351&longitude=11.5820&radiusKm=10
      */
     @GetMapping("/near-source")
-    public ResponseEntity<List<Trips>> searchNearSource(
+    public ResponseEntity<List<Trip>> searchNearSource(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam(defaultValue = "5.0") double radiusKm) {
 
         log.info("Searching for trips near source: ({}, {}) within {} km", latitude, longitude, radiusKm);
-        List<Trips> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
+        List<Trip> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(trips);
     }
 
@@ -53,13 +53,13 @@ public class TripSearchController {
      * Example: GET /api/trips/search/near-destination?latitude=48.1351&longitude=11.5820&radiusKm=10
      */
     @GetMapping("/near-destination")
-    public ResponseEntity<List<Trips>> searchNearDestination(
+    public ResponseEntity<List<Trip>> searchNearDestination(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam(defaultValue = "5.0") double radiusKm) {
 
         log.info("Searching for trips near destination: ({}, {}) within {} km", latitude, longitude, radiusKm);
-        List<Trips> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
+        List<Trip> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(trips);
     }
 
@@ -78,7 +78,7 @@ public class TripSearchController {
      * Example: GET /api/trips/search/matching-route?sourceLat=48.3638&sourceLon=10.6866&sourceRadiusKm=5&destLat=48.1371&destLon=11.5754&destRadiusKm=5
      */
     @GetMapping("/matching-route")
-    public ResponseEntity<List<Trips>> searchMatchingRoute(
+    public ResponseEntity<List<Trip>> searchMatchingRoute(
             @RequestParam double sourceLat,
             @RequestParam double sourceLon,
             @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
@@ -93,7 +93,7 @@ public class TripSearchController {
         log.info("Searching for trips from ({}, {}) [{}km] to ({}, {}) [{}km]",
                 sourceLat, sourceLon, sourceRadiusKm, destLat, destLon, destRadiusKm);
 
-        List<Trips> trips = geoService.findTripsMatchingRoute(
+        List<Trip> trips = geoService.findTripsMatchingRoute(
                 sourceLat, sourceLon, sourceRadiusKm,
                 destLat, destLon, destRadiusKm, rideStartTime, requestedSeats, effectiveUserId
         );
@@ -113,14 +113,14 @@ public class TripSearchController {
      * Example: GET /api/trips/search/in-area?minLat=47.0&minLon=10.0&maxLat=50.0&maxLon=13.0
      */
     @GetMapping("/in-area")
-    public ResponseEntity<List<Trips>> searchInArea(
+    public ResponseEntity<List<Trip>> searchInArea(
             @RequestParam double minLat,
             @RequestParam double minLon,
             @RequestParam double maxLat,
             @RequestParam double maxLon) {
 
         log.info("Searching for trips in area: ({}, {}) to ({}, {})", minLat, minLon, maxLat, maxLon);
-        List<Trips> trips = geoService.findTripsInArea(minLat, minLon, maxLat, maxLon);
+        List<Trip> trips = geoService.findTripsInArea(minLat, minLon, maxLat, maxLon);
         return ResponseEntity.ok(trips);
     }
 }

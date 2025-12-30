@@ -4,8 +4,8 @@ import com.cimhub.common.dto.RequestDTO;
 import com.cimhub.common.dto.ResponseDTO;
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.JoinTripRequestDTO;
-import com.cimhub.tripservice.model.Rides;
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Ride;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.RidesRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,14 +40,14 @@ public class JoinTripService {
                     passengerId, requestContent.getTripId());
             
             // Step 1: Find the trip
-            Optional<Trips> tripOpt = tripsRepository.findById(requestContent.getTripId());
+            Optional<Trip> tripOpt = tripsRepository.findById(requestContent.getTripId());
             if (tripOpt.isEmpty()) {
                 response.setSuccess(false);
                 response.setErrorMessage("Trip not found");
                 return response;
             }
             
-            Trips trip = tripOpt.get();
+            Trip trip = tripOpt.get();
             
             // Step 2: Basic validations
             // Don't let driver join their own trip
@@ -99,7 +98,7 @@ public class JoinTripService {
             dropoffLocation.setPlaceAddress(requestContent.getDestinationPoint().getPlaceAddress());
             
             // Step 5: Create the ride booking
-            Rides ride = Rides.builder()
+            Ride ride = Ride.builder()
                     .passengerId(passengerId)
                     .tripId(requestContent.getTripId())
                     .driverId(requestContent.getDriverId())
@@ -114,7 +113,7 @@ public class JoinTripService {
                     .build();
             
             // Save the ride
-            Rides savedRide = ridesRepository.save(ride);
+            Ride savedRide = ridesRepository.save(ride);
             log.info("Ride booking created: {}", savedRide.getRideId());
             
             // Step 5: Update the trip - increment currSeats and add to joinedRidersId
