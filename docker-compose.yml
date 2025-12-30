@@ -146,4 +146,3 @@ services:
     depends_on:
       eureka-server:
         condition: service_healthy
-
