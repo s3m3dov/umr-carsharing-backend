@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.singhv</groupId>
-		<artifactId>CarSharingTZ-Parent</artifactId>
+		<artifactId>CarsharingTZ</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>notification-service</artifactId>
