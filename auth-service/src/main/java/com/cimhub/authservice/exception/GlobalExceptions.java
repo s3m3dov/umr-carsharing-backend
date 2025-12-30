@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.cimhub.authservice.exception.UserAlreadyExistsException;
+
 @ControllerAdvice
 public class GlobalExceptions {
 

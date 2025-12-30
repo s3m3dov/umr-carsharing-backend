@@ -33,7 +33,7 @@ public class CancellationController {
         
         ResponseDTO<String> response = cancellationService.cancelRide(request);
         
-        if (response.getSuccess()) {
+        if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -52,7 +52,7 @@ public class CancellationController {
         
         ResponseDTO<String> response = cancellationService.cancelTrip(request);
         
-        if (response.getSuccess()) {
+        if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
