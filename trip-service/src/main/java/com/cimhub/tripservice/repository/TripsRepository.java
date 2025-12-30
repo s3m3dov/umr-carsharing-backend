@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.repository;
 
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;
@@ -10,9 +10,9 @@ import java.time.Instant;
 import java.util.List;
 
 @Repository
-public interface TripsRepository extends MongoRepository<Trips, String> {
+public interface TripsRepository extends MongoRepository<Trip, String> {
     // New method for timezone-aware querying
-    List<Trips> findByDriverIdAndTripStartDateTimeUTCBetween(
+    List<Trip> findByDriverIdAndTripStartDateTimeUTCBetween(
             @Param("driverId") @NotBlank String driverId,
             @Param("start") Instant start,
             @Param("end") Instant end

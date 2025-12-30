@@ -2,8 +2,8 @@ package com.cimhub.tripservice.service.impl;
 
 import com.cimhub.tripservice.dto.DriverUpcomingTripDTO;
 import com.cimhub.tripservice.dto.PassengerUpcomingRideDTO;
-import com.cimhub.tripservice.model.Trips;
-import com.cimhub.tripservice.model.Rides;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.Ride;
 import com.cimhub.tripservice.repository.RidesRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.TimezoneConversionService;
@@ -33,7 +33,7 @@ public class UpcomingRidesServiceImpl implements UpcomingRidesService {
         
         // Get all trips for this driver starting from now
         Instant now = Instant.now();
-        List<Trips> upcomingTrips = tripsRepository.findByDriverIdAndTripStartDateTimeUTCBetween(
+        List<Trip> upcomingTrips = tripsRepository.findByDriverIdAndTripStartDateTimeUTCBetween(
                 driverId,
                 now,
                 now.plusSeconds(365L * 24 * 60 * 60) // Next year
@@ -51,7 +51,7 @@ public class UpcomingRidesServiceImpl implements UpcomingRidesService {
         log.info("Fetching upcoming rides for passenger: {}", passengerId);
         
         Instant now = Instant.now();
-        List<Rides> upcomingRides = rideRepository.findByPassengerIdAndRideStartTimeUTCBetween(
+        List<Ride> upcomingRides = rideRepository.findByPassengerIdAndRideStartTimeUTCBetween(
                 passengerId,
                 now,
                 now.plusSeconds(365L * 24 * 60 * 60) // Next year
@@ -67,7 +67,7 @@ public class UpcomingRidesServiceImpl implements UpcomingRidesService {
     /**
      * Convert Rides entity to PassengerUpcomingRideDTO
      */
-    private PassengerUpcomingRideDTO convertToPassengerUpcomingRideDTO(Rides ride) {
+    private PassengerUpcomingRideDTO convertToPassengerUpcomingRideDTO(Ride ride) {
         // Convert UTC time to original ride timezone
         ZonedDateTime rideTimeInOriginalZone = timezoneService.convertToTimezone(
                 ride.getRideStartTimeUTC(),
@@ -90,7 +90,7 @@ public class UpcomingRidesServiceImpl implements UpcomingRidesService {
     /**
      * Convert Trips entity to DriverUpcomingTripDTO
      */
-    private DriverUpcomingTripDTO convertToDriverUpcomingTripDTO(Trips trip) {
+    private DriverUpcomingTripDTO convertToDriverUpcomingTripDTO(Trip trip) {
         // Convert UTC time to original trip timezone
         ZonedDateTime tripTimeInOriginalZone = timezoneService.convertToTripTimezone(
                 trip.getTripStartDateTimeUTC(),

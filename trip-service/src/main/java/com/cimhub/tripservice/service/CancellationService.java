@@ -3,8 +3,8 @@ package com.cimhub.tripservice.service;
 import com.cimhub.common.dto.RequestDTO;
 import com.cimhub.common.dto.ResponseDTO;
 import com.cimhub.tripservice.dto.CancelRequestDTO;
-import com.cimhub.tripservice.model.Rides;
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Ride;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.RidesRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ public class CancellationService {
                     passengerId, cancelRequest.getTripId());
             
             // Find the ride
-            List<Rides> rides = ridesRepository.findByPassengerIdAndTripId(passengerId, cancelRequest.getTripId());
+            List<Ride> rides = ridesRepository.findByPassengerIdAndTripId(passengerId, cancelRequest.getTripId());
             
             if (rides.isEmpty()) {
                 response.setSuccess(false);
@@ -47,7 +47,7 @@ public class CancellationService {
                 return response;
             }
             
-            Rides ride = rides.get(0);
+            Ride ride = rides.get(0);
             
             // Check if already cancelled
             if ("CANCELLED".equals(ride.getRideStatus())) {
@@ -64,9 +64,9 @@ public class CancellationService {
             log.info("Ride cancelled: {}", ride.getRideId());
             
             // Update trip - decrease currSeats
-            Optional<Trips> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
+            Optional<Trip> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
             if (tripOpt.isPresent()) {
-                Trips trip = tripOpt.get();
+                Trip trip = tripOpt.get();
                 int newCurrSeats = trip.getCurrSeats() - ride.getRequestedSeats();
                 trip.setCurrSeats(Math.max(0, newCurrSeats)); // Ensure it doesn't go negative
                 tripsRepository.save(trip);
@@ -101,7 +101,7 @@ public class CancellationService {
                     driverId, cancelRequest.getTripId());
             
             // Find the trip
-            Optional<Trips> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
+            Optional<Trip> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
             
             if (tripOpt.isEmpty()) {
                 response.setSuccess(false);
@@ -109,7 +109,7 @@ public class CancellationService {
                 return response;
             }
             
-            Trips trip = tripOpt.get();
+            Trip trip = tripOpt.get();
             
             // Verify the driver owns this trip
             if (!trip.getDriverId().equals(driverId)) {
@@ -132,10 +132,10 @@ public class CancellationService {
             log.info("Trip cancelled: {}", trip.getTripId());
             
             // Cancel all rides for this trip
-            List<Rides> rides = ridesRepository.findByTripId(cancelRequest.getTripId());
+            List<Ride> rides = ridesRepository.findByTripId(cancelRequest.getTripId());
             int cancelledRidesCount = 0;
             
-            for (Rides ride : rides) {
+            for (Ride ride : rides) {
                 if (!"CANCELLED".equals(ride.getRideStatus())) {
                     ride.setRideStatus("CANCELLED");
                     ride.setUpdatedAt(new Date());

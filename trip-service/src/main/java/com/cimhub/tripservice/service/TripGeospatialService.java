@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.tripservice.model.Trips;
+import com.cimhub.tripservice.model.Trip;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
@@ -38,7 +38,7 @@ public class TripGeospatialService {
      * @param radiusInKm    Search radius in kilometers
      * @return List of trips with source near the search point
      */
-    public List<Trips> findTripsWithSourceNear(double latitude, double longitude, double radiusInKm) {
+    public List<Trip> findTripsWithSourceNear(double latitude, double longitude, double radiusInKm) {
         Point location = new Point(longitude, latitude);
         Distance distance = new Distance(radiusInKm, Metrics.KILOMETERS);
 
@@ -48,7 +48,7 @@ public class TripGeospatialService {
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
 
-        List<Trips> trips = mongoTemplate.find(query, Trips.class);
+        List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with source near ({}, {}) within {} km",
                 trips.size(), latitude, longitude, radiusInKm);
 
@@ -63,7 +63,7 @@ public class TripGeospatialService {
      * @param radiusInKm    Search radius in kilometers
      * @return List of trips with destination near the search point
      */
-    public List<Trips> findTripsWithDestinationNear(double latitude, double longitude, double radiusInKm) {
+    public List<Trip> findTripsWithDestinationNear(double latitude, double longitude, double radiusInKm) {
         Point location = new Point(longitude, latitude);
         Distance distance = new Distance(radiusInKm, Metrics.KILOMETERS);
 
@@ -73,7 +73,7 @@ public class TripGeospatialService {
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
 
-        List<Trips> trips = mongoTemplate.find(query, Trips.class);
+        List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with destination near ({}, {}) within {} km",
                 trips.size(), latitude, longitude, radiusInKm);
 
@@ -93,7 +93,7 @@ public class TripGeospatialService {
      * @param destRadiusKm      Destination search radius in km
      * @return List of matching trips
      */
-    public List<Trips> findTripsMatchingRoute(
+    public List<Trip> findTripsMatchingRoute(
             double sourceLat, double sourceLon, double sourceRadiusKm,
             double destLat, double destLon, double destRadiusKm, String rideStartTime, Integer requestedSeats, String effectiveUserId) {
         
@@ -173,7 +173,7 @@ public class TripGeospatialService {
             query.addCriteria(Criteria.where("driverId").ne(effectiveUserId));
         }
 
-        List<Trips> tripsNearSource = mongoTemplate.find(query, Trips.class);
+        List<Trip> tripsNearSource = mongoTemplate.find(query, Trip.class);
 
         log.info("Found {} trips near source ({}, {}) within {} km after initial filtering",
                 tripsNearSource.size(), sourceLat, sourceLon, sourceRadiusKm);
@@ -181,7 +181,7 @@ public class TripGeospatialService {
         // Step 2: Filter results by destination proximity and available seats
         double destRadiusInMeters = destRadiusKm * 1000;
 
-        List<Trips> matchingTrips = tripsNearSource.stream()
+        List<Trip> matchingTrips = tripsNearSource.stream()
                 .filter(trip -> {
                     // Safety check: Skip trips without valid tripStartDateTimeUTC
                     if (trip.getTripStartDateTimeUTC() == null) {
@@ -240,7 +240,7 @@ public class TripGeospatialService {
      * @param maxLon Maximum longitude
      * @return List of trips with source within the bounding box
      */
-    public List<Trips> findTripsInArea(double minLat, double minLon, double maxLat, double maxLon) {
+    public List<Trip> findTripsInArea(double minLat, double minLon, double maxLat, double maxLon) {
         Query query = new Query();
         query.addCriteria(Criteria.where("sourceLocation")
                 .within(new org.springframework.data.mongodb.core.geo.GeoJsonPolygon(
@@ -252,7 +252,7 @@ public class TripGeospatialService {
                 )));
         query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
 
-        List<Trips> trips = mongoTemplate.find(query, Trips.class);
+        List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips in area ({}, {}) to ({}, {})",
                 trips.size(), minLat, minLon, maxLat, maxLon);
 
