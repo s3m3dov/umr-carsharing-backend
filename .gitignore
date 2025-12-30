@@ -18,6 +18,16 @@ target/
 src/main/resources/firebaseSdk/firebase-sdk.json
 src/main/resources/application.properties
 src/main/resources/application-*.properties
+tanzania.pub
+tanzania-eureka-server.tar
+tanzania
+
+#Codespace files
+ngrok.zip
+ngrok-v3.tgz
+ngrok-stable-linux-amd64.zip
+cloudflared-*
+
 
 # Sample file (will be tracked)
 !src/main/resources/application-sample.properties

@@ -97,7 +97,7 @@ cd api-gateway
 mvn spring-boot:run
 
 # Terminal 3
-cd user-service
+cd users-service
 mvn spring-boot:run
 
 # Terminal 4
@@ -122,12 +122,12 @@ mvn spring-boot:run
 All requests now go through the API Gateway at `http://localhost:8080`
 
 ### User Management
-- `POST /api/users/signup` - Register new user
+- `POST /api/users/signup` - Register new users
 - `POST /api/users/login` - User login
-- `GET /api/users/{userId}` - Get user profile
+- `GET /api/users/{userId}` - Get users profile
 
 ### Vehicle Management
-- `GET /api/vehicles/{userId}` - Get user vehicles
+- `GET /api/vehicles/{userId}` - Get users vehicles
 - `POST /api/vehicles/register` - Register new vehicle
 
 ### Trip Management

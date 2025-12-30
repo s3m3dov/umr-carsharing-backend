@@ -1,11 +1,28 @@
 FROM maven:3.8.4-openjdk-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
 
+# Copy the entire project to build the parent POM first
+WORKDIR /root
+COPY pom.xml .
+COPY common ./common
+COPY eureka-server ./eureka-server
+COPY api-gateway ./api-gateway
+COPY auth-service ./auth-service
+COPY user-service ./user-service
+COPY vehicle-service ./vehicle-service
+COPY ride-service ./ride-service
+COPY notification-service ./notification-service
+COPY trip-service ./trip-service
+
+# Install parent POM and common module, then build eureka-server
+RUN mvn -N install && \
+    cd common && \
+    mvn clean install -DskipTests && \
+    cd ../eureka-server && \
+    mvn clean package -DskipTests
+
+# Runtime stage
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /root/eureka-server/target/*.jar app.jar
 EXPOSE 8761
 ENTRYPOINT ["java", "-jar", "app.jar"]

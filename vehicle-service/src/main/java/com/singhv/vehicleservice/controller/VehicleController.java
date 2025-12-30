@@ -21,6 +21,14 @@ public class VehicleController {
     @Autowired
     private VehicleService vehicleService;
 
+    @GetMapping("/health")
+    public ResponseDTO<String> healthCheck() {
+        ResponseDTO<String> dto = new ResponseDTO<>();
+        dto.setSuccess(true);
+        dto.setErrorMessage(null);
+        dto.setResponseContent("Vehicle Service is alive");
+        return dto;
+    }
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseListDTO<VehicleResponseDTO> getUserVehicles(@PathVariable String userId) {
         log.info("Getting vehicles for userId: {}", userId);

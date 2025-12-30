@@ -26,8 +26,6 @@ public class User {
     @NotBlank
     private String phoneNumber;
 
-    @NotBlank
-    private String password;
 
     @Positive
     private int age;
@@ -36,9 +34,13 @@ public class User {
     private Date dob;
 
     private String empId;
+
     private String organisationName;
+
     private String profilePicUrl;
+
     private Date createdDate = new Date();
+
     private String createdBy;
 
     public User() {

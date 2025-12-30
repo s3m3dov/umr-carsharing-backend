@@ -33,12 +33,12 @@ The system leverages Google Maps API for location services and distance calculat
 The application exposes several REST endpoints, organized into the following controllers:
 
 ### User Management
-- `/api/users/{userId}` - Get user information
-- `/api/users/signup` - Register a new user
-- `/api/users/login` - Authenticate a user
+- `/api/users/{userId}` - Get users information
+- `/api/users/signup` - Register a new users
+- `/api/users/login` - Authenticate a users
 
 ### Vehicle Management
-- `/api/vehicles/{userId}` - Get user's vehicles
+- `/api/vehicles/{userId}` - Get users's vehicles
 - `/api/vehicles/register` - Register a new vehicle
 
 ### Ride Operations
@@ -47,8 +47,8 @@ The application exposes several REST endpoints, organized into the following con
 - `/api/rides/join-trip` - Join an existing trip
 
 ### My Rides
-- `/api/myrides/upcoming` - Get user's upcoming rides
-- `/api/myrides/history` - Get user's ride history
+- `/api/myrides/upcoming` - Get users's upcoming rides
+- `/api/myrides/history` - Get users's ride history
 - `/api/myrides/cancel` - Cancel a ride
 
 ## Setup and Configuration

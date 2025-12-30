@@ -6,7 +6,7 @@ spring:
     name: ride-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/carsharing_rides}
+      uri: ${MONGODB_URI:mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
 
 eureka:
   client:

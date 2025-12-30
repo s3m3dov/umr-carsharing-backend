@@ -11,6 +11,12 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -26,19 +32,17 @@ spring:
         - id: trip-service
           uri: lb://trip-service
           predicates:
-            - Path=/api/ride/**,/api/myrides/**
-          filters:
-            - StripPrefix=0
-        - id: ride-service
-          uri: lb://ride-service
-          predicates:
-            - Path=/api/rides/**
+            - Path=/api/ride/**,/api/myrides/**,/api/trips/**,/api/rides/**
           filters:
             - StripPrefix=0
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: ${ALLOWED_ORIGINS:*}
+            allowedOrigins:
+              - https://tanzania-car-sharing.netlify.app
+              - http://localhost:3000
+              - https://localhost:3000
+              - http://localhost:8080 
             allowedMethods:
               - GET
               - POST
@@ -58,9 +62,9 @@ eureka:
     non-secure-port-enabled: false
     secure-port-enabled: true
     secure-port: ${PORT:8080}
-    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
-    homePageUrl: https://${eureka.instance.hostname}/
+    statusPageUrl: http://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: http://${eureka.instance.hostname}/actuator/health
+    homePageUrl: http://${eureka.instance.hostname}/
 
 management:
   endpoints:
