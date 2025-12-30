@@ -2,13 +2,12 @@ package com.cimhub.authservice.service.impl;
 
 import com.cimhub.authservice.client.UserServiceClient;
 import com.cimhub.authservice.dto.*;
-import com.cimhub.authservice.model.Users;
+import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
 import com.cimhub.authservice.service.authService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class authServiceImpl implements authService {
         }
 
         // Create auth record with only authentication data
-        Users newUser = new Users();
+        User newUser = new User();
         newUser.setUserId(userInfo.getEmailId().toLowerCase());
         newUser.setEmailId(userInfo.getEmailId());
         newUser.setPassword(passwordEncoder.encode(userInfo.getPassword()));
@@ -62,7 +61,7 @@ public class authServiceImpl implements authService {
 
         // Generate JWT token
         String token = jwtService.generateToken(
-                User.builder()
+                org.springframework.security.core.userdetails.User.builder()
                         .username(newUser.getEmailId())
                         .password(newUser.getPassword())
                         .roles("USER")
@@ -86,9 +85,9 @@ public class authServiceImpl implements authService {
             throw new RuntimeException("Invalid Credentials");
         }
 
-        Users userData = authUserRepository.findByEmailId(requestContent.getEmailId().toLowerCase());
+        User userData = authUserRepository.findByEmailId(requestContent.getEmailId().toLowerCase());
 
-        UserDetails userDetails = User.builder()
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                 .username(userData.getEmailId())
                 .password(userData.getPassword())
                 .roles("USER")
