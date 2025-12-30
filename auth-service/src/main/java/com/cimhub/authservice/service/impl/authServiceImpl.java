@@ -1,11 +1,11 @@
-package com.cimhub.authservice.services.impl;
+package com.cimhub.authservice.service.impl;
 
 import com.cimhub.authservice.client.UserServiceClient;
 import com.cimhub.authservice.dto.*;
 import com.cimhub.authservice.model.Users;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
-import com.cimhub.authservice.services.authService;
+import com.cimhub.authservice.service.authService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.User;
@@ -26,8 +26,9 @@ public class authServiceImpl implements authService {
     @Override
     public SignUpResponseDTO registerNewUser(UserInfoDTO userInfo) {
 
-        if(authUserRepository.findByEmailId(userInfo.getEmailId())!=null){
-            throw new com.cimhub.authservice.GlobalExceptions.UserAlreadyExistsException("User Already Exists with emailId: "+userInfo.getEmailId());
+        if (authUserRepository.findByEmailId(userInfo.getEmailId()) != null) {
+            throw new com.cimhub.authservice.exception.UserAlreadyExistsException(
+                    "User Already Exists with emailId: " + userInfo.getEmailId());
         }
 
         // Create auth record with only authentication data
@@ -65,8 +66,7 @@ public class authServiceImpl implements authService {
                         .username(newUser.getEmailId())
                         .password(newUser.getPassword())
                         .roles("USER")
-                        .build()
-        );
+                        .build());
 
         return SignUpResponseDTO.builder()
                 .token(token)
@@ -77,15 +77,12 @@ public class authServiceImpl implements authService {
     @Override
     public LoginResponseDTO checkUserLogin(LoginRequestDTO requestContent) {
 
-        try{
+        try {
             authenticationManager.authenticate(
                     new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                             requestContent.getEmailId(),
-                            requestContent.getPassword()
-                    )
-            );
-        }
-        catch (Exception e){
+                            requestContent.getPassword()));
+        } catch (Exception e) {
             throw new RuntimeException("Invalid Credentials");
         }
 

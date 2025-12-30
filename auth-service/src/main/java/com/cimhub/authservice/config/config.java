@@ -1,4 +1,4 @@
-package com.cimhub.authservice.configuration;
+package com.cimhub.authservice.config;
 
 import com.cimhub.authservice.security.JwtAuthenticationFilter;
 import com.cimhub.authservice.security.JwtService;
