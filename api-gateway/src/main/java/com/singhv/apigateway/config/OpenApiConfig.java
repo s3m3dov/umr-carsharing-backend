@@ -18,11 +18,14 @@ public class OpenApiConfig {
         return args -> Objects.requireNonNull(locator.getRouteDefinitions().collectList().block())
                 .stream()
                 .filter(routeDefinition -> routeDefinition.getId().matches(".*-service"))
+                // Exclude the docs routes themselves
+                .filter(routeDefinition -> !routeDefinition.getId().contains("-docs"))
                 .forEach(routeDefinition -> {
                     String name = routeDefinition.getId().replaceAll("-service", "");
+
                     AbstractSwaggerUiConfigProperties.SwaggerUrl swaggerUrl = new AbstractSwaggerUiConfigProperties.SwaggerUrl(
                             name,
-                            "/" + routeDefinition.getId() + "/v3/api-docs",
+                            "/v3/api-docs/" + name,
                             name);
                     swaggerUiConfigParameters.getUrls().add(swaggerUrl);
                 });
