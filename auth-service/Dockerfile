@@ -1,4 +1,4 @@
-FROM maven:3.8.4-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Copy the entire project to build the parent POM first
 WORKDIR /root
@@ -15,30 +15,30 @@ COPY trip-service ./trip-service
 
 # Configure Maven to use Google's mirror for better reliability
 RUN mkdir -p /root/.m2 && \
-    echo '<?xml version="1.0" encoding="UTF-8"?> \
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" \
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 \
-          http://maven.apache.org/xsd/settings-1.0.0.xsd"> \
+  echo '<?xml version="1.0" encoding="UTF-8"?> \
+  <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" \
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 \
+  http://maven.apache.org/xsd/settings-1.0.0.xsd"> \
   <mirrors> \
-    <mirror> \
-      <id>google-maven-central</id> \
-      <name>Google Maven Central</name> \
-      <url>https://maven-central-eu.storage-download.googleapis.com/maven2/</url> \
-      <mirrorOf>central</mirrorOf> \
-    </mirror> \
+  <mirror> \
+  <id>google-maven-central</id> \
+  <name>Google Maven Central</name> \
+  <url>https://maven-central-eu.storage-download.googleapis.com/maven2/</url> \
+  <mirrorOf>central</mirrorOf> \
+  </mirror> \
   </mirrors> \
-</settings>' > /root/.m2/settings.xml
+  </settings>' > /root/.m2/settings.xml
 
 # Install parent POM and common module, then build auth-service WITH RETRY
 RUN (mvn -N install || (sleep 10 && mvn -N install) || (sleep 30 && mvn -N install)) && \
-    cd common && \
-    (mvn clean install -DskipTests || (sleep 10 && mvn clean install -DskipTests) || (sleep 30 && mvn clean install -DskipTests)) && \
-    cd ../auth-service && \
-    (mvn clean package -DskipTests || (sleep 10 && mvn clean package -DskipTests) || (sleep 30 && mvn clean package -DskipTests))
+  cd common && \
+  (mvn clean install -DskipTests || (sleep 10 && mvn clean install -DskipTests) || (sleep 30 && mvn clean install -DskipTests)) && \
+  cd ../auth-service && \
+  (mvn clean package -DskipTests || (sleep 10 && mvn clean package -DskipTests) || (sleep 30 && mvn clean package -DskipTests))
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /root/auth-service/target/*.jar app.jar
 EXPOSE 10000
