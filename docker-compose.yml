@@ -1,134 +1,104 @@
-version: '3.8'
+# docker-compose.yml
+# Tanzania Car Sharing Microservices
+
+networks:
+  tanzania-net:
 
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: carsharing-mongodb
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - carsharing-network
-
   eureka-server:
     build:
-      context: ./eureka-server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
     ports:
       - "8761:8761"
+    environment:
+      PORT: 8761
     networks:
-      - carsharing-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - tanzania-net
 
-  api-gateway:
+  auth-service:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: auth-service
     ports:
-      - "8080:8080"
+      - "8089:8089"
+    environment:
+      PORT: 8089
+      ALLOWED_ORIGINS: "*"
+      JWT_SECRET_KEY: "MjAxOTIwRVlRSTE5ODAxSktOMjgxOTgyNzM4OTFISks="
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    networks:
+      - tanzania-net
     depends_on:
       - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    networks:
-      - carsharing-network
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: user-service/Dockerfile
     container_name: user-service
     ports:
       - "8081:8081"
+    environment:
+      PORT: 8081
+      ALLOWED_ORIGINS: "*"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    networks:
+      - tanzania-net
     depends_on:
       - eureka-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - MONGODB_URI=mongodb://admin:password@mongodb:27017/carsharing_users?authSource=admin
-    networks:
-      - carsharing-network
 
   vehicle-service:
     build:
-      context: ./vehicle-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: vehicle-service/Dockerfile
     container_name: vehicle-service
     ports:
       - "8082:8082"
+    environment:
+      PORT: 8082
+      ALLOWED_ORIGINS: "*"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    networks:
+      - tanzania-net
     depends_on:
       - eureka-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - MONGODB_URI=mongodb://admin:password@mongodb:27017/carsharing_vehicles?authSource=admin
-    networks:
-      - carsharing-network
 
   trip-service:
     build:
-      context: ./trip-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: trip-service/Dockerfile
     container_name: trip-service
     ports:
       - "8083:8083"
+    environment:
+      PORT: 8083
+      ALLOWED_ORIGINS: "*"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      GOOGLE_API_KEY: "your-google-maps-api-key"
+    networks:
+      - tanzania-net
     depends_on:
       - eureka-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - MONGODB_URI=mongodb://admin:password@mongodb:27017/carsharing_trips?authSource=admin
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-    networks:
-      - carsharing-network
 
-  ride-service:
+  api-gateway:
     build:
-      context: ./ride-service
-      dockerfile: Dockerfile
-    container_name: ride-service
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
     ports:
-      - "8084:8084"
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      ALLOWED_ORIGINS: "*"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    networks:
+      - tanzania-net
     depends_on:
       - eureka-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - MONGODB_URI=mongodb://admin:password@mongodb:27017/carsharing_rides?authSource=admin
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-    networks:
-      - carsharing-network
-
-  notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-    container_name: notification-service
-    ports:
-      - "8085:8085"
-    depends_on:
-      - eureka-server
-    environment:
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - FIREBASE_CONFIG_PATH=${FIREBASE_CONFIG_PATH}
-      - FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-    networks:
-      - carsharing-network
-
-volumes:
-  mongodb_data:
-
-networks:
-  carsharing-network:
-    driver: bridge
+      - auth-service
+      - user-service
+      - vehicle-service
+      - trip-service

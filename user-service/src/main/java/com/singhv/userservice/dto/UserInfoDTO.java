@@ -10,7 +10,6 @@ public class UserInfoDTO {
     private String emailId;
     private String userId = emailId;
     private String phoneNumber;
-    private String password;
     private int age;
     private Date dob;
     private String empId;

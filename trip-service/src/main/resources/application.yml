@@ -6,21 +6,22 @@ spring:
     name: trip-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/carsharing_trips}
+      uri: ${MONGODB_URI:mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP:true}
     hostname: ${HOSTNAME:localhost}
-    non-secure-port-enabled: false
-    secure-port-enabled: true
+    non-secure-port-enabled: ${EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED:true}
+    secure-port-enabled: ${EUREKA_INSTANCE_SECURE_PORT_ENABLED:false}
+    non-secure-port: ${PORT:8083}
     secure-port: ${PORT:8083}
-    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
-    homePageUrl: https://${eureka.instance.hostname}/
+    statusPageUrl: ${EUREKA_INSTANCE_STATUS_PAGE_URL:http://${eureka.instance.hostname}:${server.port}/actuator/info}
+    healthCheckUrl: ${EUREKA_INSTANCE_HEALTH_CHECK_URL:http://${eureka.instance.hostname}:${server.port}/actuator/health}
+    homePageUrl: ${EUREKA_INSTANCE_HOME_PAGE_URL:http://${eureka.instance.hostname}:${server.port}/}
 
 management:
   endpoints:

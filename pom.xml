@@ -26,6 +26,7 @@
 		<module>eureka-server</module>
 		<module>api-gateway</module>
 		<module>user-service</module>
+		<module>auth-service</module>
 		<module>vehicle-service</module>
 		<module>trip-service</module>
 		<module>ride-service</module>

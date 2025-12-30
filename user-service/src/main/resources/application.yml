@@ -6,7 +6,7 @@ spring:
     name: user-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/carsharing_users}
+      uri: ${MONGODB_URI:mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
 
 eureka:
   client:
@@ -15,12 +15,12 @@ eureka:
   instance:
     prefer-ip-address: true
     hostname: ${HOSTNAME:localhost}
-    non-secure-port-enabled: false
-    secure-port-enabled: true
-    secure-port: ${PORT:8081}
-    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
-    homePageUrl: https://${eureka.instance.hostname}/
+    non-secure-port-enabled: true
+    secure-port-enabled: false
+    non-secure-port: ${PORT:8081}
+    statusPageUrl: http://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: http://${eureka.instance.hostname}/actuator/health
+    homePageUrl: http://${eureka.instance.hostname}/
 
 management:
   endpoints:

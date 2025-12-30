@@ -5,17 +5,17 @@ eureka:
   instance:
     hostname: ${HOSTNAME:eureka-server}
     prefer-ip-address: true
-    non-secure-port-enabled: false
-    secure-port-enabled: true
-    secure-port: ${PORT:8761}
-    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
-    homePageUrl: https://${eureka.instance.hostname}/
+    non-secure-port-enabled: true
+    secure-port-enabled: false
+    non-secure-port: ${PORT:8761}
+    statusPageUrl: http://${eureka.instance.hostname}/actuator/info
+    healthCheckUrl: http://${eureka.instance.hostname}/actuator/health
+    homePageUrl: http://${eureka.instance.hostname}/
   client:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: https://${eureka.instance.hostname}/eureka/
+      defaultZone: http://${eureka.instance.hostname}/eureka/
 
 spring:
   application:
