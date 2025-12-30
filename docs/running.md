@@ -4,9 +4,30 @@
 
 ### Prerequisites
 
-- Java 17+
-- Maven 3.6+
-- MongoDB (running locally or use Docker)
+- **Java**: Java 21+
+- **Maven**: 3.6+
+- **Database**:
+  - MongoDB Atlas account (or local MongoDB)
+  - Firebase account with Realtime Database
+- **APIs**:
+  - Google Maps API key
+
+### Configuration
+
+The project uses several configuration files and environment variables. Templates are provided in `docs/samples/`.
+
+1. **application.properties**: Main configuration file (copy from `application-sample.properties`)
+2. **firebase-sdk.json**: Firebase credentials (copy from `docs/samples/firebase-sdk-sample.json`)
+
+#### Required Environment Variables
+
+- `GOOGLE_API_KEY`: Your Google Maps API key
+- `firebase.config.path`: Path to your Firebase SDK JSON file
+- `firebase.database.url`: Your Firebase Realtime Database URL
+- `spring.data.mongodb.uri`: MongoDB connection string
+- `spring.data.mongodb.database`: MongoDB database name
+
+### Running Options
 
 ### Option 1: Run Individual Services (Recommended for Development)
 
@@ -154,14 +175,15 @@ docker-compose logs -f
 }
 ```
 
-5. Click "Execute"
-6. See the response!
+1. Click "Execute"
+2. See the response!
 
 ---
 
 ## Monitoring Services
 
 ### Eureka Dashboard
+
 <http://localhost:8761>
 
 Shows all registered services and their health status.
