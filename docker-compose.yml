@@ -29,9 +29,10 @@ services:
       - "8089:8089"
     environment:
       PORT: 8089
-      ALLOWED_ORIGINS: "*"
-      JWT_SECRET_KEY: "MjAxOTIwRVlRSTE5ODAxSktOMjgxOTgyNzM4OTFISks="
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-secret-key=}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      MONGODB_URI: "${MONGODB_URI}"
     networks:
       - carsharing-network
     depends_on:
@@ -47,9 +48,9 @@ services:
       - "8081:8081"
     environment:
       PORT: 8081
-      ALLOWED_ORIGINS: "*"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
+      MONGODB_URI: "${MONGODB_URI}"
     networks:
       - carsharing-network
     depends_on:
@@ -65,9 +66,9 @@ services:
       - "8082:8082"
     environment:
       PORT: 8082
-      ALLOWED_ORIGINS: "*"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
+      MONGODB_URI: "${MONGODB_URI}"
     networks:
       - carsharing-network
     depends_on:
@@ -83,10 +84,10 @@ services:
       - "8083:8083"
     environment:
       PORT: 8083
-      ALLOWED_ORIGINS: "*"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-your-google-maps-api-key}
+      MONGODB_URI: "${MONGODB_URI}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-your-google-maps-api-key}"
     networks:
       - carsharing-network
     depends_on:
@@ -102,8 +103,9 @@ services:
       - "8084:8084"
     environment:
       PORT: 8084
-      ALLOWED_ORIGINS: "*"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      MONGODB_URI: "${MONGODB_URI}"
     networks:
       - carsharing-network
     depends_on:
@@ -119,7 +121,7 @@ services:
       - "8080:8080"
     environment:
       PORT: 8080
-      ALLOWED_ORIGINS: "*"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-*}"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
     networks:
       - carsharing-network
@@ -137,8 +139,8 @@ services:
     environment:
       PORT: 8085
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      FIREBASE_CONFIG_PATH: ${FIREBASE_CONFIG_PATH}
-      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+      FIREBASE_CONFIG_PATH: "${FIREBASE_CONFIG_PATH}"
+      FIREBASE_DATABASE_URL: "${FIREBASE_DATABASE_URL}"
     networks:
       - carsharing-network
     depends_on:
