@@ -1,4 +1,4 @@
-FROM maven:3.8.4-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Copy the entire project to build the parent POM first
 WORKDIR /root
@@ -13,15 +13,15 @@ COPY ride-service ./ride-service
 COPY notification-service ./notification-service
 COPY trip-service ./trip-service
 
-# Install parent POM and common module, then build api-gateway
+# Install parent POM and common module, then build notification-service
 RUN mvn -N install && \
     cd common && \
     mvn clean install -DskipTests && \
-    cd ../api-gateway && \
+    cd ../notification-service && \
     mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /root/notification-service/target/*.jar app.jar
 EXPOSE 8085

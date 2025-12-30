@@ -1,8 +1,8 @@
-# docker-compose.yml
-# Tanzania Car Sharing Microservices
+version: '3.8'
 
 networks:
-  tanzania-net:
+  carsharing-network:
+    driver: bridge
 
 services:
   eureka-server:
@@ -15,7 +15,12 @@ services:
     environment:
       PORT: 8761
     networks:
-      - tanzania-net
+      - carsharing-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   auth-service:
     build:
@@ -30,9 +35,10 @@ services:
       JWT_SECRET_KEY: "MjAxOTIwRVlRSTE5ODAxSktOMjgxOTgyNzM4OTFISks="
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
     networks:
-      - tanzania-net
+      - carsharing-network
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
 
   user-service:
     build:
@@ -45,10 +51,12 @@ services:
       PORT: 8081
       ALLOWED_ORIGINS: "*"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
     networks:
-      - tanzania-net
+      - carsharing-network
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
 
   vehicle-service:
     build:
@@ -61,10 +69,12 @@ services:
       PORT: 8082
       ALLOWED_ORIGINS: "*"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
     networks:
-      - tanzania-net
+      - carsharing-network
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
 
   trip-service:
     build:
@@ -77,11 +87,30 @@ services:
       PORT: 8083
       ALLOWED_ORIGINS: "*"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
-      GOOGLE_API_KEY: "your-google-maps-api-key"
+      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-your-google-maps-api-key}
     networks:
-      - tanzania-net
+      - carsharing-network
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
+
+  ride-service:
+    build:
+      context: .
+      dockerfile: ride-service/Dockerfile
+    container_name: ride-service
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: 8084
+      ALLOWED_ORIGINS: "*"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+    networks:
+      - carsharing-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
 
   api-gateway:
     build:
@@ -95,10 +124,26 @@ services:
       ALLOWED_ORIGINS: "*"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
     networks:
-      - tanzania-net
+      - carsharing-network
     depends_on:
-      - eureka-server
-      - auth-service
-      - user-service
-      - vehicle-service
-      - trip-service
+      eureka-server:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      PORT: 8085
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+      FIREBASE_CONFIG_PATH: ${FIREBASE_CONFIG_PATH}
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+    networks:
+      - carsharing-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+

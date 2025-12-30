@@ -3,6 +3,7 @@
 A carpooling platform designed for Tanzania to facilitate ride sharing between students in the university.
 ## Contributors
 - Vipul Singh (singhv@students.uni-marburg.de)
+- Hikmat Samadov (Samadov@students.uni-marburg.de)
 ## Project Overview
 This application provides a robust backend for a carpooling service, allowing users to:
 - Offer rides (create trips)
@@ -15,7 +16,7 @@ This application provides a robust backend for a carpooling service, allowing us
 The system leverages Google Maps API for location services and distance calculations, Firebase for real-time data storage, and MongoDB for persistent data storage.
 
 ## Technology Stack
-- **Java**: Java 22
+- **Java**: Java 21
 - **Framework**: Spring Boot with Spring MVC
 - **Database**:
     - MongoDB Atlas (for persistent storage)
