@@ -11,6 +11,45 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        # OpenAPI documentation routes - these must come BEFORE the service routes
+        - id: auth-service-docs
+          uri: lb://auth-service
+          predicates:
+            - Path=/v3/api-docs/auth
+          filters:
+            - RewritePath=/v3/api-docs/auth, /v3/api-docs
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/v3/api-docs/user
+          filters:
+            - RewritePath=/v3/api-docs/user, /v3/api-docs
+        - id: vehicle-service-docs
+          uri: lb://vehicle-service
+          predicates:
+            - Path=/v3/api-docs/vehicle
+          filters:
+            - RewritePath=/v3/api-docs/vehicle, /v3/api-docs
+        - id: trip-service-docs
+          uri: lb://trip-service
+          predicates:
+            - Path=/v3/api-docs/trip
+          filters:
+            - RewritePath=/v3/api-docs/trip, /v3/api-docs
+        - id: notification-service-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/v3/api-docs/notification
+          filters:
+            - RewritePath=/v3/api-docs/notification, /v3/api-docs
+        - id: ride-service-docs
+          uri: lb://ride-service
+          predicates:
+            - Path=/v3/api-docs/ride
+          filters:
+            - RewritePath=/v3/api-docs/ride, /v3/api-docs
+        
+        # Service API routes
         - id: auth-service
           uri: lb://auth-service
           predicates:

@@ -26,8 +26,12 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             "/api/auth/login",
             "/api/auth/signup",
             "/health",
-            "/actuator"
-    );
+            "/actuator",
+            // OpenAPI / Swagger documentation paths
+            "/v3/api-docs",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/webjars");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -130,4 +134,3 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         }
     }
 }
-
