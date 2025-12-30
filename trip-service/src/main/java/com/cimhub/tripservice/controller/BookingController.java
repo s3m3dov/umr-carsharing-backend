@@ -1,13 +1,13 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
+import com.cimhub.common.dto.ApiResponse;
 import com.cimhub.tripservice.dto.CancelRequestDTO;
 import com.cimhub.tripservice.dto.JoinTripRequestDTO;
 import com.cimhub.tripservice.dto.PassengerUpcomingRideDTO;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.JoinTripService;
 import com.cimhub.tripservice.service.UpcomingRidesService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -37,16 +37,13 @@ public class BookingController {
      * POST /api/bookings/join
      */
     @PostMapping("/join")
-    public ResponseEntity<ResponseDTO<String>> joinTrip(
-            @RequestBody RequestDTO<JoinTripRequestDTO> request) {
+    public ResponseEntity<ApiResponse<String>> joinTrip(
+            @Valid @RequestBody JoinTripRequestDTO request) {
 
-        ResponseDTO<String> response = joinTripService.joinTrip(request);
-
-        if (response.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+        String response = joinTripService.joinTrip(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
     }
 
     // ==================== Booking Cancellation ====================
@@ -56,16 +53,11 @@ public class BookingController {
      * POST /api/bookings/cancel
      */
     @PostMapping("/cancel")
-    public ResponseEntity<ResponseDTO<String>> cancelBooking(
-            @RequestBody RequestDTO<CancelRequestDTO> request) {
+    public ResponseEntity<ApiResponse<String>> cancelBooking(
+            @Valid @RequestBody CancelRequestDTO request) {
 
-        ResponseDTO<String> response = cancellationService.cancelRide(request);
-
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+        String response = cancellationService.cancelRide(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // ==================== Passenger's Upcoming Bookings ====================
@@ -75,10 +67,10 @@ public class BookingController {
      * GET /api/bookings/upcoming/passenger/{passengerId}
      */
     @GetMapping("/upcoming/passenger/{passengerId}")
-    public ResponseEntity<List<PassengerUpcomingRideDTO>> getPassengerUpcomingBookings(
+    public ResponseEntity<ApiResponse<List<PassengerUpcomingRideDTO>>> getPassengerUpcomingBookings(
             @PathVariable String passengerId) {
 
         List<PassengerUpcomingRideDTO> upcomingBookings = upcomingRidesService.getPassengerUpcomingRides(passengerId);
-        return ResponseEntity.ok(upcomingBookings);
+        return ResponseEntity.ok(ApiResponse.success(upcomingBookings));
     }
 }
