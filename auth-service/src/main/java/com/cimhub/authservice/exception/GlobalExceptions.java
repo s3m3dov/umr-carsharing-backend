@@ -1,4 +1,4 @@
-package com.cimhub.authservice.GlobalExceptions;
+package com.cimhub.authservice.exception;
 
 import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;

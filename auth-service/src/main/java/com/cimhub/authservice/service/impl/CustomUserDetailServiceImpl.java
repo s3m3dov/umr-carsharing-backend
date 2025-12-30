@@ -1,4 +1,4 @@
-package com.cimhub.authservice.services.impl;
+package com.cimhub.authservice.service.impl;
 
 import com.cimhub.authservice.model.Users;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.User;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailServiceImpl implements UserDetailsService {

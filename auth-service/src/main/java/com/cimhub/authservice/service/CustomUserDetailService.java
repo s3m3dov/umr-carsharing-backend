@@ -1,4 +1,4 @@
-package com.cimhub.authservice.services;
+package com.cimhub.authservice.service;
 
 public interface CustomUserDetailService {
 

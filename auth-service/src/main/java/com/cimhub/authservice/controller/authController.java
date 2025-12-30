@@ -1,7 +1,7 @@
 package com.cimhub.authservice.controller;
 
 import com.cimhub.authservice.dto.*;
-import com.cimhub.authservice.services.authService;
+import com.cimhub.authservice.service.authService;
 import com.cimhub.common.dto.ResponseDTO;
 import jakarta.ws.rs.POST;
 import lombok.RequiredArgsConstructor;
