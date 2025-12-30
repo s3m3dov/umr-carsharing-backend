@@ -8,23 +8,6 @@ COPY pom.xml .
 COPY common/pom.xml ./common/
 COPY trip-service/pom.xml ./trip-service/
 
-# Configure Maven to use Google's mirror for better reliability
-RUN mkdir -p /root/.m2 && \
-  echo '<?xml version="1.0" encoding="UTF-8"?> \
-  <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" \
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 \
-  http://maven.apache.org/xsd/settings-1.0.0.xsd"> \
-  <mirrors> \
-  <mirror> \
-  <id>google-maven-central</id> \
-  <name>Google Maven Central</name> \
-  <url>https://maven-central-eu.storage-download.googleapis.com/maven2/</url> \
-  <mirrorOf>central</mirrorOf> \
-  </mirror> \
-  </mirrors> \
-  </settings>' > /root/.m2/settings.xml
-
 # Download dependencies (cached layer)
 RUN --mount=type=cache,target=/root/.m2 \
   mvn -N install && \
