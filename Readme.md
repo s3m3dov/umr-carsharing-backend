@@ -13,16 +13,16 @@ It leverages a microservices architecture for scalability and efficiency.
 
 For detailed information, please refer to the following documents:
 
-- **[Architecture & Technology Stack](docs/architecture.md)** - Overview of microservices, tech stack, and key technical capabilities (Geospatial, Timezone, OSRM).
-- **[API Guide & Integration](docs/api-guide.md)** - Detailed instructions on how to use the APIs, authentication, and key endpoint examples.
-- **[Getting Started & Running](docs/running.md)** - Setup instructions, environment variables, and how to run the services.
+- **[Architecture & Technology Stack](.docs/architecture.md)** - Overview of microservices, tech stack, and key technical capabilities (Geospatial, Timezone, OSRM).
+- **[API Guide & Integration](.docs/api-guide.md)** - Detailed instructions on how to use the APIs, authentication, and key endpoint examples.
+- **[Getting Started & Running](.docs/running.md)** - Setup instructions, environment variables, and how to run the services.
 
 ## 📊 Presentations
 
 Project presentations demonstrating the car sharing platform:
 
-- [Car Sharing Presentation](docs/presentations/Car%20sharing%20.PPtx)
-- [Backend Implementation Details](docs/presentations/Car%20sharing%20Backend.pptx)
+- [Car Sharing Presentation](.docs/presentations/Car%20sharing%20.PPtx)
+- [Backend Implementation Details](.docs/presentations/Car%20sharing%20Backend.pptx)
 
 ## Contributors
 
