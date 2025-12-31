@@ -6,7 +6,7 @@ spring:
     name: trip-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://singhv:NotANewPasswordForMongo@cluster0.akdsgeh.mongodb.net/carsharingDB?retryWrites=true&w=majority&appName=Cluster0}
+      uri: ${MONGODB_URI}
 
 eureka:
   client:
@@ -15,19 +15,18 @@ eureka:
   instance:
     prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP:true}
     hostname: ${HOSTNAME:localhost}
-    non-secure-port-enabled: ${EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED:true}
-    secure-port-enabled: ${EUREKA_INSTANCE_SECURE_PORT_ENABLED:false}
-    non-secure-port: ${PORT:8083}
-    secure-port: ${PORT:8083}
-    statusPageUrl: ${EUREKA_INSTANCE_STATUS_PAGE_URL:http://${eureka.instance.hostname}:${server.port}/actuator/info}
-    healthCheckUrl: ${EUREKA_INSTANCE_HEALTH_CHECK_URL:http://${eureka.instance.hostname}:${server.port}/actuator/health}
-    homePageUrl: ${EUREKA_INSTANCE_HOME_PAGE_URL:http://${eureka.instance.hostname}:${server.port}/}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
 google:
   maps:
