@@ -1,13 +1,18 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
 import com.cimhub.tripservice.dto.OfferRideRequestDTO;
 import com.cimhub.tripservice.dto.OfferRideResponseDTO;
-import org.springframework.stereotype.Service;
 
-@Service
+/**
+ * Service for offering new trips
+ */
 public interface OfferRideService {
 
-    public ResponseDTO<OfferRideResponseDTO> offerRide(RequestDTO<OfferRideRequestDTO> offerRideRequest);
+    /**
+     * Create a new trip offer
+     * 
+     * @param offerRideRequest Trip details
+     * @return Trip creation response with trip ID and details
+     */
+    OfferRideResponseDTO offerRide(OfferRideRequestDTO offerRideRequest);
 }

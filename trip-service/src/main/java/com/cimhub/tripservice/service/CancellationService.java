@@ -1,7 +1,6 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
+import com.cimhub.common.exception.BusinessException;
 import com.cimhub.tripservice.dto.CancelRequestDTO;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
@@ -10,13 +9,16 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Service for handling trip and booking cancellations
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,139 +28,100 @@ public class CancellationService {
     private final TripsRepository tripsRepository;
 
     /**
-     * Passenger cancels their ride
+     * Passenger cancels their booking
      */
     @Transactional
-    public ResponseDTO<String> cancelRide(RequestDTO<CancelRequestDTO> request) {
-        ResponseDTO<String> response = new ResponseDTO<>();
+    public String cancelRide(CancelRequestDTO request) {
+        String passengerId = request.getUserId();
+        String bookingId = request.getRideId();
 
-        try {
-            String passengerId = request.getUserId();
-            CancelRequestDTO cancelRequest = request.getRequestContent();
+        log.info("Processing booking cancellation for passenger: {}, bookingId: {}",
+                passengerId, bookingId);
 
-            log.info("Processing ride cancellation for passenger: {}, tripId: {}",
-                    passengerId, cancelRequest.getTripId());
+        // Find the booking
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> BusinessException.notFound("Booking", bookingId));
 
-            // Find the booking
-            List<Booking> bookings = bookingRepository.findByPassengerIdAndTripId(passengerId,
-                    cancelRequest.getTripId());
-
-            if (bookings.isEmpty()) {
-                response.setSuccess(false);
-                response.setErrorMessage("No booking found for this trip");
-                return response;
-            }
-
-            Booking booking = bookings.get(0);
-
-            // Check if already cancelled
-            if (BookingStatus.CANCELLED.equals(booking.getStatus())) {
-                response.setSuccess(false);
-                response.setErrorMessage("Booking is already cancelled");
-                return response;
-            }
-
-            // Update booking status to CANCELLED
-            booking.setStatus(BookingStatus.CANCELLED);
-            booking.setUpdatedAt(Instant.now());
-            bookingRepository.save(booking);
-
-            log.info("Booking cancelled: {}", booking.getBookingId());
-
-            // Update trip - decrease currSeats
-            Optional<Trip> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
-            if (tripOpt.isPresent()) {
-                Trip trip = tripOpt.get();
-                int newCurrSeats = trip.getCurrSeats() - booking.getRequestedSeats();
-                trip.setCurrSeats(Math.max(0, newCurrSeats)); // Ensure it doesn't go negative
-                tripsRepository.save(trip);
-
-                log.info("Trip updated: tripId={}, newCurrSeats={}", trip.getTripId(), trip.getCurrSeats());
-            }
-
-            response.setSuccess(true);
-            response.setResponseContent("Booking cancelled successfully. Booking ID: " + booking.getBookingId());
-
-        } catch (Exception e) {
-            log.error("Error cancelling ride", e);
-            response.setSuccess(false);
-            response.setErrorMessage("Failed to cancel ride: " + e.getMessage());
+        // Verify ownership
+        if (!booking.getPassengerId().equals(passengerId)) {
+            throw new BusinessException(
+                    "UNAUTHORIZED",
+                    "You are not authorized to cancel this booking",
+                    HttpStatus.FORBIDDEN);
         }
 
-        return response;
+        // Check if already cancelled
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BusinessException(
+                    "ALREADY_CANCELLED",
+                    "This booking has already been cancelled",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        // Update booking status
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setUpdatedAt(Instant.now());
+        bookingRepository.save(booking);
+
+        // Update trip seat count
+        Trip trip = tripsRepository.findById(booking.getTripId())
+                .orElseThrow(() -> BusinessException.notFound("Trip", booking.getTripId()));
+
+        trip.setCurrSeats(trip.getCurrSeats() - booking.getRequestedSeats());
+        tripsRepository.save(trip);
+
+        log.info("Booking {} cancelled successfully by passenger {}", bookingId, passengerId);
+        return "Booking cancelled successfully";
     }
 
     /**
-     * Driver cancels their trip (cancels all associated rides)
+     * Driver cancels their trip (cancels all associated bookings)
      */
     @Transactional
-    public ResponseDTO<String> cancelTrip(RequestDTO<CancelRequestDTO> request) {
-        ResponseDTO<String> response = new ResponseDTO<>();
+    public String cancelTrip(CancelRequestDTO request) {
+        String driverId = request.getUserId();
+        String tripId = request.getTripId();
 
-        try {
-            String driverId = request.getUserId();
-            CancelRequestDTO cancelRequest = request.getRequestContent();
+        log.info("Processing trip cancellation for driver: {}, tripId: {}", driverId, tripId);
 
-            log.info("Processing trip cancellation for driver: {}, tripId: {}",
-                    driverId, cancelRequest.getTripId());
+        // Find the trip
+        Trip trip = tripsRepository.findById(tripId)
+                .orElseThrow(() -> BusinessException.notFound("Trip", tripId));
 
-            // Find the trip
-            Optional<Trip> tripOpt = tripsRepository.findById(cancelRequest.getTripId());
-
-            if (tripOpt.isEmpty()) {
-                response.setSuccess(false);
-                response.setErrorMessage("Trip not found");
-                return response;
-            }
-
-            Trip trip = tripOpt.get();
-
-            // Verify the driver owns this trip
-            if (!trip.getDriverId().equals(driverId)) {
-                response.setSuccess(false);
-                response.setErrorMessage("You are not authorized to cancel this trip");
-                return response;
-            }
-
-            // Check if already cancelled
-            if ("CANCELLED".equals(trip.getTripStatus())) {
-                response.setSuccess(false);
-                response.setErrorMessage("Trip is already cancelled");
-                return response;
-            }
-
-            // Update trip status to CANCELLED
-            trip.setTripStatus("CANCELLED");
-            tripsRepository.save(trip);
-
-            log.info("Trip cancelled: {}", trip.getTripId());
-
-            // Cancel all bookings for this trip
-            List<Booking> bookings = bookingRepository.findByTripId(cancelRequest.getTripId());
-            int cancelledBookingsCount = 0;
-
-            for (Booking booking : bookings) {
-                if (!BookingStatus.CANCELLED.equals(booking.getStatus())) {
-                    booking.setStatus(BookingStatus.CANCELLED);
-                    booking.setUpdatedAt(Instant.now());
-                    bookingRepository.save(booking);
-                    cancelledBookingsCount++;
-                }
-            }
-
-            log.info("Cancelled {} bookings for trip: {}", cancelledBookingsCount, trip.getTripId());
-
-            response.setSuccess(true);
-            response.setResponseContent(String.format(
-                    "Trip cancelled successfully. Trip ID: %s. %d passenger booking(s) cancelled.",
-                    trip.getTripId(), cancelledBookingsCount));
-
-        } catch (Exception e) {
-            log.error("Error cancelling trip", e);
-            response.setSuccess(false);
-            response.setErrorMessage("Failed to cancel trip: " + e.getMessage());
+        // Verify ownership
+        if (!trip.getDriverId().equals(driverId)) {
+            throw new BusinessException(
+                    "UNAUTHORIZED",
+                    "You are not authorized to cancel this trip",
+                    HttpStatus.FORBIDDEN);
         }
 
-        return response;
+        // Check if already cancelled
+        if ("CANCELLED".equals(trip.getTripStatus())) {
+            throw new BusinessException(
+                    "ALREADY_CANCELLED",
+                    "This trip has already been cancelled",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        // Cancel all bookings for this trip
+        List<Booking> bookings = bookingRepository.findByTripId(tripId);
+        for (Booking booking : bookings) {
+            if (booking.getStatus() != BookingStatus.CANCELLED) {
+                booking.setStatus(BookingStatus.CANCELLED);
+                booking.setUpdatedAt(Instant.now());
+                bookingRepository.save(booking);
+            }
+        }
+
+        // Update trip status
+        trip.setTripStatus("CANCELLED");
+        tripsRepository.save(trip);
+
+        log.info("Trip {} cancelled successfully by driver {}. {} bookings cancelled",
+                tripId, driverId, bookings.size());
+
+        return String.format("Trip cancelled successfully. %d passenger bookings have been cancelled",
+                bookings.size());
     }
 }

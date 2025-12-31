@@ -1,7 +1,6 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
+import com.cimhub.common.exception.BusinessException;
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.JoinTripRequestDTO;
 import com.cimhub.tripservice.model.Booking;
@@ -11,16 +10,16 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 
+/**
+ * Service for passengers joining trips
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,116 +29,79 @@ public class JoinTripService {
     private final BookingRepository bookingRepository;
 
     @Transactional
-    public ResponseDTO<String> joinTrip(RequestDTO<JoinTripRequestDTO> request) {
-        ResponseDTO<String> response = new ResponseDTO<>();
+    public String joinTrip(JoinTripRequestDTO requestContent) {
+        String passengerId = requestContent.getPassengerId();
 
-        try {
-            String passengerId = request.getUserId();
-            JoinTripRequestDTO requestContent = request.getRequestContent();
+        log.info("Processing join trip request for passenger: {}, tripId: {}",
+                passengerId, requestContent.getTripId());
 
-            log.info("Processing join trip request for passenger: {}, tripId: {}",
-                    passengerId, requestContent.getTripId());
+        // Step 1: Find the trip
+        Trip trip = tripsRepository.findById(requestContent.getTripId())
+                .orElseThrow(() -> BusinessException.notFound("Trip", requestContent.getTripId()));
 
-            // Step 1: Find the trip
-            Optional<Trip> tripOpt = tripsRepository.findById(requestContent.getTripId());
-            if (tripOpt.isEmpty()) {
-                response.setSuccess(false);
-                response.setErrorMessage("Trip not found");
-                return response;
-            }
-
-            Trip trip = tripOpt.get();
-
-            // Step 2: Basic validations
-            // Don't let driver join their own trip
-            if (trip.getDriverId().equals(passengerId)) {
-                response.setSuccess(false);
-                response.setErrorMessage("You cannot join your own trip");
-                return response;
-            }
-
-            // Check if already booked
-            if (bookingRepository.existsByPassengerIdAndTripId(passengerId, requestContent.getTripId())) {
-                response.setSuccess(false);
-                response.setErrorMessage("You have already booked this trip");
-                return response;
-            }
-
-            // Check seat availability
-            int availableSeats = trip.getOfferedSeat() - trip.getCurrSeats();
-            if (availableSeats < requestContent.getRequestedSeats()) {
-                response.setSuccess(false);
-                response.setErrorMessage("Not enough seats available. Available: " + availableSeats);
-                return response;
-            }
-
-            // Step 3: Parse ride start time
-            Instant rideStartTimeUTC;
-            String timezone;
-            try {
-                ZonedDateTime zonedDateTime = ZonedDateTime.parse(requestContent.getRideStartTime());
-                rideStartTimeUTC = zonedDateTime.toInstant();
-                timezone = zonedDateTime.getZone().getId();
-            } catch (Exception e) {
-                log.error("Error parsing ride start time: {}", requestContent.getRideStartTime(), e);
-                response.setSuccess(false);
-                response.setErrorMessage("Invalid ride start time format");
-                return response;
-            }
-
-            // Step 4: Create pickup and dropoff Points
-            Points pickupLocation = new Points();
-            pickupLocation.setLatitude(requestContent.getPickupPoint().getLatitude());
-            pickupLocation.setLongitude(requestContent.getPickupPoint().getLongitude());
-            pickupLocation.setPlaceAddress(requestContent.getPickupPoint().getPlaceAddress());
-
-            Points dropoffLocation = new Points();
-            dropoffLocation.setLatitude(requestContent.getDestinationPoint().getLatitude());
-            dropoffLocation.setLongitude(requestContent.getDestinationPoint().getLongitude());
-            dropoffLocation.setPlaceAddress(requestContent.getDestinationPoint().getPlaceAddress());
-
-            // Step 5: Create the booking
-            Booking booking = Booking.builder()
-                    .passengerId(passengerId)
-                    .tripId(requestContent.getTripId())
-                    .driverId(requestContent.getDriverId())
-                    .pickupLocation(pickupLocation)
-                    .dropoffLocation(dropoffLocation)
-                    .requestedSeats(requestContent.getRequestedSeats())
-                    .status(BookingStatus.CONFIRMED)
-                    .bookingStartTimeUTC(rideStartTimeUTC)
-                    .timezone(timezone)
-                    .pricePerKm(trip.getPricePerKm())
-                    .createdAt(Instant.now())
-                    .updatedAt(Instant.now())
-                    .build();
-
-            // Save the booking
-            Booking savedBooking = bookingRepository.save(booking);
-            log.info("Booking created: {}", savedBooking.getBookingId());
-
-            // Step 5: Update the trip - increment currSeats and add to joinedRidersId
-            trip.setCurrSeats(trip.getCurrSeats() + requestContent.getRequestedSeats());
-
-            // Add passenger to joinedRidersId list
-            if (trip.getJoinedRidersId() == null) {
-                trip.setJoinedRidersId(new ArrayList<>());
-            }
-            trip.getJoinedRidersId().add(new ObjectId(savedBooking.getBookingId()));
-
-            tripsRepository.save(trip);
-            log.info("Trip updated: tripId={}, newCurrSeats={}", trip.getTripId(), trip.getCurrSeats());
-
-            // Success response
-            response.setSuccess(true);
-            response.setResponseContent("Trip booked successfully! Booking ID: " + savedBooking.getBookingId());
-
-        } catch (Exception e) {
-            log.error("Error processing join trip request", e);
-            response.setSuccess(false);
-            response.setErrorMessage("Failed to join trip: " + e.getMessage());
+        // Step 2: Validate trip is available
+        if (!"OFFERED".equals(trip.getTripStatus())) {
+            throw new BusinessException(
+                    "TRIP_NOT_AVAILABLE",
+                    "Trip is not available for booking",
+                    HttpStatus.BAD_REQUEST);
         }
 
-        return response;
+        // Step 3: Check if passenger already has a booking for this trip
+        List<Booking> existingBookings = bookingRepository.findByTripId(requestContent.getTripId());
+        boolean alreadyBooked = existingBookings.stream()
+                .anyMatch(b -> b.getPassengerId().equals(passengerId) &&
+                        b.getStatus() != BookingStatus.CANCELLED);
+
+        if (alreadyBooked) {
+            throw new BusinessException(
+                    "ALREADY_BOOKED",
+                    "You have already booked this trip",
+                    HttpStatus.CONFLICT);
+        }
+
+        // Step 4: Check available seats
+        int requestedSeats = requestContent.getRequestedSeats();
+        int availableSeats = trip.getOfferedSeat() - trip.getCurrSeats();
+
+        if (availableSeats < requestedSeats) {
+            throw new BusinessException(
+                    "INSUFFICIENT_SEATS",
+                    String.format("Only %d seats available, but %d requested", availableSeats, requestedSeats),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        // Step 5: Create booking
+        Points pickupPoints = new Points();
+        pickupPoints.setLatitude(requestContent.getPickupPoint().getLatitude());
+        pickupPoints.setLongitude(requestContent.getPickupPoint().getLongitude());
+        pickupPoints.setPlaceAddress(requestContent.getPickupPoint().getPlaceAddress());
+
+        Points dropoffPoints = new Points();
+        dropoffPoints.setLatitude(requestContent.getDestinationPoint().getLatitude());
+        dropoffPoints.setLongitude(requestContent.getDestinationPoint().getLongitude());
+        dropoffPoints.setPlaceAddress(requestContent.getDestinationPoint().getPlaceAddress());
+
+        Booking booking = Booking.builder()
+                .tripId(requestContent.getTripId())
+                .passengerId(passengerId)
+                .driverId(trip.getDriverId())
+                .pickupLocation(pickupPoints)
+                .dropoffLocation(dropoffPoints)
+                .requestedSeats(requestedSeats)
+                .status(BookingStatus.CONFIRMED)
+                .createdAt(Instant.now())
+                .build();
+
+        bookingRepository.save(booking);
+
+        // Step 6: Update trip seat count
+        trip.setCurrSeats(trip.getCurrSeats() + requestedSeats);
+        tripsRepository.save(trip);
+
+        log.info("Passenger {} successfully joined trip {}. Seats booked: {}",
+                passengerId, requestContent.getTripId(), requestedSeats);
+
+        return "Successfully joined the trip. Booking confirmed!";
     }
 }

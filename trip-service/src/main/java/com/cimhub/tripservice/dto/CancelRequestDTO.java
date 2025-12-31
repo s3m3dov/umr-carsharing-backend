@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CancelRequestDTO {
-    
-    private String tripId;  // For both passenger and driver cancellations
-    private String rideId;  // Only for passenger cancellations
+
+    private String userId; // TODO: Extract from JWT in future
+    private String tripId; // For both passenger and driver cancellations
+    private String rideId; // Only for passenger cancellations (bookingId)
     private String cancellationReason;
 }
