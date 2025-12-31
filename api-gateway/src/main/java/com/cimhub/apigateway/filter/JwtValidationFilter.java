@@ -1,8 +1,8 @@
 package com.cimhub.apigateway.filter;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -17,10 +17,10 @@ import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtValidationFilter implements GlobalFilter, Ordered {
 
-    @Autowired
-    private WebClient.Builder webClientBuilder;
+    private final WebClient.Builder webClientBuilder;
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/auth/login",
@@ -107,10 +107,6 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         public TokenValidationRequest(String token) {
             this.token = token;
         }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
     }
 
     private static class TokenValidationResponse {
@@ -121,16 +117,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return emailId;
         }
 
-        public void setEmailId(String emailId) {
-            this.emailId = emailId;
-        }
-
         public boolean isValid() {
             return isValid;
-        }
-
-        public void setValid(boolean valid) {
-            isValid = valid;
         }
     }
 }

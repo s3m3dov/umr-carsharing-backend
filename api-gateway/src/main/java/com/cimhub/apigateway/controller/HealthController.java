@@ -1,6 +1,7 @@
 package com.cimhub.apigateway.controller;
 
-import com.cimhub.common.dto.ResponseDTO;
+import com.cimhub.common.dto.ApiResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,11 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping("/health")
-    public ResponseDTO<String> healthCheck() {
-        ResponseDTO<String> dto = new ResponseDTO<>();
-        dto.setSuccess(true);
-        dto.setErrorMessage(null);
-        dto.setResponseContent("API Gateway Service is alive");
-        return dto;
+    public ResponseEntity<ApiResponse<String>> healthCheck() {
+        return ResponseEntity.ok(ApiResponse.success("API Gateway Service is alive"));
     }
 }

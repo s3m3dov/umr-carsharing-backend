@@ -1,16 +1,16 @@
 package com.cimhub.vehicleservice.controller;
 
 import com.cimhub.common.dto.ApiResponse;
-import com.cimhub.vehicleservice.dto.VehicleRegisterRequestDTO;
-import com.cimhub.vehicleservice.dto.VehicleResponseDTO;
+import com.cimhub.vehicleservice.dto.request.RegisterVehicleRequest;
+import com.cimhub.vehicleservice.dto.response.VehicleResponse;
 import com.cimhub.vehicleservice.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +22,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/vehicles")
 @Tag(name = "Vehicle Management", description = "Vehicle registration and management APIs")
+@RequiredArgsConstructor
 public class VehicleController {
 
-    @Autowired
-    private VehicleService vehicleService;
+    private final VehicleService vehicleService;
 
     @GetMapping("/health")
     public ResponseEntity<ApiResponse<String>> healthCheck() {
@@ -38,10 +38,10 @@ public class VehicleController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "No vehicles found")
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<List<VehicleResponseDTO>>> getUserVehicles(
+    public ResponseEntity<ApiResponse<List<VehicleResponse>>> getUserVehicles(
             @Parameter(description = "User's unique identifier", required = true) @PathVariable String userId) {
         log.info("Getting vehicles for userId: {}", userId);
-        List<VehicleResponseDTO> resultList = vehicleService.getUserVehicles(userId);
+        List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);
         return ResponseEntity.ok(ApiResponse.success(resultList));
     }
 
@@ -52,11 +52,17 @@ public class VehicleController {
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Void>> registerVehicle(
-            @Valid @RequestBody VehicleRegisterRequestDTO requestInfo) {
-        log.info("Registering vehicle for userId: {}", requestInfo.getUserId());
-        vehicleService.addNewVehicle(requestInfo.getUserId(), requestInfo);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(null));
+            @Valid @RequestBody RegisterVehicleRequest request) {
+        log.info("Registering vehicle for userId: {}", request.userId());
+        boolean success = vehicleService.registerVehicle(request);
+        if (success) {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(null));
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("VEHICLE_ALREADY_EXISTS", "Vehicle already registered"));
+        }
     }
 }

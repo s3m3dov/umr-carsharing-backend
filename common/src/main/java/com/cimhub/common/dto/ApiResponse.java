@@ -1,5 +1,6 @@
 package com.cimhub.common.dto;
 
+import com.cimhub.common.dto.response.ApiError;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
