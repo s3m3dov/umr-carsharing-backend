@@ -11,6 +11,7 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
+import com.cimhub.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -89,7 +90,7 @@ public class AuthService {
                             request.password()));
         } catch (Exception e) {
             log.warn("Login failed for user {}: {}", request.emailId(), e.getMessage());
-            throw new RuntimeException("Invalid Credentials");
+            throw BusinessException.unauthorized("Invalid credentials");
         }
 
         User userData = authUserRepository.findByEmailId(request.emailId().toLowerCase());

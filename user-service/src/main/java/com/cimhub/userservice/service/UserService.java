@@ -8,6 +8,7 @@ import com.cimhub.userservice.dto.response.SignUpResponse;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.User;
 import com.cimhub.userservice.repository.UserRepository;
+import com.cimhub.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class UserService {
 
         User existingUser = userRepository.findByUserId(request.userId());
         if (existingUser != null) {
-            throw new RuntimeException("User profile already exists for userId: " + request.userId());
+            throw BusinessException.alreadyExists("User profile", request.userId());
         }
 
         User newUser = new User();
@@ -53,7 +54,7 @@ public class UserService {
         User foundUser = userRepository.findByUserId(userId);
 
         if (foundUser == null) {
-            throw new RuntimeException("User not found with userId: " + userId);
+            throw BusinessException.notFound("User", userId);
         }
 
         return new UserResponse(
@@ -103,10 +104,10 @@ public class UserService {
                         true,
                         null);
             } else {
-                return new LoginResponse(null, null, false, "Password_Not_Match");
+                throw BusinessException.unauthorized("Invalid credentials");
             }
         } else {
-            return new LoginResponse(null, null, false, "USER_NOT_EXISTS");
+            throw BusinessException.unauthorized("Invalid credentials");
         }
     }
 }
