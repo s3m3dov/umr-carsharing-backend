@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>auth-service</artifactId>
-	<name>auth-service</name>
+	<name>Auth Service</name>
 	<description>Spring Security auth service</description>
 	<url/>
 	<licenses>
