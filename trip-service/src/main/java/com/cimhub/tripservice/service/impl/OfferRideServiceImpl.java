@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service.impl;
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
+
+import com.cimhub.common.exception.BusinessException;
 import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
 import com.cimhub.tripservice.dto.OSRM.Route;
 import com.cimhub.tripservice.dto.OfferRideRequestDTO;
@@ -12,6 +12,7 @@ import com.cimhub.tripservice.service.routes.OSMRoute;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Point;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -27,11 +28,7 @@ public class OfferRideServiceImpl implements OfferRideService {
     private final OSMRoute osmRoute;
 
     @Override
-    public ResponseDTO<OfferRideResponseDTO> offerRide(RequestDTO<OfferRideRequestDTO> offerRideRequest) {
-
-        OfferRideRequestDTO requestContent = offerRideRequest.getRequestContent();
-        OfferRideResponseDTO responseContent = new OfferRideResponseDTO();
-        ResponseDTO<OfferRideResponseDTO> responseDTO = new ResponseDTO<>();
+    public OfferRideResponseDTO offerRide(OfferRideRequestDTO requestContent) {
 
         // Convert the ZonedDateTime to UTC Instant for storage
         Instant tripStartInstant = requestContent.getTripStartDateTime().toInstant();
@@ -43,23 +40,23 @@ public class OfferRideServiceImpl implements OfferRideService {
         Instant rangeEnd = tripStartInstant.plus(12, ChronoUnit.HOURS);
 
         List<Trip> existingTrips = tripsRepository.findByDriverIdAndTripStartDateTimeUTCBetween(
-                offerRideRequest.getUserId(),
+                requestContent.getDriverId(),
                 rangeStart,
-                rangeEnd
-        );
+                rangeEnd);
 
         // More precise check: trips within 1 hour window
         boolean hasConflict = existingTrips.stream()
                 .anyMatch(trip -> {
-                    long hoursDiff = Math.abs(ChronoUnit.HOURS.between(trip.getTripStartDateTimeUTC(), tripStartInstant));
+                    long hoursDiff = Math
+                            .abs(ChronoUnit.HOURS.between(trip.getTripStartDateTimeUTC(), tripStartInstant));
                     return hoursDiff < 1;
                 });
 
         if (hasConflict) {
-            responseContent.setErrorMessage("Driver already has a trip at the same time. Please choose a different time.");
-            responseContent.setTripCreated(false);
-            responseDTO.setResponseContent(responseContent);
-            return responseDTO;
+            throw new BusinessException(
+                    "TRIP_TIME_CONFLICT",
+                    "Driver already has a trip at the same time. Please choose a different time.",
+                    HttpStatus.CONFLICT);
         }
 
         // Get route from OSRM API
@@ -69,22 +66,23 @@ public class OfferRideServiceImpl implements OfferRideService {
                     requestContent.getSourceAddress().getLatitude(),
                     requestContent.getSourceAddress().getLongitude(),
                     requestContent.getDestinationAddress().getLatitude(),
-                    requestContent.getDestinationAddress().getLongitude()
-            ).block(); // Block to make it synchronous
+                    requestContent.getDestinationAddress().getLongitude()).block(); // Block to make it synchronous
 
             if (osrmResponse == null || osrmResponse.getRoutes() == null || osrmResponse.getRoutes().isEmpty()) {
                 log.error("No route found from OSRM API");
-                responseContent.setErrorMessage("Could not find a route between source and destination. Please check the addresses.");
-                responseContent.setTripCreated(false);
-                responseDTO.setResponseContent(responseContent);
-                return responseDTO;
+                throw new BusinessException(
+                        "ROUTE_NOT_FOUND",
+                        "Could not find a route between source and destination. Please check the addresses.",
+                        HttpStatus.BAD_REQUEST);
             }
+        } catch (BusinessException e) {
+            throw e; // Re-throw business exceptions
         } catch (Exception e) {
             log.error("Error calling OSRM API: ", e);
-            responseContent.setErrorMessage("Failed to calculate route. Please try again later.");
-            responseContent.setTripCreated(false);
-            responseDTO.setResponseContent(responseContent);
-            return responseDTO;
+            throw new BusinessException(
+                    "ROUTE_CALCULATION_FAILED",
+                    "Failed to calculate route. Please try again later.",
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         // Extract route information
@@ -94,36 +92,35 @@ public class OfferRideServiceImpl implements OfferRideService {
         // MongoDB GeoJSON format: [longitude, latitude]
         Point sourceLocation = new Point(
                 requestContent.getSourceAddress().getLongitude(),
-                requestContent.getSourceAddress().getLatitude()
-        );
+                requestContent.getSourceAddress().getLatitude());
 
         Point destinationLocation = new Point(
                 requestContent.getDestinationAddress().getLongitude(),
-                requestContent.getDestinationAddress().getLatitude()
-        );
+                requestContent.getDestinationAddress().getLatitude());
 
         // Create a new trip - store in UTC for universal consistency
         Trip newTrip = Trip.builder()
-                .driverId(offerRideRequest.getUserId())
+                .driverId(requestContent.getDriverId())
                 .tripStatus("OFFERED")
                 .vehicleNumber(requestContent.getVehicleNumber())
                 .sourceAddress(requestContent.getSourceAddress())
                 .destinationAddress(requestContent.getDestinationAddress())
-                .sourceLocation(sourceLocation)  // GeoJSON Point for geospatial queries
-                .destinationLocation(destinationLocation)  // GeoJSON Point for geospatial queries
+                .sourceLocation(sourceLocation) // GeoJSON Point for geospatial queries
+                .destinationLocation(destinationLocation) // GeoJSON Point for geospatial queries
                 .offeredSeat(requestContent.getOfferedSeat())
                 .currSeats(0)
-                .tripStartDateTimeUTC(tripStartInstant)  // Store in UTC
-                .tripTimezone(tripTimezone)  // Store original timezone for reference
-                .routeGeometry(route.getGeometry())  // Store GeoJSON LineString
-                .routeDistance(route.getDistance())  // Distance in meters
-                .routeDuration(route.getDuration())  // Duration in seconds
+                .tripStartDateTimeUTC(tripStartInstant) // Store in UTC
+                .tripTimezone(tripTimezone) // Store original timezone for reference
+                .routeGeometry(route.getGeometry()) // Store GeoJSON LineString
+                .routeDistance(route.getDistance()) // Distance in meters
+                .routeDuration(route.getDuration()) // Duration in seconds
                 .pricePerKm(10.0)
                 .build();
 
         Trip savedTrip = tripsRepository.save(newTrip);
 
         // Build response with timezone information and route data
+        OfferRideResponseDTO responseContent = new OfferRideResponseDTO();
         responseContent.setTripId(savedTrip.getTripId());
         responseContent.setVehicleNumber(savedTrip.getVehicleNumber());
         responseContent.setSourceAddress(savedTrip.getSourceAddress());
@@ -137,15 +134,11 @@ public class OfferRideServiceImpl implements OfferRideService {
         responseContent.setRouteDistanceInKm(savedTrip.getRouteDistance() / 1000.0); // Convert meters to km
         responseContent.setRouteDurationInSeconds(savedTrip.getRouteDuration());
         responseContent.setRouteDurationInMinutes(savedTrip.getRouteDuration() / 60.0); // Convert seconds to minutes
-
         responseContent.setTripCreated(true);
 
-        responseDTO.setResponseContent(responseContent);
-
         log.info("Trip created successfully. Distance: {} km, Duration: {} minutes",
-                 savedTrip.getRouteDistance() / 1000.0, savedTrip.getRouteDuration() / 60.0);
+                savedTrip.getRouteDistance() / 1000.0, savedTrip.getRouteDuration() / 60.0);
 
-        return responseDTO;
+        return responseContent;
     }
-
 }

@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class JoinTripRequestDTO {
 
     private String tripId;
+    private String passengerId; // TODO: Extract from JWT in future
     private String driverId;
     private LocationPoint pickupPoint;
     private LocationPoint destinationPoint;

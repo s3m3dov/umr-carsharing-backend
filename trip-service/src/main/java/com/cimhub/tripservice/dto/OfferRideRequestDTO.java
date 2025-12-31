@@ -1,6 +1,5 @@
 package com.cimhub.tripservice.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.cimhub.common.models.Points;
 import lombok.AllArgsConstructor;
@@ -16,16 +15,15 @@ import java.time.ZonedDateTime;
 @Builder
 public class OfferRideRequestDTO {
 
+    private String driverId; // TODO: Extract from JWT in future
     private String vehicleNumber;
     private Points sourceAddress;
     private Points destinationAddress;
 
     // Accept time with timezone information in ISO-8601 format
-    // Example: "2025-10-12T14:30:00+05:30" for India or "2025-10-12T14:30:00+02:00" for Germany
-    @JsonFormat(
-            shape = JsonFormat.Shape.STRING,
-            pattern = "yyyy-MM-dd'T'HH:mm:ssXXX"
-    )
+    // Example: "2025-10-12T14:30:00+05:30" for India or "2025-10-12T14:30:00+02:00"
+    // for Germany
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private ZonedDateTime tripStartDateTime;
 
     private int offeredSeat;
