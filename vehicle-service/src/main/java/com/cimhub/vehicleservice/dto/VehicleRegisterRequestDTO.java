@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class VehicleRegisterRequestDTO {
+    private String userId;
     private String vehicleName;
     private String vehicleNumber;
     private String vehicleType;

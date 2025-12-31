@@ -1,7 +1,6 @@
 package com.cimhub.userservice.controller;
 
-import com.cimhub.common.dto.RequestDTO;
-import com.cimhub.common.dto.ResponseDTO;
+import com.cimhub.common.dto.ApiResponse;
 import com.cimhub.userservice.dto.LoginRequestDTO;
 import com.cimhub.userservice.dto.LoginResponseDTO;
 import com.cimhub.userservice.dto.SignUpResponseDTO;
@@ -12,12 +11,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -30,117 +31,58 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/health")
-    public ResponseDTO<String> healthCheck() {
-        ResponseDTO<String> response = new ResponseDTO<>();
-        response.setSuccess(true);
-        response.setErrorMessage(null);
-        response.setResponseContent("User Service is up and running!");
-        return response;
+    public ResponseEntity<ApiResponse<String>> healthCheck() {
+        return ResponseEntity.ok(ApiResponse.success("User Service is up and running!"));
     }
 
     @Operation(summary = "Get user information", description = "Retrieves user profile information by user ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = ResponseDTO.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping(value = "/{userId}")
-    public ResponseDTO<UserInfoDTO> getUserInfo(
+    public ResponseEntity<ApiResponse<UserInfoDTO>> getUserInfo(
             @Parameter(description = "User's unique identifier", required = true) @PathVariable String userId) {
         log.info("Get user info for userId: {}", userId);
-        ResponseDTO<UserInfoDTO> response = new ResponseDTO<>();
-
-        try {
-            UserInfoDTO userInfo = userService.getUserInfo(userId);
-            response.setResponseContent(userInfo);
-            response.setSuccess(true);
-            response.setErrorMessage(null);
-        } catch (Exception exp) {
-            response.setResponseContent(null);
-            response.setSuccess(false);
-            response.setErrorMessage(exp.getMessage());
-            exp.printStackTrace();
-        }
-        return response;
+        UserInfoDTO userInfo = userService.getUserInfo(userId);
+        return ResponseEntity.ok(ApiResponse.success(userInfo));
     }
 
     @Operation(summary = "Register new user", description = "Creates a new user account in the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully", content = @Content(schema = @Schema(implementation = ResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
     })
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDTO<SignUpResponseDTO> addNewUser(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User registration details", required = true) @RequestBody RequestDTO<UserInfoDTO> requestDTO) {
-        log.info("Signup request: {}", requestDTO);
-        ResponseDTO<SignUpResponseDTO> response = new ResponseDTO<>();
-
-        try {
-            SignUpResponseDTO signUpResponse = userService.registerNewUser(requestDTO.getRequestContent());
-            if (signUpResponse.isSignUpSuccess()) {
-                response.setResponseContent(signUpResponse);
-                response.setSuccess(true);
-                response.setErrorMessage(null);
-            } else {
-                response.setResponseContent(null);
-                response.setSuccess(false);
-                response.setErrorMessage("Registration failed");
-            }
-        } catch (Exception exp) {
-            response.setResponseContent(null);
-            response.setSuccess(false);
-            response.setErrorMessage(exp.getMessage());
-            exp.printStackTrace();
-        }
-        return response;
+    public ResponseEntity<ApiResponse<SignUpResponseDTO>> addNewUser(
+            @Valid @RequestBody UserInfoDTO userInfoDTO) {
+        log.info("Signup request for email: {}", userInfoDTO.getEmailId());
+        SignUpResponseDTO signUpResponse = userService.registerNewUser(userInfoDTO);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(signUpResponse));
     }
 
     @Operation(summary = "User login", description = "Authenticates a user and returns login details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful", content = @Content(schema = @Schema(implementation = ResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDTO<LoginResponseDTO> loginUser(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User login credentials", required = true) @RequestBody RequestDTO<LoginRequestDTO> loginInfo) {
-        ResponseDTO<LoginResponseDTO> response = new ResponseDTO<>();
-
-        try {
-            LoginResponseDTO loginResponse = userService.checkUserLogin(loginInfo.getRequestContent());
-            if (loginResponse.isLoginSuccess()) {
-                response.setResponseContent(loginResponse);
-                response.setSuccess(true);
-                response.setErrorMessage(null);
-            } else {
-                response.setResponseContent(null);
-                response.setSuccess(false);
-                response.setErrorMessage(loginResponse.getErrMsg());
-            }
-        } catch (Exception exp) {
-            response.setResponseContent(null);
-            response.setSuccess(false);
-            response.setErrorMessage(exp.getMessage());
-            exp.printStackTrace();
-        }
-        return response;
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(
+            @Valid @RequestBody LoginRequestDTO loginRequest) {
+        log.info("Login request for email: {}", loginRequest.getEmailId());
+        LoginResponseDTO loginResponse = userService.checkUserLogin(loginRequest);
+        return ResponseEntity.ok(ApiResponse.success(loginResponse));
     }
 
     @Operation(summary = "Create user profile", description = "Creates a detailed user profile")
     @PostMapping(value = "/profile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDTO<String> createUserProfile(@RequestBody UserProfileDTO profileDTO) {
+    public ResponseEntity<ApiResponse<String>> createUserProfile(@Valid @RequestBody UserProfileDTO profileDTO) {
         log.info("Create user profile for userId: {}", profileDTO.getUserId());
-        ResponseDTO<String> response = new ResponseDTO<>();
-
-        try {
-            userService.createUserProfile(profileDTO);
-            response.setResponseContent("Profile created successfully");
-            response.setSuccess(true);
-            response.setErrorMessage(null);
-        } catch (Exception exp) {
-            response.setResponseContent(null);
-            response.setSuccess(false);
-            response.setErrorMessage(exp.getMessage());
-            exp.printStackTrace();
-        }
-        return response;
+        userService.createUserProfile(profileDTO);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Profile created successfully"));
     }
 }
