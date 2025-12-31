@@ -30,12 +30,34 @@ public class TripGeospatialService {
 
     private final MongoTemplate mongoTemplate;
 
+    public void enrichTripWithGeospatialData(Trip trip, com.cimhub.tripservice.dto.OSRM.Route route) {
+        if (trip == null || route == null)
+            return;
+
+        trip.setRouteGeometry(route.geometry());
+        trip.setRouteDistance(route.distance());
+        trip.setRouteDuration(route.duration());
+
+        // Update GeoSpatial indexes
+        if (trip.getSourceAddress() != null) {
+            trip.setSourceLocation(new Point(
+                    trip.getSourceAddress().getLongitude(),
+                    trip.getSourceAddress().getLatitude()));
+        }
+
+        if (trip.getDestinationAddress() != null) {
+            trip.setDestinationLocation(new Point(
+                    trip.getDestinationAddress().getLongitude(),
+                    trip.getDestinationAddress().getLatitude()));
+        }
+    }
+
     /**
      * Find trips with source location near the given coordinates
      *
-     * @param latitude      Latitude of search point
-     * @param longitude     Longitude of search point
-     * @param radiusInKm    Search radius in kilometers
+     * @param latitude   Latitude of search point
+     * @param longitude  Longitude of search point
+     * @param radiusInKm Search radius in kilometers
      * @return List of trips with source near the search point
      */
     public List<Trip> findTripsWithSourceNear(double latitude, double longitude, double radiusInKm) {
@@ -46,7 +68,9 @@ public class TripGeospatialService {
         query.addCriteria(Criteria.where("sourceLocation")
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
-        query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
+        query.addCriteria(new Criteria().orOperator(
+                Criteria.where("tripStatus").is("OFFERED"),
+                Criteria.where("tripStatus").is("AVAILABLE")));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with source near ({}, {}) within {} km",
@@ -58,9 +82,9 @@ public class TripGeospatialService {
     /**
      * Find trips with destination location near the given coordinates
      *
-     * @param latitude      Latitude of search point
-     * @param longitude     Longitude of search point
-     * @param radiusInKm    Search radius in kilometers
+     * @param latitude   Latitude of search point
+     * @param longitude  Longitude of search point
+     * @param radiusInKm Search radius in kilometers
      * @return List of trips with destination near the search point
      */
     public List<Trip> findTripsWithDestinationNear(double latitude, double longitude, double radiusInKm) {
@@ -71,7 +95,9 @@ public class TripGeospatialService {
         query.addCriteria(Criteria.where("destinationLocation")
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
-        query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
+        query.addCriteria(new Criteria().orOperator(
+                Criteria.where("tripStatus").is("OFFERED"),
+                Criteria.where("tripStatus").is("AVAILABLE")));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with destination near ({}, {}) within {} km",
@@ -85,26 +111,27 @@ public class TripGeospatialService {
      * Note: MongoDB doesn't allow multiple $geoNear operations in one query,
      * so we search by source first, then filter by destination in memory
      *
-     * @param sourceLat         Source latitude
-     * @param sourceLon         Source longitude
-     * @param sourceRadiusKm    Source search radius in km
-     * @param destLat           Destination latitude
-     * @param destLon           Destination longitude
-     * @param destRadiusKm      Destination search radius in km
+     * @param sourceLat      Source latitude
+     * @param sourceLon      Source longitude
+     * @param sourceRadiusKm Source search radius in km
+     * @param destLat        Destination latitude
+     * @param destLon        Destination longitude
+     * @param destRadiusKm   Destination search radius in km
      * @return List of matching trips
      */
     public List<Trip> findTripsMatchingRoute(
             double sourceLat, double sourceLon, double sourceRadiusKm,
-            double destLat, double destLon, double destRadiusKm, String rideStartTime, Integer requestedSeats, String effectiveUserId) {
-        
+            double destLat, double destLon, double destRadiusKm, String rideStartTime, Integer requestedSeats,
+            String effectiveUserId) {
+
         // Step 0: Parse the rideStartTime and calculate the date range for filtering
         Instant startOfDay = null;
         Instant endOfDay = null;
-        
+
         if (rideStartTime != null && !rideStartTime.isEmpty()) {
             try {
                 ZonedDateTime requestedDateTime;
-                
+
                 // Try to parse with timezone first, if fails, use system timezone
                 if (rideStartTime.contains("+") || rideStartTime.contains("Z")) {
                     // Has timezone info
@@ -115,28 +142,28 @@ public class TripGeospatialService {
                     requestedDateTime = localDateTime.atZone(ZoneId.systemDefault());
                     log.info("No timezone in input, using system default: {}", ZoneId.systemDefault());
                 }
-                
+
                 // Get the start and end of that day
                 LocalDate requestedDate = requestedDateTime.toLocalDate();
                 ZoneId timezone = requestedDateTime.getZone();
-                
+
                 startOfDay = requestedDate.atStartOfDay(timezone).toInstant();
                 endOfDay = requestedDate.plusDays(1).atStartOfDay(timezone).toInstant();
-                
-                log.info("Filtering trips for date: {} in timezone: {}. UTC range: {} to {}", 
+
+                log.info("Filtering trips for date: {} in timezone: {}. UTC range: {} to {}",
                         requestedDate, timezone, startOfDay, endOfDay);
             } catch (Exception e) {
-                log.error("Failed to parse rideStartTime: {}. Skipping date filter. Error: {}", 
+                log.error("Failed to parse rideStartTime: {}. Skipping date filter. Error: {}",
                         rideStartTime, e.getMessage());
             }
         } else {
             log.warn("No rideStartTime provided. Returning all trips (with valid timestamps only).");
         }
-        
+
         // Make final variables for lambda
         final Instant finalStartOfDay = startOfDay;
         final Instant finalEndOfDay = endOfDay;
-        
+
         // Step 1: Find trips with source near the pickup point
         Point sourceLocation = new Point(sourceLon, sourceLat);
         Distance sourceDistance = new Distance(sourceRadiusKm, Metrics.KILOMETERS);
@@ -145,30 +172,35 @@ public class TripGeospatialService {
         query.addCriteria(Criteria.where("sourceLocation")
                 .nearSphere(sourceLocation)
                 .maxDistance(sourceDistance.getNormalizedValue()));
-        query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
-        
+        query.addCriteria(new Criteria().orOperator(
+                Criteria.where("tripStatus").is("OFFERED"),
+                Criteria.where("tripStatus").is("AVAILABLE")));
+
         // Add date range filter if we have valid start/end times
         // This will also automatically filter out trips with null tripStartDateTimeUTC
         if (startOfDay != null && endOfDay != null) {
             query.addCriteria(Criteria.where("tripStartDateTimeUTC")
                     .gte(startOfDay)
                     .lt(endOfDay)
-                    .ne(null));  // Combined: date range AND not null
+                    .ne(null)); // Combined: date range AND not null
         } else {
             // No date filter, but still exclude old trips without timestamp
             query.addCriteria(Criteria.where("tripStartDateTimeUTC").ne(null));
         }
-        
-        // Step 0.1: Filter by available seats (offered seats should be >= requested seats)
+
+        // Step 0.1: Filter by available seats (offered seats should be >= requested
+        // seats)
         // This means: (offeredSeat - currSeats) >= requestedSeats
         // Which translates to: availableSeats >= requestedSeats
         if (requestedSeats != null && requestedSeats > 0) {
-            // We need to filter in-memory since MongoDB doesn't support computed field queries directly
+            // We need to filter in-memory since MongoDB doesn't support computed field
+            // queries directly
             // But we can at least ensure offeredSeat >= requestedSeats as a baseline
             query.addCriteria(Criteria.where("offeredSeat").gte(requestedSeats));
         }
-        
-        // Step 0.2: Exclude trips created by the current user (don't show user their own trips)
+
+        // Step 0.2: Exclude trips created by the current user (don't show user their
+        // own trips)
         if (effectiveUserId != null && !effectiveUserId.isEmpty()) {
             query.addCriteria(Criteria.where("driverId").ne(effectiveUserId));
         }
@@ -188,7 +220,7 @@ public class TripGeospatialService {
                         log.warn("Skipping trip {} - missing tripStartDateTimeUTC", trip.getTripId());
                         return false;
                     }
-                    
+
                     // Double-check date range if specified (defense in depth)
                     if (finalStartOfDay != null && finalEndOfDay != null) {
                         Instant tripTime = trip.getTripStartDateTimeUTC();
@@ -197,7 +229,7 @@ public class TripGeospatialService {
                             return false;
                         }
                     }
-                    
+
                     // Check destination proximity
                     if (trip.getDestinationLocation() == null) {
                         return false;
@@ -205,13 +237,12 @@ public class TripGeospatialService {
                     double distance = calculateDistance(
                             destLat, destLon,
                             trip.getDestinationLocation().getY(),
-                            trip.getDestinationLocation().getX()
-                    );
-                    
+                            trip.getDestinationLocation().getX());
+
                     if (distance > destRadiusInMeters) {
                         return false;
                     }
-                    
+
                     // Step 0.1 (continued): Check actual available seats
                     // availableSeats = offeredSeat - currSeats
                     if (requestedSeats != null && requestedSeats > 0) {
@@ -220,13 +251,15 @@ public class TripGeospatialService {
                             return false;
                         }
                     }
-                    
+
                     return true;
                 })
                 .toList();
 
-        log.info("Found {} trips matching route from ({}, {}) to ({}, {}) within {} km and {} km with {} requested seats for user {}",
-                matchingTrips.size(), sourceLat, sourceLon, destLat, destLon, sourceRadiusKm, destRadiusKm, requestedSeats, effectiveUserId);
+        log.info(
+                "Found {} trips matching route from ({}, {}) to ({}, {}) within {} km and {} km with {} requested seats for user {}",
+                matchingTrips.size(), sourceLat, sourceLon, destLat, destLon, sourceRadiusKm, destRadiusKm,
+                requestedSeats, effectiveUserId);
 
         return matchingTrips;
     }
@@ -248,9 +281,10 @@ public class TripGeospatialService {
                         new Point(maxLon, minLat),
                         new Point(maxLon, maxLat),
                         new Point(minLon, maxLat),
-                        new Point(minLon, minLat)
-                )));
-        query.addCriteria(Criteria.where("tripStatus").is("OFFERED"));
+                        new Point(minLon, minLat))));
+        query.addCriteria(new Criteria().orOperator(
+                Criteria.where("tripStatus").is("OFFERED"),
+                Criteria.where("tripStatus").is("AVAILABLE")));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips in area ({}, {}) to ({}, {})",
@@ -261,6 +295,7 @@ public class TripGeospatialService {
 
     /**
      * Calculate distance between two points using Haversine formula
+     * 
      * @return distance in meters
      */
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -271,7 +306,7 @@ public class TripGeospatialService {
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 

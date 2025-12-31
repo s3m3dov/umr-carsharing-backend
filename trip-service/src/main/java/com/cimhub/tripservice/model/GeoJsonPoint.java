@@ -18,12 +18,14 @@ import java.util.List;
 @Builder
 public class GeoJsonPoint {
 
+    @Builder.Default
     private String type = "Point";
     private List<Double> coordinates; // [longitude, latitude]
 
     /**
      * Create a GeoJSON Point from latitude and longitude
-     * @param latitude Latitude value
+     * 
+     * @param latitude  Latitude value
      * @param longitude Longitude value
      * @return GeoJsonPoint instance
      */
@@ -48,4 +50,3 @@ public class GeoJsonPoint {
         return coordinates != null && coordinates.size() >= 2 ? coordinates.get(1) : null;
     }
 }
-

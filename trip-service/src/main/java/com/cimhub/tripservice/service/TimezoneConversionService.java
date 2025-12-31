@@ -14,10 +14,22 @@ import java.time.ZonedDateTime;
 public class TimezoneConversionService {
 
     /**
+     * Get timezone ID for given coordinates.
+     * Currently returns UTC as a placeholder. In production, this should use a
+     * library like
+     * Google Time Zone API or a local database.
+     */
+    public static String getTimeZoneId(double latitude, double longitude) {
+        // Placeholder implementation
+        return "UTC";
+    }
+
+    /**
      * Convert a UTC Instant to a ZonedDateTime in the specified timezone
      *
-     * @param utcInstant The UTC time from database
-     * @param targetTimezone The target timezone (e.g., "Asia/Kolkata", "Europe/Berlin")
+     * @param utcInstant     The UTC time from database
+     * @param targetTimezone The target timezone (e.g., "Asia/Kolkata",
+     *                       "Europe/Berlin")
      * @return ZonedDateTime in the target timezone
      */
     public ZonedDateTime convertToTimezone(Instant utcInstant, String targetTimezone) {
@@ -29,7 +41,7 @@ public class TimezoneConversionService {
      * Convert a UTC Instant to the original trip timezone
      * Useful for displaying trip time in the location where it will occur
      *
-     * @param utcInstant The UTC time from database
+     * @param utcInstant   The UTC time from database
      * @param tripTimezone The timezone where the trip takes place
      * @return ZonedDateTime in the trip's original timezone
      */
@@ -41,7 +53,7 @@ public class TimezoneConversionService {
      * Convert a UTC Instant to user's local timezone
      * Frontend should pass user's timezone preference
      *
-     * @param utcInstant The UTC time from database
+     * @param utcInstant   The UTC time from database
      * @param userTimezone User's preferred timezone
      * @return ZonedDateTime in user's timezone
      */
@@ -53,15 +65,13 @@ public class TimezoneConversionService {
      * Get formatted time string for display
      *
      * @param utcInstant The UTC time from database
-     * @param timezone Target timezone
-     * @param format Format pattern (e.g., "yyyy-MM-dd HH:mm")
+     * @param timezone   Target timezone
+     * @param format     Format pattern (e.g., "yyyy-MM-dd HH:mm")
      * @return Formatted time string
      */
     public String formatInTimezone(Instant utcInstant, String timezone, String format) {
         ZonedDateTime zonedTime = convertToTimezone(utcInstant, timezone);
-        java.time.format.DateTimeFormatter formatter =
-            java.time.format.DateTimeFormatter.ofPattern(format);
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern(format);
         return zonedTime.format(formatter);
     }
 }
-

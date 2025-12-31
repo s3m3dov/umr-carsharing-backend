@@ -1,6 +1,5 @@
 package com.cimhub.tripservice.config;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
@@ -34,8 +33,7 @@ public class MongoConfig {
                 if (!indexExists(collection, "sourceLocation_2dsphere")) {
                     collection.createIndex(
                             Indexes.geo2dsphere("sourceLocation"),
-                            new IndexOptions().name("sourceLocation_2dsphere")
-                    );
+                            new IndexOptions().name("sourceLocation_2dsphere"));
                     log.info("✅ Created 2dsphere index on sourceLocation");
                 } else {
                     log.debug("Index 'sourceLocation_2dsphere' already exists, skipping creation");
@@ -44,8 +42,7 @@ public class MongoConfig {
                 if (!indexExists(collection, "destinationLocation_2dsphere")) {
                     collection.createIndex(
                             Indexes.geo2dsphere("destinationLocation"),
-                            new IndexOptions().name("destinationLocation_2dsphere")
-                    );
+                            new IndexOptions().name("destinationLocation_2dsphere"));
                     log.info("✅ Created 2dsphere index on destinationLocation");
                 } else {
                     log.debug("Index 'destinationLocation_2dsphere' already exists, skipping creation");
@@ -55,8 +52,7 @@ public class MongoConfig {
                 if (!indexExists(collection, "routeGeometry_2dsphere")) {
                     collection.createIndex(
                             Indexes.geo2dsphere("routeGeometry"),
-                            new IndexOptions().name("routeGeometry_2dsphere")
-                    );
+                            new IndexOptions().name("routeGeometry_2dsphere"));
                     log.info("✅ Created 2dsphere index on routeGeometry");
                 } else {
                     log.debug("Index 'routeGeometry_2dsphere' already exists, skipping creation");

@@ -1,9 +1,9 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponse;
-import com.cimhub.tripservice.dto.CancelRequestDTO;
-import com.cimhub.tripservice.dto.JoinTripRequestDTO;
-import com.cimhub.tripservice.dto.PassengerUpcomingRideDTO;
+import com.cimhub.tripservice.dto.request.CancelTripRequest;
+import com.cimhub.tripservice.dto.request.JoinTripRequest;
+import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.JoinTripService;
 import com.cimhub.tripservice.service.UpcomingRidesService;
@@ -16,10 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Consolidated controller for Booking management (passenger-focused operations)
- * Handles: joining trips, cancelling bookings, viewing upcoming bookings
- */
 @RestController
 @RequestMapping("/api/bookings")
 @RequiredArgsConstructor
@@ -30,47 +26,29 @@ public class BookingController {
     private final CancellationService cancellationService;
     private final UpcomingRidesService upcomingRidesService;
 
-    // ==================== Booking Creation ====================
-
-    /**
-     * Passenger joins a trip (creates a booking)
-     * POST /api/bookings/join
-     */
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<String>> joinTrip(
-            @Valid @RequestBody JoinTripRequestDTO request) {
-
+            @Valid @RequestBody JoinTripRequest request) {
+        log.info("Passenger joining trip: {}", request.tripId());
         String response = joinTripService.joinTrip(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
 
-    // ==================== Booking Cancellation ====================
-
-    /**
-     * Passenger cancels their booking
-     * POST /api/bookings/cancel
-     */
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponse<String>> cancelBooking(
-            @Valid @RequestBody CancelRequestDTO request) {
-
+            @Valid @RequestBody CancelTripRequest request) {
+        log.info("Passenger cancelling booking: {}", request.rideId());
         String response = cancellationService.cancelRide(request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // ==================== Passenger's Upcoming Bookings ====================
-
-    /**
-     * Get passenger's upcoming bookings
-     * GET /api/bookings/upcoming/passenger/{passengerId}
-     */
     @GetMapping("/upcoming/passenger/{passengerId}")
-    public ResponseEntity<ApiResponse<List<PassengerUpcomingRideDTO>>> getPassengerUpcomingBookings(
+    public ResponseEntity<ApiResponse<List<PassengerRideResponse>>> getPassengerUpcomingBookings(
             @PathVariable String passengerId) {
-
-        List<PassengerUpcomingRideDTO> upcomingBookings = upcomingRidesService.getPassengerUpcomingRides(passengerId);
+        log.info("Fetching upcoming bookings for passenger: {}", passengerId);
+        List<PassengerRideResponse> upcomingBookings = upcomingRidesService.findPassengerUpcomingRides(passengerId);
         return ResponseEntity.ok(ApiResponse.success(upcomingBookings));
     }
 }

@@ -27,7 +27,7 @@ import java.util.List;
 public class Trip {
 
     @Id
-    private String tripId;  // Remove @NotBlank - MongoDB auto-generates this
+    private String tripId; // Remove @NotBlank - MongoDB auto-generates this
 
     @NotBlank
     private String tripStatus;
@@ -60,7 +60,8 @@ public class Trip {
     // Store in UTC for consistency across timezones
     private Instant tripStartDateTimeUTC;
 
-    // Store the timezone of the trip's source location (e.g., "Asia/Kolkata", "Europe/Berlin")
+    // Store the timezone of the trip's source location (e.g., "Asia/Kolkata",
+    // "Europe/Berlin")
     private String tripTimezone;
 
     // Route information from OSRM
@@ -72,5 +73,6 @@ public class Trip {
     private double pricePerKm;
 
     private List<ObjectId> joinedRidersId;
+    @Builder.Default
     private Instant createdDate = Instant.now();
 }
