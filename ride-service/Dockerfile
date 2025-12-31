@@ -1,27 +1,36 @@
-FROM maven:3.8.4-openjdk-17 AS build
+# syntax=docker/dockerfile:1.4
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
-# Copy the entire project to build the parent POM first
 WORKDIR /root
-COPY pom.xml .
-COPY common ./common
-COPY eureka-server ./eureka-server
-COPY api-gateway ./api-gateway
-COPY auth-service ./auth-service
-COPY user-service ./user-service
-COPY vehicle-service ./vehicle-service
-COPY ride-service ./ride-service
-COPY notification-service ./notification-service
-COPY trip-service ./trip-service
 
-# Install parent POM and common module, then build api-gateway
-RUN mvn -N install && \
-    cd common && \
-    mvn clean install -DskipTests && \
-    cd ../api-gateway && \
-    mvn clean package -DskipTests
+# Copy only POM files first for better layer caching
+COPY pom.xml .
+COPY common/pom.xml ./common/
+COPY ride-service/pom.xml ./ride-service/
+
+# Download dependencies (cached layer)
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -N install && \
+    cd common && mvn dependency:go-offline -DskipTests
+
+# Copy source code
+COPY common/src ./common/src
+COPY ride-service/src ./ride-service/src
+
+# Build with cached dependencies
+RUN --mount=type=cache,target=/root/.m2 \
+    cd common && mvn clean install -DskipTests && \
+    cd ../ride-service && mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
+
+# Install CA certificates for MongoDB Atlas SSL/TLS connections
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates ca-certificates-java && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /root/ride-service/target/*.jar app.jar
 EXPOSE 8084

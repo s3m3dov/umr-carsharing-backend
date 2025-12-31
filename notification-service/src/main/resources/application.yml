@@ -12,18 +12,18 @@ eureka:
   instance:
     prefer-ip-address: true
     hostname: ${HOSTNAME:localhost}
-    non-secure-port-enabled: false
-    secure-port-enabled: true
-    secure-port: ${PORT:8085}
-    statusPageUrl: https://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: https://${eureka.instance.hostname}/actuator/health
-    homePageUrl: https://${eureka.instance.hostname}/
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
 firebase:
   config:
