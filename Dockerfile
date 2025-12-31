@@ -17,14 +17,14 @@ COPY api-gateway/pom.xml ./api-gateway/
 COPY notification-service/pom.xml ./notification-service/
 
 # Download dependencies (cached layer)
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
     mvn dependency:go-offline -DskipTests
 
 # Copy source code
 COPY . .
 
 # Build all modules
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
     mvn clean package -DskipTests
 
 # --- Runtime Stage ---

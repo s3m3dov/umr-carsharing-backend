@@ -9,7 +9,7 @@ COPY common/pom.xml ./common/
 COPY api-gateway/pom.xml ./api-gateway/
 
 # Download dependencies (cached layer)
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
     mvn -N install && \
     cd common && mvn dependency:go-offline -DskipTests
 
@@ -18,7 +18,7 @@ COPY common/src ./common/src
 COPY api-gateway/src ./api-gateway/src
 
 # Build with cached dependencies
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
     cd common && mvn clean install -DskipTests && \
     cd ../api-gateway && mvn clean package -DskipTests
 

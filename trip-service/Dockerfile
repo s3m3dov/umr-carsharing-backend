@@ -9,7 +9,7 @@ COPY common/pom.xml ./common/
 COPY trip-service/pom.xml ./trip-service/
 
 # Download dependencies (cached layer)
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
   mvn -N install && \
   cd common && mvn dependency:go-offline -DskipTests
 
@@ -18,7 +18,7 @@ COPY common/src ./common/src
 COPY trip-service/src ./trip-service/src
 
 # Build with cached dependencies
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,id=m2-cache,target=/root/.m2 \
   cd common && mvn clean install -DskipTests && \
   cd ../trip-service && mvn clean package -DskipTests
 
