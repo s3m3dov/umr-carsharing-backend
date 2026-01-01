@@ -7,6 +7,9 @@ spring:
   main:
     web-application-type: reactive
   cloud:
+    loadbalancer:
+      retry:
+        enabled: true
     gateway:
       discovery:
         locator:
@@ -97,6 +100,8 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+    registry-fetch-interval-seconds: 5
+    initial-instance-info-replication-interval-seconds: 5
   instance:
     prefer-ip-address: true
     hostname: ${HOSTNAME:localhost}
