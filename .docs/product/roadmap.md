@@ -7,20 +7,21 @@
 
 ## 🧭 Phase 0: Current State (Completed ✅)
 
-- **Architecture:** Microservices with Spring Cloud (Eureka, API Gateway)
-- **Security:** JWT Authentication & Authorization
-- **Data:** MongoDB Atlas (Geospatial indexes ready)
-- **Logic:** Basic Trip offering, searching (OSRM), and Join requests
-- **Notifications:** Initial Firebase integration
+- **Evolution:** Transformed from a monolithic prototype into a distributed microservices system to handle scalability.
+- **Architecture:** Spring Cloud based (Eureka, API Gateway, Feign).
+- **Security:** JWT Authentication and centralized authorization.
+- **Data:** MongoDB Atlas with geospatial capabilities.
+- **Logic:** Basic Trip offering, search (OSRM), and Join requests.
 
+### Core Microservices Implemented
 
-Implemented Services
-- **Auth Service** – Signup, login, JWT validation
-- **User Service** – Profiles, user data
-- **Vehicle Service** – Vehicle registration
-- **Trip Service** – Trip creation, search, OSRM routing
-- **Ride / Booking Logic** – Join trips, upcoming rides
-- **Notification Service** – Firebase realtime notifications
+- **Auth Service** – Signup, login, JWT validation.
+- **User Service** – Profile and user data management.
+- **Vehicle Service** – Vehicle registration and listing.
+- **Trip Service** – Trip lifecycle and OSRM-based routing.
+- **Ride Service** – Booking logic and passenger coordination.
+- **Notification Service** – Firebase-integrated realtime updates.
+
 ---
 
 ## 🛠️ Phase 1: Core Logic, Pricing & API Polish (TOP PRIORITY)
@@ -36,11 +37,11 @@ Implemented Services
 
 ### 2. Fare & Cost Calculation
 
-- **Goal:** Automate price suggestions based on trip metrics.
+- **Goal:** Keep pricing simple and driver-controlled in the initial version.
 - **Features:**
-  - Distance-based pricing (Distance × Rate per KM).
-  - Currency support (Initial focus: TZS).
-  - Detour cost estimation (additional KM logic).
+  - **Driver-defined price:** Driver sets the total price per seat when creating a trip.
+  - **Single currency:** All prices are handled and displayed in TZS.
+  - **No automated pricing (for now):** Distance-based pricing recommendation, detour costs, and price suggestions are out of scope for MVP and planned for later phases.
 
 ### 3. API Quality & Developer Experience
 
@@ -68,6 +69,7 @@ Implemented Services
 - **JSON Formatting:** Transition logs to JSON format (LogstashEncoder) for easy ingestion by ELK/Loki.
 - **Request Tracing:** Add `MDC` (Mapped Diagnostic Context) to logs for user and request tracking.
 - **Audit Logs:** Log critical actions (Trip creation, Booking acceptance) with UserID and Timestamp.
+- **Event Persistence:** Save critical domain events (`TripPublished`, `BookingAccepted`, `TripCancelled`) to the database immediately to establish an audit trail for Phase 3 decoupling.
 
 ### 5. Backend Infrastructure Polish
 
@@ -108,11 +110,10 @@ Implemented Services
 
 *Enhancing reliability and side-effect management.*
 
-### 7. Domain Events
+### 7. Domain Events (Event-Driven Microservices)
 
 - **Goal:** Move from synchronous calls to async event processing for side effects.
-- **Events:** `TripPublished`, `BookingAccepted`, `TripCancelled`. (This can be saved to database at earlier stage)
-- **Decoupling:** Use Spring Application Events (initial) or RabbitMQ for decoupling Notification and Audit services from core logic.
+- **Implementation:** Transition from stored events (Phase 1) to active async processing using Spring Application Events (initial) or RabbitMQ for decoupling Notification and Audit services.
 
 ---
 
@@ -151,7 +152,6 @@ Implemented Services
 
 ---
 
-
 ## 🛑 Phase 6: Complex Integrations
 
 *To be implemented in a later stage (requires external partnerships/compliance).*
@@ -159,6 +159,7 @@ Implemented Services
 - **Payment Service Integration:** Stripe, M-Pesa, or other payment provider integrations.
 - **Identity Verification:** KYC, Government ID verification, and Phone OTP flows.
 - **Insurance:** Trip-specific passenger insurance integration.
+
 ---
 
 ## � Future Possibilities
