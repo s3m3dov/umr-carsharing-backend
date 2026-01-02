@@ -99,12 +99,17 @@ The Trip Service integrates with the **OpenStreetMap Routing Machine (OSRM)**. F
 
 ## Database Strategy
 
-Each microservice has its own isolated MongoDB database to ensure loose coupling:
+The application uses **MongoDB Atlas** for persistent storage with a shared database approach. All services connect to the same MongoDB instance (`carsharingDB`) using the `MONGODB_URI` environment variable. Collections are organized by domain:
 
-- `carsharing_users`: User Service
-- `carsharing_vehicles`: Vehicle Service
-- `carsharing_trips`: Trip Service
-- `carsharing_rides`: Ride Service
+- User-related collections (User Service)
+- Vehicle-related collections (Vehicle Service)
+- Trip-related collections (Trip Service)
+- Ride-related collections (Ride Service)
+
+**Firebase Realtime Database** is used for real-time notifications and live updates.
+
+> [!NOTE]
+> While the current implementation uses a shared database, the microservices architecture allows for future migration to separate databases per service if needed for better isolation and scalability.
 
 ## Development Guidelines
 
