@@ -7,26 +7,29 @@
 
 ## 🧭 Phase 0: Current State (Completed ✅)
 
-- **Evolution:** Transformed from a monolithic prototype into a distributed microservices system to handle scalability.
+- **Evolution:** Transformed from a monolithic prototype into a distributed microservices system.
 - **Architecture:** Spring Cloud based (Eureka, API Gateway, Feign).
-- **Security:** JWT Authentication and centralized authorization.
-- **Data:** MongoDB Atlas with geospatial capabilities.
-- **Logic:** Basic Trip offering, search (OSRM), and Join requests.
+- **Security:** JWT Authentication and centralized authorization via Auth Service.
+- **Data:** MongoDB Atlas with geospatial capabilities (2D Indexing).
+- **Logic:** Trip offering, search (OSRM), and Booking management.
+- **API Standards:** Implementation of `ApiResponse`, custom `BusinessException`, and global error handling.
+- **Infrastructure:** Unified Docker builds with caching, supervisor-based orchestration, and standardized `run-compose.sh`.
 
 ### Core Microservices Implemented
 
 - **Auth Service** – Signup, login, JWT validation.
 - **User Service** – Profile and user data management.
 - **Vehicle Service** – Vehicle registration and listing.
-- **Trip Service** – Trip lifecycle and OSRM-based routing.
-- **Ride Service** – Booking logic and passenger coordination.
+- **Trip Service** – Core domain logic:
+  - Trip lifecycle (creation, search, OSRM routing).
+  - Booking management (passengers, join/cancel requests).
 - **Notification Service** – Firebase-integrated realtime updates.
 
 ---
 
-## 🛠️ Phase 1: Core Logic, Pricing & API Polish (TOP PRIORITY)
+## 🛠️ Phase 1: Core Logic & Quality Polish (IN PROGRESS 🏗️)
 
-*Easy to implement features that provide immediate value and stability.*
+*Refining state consistency and enhancing developer experience.*
 
 ### 1. Robust State Machines
 
@@ -35,57 +38,28 @@
 - **Booking States:** `REQUESTED` → `ACCEPTED` → `REJECTED` → `CANCELLED`
 - **Logic:** Guarded transitions and atomic seat count updates using MongoDB transactions.
 
-### 2. Fare & Cost Calculation
+### 2. Fare & Cost Calculation (Pending)
 
 - **Goal:** Keep pricing simple and driver-controlled in the initial version.
 - **Features:**
   - **Driver-defined price:** Driver sets the total price per seat when creating a trip.
-  - **Single currency:** All prices are handled and displayed in TZS.
-  - **No automated pricing (for now):** Distance-based pricing recommendation, detour costs, and price suggestions are out of scope for MVP and planned for later phases.
+  - **Single currency:** All prices handled in TZS.
+  - **No automated pricing (for now):** Recommendations deferred to Phase 6.
 
-### 3. API Quality & Developer Experience
+### 3. API Quality & DX (Mostly Completed ✅)
 
-- **Pagination & Sorting:** Standardize across all GET endpoints (Trips, Bookings, Users).
-- **Filtering:** Search by price range, car type, and seat availability.
-- **Error Handling:**
-  - Implementation of custom `BusinessException` and `GlobalExceptionHandler`.
-  - **Global Exception Mapping:** Automatically map `DuplicateKeyException` and `ConstraintViolationException` to readable business error codes.
-  - **Standardized Response:** Every error returns `{ "errorCode": "...", "message": "...", "timestamp": "..." }`.
-  - Structured error responses with unique codes (e.g., `TRIP_FULL`, `UNAUTHORIZED_ACCESS`).
-- **API Versioning & Headers:**
-  - Implement URI versioning (e.g., `/api/v1/...`).
-  - Standardize Cache-Control headers for static data (like vehicle types or common locations).
-- **Swagger/OpenAPI Enrichment:**
-  - Add descriptive `@Operation` notes to all controllers.
-  - Define explicit `@Schema` for all DTOs to improve auto-generated client libraries.
-- **Input Validation & Sanitization:**
-  - Strict JSR-303 (Hibernate Validator) constraints on all Request DTOs.
-  - XSS sanitization for user-generated text (reviews, bios).
-  - Proper data type enforcement (e.g., ISO-8601 for dates).
+- [ ] **Pagination & Sorting:** Standardize across all GET endpoints (Trips, Bookings, Users). [Pending]
+- [ ] **Filtering:** Search by price range, car type, and seat availability. [Pending]
+- [x] **Error Handling:** Standardized `ApiResponse` and `ApiError` with business-specific codes.
+- [x] **OpenAPI/Swagger:** Dynamic configuration with CORS support and Gateway aggregation.
+- [ ] **Input Validation:** Strict JSR-303 constraints on all Request DTOs. [Pending]
 
-### 4. Structured Logging & Context
+### 4. Enterprise Logging & Context (Completed ✅)
 
-- **Correlation IDs:** API Gateway generates a `X-Correlation-ID` and propagates it through all service calls.
-- **JSON Formatting:** Transition logs to JSON format (LogstashEncoder) for easy ingestion by ELK/Loki.
-- **Request Tracing:** Add `MDC` (Mapped Diagnostic Context) to logs for user and request tracking.
-- **Audit Logs:** Log critical actions (Trip creation, Booking acceptance) with UserID and Timestamp.
-- **Event Persistence:** Save critical domain events (`TripPublished`, `BookingAccepted`, `TripCancelled`) to the database immediately to establish an audit trail for Phase 3 decoupling.
-
-### 5. Backend Infrastructure Polish
-
-- **OSRM Result Caching:** Cache external routing results (GeoJSON & distances) for popular routes to reduce API latency and cost.
-- **Internal Security:** Implement "Secret Header" or mutual TLS between internal services to prevent direct unauthorized access bypassing the Gateway.
-- **Graceful Shutdown & Environment management:**
-  - Enable Spring Boot graceful shutdown to handle in-flight requests.
-  - Standardize `application-{profile}.yml` (local, dev, prod) with secured env vars.
-- **Admin & Support Utilities:**
-  - Read-only endpoints for support staff to view user trip history.
-  - Support for "Soft Deletes" (isDeleted flag) for Users and Vehicles to preserve data history.
-  - "Maintenance Mode" flag at the API Gateway level to gracefully block traffic during updates.
-- **Developer Productivity & Seeding:**
-  - Automated database seeding (using `CommandLineRunner`) for local development.
-  - Standardized Docker multi-stage builds for optimized image sizes.
-  - Integrated `spring-boot-devtools` for faster local feedback loops.
+- [ ] **Correlation IDs:** API Gateway propagation through all services.
+- [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness.
+- [ ] **MDC Tracing:** Request and user context in logs.
+- [ ] **Audit Trail:** Event persistence for critical domain actions (Phase 3 readiness).
 
 ---
 
@@ -152,7 +126,7 @@
 
 ---
 
-## 🛑 Phase 6: Complex Integrations
+## 🛑 Phase 6: Post-MVP & Integrations
 
 *To be implemented in a later stage (requires external partnerships/compliance).*
 
