@@ -1,216 +1,182 @@
-# 🚗 Car Sharing Backend – Full Roadmap (BlaBlaCar-like)
+# 🚗 Car Sharing Backend – Technical Roadmap (BlaBlaCar-like)
 
-> **Tech stack:** Java 21 · Spring Boot · Spring Cloud · MongoDB Atlas · Docker · Firebase  
-> **Architecture:** Microservices · API Gateway · Eureka · JWT Auth  
-> **Status:** Advanced prototype → Production-ready platform
+> **Focus:** Backend Engineering · Microservices · Stability · Observability  
+> **Target:** A production-ready, scalable API for intercity carpooling.
 
 ---
 
-## 🧭 Phase 0 – Current State (Completed ✅)
+## 🧭 Phase 0: Current State (Completed ✅)
 
-### Architecture
-- Microservices-based Spring Boot system
-- API Gateway + Eureka Discovery
-- JWT authentication & authorization
-- MongoDB Atlas (geospatial + transactions)
-- Docker Compose local orchestration
+- **Architecture:** Microservices with Spring Cloud (Eureka, API Gateway)
+- **Security:** JWT Authentication & Authorization
+- **Data:** MongoDB Atlas (Geospatial indexes ready)
+- **Logic:** Basic Trip offering, searching (OSRM), and Join requests
+- **Notifications:** Initial Firebase integration
 
-### Implemented Services
+
+Implemented Services
 - **Auth Service** – Signup, login, JWT validation
 - **User Service** – Profiles, user data
 - **Vehicle Service** – Vehicle registration
 - **Trip Service** – Trip creation, search, OSRM routing
 - **Ride / Booking Logic** – Join trips, upcoming rides
 - **Notification Service** – Firebase realtime notifications
+---
+
+## 🛠️ Phase 1: Core Logic, Pricing & API Polish (TOP PRIORITY)
+
+*Easy to implement features that provide immediate value and stability.*
+
+### 1. Robust State Machines
+
+- **Goal:** Prevent inconsistent states (e.g., joining a cancelled trip).
+- **Trip States:** `CREATED` → `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` → `CANCELLED`
+- **Booking States:** `REQUESTED` → `ACCEPTED` → `REJECTED` → `CANCELLED`
+- **Logic:** Guarded transitions and atomic seat count updates using MongoDB transactions.
+
+### 2. Fare & Cost Calculation
+
+- **Goal:** Automate price suggestions based on trip metrics.
+- **Features:**
+  - Distance-based pricing (Distance × Rate per KM).
+  - Currency support (Initial focus: TZS).
+  - Detour cost estimation (additional KM logic).
+
+### 3. API Quality & Developer Experience
+
+- **Pagination & Sorting:** Standardize across all GET endpoints (Trips, Bookings, Users).
+- **Filtering:** Search by price range, car type, and seat availability.
+- **Error Handling:**
+  - Implementation of custom `BusinessException` and `GlobalExceptionHandler`.
+  - **Global Exception Mapping:** Automatically map `DuplicateKeyException` and `ConstraintViolationException` to readable business error codes.
+  - **Standardized Response:** Every error returns `{ "errorCode": "...", "message": "...", "timestamp": "..." }`.
+  - Structured error responses with unique codes (e.g., `TRIP_FULL`, `UNAUTHORIZED_ACCESS`).
+- **API Versioning & Headers:**
+  - Implement URI versioning (e.g., `/api/v1/...`).
+  - Standardize Cache-Control headers for static data (like vehicle types or common locations).
+- **Swagger/OpenAPI Enrichment:**
+  - Add descriptive `@Operation` notes to all controllers.
+  - Define explicit `@Schema` for all DTOs to improve auto-generated client libraries.
+- **Input Validation & Sanitization:**
+  - Strict JSR-303 (Hibernate Validator) constraints on all Request DTOs.
+  - XSS sanitization for user-generated text (reviews, bios).
+  - Proper data type enforcement (e.g., ISO-8601 for dates).
+
+### 4. Structured Logging & Context
+
+- **Correlation IDs:** API Gateway generates a `X-Correlation-ID` and propagates it through all service calls.
+- **JSON Formatting:** Transition logs to JSON format (LogstashEncoder) for easy ingestion by ELK/Loki.
+- **Request Tracing:** Add `MDC` (Mapped Diagnostic Context) to logs for user and request tracking.
+- **Audit Logs:** Log critical actions (Trip creation, Booking acceptance) with UserID and Timestamp.
+
+### 5. Backend Infrastructure Polish
+
+- **OSRM Result Caching:** Cache external routing results (GeoJSON & distances) for popular routes to reduce API latency and cost.
+- **Internal Security:** Implement "Secret Header" or mutual TLS between internal services to prevent direct unauthorized access bypassing the Gateway.
+- **Graceful Shutdown & Environment management:**
+  - Enable Spring Boot graceful shutdown to handle in-flight requests.
+  - Standardize `application-{profile}.yml` (local, dev, prod) with secured env vars.
+- **Admin & Support Utilities:**
+  - Read-only endpoints for support staff to view user trip history.
+  - Support for "Soft Deletes" (isDeleted flag) for Users and Vehicles to preserve data history.
+  - "Maintenance Mode" flag at the API Gateway level to gracefully block traffic during updates.
+- **Developer Productivity & Seeding:**
+  - Automated database seeding (using `CommandLineRunner`) for local development.
+  - Standardized Docker multi-stage builds for optimized image sizes.
+  - Integrated `spring-boot-devtools` for faster local feedback loops.
 
 ---
 
-## 🧩 Phase 1 – Core Domain Stability (TOP PRIORITY)
+## ⭐ Phase 2: Trust & Social Proof
 
-### 1. Trip & Booking Lifecycle
-**Goal:** Prevent inconsistent states, race conditions, and invalid flows
+*Relatively straightforward backend logic to build community trust.*
 
-#### Trip states
-```
+### 5. Review & Rating Service
 
-CREATED → CONFIRMED → IN_PROGRESS → COMPLETED → CANCELLED
+- **New Service:** `review-service` for handling 1-5 star ratings and text reviews.
+- **Validation:** Only allow reviews for `COMPLETED` trips where the user was a participant.
+- **Aggregation:** Precompute and cache average ratings for User profiles.
 
-```
+### 6. User Statistics
 
-#### Booking states
-```
-
-REQUESTED → ACCEPTED → REJECTED → CANCELLED
-
-```
-
-#### Required Features
-- Driver accepts / rejects passenger requests
-- Seat locking (atomic updates)
-- Cancellation rules (driver vs passenger)
-- No overbooking under concurrency
-
-📌 **Deliverables**
-- Explicit state machine enums
-- Guarded state transitions
-- Optimistic locking / Mongo transactions
-- Clear business error codes
+- **Trip History:** Count of successful trips as driver vs. passenger.
+- **Member Stats:** "Member since" tracking and "Response rate" metrics.
 
 ---
 
-### 2. Authorization & Ownership Rules
-**Goal:** Enforce business logic securely
+## 🔔 Phase 3: System Decoupling (Event-Driven Microservices)
 
-- Driver can manage **only own trips**
-- Passenger can manage **only own bookings**
-- Role-based access (`DRIVER`, `PASSENGER`, `ADMIN`)
-- Method-level security (`@PreAuthorize`)
+*Enhancing reliability and side-effect management.*
 
-📌 **Deliverables**
-- Centralized authorization rules
-- Gateway-level JWT propagation
-- Proper 401 vs 403 handling
+### 7. Domain Events
+
+- **Goal:** Move from synchronous calls to async event processing for side effects.
+- **Events:** `TripPublished`, `BookingAccepted`, `TripCancelled`. (This can be saved to database at earlier stage)
+- **Decoupling:** Use Spring Application Events (initial) or RabbitMQ for decoupling Notification and Audit services from core logic.
 
 ---
 
-## ⭐ Phase 2 – Reviews & Ratings (MUST-HAVE)
+## 📊 Phase 4: Observability & Resilience
 
-### 3. Review & Rating System
-**Goal:** Trust & reputation (core BlaBlaCar feature)
+*Preparing the system for production loads and debugging.*
 
-#### New Service
-- **review-service**
+### 8. Monitoring & Health
 
-#### Rules
-- Trip must be `COMPLETED`
-- Only real trip participants can review
-- One review per trip per user
-- Passenger ↔ Driver reviews separated
+- **Metrics:** Actuator integration for Prometheus.
+- **Health Checks:**
+  - Deep health checks for MongoDB, OSRM, and Firebase connectivity.
+  - **Custom Health Indicators:** Build indicators for Google Maps API quota usage and OSRM response times.
+- **Business Metric Indicators:** Custom Actuator endpoints to expose anonymous stats like "Total active trips" or "Successful matches today" for internal monitoring.
+- **Distributed Tracing:** Micrometer Tracing to follow requests across microservices.
 
-#### Data Model
-- `Review`
-- `UserRating` (denormalized, precomputed)
+### 9. Resilience Patterns
 
-#### Features
-- Create review
-- Get user rating summary
-- Paginated reviews
-- Atomic rating updates
-
-📌 **Deliverables**
-- Mongo indexes & uniqueness constraints
-- Review validation via Trip Service
-- Aggregated rating cache
+- **Retries:** Configurable retries for OSRM route fetching and notification delivery.
+- **Timeouts:** Strict timeouts on all inter-service (Feign) and external calls.
+- **Circuit Breakers:** Prevent cascading failures when one service is down.
 
 ---
 
-## 🔔 Phase 3 – Event-Driven Architecture (HIGH PRIORITY)
+## 🚀 Phase 5: Performance & Scalability
 
-### 4. Domain Events
-**Goal:** Loose coupling, scalability, clean side effects
+*Original Phase 6.3 - Ensuring the system handles growth.*
 
-#### Core Events
-- BookingRequested
-- BookingAccepted
-- TripCancelled
-- ReviewCreated
+### 10. Caching & Optimization
 
-#### Consumers
-- Notification Service
-- Audit logging
-- Future analytics & recommendations
-
-📌 **Deliverables**
-- Spring application events (initial)
-- Async processing
-- Event contracts
-- Easy migration path to Kafka / RabbitMQ
+- **Redis Integration:** Cache frequent search results (e.g., popular routes).
+- **DB Optimization:**
+  - Review and tune MongoDB indexes for geospatial and compound queries.
+  - **Query Profiling:** Identify and optimize "slow queries" using Mongo's explain plan.
+- **Read Replicas:** Architecture ready for read/write splitting if load increases.
 
 ---
 
-## 📊 Phase 4 – Observability & Reliability (HIGH PRIORITY)
 
-### 5. Monitoring & Tracing
-**Goal:** Production readiness & debuggability
+## 🛑 Phase 6: Complex Integrations
 
-- Centralized logging (ELK / Loki)
-- Metrics via Micrometer
-- Distributed tracing across services
+*To be implemented in a later stage (requires external partnerships/compliance).*
 
-### 6. Resilience
-- Circuit breakers (Resilience4j)
-- Timeouts & retries for external APIs (OSRM, Firebase)
-- Graceful degradation strategies
+- **Payment Service Integration:** Stripe, M-Pesa, or other payment provider integrations.
+- **Identity Verification:** KYC, Government ID verification, and Phone OTP flows.
+- **Insurance:** Trip-specific passenger insurance integration.
+---
 
-📌 **Deliverables**
-- Dashboards for latency & error rates
-- Dependency health visibility
-- Fail-fast configurations
+## � Future Possibilities
+
+*Nice-to-have features for future iterations.*
+
+- **Advanced Route Matching:** Finding rides along a route with flexible detour tolerance.
+- **Recurring Trips:** Support for daily/weekly commuter schedules.
+- **Group Bookings:** Ability to book multiple seats at once with sub-passenger details.
+- **AI-Driven Pricing:** Dynamic price suggestions based on demand and seasonality.
 
 ---
 
-## 🧠 Phase 5 – Smart Matching & Ranking
+## 🏁 Final Technical Outcome
 
-### 7. Advanced Ride Matching
-**Goal:** Competitive advantage
+A **production-grade carpooling backend** characterized by:
 
-- Route overlap matching (including stops along the way)
-- Detour tolerance
-- Time flexibility windows
-- Ranking by:
-  - Rating
-  - Price
-  - Detour length
-
-📌 **Deliverables**
-- Enhanced geospatial queries
-- Scoring algorithm
-- Sorted, ranked search results
-
----
-
-## 💳 Phase 6 – Payments (DEFERRED)
-
-### 8. Payment Service
-**Goal:** Monetization after core stability
-
-- Fare calculation (distance × rate)
-- Payment intent creation
-- Capture on trip completion
-- Refund on cancellation
-
-📌 **Deliverables**
-- `payment-service`
-- Stripe integration
-- Payment lifecycle states
-- Secure webhooks
-
----
-
-## 🔐 Phase 7 – Security Hardening
-
-### 9. Security Enhancements
-- Refresh tokens
-- Token revocation
-- Rate limiting (API Gateway)
-- Input validation (GeoJSON, dates)
-
----
-
-## 🧼 Phase 8 – API & DX Polish
-
-### 10. API Quality
-- Pagination everywhere
-- Sorting & filtering
-- API versioning (`/api/v1`)
-- OpenAPI examples
-
----
-
-## 🏁 Final Outcome
-
-A **production-grade, interview-ready, scalable backend** with:
-- Strong domain modeling
-- Event-driven architecture
-- Trust & reputation system
-- Observability-first design
+- **Strong Consistency:** No overbooking or invalid state transitions.
+- **High Observability:** Clear visibility into system health and logs.
+- **Extreme Decoupling:** Services communicate via clear interfaces and events.
+- **Geospatial Excellence:** Efficient matching of users on the move.
