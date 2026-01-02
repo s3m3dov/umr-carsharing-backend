@@ -54,7 +54,7 @@
 - [x] **OpenAPI/Swagger:** Dynamic configuration with CORS support and Gateway aggregation.
 - [ ] **Input Validation:** Strict JSR-303 constraints on all Request DTOs. [Pending]
 
-### 4. Enterprise Logging & Context (Completed ✅)
+### 4. Enterprise Logging & Context
 
 - [ ] **Correlation IDs:** API Gateway propagation through all services.
 - [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness.
