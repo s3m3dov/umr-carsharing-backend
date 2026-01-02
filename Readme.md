@@ -80,8 +80,8 @@ For detailed information, please refer to the following documents:
 
 Project presentations demonstrating the car sharing platform:
 
-- [Car Sharing Presentation](.docs/presentations/CarSharing.pptx)
-- [Backend Implementation Details](.docs/presentations/CarSharing_Backend.pptx)
+- [Car Sharing Presentation](.docs/presentations/SS_2025/CarSharing.pptx)
+- [Backend Implementation Details](.docs/presentations/SS_2025/CarSharing_Backend.pptx)
 
 ## Contributors
 
