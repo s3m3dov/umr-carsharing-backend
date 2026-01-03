@@ -19,16 +19,9 @@ spec:
       - name: trip-service
         image: gcr.io/PROJECT_ID/trip-service:latest
         ports:
-        - containerPort: 8083
+        - containerPort: 8080
           name: http
         env:
-        - name: PORT
-          value: "8083"
-        - name: ALLOWED_ORIGINS
-          valueFrom:
-            configMapKeyRef:
-              name: carsharing-config
-              key: ALLOWED_ORIGINS
         - name: MONGODB_URI
           valueFrom:
             secretKeyRef:
@@ -49,7 +42,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8083
+            port: 8080
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
@@ -57,7 +50,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8083
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 5
           timeoutSeconds: 3
@@ -73,8 +66,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8083
-    targetPort: 8083
+  - port: 80
+    targetPort: 8080
     protocol: TCP
     name: http
   selector:

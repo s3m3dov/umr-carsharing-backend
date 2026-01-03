@@ -7,7 +7,7 @@ set -e
 
 CLUSTER_NAME="carsharing-local"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 echo "🚀 Setting up Kind cluster for local development..."
 
@@ -71,8 +71,8 @@ echo "Cluster info:"
 kubectl cluster-info --context "kind-${CLUSTER_NAME}"
 echo ""
 echo "Next steps:"
-echo "1. Create secrets: ./scripts/create-secrets.sh"
-echo "2. Build and load images: ./scripts/build-for-kind.sh"
+echo "1. Create secrets: ./scripts/local/create-secrets.sh"
+echo "2. Build and load images: ./scripts/local/build-for-kind.sh"
 echo "3. Deploy services: kubectl apply -k k8s/overlays/local/"
 echo "4. Check status: kubectl get pods -n carsharing"
 echo ""

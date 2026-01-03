@@ -6,6 +6,7 @@ namespace: carsharing
 resources:
   - ../../base
   - ingress-production.yaml
+  - backend-config.yaml
 
 # Production images from GCR
 images:
@@ -23,3 +24,21 @@ images:
     newTag: latest
   - name: gcr.io/PROJECT_ID/api-gateway
     newTag: latest
+
+# GKE-specific configuration
+patches:
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cloud.google.com/neg: '{"ingress": true}'
+    target:
+      kind: Service
+      name: api-gateway
+  - patch: |-
+      - op: add
+        path: /metadata/annotations/cloud.google.com~1backend-config
+        value: '{"default": "carsharing-backend-config"}'
+    target:
+      kind: Service
+      name: api-gateway

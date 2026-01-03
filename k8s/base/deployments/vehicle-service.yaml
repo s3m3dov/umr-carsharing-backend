@@ -19,16 +19,9 @@ spec:
       - name: vehicle-service
         image: gcr.io/PROJECT_ID/vehicle-service:latest
         ports:
-        - containerPort: 8082
+        - containerPort: 8080
           name: http
         env:
-        - name: PORT
-          value: "8082"
-        - name: ALLOWED_ORIGINS
-          valueFrom:
-            configMapKeyRef:
-              name: carsharing-config
-              key: ALLOWED_ORIGINS
         - name: MONGODB_URI
           valueFrom:
             secretKeyRef:
@@ -45,7 +38,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8082
+            port: 8080
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
@@ -53,7 +46,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8082
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 5
           timeoutSeconds: 3
@@ -69,8 +62,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8082
-    targetPort: 8082
+  - port: 80
+    targetPort: 8080
     protocol: TCP
     name: http
   selector:

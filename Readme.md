@@ -38,20 +38,20 @@ This application provides a robust backend for a carpooling service, allowing us
 4. **Set up Kind cluster**:
 
    ```bash
-   ./scripts/setup-kind.sh
+   ./scripts/local/setup-kind.sh
    ```
 
 5. **Create secrets**:
 
    ```bash
-   ./scripts/create-secrets.sh
+   ./scripts/local/create-secrets.sh
    kubectl apply -f k8s/base/secrets.yaml
    ```
 
 6. **Build and deploy**:
 
    ```bash
-   ./scripts/build-for-kind.sh
+   ./scripts/local/build-for-kind.sh
    kubectl apply -k k8s/overlays/local/
    ```
 
@@ -66,7 +66,7 @@ This application provides a robust backend for a carpooling service, allowing us
 - **Swagger UI**: <http://localhost:8080/swagger-ui.html>
 - **API Endpoints**: <http://localhost:8080/api/>*
 
-For detailed local development instructions, see [Kind Local Development](.docs/kind-local-development.md).
+For detailed local development instructions, see [Running Guide](.docs/running.md).
 
 ## 📖 Documentation
 
