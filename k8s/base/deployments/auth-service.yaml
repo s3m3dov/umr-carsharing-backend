@@ -15,6 +15,7 @@ spec:
       labels:
         app: auth-service
     spec:
+      serviceAccountName: spring-cloud
       containers:
       - name: auth-service
         image: gcr.io/PROJECT_ID/auth-service:latest
@@ -66,7 +67,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
     protocol: TCP
     name: http

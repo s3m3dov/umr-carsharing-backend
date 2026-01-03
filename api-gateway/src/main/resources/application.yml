@@ -3,7 +3,16 @@ spring:
     name: api-gateway
   main:
     web-application-type: reactive
+    cloud-platform: kubernetes
   cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
     loadbalancer:
       retry:
         enabled: true
@@ -19,4 +28,5 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
+    use-root-path: true
     # We will use dynamic aggregation in OpenApiConfig.java

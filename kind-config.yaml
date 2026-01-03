@@ -20,5 +20,3 @@ nodes:
       - containerPort: 8080
         hostPort: 8080
         protocol: TCP
-  - role: worker
-  - role: worker

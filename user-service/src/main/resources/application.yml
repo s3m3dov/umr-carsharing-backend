@@ -1,7 +1,12 @@
 spring:
   application:
     name: user-service
+  main:
+    cloud-platform: kubernetes
   cloud:
+    kubernetes:
+      discovery:
+        enabled: true
     loadbalancer:
       retry:
         enabled: true
