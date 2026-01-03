@@ -5,53 +5,68 @@ A carpooling platform designed for Tanzania to facilitate ride sharing between s
 
 ## Project Overview
 
-This application provides a robust backend for a carpooling service, allowing users to offer and find rides, manage vehicles, and track ride history. It leverages a microservices architecture for scalability and efficiency.
+This application provides a robust backend for a carpooling service, allowing users to offer and find rides, manage vehicles, and track ride history. It leverages a **Kubernetes-native microservices architecture** for scalability and efficiency.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
+- **Docker Desktop** (or Docker Engine)
+- **Kind**: [Installation Guide](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- **kubectl**: [Installation Guide](https://kubernetes.io/docs/tasks/tools/)
 - **Java 21+** and **Maven 3.6+**
 - **MongoDB Atlas** account (or local MongoDB instance)
 - **Google Maps API** key
 - **Firebase** account with Realtime Database (optional, for notifications)
 
-### Environment Setup
+### Local Development with Kind
 
 1. **Clone the repository** and navigate to the project directory
-2. **Copy environment template**: `cp .env.example .env`
+
+2. **Copy environment template**:
+
+   ```bash
+   cp .env.example .env
+   ```
+
 3. **Configure `.env` file** with your credentials:
    - `MONGODB_URI`: Your MongoDB connection string
    - `JWT_SECRET_KEY`: Secret key for JWT authentication
    - `GOOGLE_API_KEY`: Your Google Maps API key
    - `FIREBASE_CONFIG_PATH` and `FIREBASE_DATABASE_URL`: Firebase configuration (optional)
 
-### Running the Application
+4. **Set up Kind cluster**:
 
-#### Option 1: Docker Compose (Recommended)
+   ```bash
+   ./scripts/setup-kind.sh
+   ```
 
-```bash
-docker-compose up -d
-```
+5. **Create secrets**:
 
-#### Option 2: Individual Services
+   ```bash
+   ./scripts/create-secrets.sh
+   kubectl apply -f k8s/base/secrets.yaml
+   ```
 
-```bash
-# Start Eureka Server first
-cd eureka-server && mvn spring-boot:run
+6. **Build and deploy**:
 
-# Then start other services in separate terminals
-cd api-gateway && mvn spring-boot:run
-cd user-service && mvn spring-boot:run
-# ... and so on
-```
+   ```bash
+   ./scripts/build-for-kind.sh
+   kubectl apply -k k8s/overlays/local/
+   ```
+
+7. **Verify deployment**:
+
+   ```bash
+   kubectl get pods -n carsharing
+   ```
 
 #### Access Points
 
-- **API Gateway (Aggregated Swagger)**: <http://localhost:8080/swagger-ui.html>
-- **Eureka Dashboard**: <http://localhost:8761>
+- **Swagger UI**: <http://localhost:8080/swagger-ui.html>
+- **API Endpoints**: <http://localhost:8080/api/>*
 
-For detailed setup instructions, see [Getting Started & Running](.docs/running.md).
+For detailed local development instructions, see [Kind Local Development](.docs/kind-local-development.md).
 
 ## 📖 Documentation
 
@@ -75,7 +90,6 @@ For detailed information, please refer to the following documents:
 6. **[Changelog](.docs/changelog.md)**  
    Version history and updates.
 
-
 ## 📊 Presentations
 
 Project presentations demonstrating the car sharing platform:
@@ -85,8 +99,8 @@ Project presentations demonstrating the car sharing platform:
 
 ## Contributors
 
-- Vipul Singh (<singhv@students.uni-marburg.de>)
 - Hikmat Samadov (<Samadov@students.uni-marburg.de>)
+- Vipul Singh (<singhv@students.uni-marburg.de>)
 
 ## License
 

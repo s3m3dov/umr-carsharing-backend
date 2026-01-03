@@ -1,0 +1,110 @@
+name: CD - Deploy to GKE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - dev
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  REGISTRY: gcr.io
+
+jobs:
+  deploy:
+    name: Deploy to GKE
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    
+    - name: Install gke-gcloud-auth-plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+    
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER_NAME }} \
+          --zone=${{ env.GKE_ZONE }} \
+          --project=${{ env.GCP_PROJECT_ID }}
+    
+    - name: Create namespace if not exists
+      run: |
+        kubectl create namespace carsharing --dry-run=client -o yaml | kubectl apply -f -
+    
+    - name: Create secrets
+      run: |
+        kubectl create secret generic carsharing-secrets \
+          --from-literal=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
+          --from-literal=JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+          --from-literal=GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
+          --from-literal=FIREBASE_CONFIG_PATH="${{ secrets.FIREBASE_CONFIG_PATH }}" \
+          --from-literal=FIREBASE_DATABASE_URL="${{ secrets.FIREBASE_DATABASE_URL }}" \
+          --namespace=carsharing \
+          --dry-run=client -o yaml | kubectl apply -f -
+    
+    - name: Update kustomization with image tags
+      run: |
+        cd k8s/overlays/production
+        # Update image tags to use the commit SHA
+        kustomize edit set image \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/auth-service=gcr.io/${{ env.GCP_PROJECT_ID }}/auth-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/user-service=gcr.io/${{ env.GCP_PROJECT_ID }}/user-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/vehicle-service=gcr.io/${{ env.GCP_PROJECT_ID }}/vehicle-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/trip-service=gcr.io/${{ env.GCP_PROJECT_ID }}/trip-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/ride-service=gcr.io/${{ env.GCP_PROJECT_ID }}/ride-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/notification-service=gcr.io/${{ env.GCP_PROJECT_ID }}/notification-service:main-${{ github.sha }} \
+          gcr.io/${{ env.GCP_PROJECT_ID }}/api-gateway=gcr.io/${{ env.GCP_PROJECT_ID }}/api-gateway:main-${{ github.sha }}
+    
+    - name: Deploy to GKE
+      run: |
+        kubectl apply -k k8s/overlays/production/
+    
+    - name: Wait for rollout to complete
+      run: |
+        kubectl rollout status deployment/auth-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/user-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/vehicle-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/trip-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/ride-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/notification-service -n carsharing --timeout=5m
+        kubectl rollout status deployment/api-gateway -n carsharing --timeout=5m
+    
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n carsharing
+        kubectl get services -n carsharing
+        kubectl get ingress -n carsharing
+    
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "Deployment failed, rolling back..."
+        kubectl rollout undo deployment/auth-service -n carsharing
+        kubectl rollout undo deployment/user-service -n carsharing
+        kubectl rollout undo deployment/vehicle-service -n carsharing
+        kubectl rollout undo deployment/trip-service -n carsharing
+        kubectl rollout undo deployment/ride-service -n carsharing
+        kubectl rollout undo deployment/notification-service -n carsharing
+        kubectl rollout undo deployment/api-gateway -n carsharing

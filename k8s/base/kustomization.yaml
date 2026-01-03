@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: carsharing
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployments/auth-service.yaml
+  - deployments/user-service.yaml
+  - deployments/vehicle-service.yaml
+  - deployments/trip-service.yaml
+  - deployments/ride-service.yaml
+  - deployments/notification-service.yaml
+  - deployments/api-gateway.yaml
+
+# Common labels applied to all resources
+labels:
+  - pairs:
+      app.kubernetes.io/name: carsharing
+      app.kubernetes.io/managed-by: kustomize
