@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: carsharing
+  labels:
+    name: carsharing
+    environment: production
