@@ -9,9 +9,6 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
 
-server:
-  port: ${PORT:8089}
-
 management:
   endpoints:
     web:

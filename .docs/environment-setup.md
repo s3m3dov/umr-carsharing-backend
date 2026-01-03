@@ -64,13 +64,10 @@ FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
 
 **Note:** If you're not using Firebase notifications, you can comment out these lines or leave them empty.
 
-### CORS Configuration (Optional)
+### CORS Configuration
 
-```bash
-ALLOWED_ORIGINS=*
-```
-
-**Note:** In production, replace `*` with specific allowed origins for security.
+> [!NOTE]
+> CORS is now managed at the **Kubernetes Ingress level** (local) or via **GKE BackendConfig** (production). The `ALLOWED_ORIGINS` environment variable is no longer used by the application containers.
 
 ## Using the .env File
 

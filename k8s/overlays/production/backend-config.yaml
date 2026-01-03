@@ -1,0 +1,15 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: carsharing-backend-config
+  namespace: carsharing
+spec:
+  cors:
+    allowOrigins:
+      - "*"
+    allowMethods:
+      - "*"
+    allowHeaders:
+      - "*"
+    maxAge: 3600
+    allowCredentials: false

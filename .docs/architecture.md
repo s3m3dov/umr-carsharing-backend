@@ -2,6 +2,8 @@
 
 This project has been transformed from a monolithic architecture to a microservices architecture using Spring Boot and Spring Cloud.
 
+- [Running Guide](running.md)
+
 ## Architecture Overview
 
 The system is built using a microservices architecture, leveraging Spring Boot and Spring Cloud. It uses Google Maps API for location services, Firebase for real-time data, and MongoDB for persistence.
@@ -24,15 +26,15 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 
 1. **Eureka Server** (Port 8761) - Service Discovery
 2. **API Gateway** (Port 8080) - Single entry point for all client requests
-3. **User Service** (Port 8081) - User management and authentication
-4. **Vehicle Service** (Port 8082) - Vehicle registration and management
-5. **Trip Service** (Port 8083) - Trip creation and management
-6. **Ride Service** (Port 8084) - Ride finding and joining
-7. **Notification Service** (Port 8085) - Real-time notifications and WebSocket
+3. **User Service** (Port 8080) - User management and authentication
+4. **Vehicle Service** (Port 8080) - Vehicle registration and management
+5. **Trip Service** (Port 8080) - Trip creation and management
+6. **Ride Service** (Port 8080) - Ride finding and joining
+7. **Notification Service** (Port 8080) - Real-time notifications and WebSocket
 
 ### Development Notes
 
-- CORS is configured to allow requests from specific origins.
+- CORS is managed at the **Kubernetes Ingress level**, keeping the application code environment-agnostic.
 - The application handles complex distance calculations for matching rides.
 - Each microservice has its own MongoDB database for strict data isolation.
 

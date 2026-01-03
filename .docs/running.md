@@ -1,252 +1,161 @@
 # Running the Car Sharing Microservices
 
-## Quick Start Guide
+This guide explains how to set up and run the carsharing-backend microservices.
 
-### Prerequisites
+> [!IMPORTANT]
+> Before you begin, please ensure you have read the [Architecture Overview](architecture.md) and completed the [Environment Setup](environment-setup.md).
+
+## Prerequisites
 
 - **Java**: Java 21+
 - **Maven**: 3.6+
-- **Database**:
-  - MongoDB Atlas account (or local MongoDB)
-  - Firebase account with Realtime Database
-- **APIs**:
-  - Google Maps API key
-
-### Configuration
-
-The project uses several configuration files and environment variables. Templates are provided in `docs/samples/`.
-
-1. **application.properties**: Main configuration file (copy from `application-sample.properties`)
-2. **firebase-sdk.json**: Firebase credentials (copy from `docs/samples/firebase-sdk-sample.json`)
-
-#### Required Environment Variables
-
-- `GOOGLE_API_KEY`: Your Google Maps API key
-- `firebase.config.path`: Path to your Firebase SDK JSON file
-- `firebase.database.url`: Your Firebase Realtime Database URL
-- `spring.data.mongodb.uri`: MongoDB connection string
-- `spring.data.mongodb.database`: MongoDB database name
-
-### Running Options
-
-### Option 1: Run Individual Services (Recommended for Development)
-
-Start services in separate terminals in this order:
-
-#### Terminal 1 - Eureka Server (Service Discovery)
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/eureka-server
-mvn spring-boot:run
-```
-
-Wait until you see: `Started EurekaServerApplication`
-Access: <http://localhost:8761>
-
-#### Terminal 2 - User Service
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/user-service
-mvn spring-boot:run
-```
-
-Swagger UI: <http://localhost:8081/swagger-ui.html>
-
-#### Terminal 3 - Vehicle Service
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/vehicle-service
-mvn spring-boot:run
-```
-
-Swagger UI: <http://localhost:8082/swagger-ui.html>
-
-#### Terminal 4 - Trip Service
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/trip-service
-mvn spring-boot:run
-```
-
-Swagger UI: <http://localhost:8083/swagger-ui.html>
-
-#### Terminal 5 - Ride Service
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/ride-service
-mvn spring-boot:run
-```
-
-Swagger UI: <http://localhost:8084/swagger-ui.html>
-
-#### Terminal 6 - Notification Service
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/notification-service
-mvn spring-boot:run
-```
-
-Swagger UI: <http://localhost:8085/swagger-ui.html>
-
-#### Terminal 7 - API Gateway (Aggregated Documentation)
-
-```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/api-gateway
-mvn spring-boot:run
-```
-
-**🎯 Aggregated Swagger UI: <http://localhost:8080/swagger-ui.html>**
+- **Docker**: Desktop or Engine
+- **Kind**: [Installation Guide](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- **kubectl**: [Installation Guide](https://kubernetes.io/docs/tasks/tools/)
 
 ---
 
-### Option 2: Run with Docker Compose (All Services at Once)
+## Option 1: Local Kubernetes (Kind) - Recommended 🚀
+
+Running with Kind (Kubernetes in Docker) provides the closest environment to production and is the best way to test the full system.
+
+### 1. Cluster Infrastructure Setup
+
+First, create the cluster and install the necessary ingress controllers:
 
 ```bash
-cd /Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend
-
-# Build all services
-mvn clean package -DskipTests
-
-# Start all services
-docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# View logs
-docker-compose logs -f
+./scripts/local/setup-kind.sh
 ```
 
----
+This script sets up a 3-node cluster named `carsharing-local`, installs NGINX Ingress, and creates the `carsharing` namespace.
 
-## Accessing Swagger Documentation
+### 2. Secrets & Configuration
 
-### 🌟 Best Option: Aggregated View
+Apply the required secrets and configurations:
 
-**URL:** <http://localhost:8080/swagger-ui.html>
-
-- Use the dropdown at the top to switch between services
-- All endpoints accessible through the gateway
-- Production-like routing
-
-### Individual Service Views
-
-- User Service: <http://localhost:8081/swagger-ui.html>
-- Vehicle Service: <http://localhost:8082/swagger-ui.html>
-- Trip Service: <http://localhost:8083/swagger-ui.html>
-- Ride Service: <http://localhost:8084/swagger-ui.html>
-- Notification Service: <http://localhost:8085/swagger-ui.html>
-
-### OpenAPI JSON Specs
-
-- Individual: `http://localhost:808X/v3/api-docs`
-- Via Gateway: `http://localhost:8080/v3/api-docs?group=user-service`
-
----
-
-## Testing the API
-
-### Using Swagger UI (Interactive)
-
-1. Open <http://localhost:8080/swagger-ui.html>
-2. Select a service from the dropdown
-3. Click on an endpoint to expand it
-4. Click "Try it out"
-5. Fill in parameters
-6. Click "Execute"
-7. See the response!
-
-### Example: Register a User
-
-1. Go to <http://localhost:8081/swagger-ui.html>
-2. Find `POST /api/users/signup`
-3. Click "Try it out"
-4. Enter request body:
-
-```json
-{
-  "userId": "test-user-1",
-  "requestContent": {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "phone": "1234567890",
-    "password": "password123"
-  }
-}
+```bash
+./scripts/local/create-secrets.sh
+kubectl apply -f k8s/base/secrets.yaml
 ```
 
-1. Click "Execute"
-2. See the response!
+### 3. Build & Load Application Images
+
+Build all Docker images and load them directly into the Kind cluster:
+
+```bash
+./scripts/local/build-for-kind.sh
+```
+
+### 4. Deploy to Kubernetes
+
+Deploy the services using the local overlay:
+
+```bash
+kubectl apply -k k8s/overlays/local/
+```
+
+### 5. Accessing the Application
+
+- **API Gateway (Swagger)**: <http://localhost:8080/swagger-ui.html>
+- **Health Checks**: <http://localhost:8080/actuator/health>
 
 ---
 
-## Monitoring Services
+## Option 2: Individual Services (IDE/Terminal)
 
-### Eureka Dashboard
+Useful for focused development on a single service.
 
-<http://localhost:8761>
+1. **Start MongoDB**: Ensure you have a MongoDB instance running (local or Atlas).
+2. **Configure Environment**: Export the variables defined in `environment-setup.md`.
+3. **Run Service**: Navigate to the service directory and run:
 
-Shows all registered services and their health status.
+```bash
+mvn spring-boot:run
+```
 
-### Health Checks
+Typical ports (standardized to 8080 in K8s, but vary in local IDE mode if specified):
 
-- User Service: <http://localhost:8081/actuator/health>
-- Vehicle Service: <http://localhost:8082/actuator/health>
-- Trip Service: <http://localhost:8083/actuator/health>
-- Ride Service: <http://localhost:8084/actuator/health>
-- Notification Service: <http://localhost:8085/actuator/health>
-- API Gateway: <http://localhost:8080/actuator/health>
+- API Gateway: 8080
+- Other services: 8080 (multi-service local run may require port overrides)
+
+---
+
+## 🛠️ Kubernetes Monitoring & Operations
+
+Use these commands to monitor and manage your local cluster:
+
+### Checking Status
+
+```bash
+# Get all pods and their status
+kubectl get pods -n carsharing
+
+# Watch pods in real-time
+kubectl get pods -n carsharing -w
+
+# Get wide output (including IP and Node)
+kubectl get pods -n carsharing -o wide
+
+# Check service and ingress status
+kubectl get svc,ingress -n carsharing
+```
+
+### Detailed Inspection
+
+```bash
+# Describe a pod (check for errors, pulled images, events)
+kubectl describe pod <pod-name> -n carsharing
+
+# Check events for the whole namespace
+kubectl get events -n carsharing --sort-by='{.lastTimestamp}'
+
+# View all resources in the namespace
+kubectl get all -n carsharing
+```
+
+### Monitoring Logs
+
+```bash
+# Stream logs for a specific pod
+kubectl logs -f <pod-name> -n carsharing
+
+# Stream logs for all pods in a deployment
+kubectl logs -f deployment/api-gateway -n carsharing
+
+# Stream logs for all carsharing resources (requires Stern)
+stern -n carsharing .
+```
+
+### Restarting & Debugging
+
+```bash
+# Restart all pods in a deployment (pulls new images)
+kubectl rollout restart deployment <deployment-name> -n carsharing
+
+# Check deployment status
+kubectl rollout status deployment <deployment-name> -n carsharing
+
+# Port forward to bypass ingress for testing
+kubectl port-forward svc/<service-name> 8080:8080 -n carsharing
+
+# Execute commands inside a pod
+kubectl exec -it <pod-name> -n carsharing -- /bin/sh
+```
 
 ---
 
 ## Troubleshooting
 
-### Service won't start
+### Pods stuck in `ErrImagePull` or `ImagePullBackOff`
 
-- Check if MongoDB is running
-- Check if the port is already in use
-- Check logs for errors
+Ensure you have loaded the images into Kind:
+`./scripts/local/build-for-kind.sh`
 
-### Can't see service in Eureka
+### Ingress not reachable
 
-- Wait 30 seconds for registration
-- Check Eureka URL in application.yml
-- Verify network connectivity
+Verify the NGINX ingress controller is running:
+`kubectl get pods -n ingress-nginx`
 
-### Swagger UI not loading
+### Database connection issues
 
-- Ensure service is fully started
-- Check browser console for errors
-- Try clearing browser cache
-
----
-
-## Stopping Services
-
-### Individual Services
-
-Press `Ctrl+C` in each terminal
-
-### Docker Compose
-
-```bash
-docker-compose down
-```
-
----
-
-## Environment Variables
-
-Set these if needed:
-
-```bash
-# MongoDB
-export MONGODB_URI=mongodb://localhost:27017/carsharing_users
-
-# Google Maps API (for Trip/Ride services)
-export GOOGLE_API_KEY=your-api-key-here
-
-# Firebase (for Notification service)
-export FIREBASE_CONFIG_PATH=/path/to/firebase.json
-export FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
-```
+Check logs for `MongoTimeoutException`. Ensure your IP is whitelisted in MongoDB Atlas or that your local MongoDB is accessible.
