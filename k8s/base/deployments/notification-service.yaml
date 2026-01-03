@@ -15,6 +15,7 @@ spec:
       labels:
         app: notification-service
     spec:
+      serviceAccountName: spring-cloud
       containers:
       - name: notification-service
         image: gcr.io/PROJECT_ID/notification-service:latest
@@ -71,7 +72,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
     protocol: TCP
     name: http

@@ -11,7 +11,7 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 ### Technology Stack
 
 - **Java**: Java 21
-- **Framework**: Spring Boot with Spring MVC, Spring Cloud (Eureka, API Gateway, Feign)
+- **Framework**: Spring Boot with Spring MVC, Spring Cloud (Kubernetes Discovery, API Gateway, Feign)
 - **Database**:
   - MongoDB Atlas (for persistent storage)
   - Firebase Realtime Database (for real-time data)
@@ -24,8 +24,8 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 
 ### Core Services
 
-1. **Eureka Server** (Port 8761) - Service Discovery
-2. **API Gateway** (Port 8080) - Single entry point for all client requests
+1. **Kubernetes Services** - Service Discovery and Load Balancing
+2. **API Gateway** (Port 8080) - Single entry point for all client requests with native K8s discovery
 3. **User Service** (Port 8080) - User management and authentication
 4. **Vehicle Service** (Port 8080) - Vehicle registration and management
 5. **Trip Service** (Port 8080) - Trip creation and management

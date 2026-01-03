@@ -15,6 +15,7 @@ spec:
       labels:
         app: user-service
     spec:
+      serviceAccountName: spring-cloud
       containers:
       - name: user-service
         image: gcr.io/PROJECT_ID/user-service:latest
@@ -62,7 +63,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
     protocol: TCP
     name: http
