@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SecurityProperties {
+    private List<String> actuatorPaths;
     private List<String> publicPaths;
     private List<String> docsPaths;
 }
