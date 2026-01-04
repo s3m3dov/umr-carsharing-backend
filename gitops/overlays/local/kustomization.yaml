@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: carsharing
+
+resources:
+  - ../../base
+  - ingress-local.yaml
+
+# Use local image tags
+images:
+  - name: gcr.io/PROJECT_ID/auth-service
+    newName: auth-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/user-service
+    newName: user-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/vehicle-service
+    newName: vehicle-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/trip-service
+    newName: trip-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/ride-service
+    newName: ride-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/notification-service
+    newName: notification-service
+    newTag: local
+  - name: gcr.io/PROJECT_ID/api-gateway
+    newName: api-gateway
+    newTag: local
+
+# Disable image pull and use Recreate strategy for local development
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+      - op: replace
+        path: /spec/strategy
+        value:
+          type: Recreate
+    target:
+      kind: Deployment

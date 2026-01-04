@@ -26,6 +26,7 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final SecurityProperties securityProperties;
 
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
@@ -37,12 +38,16 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(
                         org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .securityMatcher("/**")
-                .authorizeHttpRequests(registry -> registry
-                        .requestMatchers("/api/auth/**").permitAll() // public endpoints
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**")
-                        .permitAll() // OpenAPI docs
-                        .anyRequest().authenticated() // require authentication for any other request
-                )
+                .authorizeHttpRequests(registry -> {
+                    // Actuator paths from configuration
+                    securityProperties.getActuatorPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+                    // Public paths from configuration
+                    securityProperties.getPublicPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+                    // Docs paths from configuration
+                    securityProperties.getDocsPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+
+                    registry.anyRequest().authenticated(); // require authentication for any other request
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

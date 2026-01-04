@@ -54,5 +54,5 @@ build/
 .env
 
 ### Kubernetes Secrets ###
-k8s/base/secrets.yaml
-k8s/overlays/*/secrets.yaml
+gitops/base/secrets.yaml
+gitops/overlays/*/secrets.yaml
