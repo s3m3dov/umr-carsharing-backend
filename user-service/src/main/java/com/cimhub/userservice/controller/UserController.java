@@ -55,7 +55,7 @@ public class UserController {
         @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<ApiResponse<SignUpResponse>> registerUser(
                         @Valid @RequestBody RegisterUserRequest request) {
-                log.info("Signup request for email: {}", request.emailId());
+            log.info("Signup request for email: {}", request.email());
                 SignUpResponse signUpResponse = userService.registerUser(request);
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
@@ -70,7 +70,7 @@ public class UserController {
         @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<ApiResponse<LoginResponse>> login(
                         @Valid @RequestBody LoginRequest request) {
-                log.info("Login request for email: {}", request.emailId());
+            log.info("Login request for email: {}", request.email());
                 LoginResponse loginResponse = userService.login(request);
                 return ResponseEntity.ok(ApiResponse.success(loginResponse));
         }
