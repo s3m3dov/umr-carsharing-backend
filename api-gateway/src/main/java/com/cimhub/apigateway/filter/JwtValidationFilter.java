@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -25,6 +26,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private final WebClient.Builder webClientBuilder;
     private final SecurityProperties securityProperties;
     private final ServiceProperties serviceProperties;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -84,9 +86,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicPath(String path) {
-        return securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
-                || securityProperties.getDocsPaths().stream().anyMatch(path::contains)
-                || securityProperties.getActuatorPaths().stream().anyMatch(path::startsWith);
+        return securityProperties.getPublicPaths().stream().anyMatch(pattern -> pathMatcher.match(pattern, path))
+                || securityProperties.getDocsPaths().stream().anyMatch(pattern -> pathMatcher.match(pattern, path))
+                || securityProperties.getActuatorPaths().stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
     @Override

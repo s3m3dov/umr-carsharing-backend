@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final SecurityProperties securityProperties;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -69,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean matches(String path, List<String> patterns) {
-        return patterns.stream().anyMatch(pattern -> path.equals(pattern)
-                || path.startsWith(pattern.replace("/**", "")));
+        return patterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 }

@@ -87,15 +87,17 @@ gateway:
       - /auth-service/api/auth/login
       - /auth-service/api/auth/signup
       - /auth-service/api/auth/validate
-      - /health
-      - /webjars
+      - /health/**
+      - /webjars/**
     docs-paths:
-      - /v3/api-docs
-      - /swagger-ui
+      - /v3/api-docs/**
+      - /swagger-ui/**
       - /swagger-ui.html
+      - /**/v3/api-docs/**
+      - /**/swagger-ui/**
     actuator-paths:
-      - /actuator/health
-      - /actuator/info
+      - /actuator/health/**
+      - /actuator/info/**
   services:
     auth:
       base-url: http://auth-service:8080
