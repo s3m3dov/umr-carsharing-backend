@@ -31,11 +31,15 @@ images:
     newName: api-gateway
     newTag: local
 
-# Disable image pull for local development
+# Disable image pull and use Recreate strategy for local development
 patches:
   - patch: |-
       - op: add
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: IfNotPresent
+      - op: replace
+        path: /spec/strategy
+        value:
+          type: Recreate
     target:
       kind: Deployment
