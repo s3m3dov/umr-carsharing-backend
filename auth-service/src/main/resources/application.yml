@@ -25,6 +25,19 @@ management:
     health:
       probes:
         enabled: true
+auth:
+  security:
+    public-paths:
+      - /api/auth/login
+      - /api/auth/signup
+      - /api/auth/validate
+      - /actuator/health
+      - /actuator/info
+    docs-paths:
+      - /v3/api-docs
+      - /swagger-ui
+      - /swagger-ui.html
+      - /webjars
 
 springdoc:
   api-docs:
