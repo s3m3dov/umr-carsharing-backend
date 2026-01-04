@@ -28,6 +28,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+  server:
+    url: /notification-service
 
 firebase:
   config:
