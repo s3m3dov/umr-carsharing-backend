@@ -1,5 +1,6 @@
 package com.cimhub.userservice.service;
 
+import com.cimhub.common.exception.BusinessException;
 import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.request.LoginRequest;
 import com.cimhub.userservice.dto.request.RegisterUserRequest;
@@ -8,7 +9,6 @@ import com.cimhub.userservice.dto.response.SignUpResponse;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.User;
 import com.cimhub.userservice.repository.UserRepository;
-import com.cimhub.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class UserService {
         // Since it's a record, we can't use BeanUtils easily if we want to be clean,
         // but User is still a POJO.
         newUser.setUserId(request.userId());
-        newUser.setEmailId(request.emailId());
+        newUser.setEmail(request.email());
         newUser.setFullName(request.fullName());
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
@@ -43,7 +43,7 @@ public class UserService {
         newUser.setOrganisationName(request.organisationName());
         newUser.setProfilePicUrl(request.profilePicUrl());
 
-        newUser.setCreatedBy(request.emailId());
+        newUser.setCreatedBy(request.email());
         newUser.setCreatedDate(new Date());
 
         userRepository.save(newUser);
@@ -59,7 +59,7 @@ public class UserService {
 
         return new UserResponse(
                 foundUser.getFullName(),
-                foundUser.getEmailId(),
+                foundUser.getEmail(),
                 foundUser.getUserId(),
                 foundUser.getPhoneNumber(),
                 foundUser.getAge(),
@@ -70,10 +70,11 @@ public class UserService {
     }
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
+        String normalizedEmail = request.email().toLowerCase();
         User newUser = new User();
         newUser.setFullName(request.fullName());
-        newUser.setEmailId(request.emailId());
-        newUser.setUserId(request.emailId().toLowerCase());
+        newUser.setEmail(normalizedEmail);
+        newUser.setUserId(normalizedEmail);
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
         newUser.setDob(request.dob());
@@ -85,7 +86,7 @@ public class UserService {
         log.info("Registering new user: {}", newUser.getUserId());
         userRepository.save(newUser);
 
-        User savedUser = userRepository.findByUserId(request.emailId().toLowerCase());
+        User savedUser = userRepository.findByUserId(normalizedEmail);
         return new SignUpResponse(
                 savedUser.getUserId(),
                 savedUser.getFullName(),
@@ -93,8 +94,9 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User userData = userRepository.findByUserId(request.emailId().toLowerCase());
-        log.info("Login check for user: {}", request.emailId());
+        String normalizedEmail = request.email().toLowerCase();
+        User userData = userRepository.findByUserId(normalizedEmail);
+        log.info("Login check for user: {}", normalizedEmail);
 
         if (userData != null) {
             if (userData.getPassword() != null && userData.getPassword().equals(request.password())) {

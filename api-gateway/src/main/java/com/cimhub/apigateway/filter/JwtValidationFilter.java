@@ -47,18 +47,24 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
 
-        String token = authHeader.substring(GatewayConstants.BEARER_PREFIX.length());
+        String token = authHeader.substring(GatewayConstants.BEARER_PREFIX.length()).trim();
+
+        if (token.isEmpty() || !isValidJwtFormat(token)) {
+            log.warn("Empty or malformed JWT token for path: {}", path);
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
 
         // Call auth-service to validate token
         return validateTokenWithAuthService(token)
                 .flatMap(response -> {
                     if (response.isValid()) {
-                        log.info("Token validated successfully for user: {}", response.getEmailId());
+                        log.info("Token validated successfully for user: {}", response.getEmail());
 
                         // Add user info to request headers for downstream services
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                                .header(GatewayConstants.USER_EMAIL_HEADER, response.getEmailId())
-                                .header(GatewayConstants.USER_ID_HEADER, response.getEmailId().toLowerCase())
+                                .header(GatewayConstants.USER_EMAIL_HEADER, response.getEmail())
+                                .header(GatewayConstants.USER_ID_HEADER, response.getEmail().toLowerCase())
                                 .build();
 
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -96,6 +102,13 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         return -1; // High priority - execute before routing
     }
 
+    private boolean isValidJwtFormat(String token) {
+        if (token == null)
+            return false;
+        long dotCount = token.chars().filter(ch -> ch == '.').count();
+        return dotCount == 2;
+    }
+
     // Inner DTOs for token validation
     @Getter
     private static class TokenValidationRequest {
@@ -106,13 +119,10 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         }
     }
 
+    @Getter
     private static class TokenValidationResponse {
-        private String emailId;
+        private String email;
         private boolean isValid;
-
-        public String getEmailId() {
-            return emailId;
-        }
 
         public boolean isValid() {
             return isValid;
