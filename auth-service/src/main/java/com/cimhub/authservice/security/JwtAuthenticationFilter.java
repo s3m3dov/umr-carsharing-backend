@@ -1,7 +1,6 @@
 package com.cimhub.authservice.security;
 
-//import static javax.crypto.Cipher.SECRET_KEY;
-
+import com.cimhub.authservice.config.SecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,19 +22,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
 
+    private final SecurityProperties securityProperties;
+
+    @Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/actuator/");
+    }
+
     @Override
     public void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    )throws java.io.IOException, jakarta.servlet.ServletException {
+            @NonNull FilterChain filterChain) throws java.io.IOException, jakarta.servlet.ServletException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
 
-        // Skip JWT validation for public endpoints including /validate
         String path = request.getRequestURI();
-        if (path.startsWith("/api/auth/")) {
+
+        // Skip JWT validation for public endpoints and documentation paths from
+        // configuration
+        boolean isPublicPath = securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
+                || securityProperties.getDocsPaths().stream().anyMatch(path::contains);
+
+        if (isPublicPath) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,12 +61,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if(jwtService.isTokenValid(jwt, userDetails.getUsername())){
+            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
-                        userDetails.getAuthorities()
-                );
+                        userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
