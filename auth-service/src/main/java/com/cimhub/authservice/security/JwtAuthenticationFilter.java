@@ -14,58 +14,62 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
     private final UserDetailsService userDetailsService;
-
     private final SecurityProperties securityProperties;
 
     @Override
-    public void doFilterInternal(
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        return matches(path, securityProperties.getPublicPaths())
+                || matches(path, securityProperties.getDocsPaths())
+                || matches(path, securityProperties.getActuatorPaths());
+    }
+
+    @Override
+    protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws java.io.IOException, jakarta.servlet.ServletException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
 
-        String path = request.getRequestURI();
-
-        // Skip JWT validation for public endpoints, documentation paths, and actuator
-        // paths from configuration
-        boolean isPublicPath = securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
-                || securityProperties.getDocsPaths().stream().anyMatch(path::contains)
-                || securityProperties.getActuatorPaths().stream().anyMatch(path::startsWith);
-
-        if (isPublicPath) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
+        String jwt = authHeader.substring(7);
+        String userEmail = jwtService.extractUsername(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+        if (userEmail != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+
             if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
         filterChain.doFilter(request, response);
     }
 
+    private boolean matches(String path, List<String> patterns) {
+        return patterns.stream().anyMatch(pattern -> path.equals(pattern)
+                || path.startsWith(pattern.replace("/**", "")));
+    }
 }
