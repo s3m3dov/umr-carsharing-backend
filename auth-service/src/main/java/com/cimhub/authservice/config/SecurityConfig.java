@@ -39,9 +39,8 @@ public class SecurityConfig {
                         org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .securityMatcher("/**")
                 .authorizeHttpRequests(registry -> {
-                    // Explicitly allow actuator
-                    registry.requestMatchers("/actuator/**").permitAll();
-
+                    // Actuator paths from configuration (explicitly allowed)
+                    securityProperties.getActuatorPaths().forEach(path -> registry.requestMatchers(path).permitAll());
                     // Public paths from configuration
                     securityProperties.getPublicPaths().forEach(path -> registry.requestMatchers(path).permitAll());
                     // Docs paths from configuration

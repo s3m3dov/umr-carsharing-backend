@@ -25,12 +25,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final SecurityProperties securityProperties;
 
     @Override
-    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/actuator/");
-    }
-
-    @Override
     public void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -41,10 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Skip JWT validation for public endpoints and documentation paths from
-        // configuration
+        // Skip JWT validation for public endpoints, documentation paths, and actuator
+        // paths from configuration
         boolean isPublicPath = securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
-                || securityProperties.getDocsPaths().stream().anyMatch(path::contains);
+                || securityProperties.getDocsPaths().stream().anyMatch(path::contains)
+                || securityProperties.getActuatorPaths().stream().anyMatch(path::startsWith);
 
         if (isPublicPath) {
             filterChain.doFilter(request, response);
