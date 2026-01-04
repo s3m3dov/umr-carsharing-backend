@@ -32,10 +32,10 @@ auth:
       - /api/auth/signup
       - /api/auth/validate
     docs-paths:
-      - /v3/api-docs
-      - /swagger-ui
+      - /v3/api-docs/**
+      - /swagger-ui/**
       - /swagger-ui.html
-      - /webjars
+      - /webjars/**
     actuator-paths:
       - /actuator/health/**
       - /actuator/info/**
