@@ -64,3 +64,20 @@ springdoc:
         url: /ride-service/v3/api-docs
       - name: notification
         url: /notification-service/v3/api-docs
+
+gateway:
+  security:
+    public-paths:
+      - /api/auth/login
+      - /api/auth/signup
+      - /health
+      - /actuator
+      - /webjars
+    docs-paths:
+      - /v3/api-docs
+      - /swagger-ui
+      - /swagger-ui.html
+  services:
+    auth:
+      base-url: http://auth-service:8080
+      validate-path: /api/auth/validate
