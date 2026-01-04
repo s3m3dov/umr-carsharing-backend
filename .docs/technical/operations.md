@@ -86,6 +86,7 @@ We follow a "Manual GitOps" pattern where Git is the source of truth for the clu
 | **Preview Changes** | `./gitops/gitops.sh diff local` |
 | **Check Status** | `./gitops/gitops.sh status` |
 | **Dashboard** | `./gitops/gitops.sh dashboard` |
+| **Swagger UI** | `./gitops/gitops.sh swagger` |
 
 ---
 

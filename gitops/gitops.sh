@@ -8,7 +8,7 @@ COMMAND=$1
 ENV=$2
 
 if [ -z "$COMMAND" ]; then
-    echo "Usage: $0 [apply|diff|status|build|secrets|setup|dashboard|restart] [environment|deployment]"
+    echo "Usage: $0 [apply|diff|status|build|secrets|setup|dashboard|restart|swagger] [environment|deployment]"
     exit 1
 fi
 
@@ -65,9 +65,15 @@ case $COMMAND in
             kubectl rollout restart deployment "$DEPLOYMENT" -n carsharing
         fi
         ;;
+    swagger)
+        echo "🚀 Starting automatic port-forwarding for Swagger UI..."
+        echo "The Swagger UI will be available at: http://localhost:8080/swagger-ui.html"
+        echo "Press Ctrl+C to stop port-forwarding."
+        kubectl port-forward svc/api-gateway 8080:8080 -n carsharing
+        ;;
     *)
         echo "Unknown command: $COMMAND"
-        echo "Available commands: apply, diff, status, build, secrets, setup, dashboard, restart"
+        echo "Available commands: apply, diff, status, build, secrets, setup, dashboard, restart, swagger"
         exit 1
         ;;
 esac
