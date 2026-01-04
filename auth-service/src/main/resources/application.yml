@@ -37,8 +37,8 @@ auth:
       - /swagger-ui.html
       - /webjars
     actuator-paths:
-      - /actuator/health
-      - /actuator/info
+      - /actuator/health/**
+      - /actuator/info/**
 
 springdoc:
   api-docs:
