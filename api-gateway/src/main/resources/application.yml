@@ -17,26 +17,38 @@ spring:
           uri: http://user-service:8080
           predicates:
             - Path=/user-service/**
+          filters:
+            - StripPrefix=1
         - id: auth-service
           uri: http://auth-service:8080
           predicates:
             - Path=/auth-service/**
+          filters:
+            - StripPrefix=1
         - id: vehicle-service
           uri: http://vehicle-service:8080
           predicates:
             - Path=/vehicle-service/**
+          filters:
+            - StripPrefix=1
         - id: trip-service
           uri: http://trip-service:8080
           predicates:
             - Path=/trip-service/**
+          filters:
+            - StripPrefix=1
         - id: ride-service
           uri: http://ride-service:8080
           predicates:
             - Path=/ride-service/**
+          filters:
+            - StripPrefix=1
         - id: notification-service
           uri: http://notification-service:8080
           predicates:
             - Path=/notification-service/**
+          filters:
+            - StripPrefix=1
     loadbalancer:
       retry:
         enabled: true
@@ -68,8 +80,8 @@ springdoc:
 gateway:
   security:
     public-paths:
-      - /api/auth/login
-      - /api/auth/signup
+      - /auth-service/api/auth/login
+      - /auth-service/api/auth/signup
       - /health
       - /actuator
       - /webjars
