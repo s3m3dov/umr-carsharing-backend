@@ -6,6 +6,7 @@ namespace: carsharing
 resources:
   - namespace.yaml
   - configmap.yaml
+  - secrets.yaml
   - rbac/spring-cloud-rbac.yaml
   - deployments/auth-service.yaml
   - deployments/user-service.yaml

@@ -2,7 +2,7 @@
 
 This project has been transformed from a monolithic architecture to a microservices architecture using Spring Boot and Spring Cloud.
 
-- [Running Guide](running.md)
+- [Operations & Setup Guide](operations.md)
 
 ## Architecture Overview
 
@@ -41,7 +41,7 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 ### Supporting Infrastructure
 
 - **MongoDB** - Distributed across services with separate databases
-- **Docker Compose** - Container orchestration for local development
+- **GitOps** - Manual deployment workflow using `kubectl` and `kustomize`
 
 ## Service Responsibilities
 

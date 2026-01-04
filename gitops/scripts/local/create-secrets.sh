@@ -6,9 +6,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")"
 ENV_FILE="$PROJECT_ROOT/.env"
-SECRETS_FILE="$PROJECT_ROOT/k8s/base/secrets.yaml"
+SECRETS_FILE="$PROJECT_ROOT/gitops/base/secrets.yaml"
 
 echo "🔐 Creating Kubernetes secrets from .env file..."
 
@@ -52,4 +52,4 @@ echo "   - Do NOT commit this file to git"
 echo "   - It's already added to .gitignore"
 echo ""
 echo "To apply secrets to your cluster:"
-echo "   kubectl apply -f $SECRETS_FILE"
+echo "   ./gitops/gitops.sh apply local"

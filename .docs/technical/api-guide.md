@@ -25,40 +25,6 @@ All API responses follow a standard envelope:
 }
 ```
 
-## 🗺️ Key API Operations
-
-### 1. Offering a Ride (Trips)
-
-Drivers can offer rides by providing source, destination, and timing.
-
-- **Endpoint**: `POST /api/trips/offer`
-- **Request Body**:
-
-  ```json
-  {
-    "userId": "driver@example.com",
-    "requestContent": {
-      "vehicleNumber": "ABC123",
-      "sourceAddress": { "latitude": 48.36, "longitude": 10.68, "placeAddress": "Augsburg" },
-      "destinationAddress": { "latitude": 48.13, "longitude": 11.57, "placeAddress": "Munich" },
-      "tripStartDateTime": "2025-10-13T20:06:00+02:00",
-      "offeredSeat": 3
-    }
-  }
-  ```
-
-### 2. Searching for Rides
-
-Find available rides based on location proximity.
-
-- **Find Near Source**: `GET /api/trips/search/near-source?latitude=...&longitude=...&radiusKm=5`
-- **Matching Route**: `GET /api/trips/search/matching-route?sourceLat=...&sourceLon=...&destLat=...&destLon=...`
-
-### 3. User & Vehicle Management
-
-- **Get Profile**: `GET /api/users/{userId}`
-- **Register Vehicle**: `POST /api/vehicles/register`
-
 ## 🛠️ Technical Implementation Details
 
 ### Timezone Handling

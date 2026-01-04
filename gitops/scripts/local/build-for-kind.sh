@@ -26,7 +26,7 @@ echo ""
 # Check if Kind cluster exists
 if ! kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
     echo "❌ Error: Kind cluster '$CLUSTER_NAME' not found"
-    echo "   Create it first with: ./scripts/setup-kind.sh"
+    echo "   Create it first with: ./scripts/local/setup-kind.sh"
     exit 1
 fi
 
@@ -57,4 +57,4 @@ for service in "${SERVICES[@]}"; do
 done
 echo ""
 echo "Next step:"
-echo "   kubectl apply -k k8s/overlays/local/"
+echo "   ./gitops/gitops.sh apply local"
