@@ -21,7 +21,7 @@ public class OpenApiConfig {
         public OpenAPI notificationServiceOpenAPI() {
                 Server server = new Server();
                 server.setUrl(serverUrl);
-                server.setDescription("Notification Service - Development");
+                server.setDescription("Notification Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");
