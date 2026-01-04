@@ -86,6 +86,7 @@ gateway:
     public-paths:
       - /auth-service/api/auth/login
       - /auth-service/api/auth/signup
+      - /auth-service/api/auth/validate
       - /health
       - /webjars
     docs-paths:
