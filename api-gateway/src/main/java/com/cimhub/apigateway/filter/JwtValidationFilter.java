@@ -1,11 +1,15 @@
 package com.cimhub.apigateway.filter;
 
+import com.cimhub.apigateway.config.SecurityProperties;
+import com.cimhub.apigateway.config.ServiceProperties;
+import com.cimhub.apigateway.constant.GatewayConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -13,25 +17,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtValidationFilter implements GlobalFilter, Ordered {
 
     private final WebClient.Builder webClientBuilder;
-
-    private static final List<String> PUBLIC_PATHS = List.of(
-            "/api/auth/login",
-            "/api/auth/signup",
-            "/health",
-            "/actuator",
-            // OpenAPI / Swagger documentation paths
-            "/v3/api-docs",
-            "/swagger-ui",
-            "/swagger-ui.html",
-            "/webjars");
+    private final SecurityProperties securityProperties;
+    private final ServiceProperties serviceProperties;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -44,15 +37,15 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         }
 
         // Extract JWT token from Authorization header
-        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(GatewayConstants.BEARER_PREFIX)) {
             log.warn("Missing or invalid Authorization header for path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        String token = authHeader.substring(7);
+        String token = authHeader.substring(GatewayConstants.BEARER_PREFIX.length());
 
         // Call auth-service to validate token
         return validateTokenWithAuthService(token)
@@ -62,8 +55,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
 
                         // Add user info to request headers for downstream services
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                                .header("X-User-Email", response.getEmailId())
-                                .header("X-User-Id", response.getEmailId().toLowerCase())
+                                .header(GatewayConstants.USER_EMAIL_HEADER, response.getEmailId())
+                                .header(GatewayConstants.USER_ID_HEADER, response.getEmailId().toLowerCase())
                                 .build();
 
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -83,7 +76,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private Mono<TokenValidationResponse> validateTokenWithAuthService(String token) {
         return webClientBuilder.build()
                 .post()
-                .uri("lb://auth-service/api/auth/validate")
+                .uri(serviceProperties.getAuth().getValidateUrl())
                 .bodyValue(new TokenValidationRequest(token))
                 .retrieve()
                 .bodyToMono(TokenValidationResponse.class)
@@ -91,7 +84,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+        return securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
+                || securityProperties.getDocsPaths().stream().anyMatch(path::contains);
     }
 
     @Override
