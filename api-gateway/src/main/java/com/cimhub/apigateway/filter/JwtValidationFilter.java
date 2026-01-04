@@ -84,14 +84,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicPath(String path) {
-        return matches(path, securityProperties.getPublicPaths())
-                || matches(path, securityProperties.getDocsPaths())
-                || matches(path, securityProperties.getActuatorPaths());
-    }
-
-    private boolean matches(String path, java.util.List<String> patterns) {
-        return patterns.stream().anyMatch(pattern -> path.equals(pattern)
-                || path.startsWith(pattern.replace("/**", "")));
+        return securityProperties.getPublicPaths().stream().anyMatch(path::startsWith)
+                || securityProperties.getDocsPaths().stream().anyMatch(path::contains)
+                || securityProperties.getActuatorPaths().stream().anyMatch(path::startsWith);
     }
 
     @Override
