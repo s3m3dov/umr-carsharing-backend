@@ -1,6 +1,8 @@
 package com.cimhub.userservice.service;
 
-import com.cimhub.common.exception.BusinessException;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.request.LoginRequest;
 import com.cimhub.userservice.dto.request.RegisterUserRequest;
@@ -27,7 +29,7 @@ public class UserService {
 
         User existingUser = userRepository.findByUserId(request.userId());
         if (existingUser != null) {
-            throw BusinessException.alreadyExists("User profile", request.userId());
+            throw new UserAlreadyExistsException("User profile already exists for " + request.userId());
         }
 
         User newUser = new User();
@@ -54,7 +56,7 @@ public class UserService {
         User foundUser = userRepository.findByUserId(userId);
 
         if (foundUser == null) {
-            throw BusinessException.notFound("User", userId);
+            throw new ResourceNotFoundException("User with id " + userId + " not found");
         }
 
         return new UserResponse(
@@ -106,10 +108,10 @@ public class UserService {
                         true,
                         null);
             } else {
-                throw BusinessException.unauthorized("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
             }
         } else {
-            throw BusinessException.unauthorized("Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
     }
 }
