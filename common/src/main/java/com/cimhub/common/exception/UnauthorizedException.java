@@ -8,6 +8,16 @@ import org.springframework.http.HttpStatus;
 public class UnauthorizedException extends BusinessException {
 
     public UnauthorizedException(String message) {
-        super("UNAUTHORIZED", message, HttpStatus.UNAUTHORIZED);
+        super(message);
+    }
+
+    @Override
+    public HttpStatus getHttpStatus() {
+        return HttpStatus.UNAUTHORIZED;
+    }
+
+    @Override
+    public String getErrorCode() {
+        return "UNAUTHORIZED";
     }
 }

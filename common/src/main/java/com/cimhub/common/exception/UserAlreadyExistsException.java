@@ -8,6 +8,16 @@ import org.springframework.http.HttpStatus;
 public class UserAlreadyExistsException extends BusinessException {
 
     public UserAlreadyExistsException(String message) {
-        super("USER_ALREADY_EXISTS", message, HttpStatus.CONFLICT);
+        super(message);
+    }
+
+    @Override
+    public HttpStatus getHttpStatus() {
+        return HttpStatus.CONFLICT;
+    }
+
+    @Override
+    public String getErrorCode() {
+        return "USER_ALREADY_EXISTS";
     }
 }
