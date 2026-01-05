@@ -17,7 +17,7 @@ public class UserAlreadyExistsException extends BusinessException {
     }
 
     @Override
-    public String getErrorCode() {
-        return "USER_ALREADY_EXISTS";
+    public ErrorCode getErrorCode() {
+        return ErrorCode.USER_ALREADY_EXISTS;
     }
 }

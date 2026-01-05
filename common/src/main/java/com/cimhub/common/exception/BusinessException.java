@@ -20,5 +20,5 @@ public abstract class BusinessException extends RuntimeException {
     /**
      * @return The machine-readable error code associated with this business error
      */
-    public abstract String getErrorCode();
+    public abstract ErrorCode getErrorCode();
 }
