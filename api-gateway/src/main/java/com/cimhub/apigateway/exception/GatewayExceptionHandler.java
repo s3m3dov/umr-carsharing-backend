@@ -19,12 +19,11 @@ import reactor.core.publisher.Mono;
 
 /**
  * Global exception handler for API Gateway.
- * Converts exceptions thrown from Gateway filters into standardized ApiError
- * responses.
+ * Converts gateway-level exceptions into standardized ApiError responses.
  */
 @Slf4j
 @Component
-@Order(-2) // High priority to catch exceptions before default Spring handlers
+@Order(-2)
 @RequiredArgsConstructor
 public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
@@ -32,48 +31,60 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        log.error("Gateway error occurred: {}", ex.getMessage(), ex);
+        log.error("Gateway exception", ex);
 
-        HttpStatus status;
-        ErrorCode errorCode;
-        String message = ex.getMessage();
-
-        if (ex instanceof BusinessException businessEx) {
-            status = businessEx.getHttpStatus();
-            errorCode = businessEx.getErrorCode();
-        } else {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-            message = "An unexpected error occurred at the gateway level.";
+        if (exchange.getResponse().isCommitted()) {
+            return Mono.error(ex);
         }
 
-        return writeErrorResponse(exchange, status, errorCode, message);
+        ErrorAttributes attrs = resolveErrorAttributes(ex);
+        return writeErrorResponse(exchange, attrs);
     }
 
-    private Mono<Void> writeErrorResponse(ServerWebExchange exchange, HttpStatus status, ErrorCode errorCode,
-            String message) {
-        ServerHttpResponse response = exchange.getResponse();
-
-        if (response.isCommitted()) {
-            return Mono.error(new RuntimeException("Response already committed"));
+    private ErrorAttributes resolveErrorAttributes(Throwable ex) {
+        if (ex instanceof BusinessException businessEx) {
+            return new ErrorAttributes(
+                    businessEx.getHttpStatus(),
+                    businessEx.getErrorCode(),
+                    businessEx.getMessage()
+            );
         }
 
-        response.setStatusCode(status);
+        return new ErrorAttributes(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ErrorCode.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred at the gateway level."
+        );
+    }
+
+    private Mono<Void> writeErrorResponse(ServerWebExchange exchange, ErrorAttributes attrs) {
+        ServerHttpResponse response = exchange.getResponse();
+
+        response.setStatusCode(attrs.status());
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         ApiError apiError = ApiError.builder()
-                .code(errorCode.name())
-                .message(message)
+                .code(attrs.errorCode().name())
+                .message(attrs.message())
                 .path(exchange.getRequest().getURI().getPath())
                 .build();
 
         try {
-            byte[] bytes = objectMapper.writeValueAsBytes(apiError);
-            DataBuffer buffer = response.bufferFactory().wrap(bytes);
+            byte[] body = objectMapper.writeValueAsBytes(apiError);
+            DataBuffer buffer = response.bufferFactory().wrap(body);
             return response.writeWith(Mono.just(buffer));
         } catch (JsonProcessingException e) {
-            log.error("Failed to serialize ApiError to JSON", e);
+            log.error("Failed to serialize ApiError", e);
             return response.setComplete();
         }
     }
+
+    /**
+     * Internal error descriptor
+     */
+    private record ErrorAttributes(
+            HttpStatus status,
+            ErrorCode errorCode,
+            String message
+    ) {}
 }
