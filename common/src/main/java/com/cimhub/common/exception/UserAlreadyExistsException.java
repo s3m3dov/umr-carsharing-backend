@@ -1,10 +1,9 @@
-package com.cimhub.authservice.exception;
+package com.cimhub.common.exception;
 
-import com.cimhub.common.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 
 /**
- * Exception thrown when a user already exists during registration
+ * Exception thrown when a resource (e.g., user, profile) already exists
  */
 public class UserAlreadyExistsException extends BusinessException {
 
