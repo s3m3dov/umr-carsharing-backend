@@ -19,130 +19,138 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Global exception handler for all REST controllers
- * Converts exceptions to standardized ApiError responses
+ * Global exception handler for all REST controllers.
+ * Converts exceptions into standardized ApiError responses.
  */
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        /**
-         * Handle validation errors (from @Valid annotation)
-         */
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ApiError> handleValidationErrors(
-                        MethodArgumentNotValidException ex,
-                        WebRequest request) {
+    /**
+     * Handle validation errors (@Valid)
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationErrors(
+            MethodArgumentNotValidException ex,
+            WebRequest request
+    ) {
+        List<String> details = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .toList();
 
-                List<String> details = ex.getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                                .collect(Collectors.toList());
+        log.warn("Validation error on {}: {}", getPath(request), details);
 
-                ApiError error = ApiError.builder()
-                                .code("VALIDATION_ERROR")
-                                .message("Invalid request parameters")
-                                .path(getPath(request))
-                                .details(details)
-                                .build();
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.VALIDATION_ERROR,
+                "Invalid request parameters",
+                request,
+                details
+        );
+    }
 
-                log.warn("Validation error on {}: {}", getPath(request), details);
+    /**
+     * Handle malformed JSON requests
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            WebRequest request
+    ) {
+        String message = "Malformed JSON request";
+        List<String> details = Collections.emptyList();
 
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(error);
+        Throwable cause = ex.getCause();
+        if (cause instanceof InvalidFormatException ife) {
+            String field = extractFieldPath(ife.getPath());
+            message = "Invalid format for field: " + field;
+            details = List.of("Expected type: " + ife.getTargetType().getSimpleName());
+        } else if (cause instanceof MismatchedInputException mie) {
+            String field = extractFieldPath(mie.getPath());
+            message = "Mismatched input for field: " + field;
+            details = List.of("Check the data type of the field");
         }
 
-        /**
-         * Handle JSON parsing errors
-         */
-        @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<ApiError> handleHttpMessageNotReadable(
-                        HttpMessageNotReadableException ex,
-                        WebRequest request) {
+        log.warn("JSON parsing error on {}: {}", getPath(request), ex.getMessage());
 
-                String message = "Malformed JSON request";
-                List<String> details = Collections.emptyList();
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.BAD_REQUEST,
+                message,
+                request,
+                details
+        );
+    }
 
-                Throwable cause = ex.getCause();
-                if (cause instanceof InvalidFormatException ife) {
-                        String fieldName = ife.getPath().stream()
-                                        .map(JsonMappingException.Reference::getFieldName)
-                                        .collect(Collectors.joining("."));
-                        message = "Invalid format for field: " + fieldName;
-                        details = List.of("Expected type: " + ife.getTargetType().getSimpleName());
-                } else if (cause instanceof MismatchedInputException mie) {
-                        String fieldName = mie.getPath().stream()
-                                        .map(JsonMappingException.Reference::getFieldName)
-                                        .collect(Collectors.joining("."));
-                        message = "Mismatched input for field: " + fieldName;
-                        details = List.of("Check the data type of the field");
-                }
+    /**
+     * Handle business exceptions (polymorphic)
+     */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiError> handleBusinessException(
+            BusinessException ex,
+            WebRequest request
+    ) {
+        log.warn("Business exception on {}: {} - {}",
+                getPath(request), ex.getErrorCode(), ex.getMessage());
 
-                ApiError error = ApiError.builder()
-                                .code("BAD_REQUEST")
-                                .message(message)
-                                .path(getPath(request))
-                                .details(details)
-                                .build();
+        return buildResponse(
+                ex.getHttpStatus(),
+                ex.getErrorCode(),
+                ex.getMessage(),
+                request,
+                Collections.emptyList()
+        );
+    }
 
-                log.warn("JSON parsing error on {}: {}", getPath(request), ex.getMessage());
+    /**
+     * Handle unexpected exceptions
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGenericException(
+            Exception ex,
+            WebRequest request
+    ) {
+        log.error("Unexpected error on {}", getPath(request), ex);
 
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(error);
-        }
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ErrorCode.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred",
+                request,
+                Collections.emptyList()
+        );
+    }
 
-        /**
-         * Handle business exception (polymorphic handling)
-         */
-        @ExceptionHandler(BusinessException.class)
-        public ResponseEntity<ApiError> handleBusinessException(
-                        BusinessException ex,
-                        WebRequest request) {
+    /* Helpers */
 
-                ApiError error = ApiError.builder()
-                                .code(ex.getErrorCode())
-                                .message(ex.getMessage())
-                                .path(getPath(request))
-                                .details(Collections.emptyList())
-                                .build();
+    private ResponseEntity<ApiError> buildResponse(
+            HttpStatus status,
+            ErrorCode code,
+            String message,
+            WebRequest request,
+            List<String> details
+    ) {
+        ApiError error = ApiError.builder()
+                .code(code.name())
+                .message(message)
+                .path(getPath(request))
+                .details(details)
+                .build();
 
-                log.warn("Business exception on {}: {} - {}",
-                                getPath(request), ex.getErrorCode(), ex.getMessage());
+        return ResponseEntity.status(status).body(error);
+    }
 
-                return ResponseEntity
-                                .status(ex.getHttpStatus())
-                                .body(error);
-        }
+    private String extractFieldPath(List<JsonMappingException.Reference> path) {
+        return path.stream()
+                .map(JsonMappingException.Reference::getFieldName)
+                .collect(Collectors.joining("."));
+    }
 
-        /**
-         * Handle all other unexpected exceptions
-         */
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ApiError> handleGenericException(
-                        Exception ex,
-                        WebRequest request) {
-
-                log.error("Unexpected error on {}", getPath(request), ex);
-
-                ApiError error = ApiError.builder()
-                                .code("INTERNAL_ERROR")
-                                .message("An unexpected error occurred")
-                                .path(getPath(request))
-                                .details(Collections.emptyList())
-                                .build();
-
-                return ResponseEntity
-                                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body(error);
-        }
-
-        private String getPath(WebRequest request) {
-                if (request instanceof ServletWebRequest swr) {
-                        return swr.getRequest().getRequestURI();
-                }
-                return "unknown";
-        }
+    private String getPath(WebRequest request) {
+        return request instanceof ServletWebRequest swr
+                ? swr.getRequest().getRequestURI()
+                : "unknown";
+    }
 }
