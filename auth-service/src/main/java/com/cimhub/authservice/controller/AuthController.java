@@ -8,6 +8,7 @@ import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
 import com.cimhub.common.dto.ApiResponse;
+import com.cimhub.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -56,6 +57,9 @@ public class AuthController {
             @Valid @RequestBody ValidateTokenRequest request) {
         log.info("Token validation request");
         ValidateTokenResponse response = authService.validateToken(request);
+        if (!response.isValid()) {
+            throw new UnauthorizedException("Invalid or expired token");
+        }
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

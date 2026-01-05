@@ -11,7 +11,9 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
-import com.cimhub.common.exception.BusinessException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
+import com.cimhub.common.exception.UnauthorizedException;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,7 +39,7 @@ public class AuthService {
         log.info("Registering new user: {}", normalizedEmail);
 
         if (authUserRepository.findByEmail(normalizedEmail) != null) {
-            throw new com.cimhub.authservice.exception.UserAlreadyExistsException(
+            throw new UserAlreadyExistsException(
                     "User Already Exists with email: " + normalizedEmail);
         }
 
@@ -62,6 +64,10 @@ public class AuthService {
 
         try {
             userServiceClient.createUserProfile(profileRequest);
+        } catch (FeignException.Conflict e) {
+            log.error("User profile already exists for {}. Rolling back auth user.", normalizedEmail);
+            authUserRepository.delete(newUser);
+            throw new UserAlreadyExistsException("User profile already exists for " + normalizedEmail);
         } catch (Exception e) {
             log.error("Failed to create user profile for {}. Rolling back auth user.", normalizedEmail, e);
             authUserRepository.delete(newUser);
@@ -92,7 +98,7 @@ public class AuthService {
                             request.password()));
         } catch (Exception e) {
             log.warn("Login failed for user {}: {}", normalizedEmail, e.getMessage());
-            throw BusinessException.unauthorized("Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
 
         User userData = authUserRepository.findByEmail(normalizedEmail);
