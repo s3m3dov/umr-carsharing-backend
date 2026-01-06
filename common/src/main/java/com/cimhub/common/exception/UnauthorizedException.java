@@ -17,7 +17,7 @@ public class UnauthorizedException extends BusinessException {
     }
 
     @Override
-    public ErrorCode getErrorCode() {
-        return ErrorCode.UNAUTHORIZED;
+    public String getErrorCode() {
+        return ErrorCode.UNAUTHORIZED.code();
     }
 }
