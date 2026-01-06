@@ -17,7 +17,7 @@ public class ResourceNotFoundException extends BusinessException {
     }
 
     @Override
-    public ErrorCode getErrorCode() {
-        return ErrorCode.RESOURCE_NOT_FOUND;
+    public String getErrorCode() {
+        return ErrorCode.RESOURCE_NOT_FOUND.code();
     }
 }
