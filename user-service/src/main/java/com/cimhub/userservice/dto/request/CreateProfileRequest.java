@@ -1,12 +1,13 @@
 package com.cimhub.userservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import java.util.Date;
 
 public record CreateProfileRequest(
         @NotBlank(message = "User ID is required") String userId,
 
-        @NotBlank(message = "Email is required") String emailId,
+        @NotBlank(message = "Email is required") String email,
 
         String fullName,
         String phoneNumber,
