@@ -9,6 +9,6 @@ import com.cimhub.common.exception.BusinessException;
 public class TripNotAvailableException extends BusinessException {
 
     public TripNotAvailableException(String message) {
-        super(TripErrorCode.TRIP_NOT_AVAILABLE, message, null);
+        super(TripErrorCode.TRIP_NOT_AVAILABLE, message);
     }
 }

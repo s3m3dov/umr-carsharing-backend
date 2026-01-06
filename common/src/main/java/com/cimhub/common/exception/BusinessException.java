@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
-import java.net.URI;
+import com.cimhub.common.dto.response.ErrorDetail;
 import java.util.List;
 
 /**
@@ -19,26 +19,24 @@ public abstract class BusinessException extends ErrorResponseException {
      * Create a business exception with ServiceErrorCode and optional custom
      * message.
      */
-    protected BusinessException(ServiceErrorCode errorCode, String message, String requestPath) {
-        this(errorCode, message, requestPath, null);
+    protected BusinessException(ServiceErrorCode errorCode, String message) {
+        this(errorCode, message, null);
     }
 
     /**
      * Create a business exception with ServiceErrorCode, message, and details.
      */
-    protected BusinessException(ServiceErrorCode errorCode, String message, String requestPath, List<Object> details) {
+    protected BusinessException(ServiceErrorCode errorCode, String message, List<ErrorDetail> details) {
         super(HttpStatusCode.valueOf(errorCode.getHttpStatus().value()),
-                createProblemDetail(errorCode, message, requestPath, details), null);
+                createProblemDetail(errorCode, message, details), null);
         this.errorCode = errorCode;
     }
 
-    private static ProblemDetail createProblemDetail(ServiceErrorCode errorCode, String message, String requestPath,
-            List<Object> details) {
+    private static ProblemDetail createProblemDetail(ServiceErrorCode errorCode, String message,
+            List<ErrorDetail> details) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(errorCode.getHttpStatus());
         problemDetail.setDetail(message != null ? message : errorCode.getDefaultMessage());
-        if (requestPath != null) {
-            problemDetail.setInstance(URI.create(requestPath));
-        }
+
         problemDetail.setProperty("code", errorCode.code());
         if (details != null && !details.isEmpty()) {
             problemDetail.setProperty("details", details);

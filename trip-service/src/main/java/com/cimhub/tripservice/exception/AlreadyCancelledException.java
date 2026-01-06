@@ -9,6 +9,6 @@ import com.cimhub.common.exception.BusinessException;
 public class AlreadyCancelledException extends BusinessException {
 
     public AlreadyCancelledException(String message) {
-        super(TripErrorCode.ALREADY_CANCELLED, message, null);
+        super(TripErrorCode.ALREADY_CANCELLED, message);
     }
 }

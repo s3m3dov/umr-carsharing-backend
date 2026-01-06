@@ -6,10 +6,6 @@ package com.cimhub.common.exception;
 public class UnauthorizedException extends BusinessException {
 
     public UnauthorizedException(String message) {
-        this(message, null);
-    }
-
-    public UnauthorizedException(String message, String requestPath) {
-        super(ErrorCode.UNAUTHORIZED, message, requestPath);
+        super(ErrorCode.UNAUTHORIZED, message);
     }
 }

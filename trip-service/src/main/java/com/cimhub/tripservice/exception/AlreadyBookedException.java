@@ -9,6 +9,6 @@ import com.cimhub.common.exception.BusinessException;
 public class AlreadyBookedException extends BusinessException {
 
     public AlreadyBookedException(String message) {
-        super(TripErrorCode.ALREADY_BOOKED, message, null);
+        super(TripErrorCode.ALREADY_BOOKED, message);
     }
 }

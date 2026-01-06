@@ -6,10 +6,6 @@ package com.cimhub.common.exception;
 public class ResourceNotFoundException extends BusinessException {
 
     public ResourceNotFoundException(String message) {
-        this(message, null);
-    }
-
-    public ResourceNotFoundException(String message, String requestPath) {
-        super(ErrorCode.RESOURCE_NOT_FOUND, message, requestPath);
+        super(ErrorCode.RESOURCE_NOT_FOUND, message);
     }
 }
