@@ -1,23 +1,15 @@
 package com.cimhub.common.exception;
 
-import org.springframework.http.HttpStatus;
-
 /**
  * Exception thrown when a resource is not found
  */
 public class ResourceNotFoundException extends BusinessException {
 
     public ResourceNotFoundException(String message) {
-        super(message);
+        this(message, null);
     }
 
-    @Override
-    public HttpStatus getHttpStatus() {
-        return HttpStatus.NOT_FOUND;
-    }
-
-    @Override
-    public String getErrorCode() {
-        return ErrorCode.RESOURCE_NOT_FOUND.code();
+    public ResourceNotFoundException(String message, String requestPath) {
+        super(ErrorCode.RESOURCE_NOT_FOUND, message, requestPath);
     }
 }

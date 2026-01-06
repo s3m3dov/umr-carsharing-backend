@@ -1,23 +1,15 @@
 package com.cimhub.common.exception;
 
-import org.springframework.http.HttpStatus;
-
 /**
  * Exception thrown for unauthorized access or invalid credentials
  */
 public class UnauthorizedException extends BusinessException {
 
     public UnauthorizedException(String message) {
-        super(message);
+        this(message, null);
     }
 
-    @Override
-    public HttpStatus getHttpStatus() {
-        return HttpStatus.UNAUTHORIZED;
-    }
-
-    @Override
-    public String getErrorCode() {
-        return ErrorCode.UNAUTHORIZED.code();
+    public UnauthorizedException(String message, String requestPath) {
+        super(ErrorCode.UNAUTHORIZED, message, requestPath);
     }
 }

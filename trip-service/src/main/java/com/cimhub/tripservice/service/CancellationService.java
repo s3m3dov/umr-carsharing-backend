@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.exception.BusinessException;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
+import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
@@ -9,7 +11,6 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,20 +34,15 @@ public class CancellationService {
                                 passengerId, bookingId);
 
                 Booking booking = bookingRepository.findById(bookingId)
-                                .orElseThrow(() -> BusinessException.notFound("Booking", bookingId));
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                String.format("Booking with id %s not found", bookingId)));
 
                 if (!booking.getPassengerId().equals(passengerId)) {
-                        throw new BusinessException(
-                                        "UNAUTHORIZED",
-                                        "You are not authorized to cancel this booking",
-                                        HttpStatus.FORBIDDEN);
+                        throw new UnauthorizedException("You are not authorized to cancel this booking");
                 }
 
                 if (booking.getStatus() == BookingStatus.CANCELLED) {
-                        throw new BusinessException(
-                                        "ALREADY_CANCELLED",
-                                        "This booking has already been cancelled",
-                                        HttpStatus.BAD_REQUEST);
+                        throw new AlreadyCancelledException("This booking has already been cancelled");
                 }
 
                 booking.setStatus(BookingStatus.CANCELLED);
@@ -54,7 +50,8 @@ public class CancellationService {
                 bookingRepository.save(booking);
 
                 Trip trip = tripsRepository.findById(booking.getTripId())
-                                .orElseThrow(() -> BusinessException.notFound("Trip", booking.getTripId()));
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                String.format("Trip with id %s not found", booking.getTripId())));
 
                 trip.setCurrSeats(trip.getCurrSeats() - booking.getRequestedSeats());
                 tripsRepository.save(trip);
@@ -71,20 +68,15 @@ public class CancellationService {
                 log.info("Processing trip cancellation for driver: {}, tripId: {}", driverId, tripId);
 
                 Trip trip = tripsRepository.findById(tripId)
-                                .orElseThrow(() -> BusinessException.notFound("Trip", tripId));
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                String.format("Trip with id %s not found", tripId)));
 
                 if (!trip.getDriverId().equals(driverId)) {
-                        throw new BusinessException(
-                                        "UNAUTHORIZED",
-                                        "You are not authorized to cancel this trip",
-                                        HttpStatus.FORBIDDEN);
+                        throw new UnauthorizedException("You are not authorized to cancel this trip");
                 }
 
                 if ("CANCELLED".equals(trip.getTripStatus())) {
-                        throw new BusinessException(
-                                        "ALREADY_CANCELLED",
-                                        "This trip has already been cancelled",
-                                        HttpStatus.BAD_REQUEST);
+                        throw new AlreadyCancelledException("This trip has already been cancelled");
                 }
 
                 List<Booking> bookings = bookingRepository.findByTripId(tripId);
