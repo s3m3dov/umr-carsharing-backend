@@ -3,6 +3,7 @@ package com.cimhub.apigateway.exception;
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.exception.BusinessException;
 import com.cimhub.common.exception.ErrorCode;
+import com.cimhub.common.exception.ServiceErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,17 +45,15 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
     private ErrorAttributes resolveErrorAttributes(Throwable ex) {
         if (ex instanceof BusinessException businessEx) {
             return new ErrorAttributes(
-                    businessEx.getHttpStatus(),
+                    businessEx.getErrorCode().getHttpStatus(),
                     businessEx.getErrorCode(),
-                    businessEx.getMessage()
-            );
+                    businessEx.getMessage());
         }
 
         return new ErrorAttributes(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ErrorCode.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred at the gateway level."
-        );
+                "An unexpected error occurred at the gateway level.");
     }
 
     private Mono<Void> writeErrorResponse(ServerWebExchange exchange, ErrorAttributes attrs) {
@@ -63,10 +62,13 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         response.setStatusCode(attrs.status());
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
+        String requestId = exchange.getRequest().getHeaders().getFirst("X-Request-Id");
+
         ApiError apiError = ApiError.builder()
-                .code(attrs.errorCode().name())
+                .code(attrs.errorCode().code())
                 .message(attrs.message())
                 .path(exchange.getRequest().getURI().getPath())
+                .requestId(requestId)
                 .build();
 
         try {
@@ -84,7 +86,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
      */
     private record ErrorAttributes(
             HttpStatus status,
-            ErrorCode errorCode,
-            String message
-    ) {}
+            ServiceErrorCode errorCode,
+            String message) {
+    }
 }

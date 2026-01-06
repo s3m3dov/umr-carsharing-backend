@@ -53,8 +53,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private Mono<Void> authorize(
             ServerWebExchange exchange,
             GatewayFilterChain chain,
-            TokenValidationResponse response
-    ) {
+            TokenValidationResponse response) {
         if (!response.valid()) {
             return Mono.error(new UnauthorizedException("Invalid or expired token"));
         }
@@ -66,8 +65,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .build();
 
         return chain.filter(
-                exchange.mutate().request(modifiedRequest).build()
-        );
+                exchange.mutate().request(modifiedRequest).build());
     }
 
     /**
@@ -121,8 +119,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         return Stream.of(
                         securityProperties.getPublicPaths(),
                         securityProperties.getDocsPaths(),
-                        securityProperties.getActuatorPaths()
-                )
+                        securityProperties.getActuatorPaths())
                 .flatMap(Collection::stream)
                 .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
@@ -141,7 +138,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
 
     /* Inner DTOs */
 
-    private record TokenValidationRequest(String token) {}
+    private record TokenValidationRequest(String token) {
+    }
 
-    private record TokenValidationResponse(String email, boolean valid) {}
+    private record TokenValidationResponse(String email, boolean valid) {
+    }
 }

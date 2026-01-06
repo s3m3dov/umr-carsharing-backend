@@ -1,31 +1,52 @@
 package com.cimhub.common.exception;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.ErrorResponseException;
+
+import java.net.URI;
+import java.util.List;
 
 /**
  * Base exception for business logic errors.
- * Extends RuntimeException to avoid checked exception handling.
- *
- * Subclasses must provide:
- * HTTP status code
- * Error code string (from ErrorCode enum or domain-specific enum)
+ * Extends ErrorResponseException to leverage Spring's ProblemDetail mechanism.
  */
-public abstract class BusinessException extends RuntimeException {
+public abstract class BusinessException extends ErrorResponseException {
 
-    protected BusinessException(String message) {
-        super(message);
+    private final ServiceErrorCode errorCode;
+
+    /**
+     * Create a business exception with ServiceErrorCode and optional custom
+     * message.
+     */
+    protected BusinessException(ServiceErrorCode errorCode, String message, String requestPath) {
+        this(errorCode, message, requestPath, null);
     }
 
     /**
-     * @return The HTTP status code associated with this business error
+     * Create a business exception with ServiceErrorCode, message, and details.
      */
-    public abstract HttpStatus getHttpStatus();
+    protected BusinessException(ServiceErrorCode errorCode, String message, String requestPath, List<Object> details) {
+        super(HttpStatusCode.valueOf(errorCode.getHttpStatus().value()),
+                createProblemDetail(errorCode, message, requestPath, details), null);
+        this.errorCode = errorCode;
+    }
 
-    /**
-     * @return The machine-readable error code string associated with this business
-     *         error.
-     *         This can come from the global ErrorCode enum or a domain-specific
-     *         enum.
-     */
-    public abstract String getErrorCode();
+    private static ProblemDetail createProblemDetail(ServiceErrorCode errorCode, String message, String requestPath,
+            List<Object> details) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(errorCode.getHttpStatus());
+        problemDetail.setDetail(message != null ? message : errorCode.getDefaultMessage());
+        if (requestPath != null) {
+            problemDetail.setInstance(URI.create(requestPath));
+        }
+        problemDetail.setProperty("code", errorCode.code());
+        if (details != null && !details.isEmpty()) {
+            problemDetail.setProperty("details", details);
+        }
+        return problemDetail;
+    }
+
+    public ServiceErrorCode getErrorCode() {
+        return errorCode;
+    }
 }
