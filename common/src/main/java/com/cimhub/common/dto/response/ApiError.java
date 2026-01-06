@@ -18,7 +18,7 @@ public record ApiError(
         String code,
         String message,
         String path,
-        List<Object> details,
+        List<ErrorDetail> details,
         Instant timestamp,
         String requestId) {
 
@@ -40,7 +40,7 @@ public record ApiError(
      * Create an error with structured details.
      */
     public static ApiError withDetails(int status, String code, String message, String path,
-            List<Object> details) {
+            List<ErrorDetail> details) {
         return ApiError.builder()
                 .status(status)
                 .code(code)

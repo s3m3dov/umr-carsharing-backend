@@ -6,10 +6,6 @@ package com.cimhub.common.exception;
 public class UserAlreadyExistsException extends BusinessException {
 
     public UserAlreadyExistsException(String message) {
-        this(message, null);
-    }
-
-    public UserAlreadyExistsException(String message, String requestPath) {
-        super(ErrorCode.USER_ALREADY_EXISTS, message, requestPath);
+        super(ErrorCode.USER_ALREADY_EXISTS, message);
     }
 }

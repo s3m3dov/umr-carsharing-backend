@@ -9,6 +9,6 @@ import com.cimhub.common.exception.BusinessException;
 public class InsufficientSeatsException extends BusinessException {
 
     public InsufficientSeatsException(String message) {
-        super(TripErrorCode.INSUFFICIENT_SEATS, message, null);
+        super(TripErrorCode.INSUFFICIENT_SEATS, message);
     }
 }
