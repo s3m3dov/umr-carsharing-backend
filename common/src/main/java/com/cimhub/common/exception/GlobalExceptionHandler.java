@@ -35,20 +35,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         WebRequest request) {
 
                 List<ErrorDetail> errors = ex.getBindingResult().getFieldErrors().stream()
-                                .map(error -> ErrorDetail.of(
-                                                error.getField(),
-                                                error.getDefaultMessage(),
-                                                ErrorType.VALIDATION_ERROR.name()))
+                                .map(this::mapFieldError)
                                 .toList();
 
-                ApiError apiError = buildApiError(
-                                HttpStatus.UNPROCESSABLE_ENTITY,
-                                ErrorType.VALIDATION_ERROR.name(),
-                                "Validation failed",
-                                request,
-                                errors);
-
-                return handleExceptionInternal(ex, apiError, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+                return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorType.VALIDATION_ERROR.name(),
+                                "Validation failed", errors, request);
         }
 
         @Override
@@ -63,140 +54,107 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         return super.handleExceptionInternal(ex, body, headers, statusCode, request);
                 }
 
-                // Fallback for standard Spring exceptions that we haven't explicitly handled
-                // If body is ProblemDetail (default in Spring 6), we can extract from it, or
-                // just use defaults
+                return createGenericErrorResponse(ex, body, statusCode, request);
+        }
+
+        // --- Custom Exception Handlers ---
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+                List<ErrorDetail> errors = ex.getConstraintViolations().stream()
+                                .map(this::mapConstraintViolation)
+                                .toList();
+
+                return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorType.VALIDATION_ERROR.name(),
+                                "Validation failed", errors, request);
+        }
+
+        @ExceptionHandler(BusinessException.class)
+        public ResponseEntity<Object> handleBusinessException(BusinessException ex, WebRequest request) {
+                return createErrorResponse(ex.getErrorCode().getHttpStatus(), ex.getErrorCode().code(), ex.getMessage(),
+                                Collections.emptyList(), request);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<Object> handleAllUncaughtException(Exception ex, WebRequest request) {
+                log.error("Unexpected error occurred", ex);
+                return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR.code(),
+                                "An unexpected internal error occurred", Collections.emptyList(), request);
+        }
+
+        // --- Helpers ---
+
+        private ResponseEntity<Object> createGenericErrorResponse(Exception ex, Object body, HttpStatusCode statusCode,
+                        WebRequest request) {
                 String message = "An unexpected error occurred";
                 String code = ErrorCode.INTERNAL_SERVER_ERROR.code();
+                List<ErrorDetail> details = Collections.emptyList();
 
                 if (body instanceof ProblemDetail problemDetail) {
-                        message = problemDetail.getDetail(); // This is usually safe for standard Spring exceptions
-                                                             // (e.g. "Method Not Allowed")
-                        // Try to find if there is a 'code' property, otherwise map status to error code
+                        message = problemDetail.getDetail();
+
                         Object codeProp = problemDetail.getProperties() != null
                                         ? problemDetail.getProperties().get("code")
                                         : null;
                         if (codeProp instanceof String c) {
                                 code = c;
                         }
-                }
 
-                // Sanitize message for generic exceptions if it wasn't a ProblemDetail or if
-                // it's too raw
-                if (!(ex instanceof ErrorResponseException) && statusCode.is5xxServerError()) {
+                        if (problemDetail.getProperties() != null
+                                        && problemDetail.getProperties().get("details") instanceof List<?> rawDetails) {
+                                details = rawDetails.stream()
+                                                .filter(item -> item instanceof ErrorDetail)
+                                                .map(item -> (ErrorDetail) item)
+                                                .toList();
+                        }
+                } else if (!(ex instanceof ErrorResponseException) && statusCode.is5xxServerError()) {
                         message = "An unexpected internal error occurred";
                 }
 
-                ApiError apiError = buildApiError(
-                                statusCode instanceof HttpStatus ? (HttpStatus) statusCode
-                                                : HttpStatus.valueOf(statusCode.value()),
-                                code,
-                                message != null ? message : "An unexpected error occurred",
-                                request,
-                                Collections.emptyList());
-
-                return super.handleExceptionInternal(ex, apiError, headers, statusCode, request);
-        }
-
-        // --- Custom Exception Handlers ---
-
-        @ExceptionHandler(ErrorResponseException.class)
-        public ResponseEntity<Object> handleErrorResponseException(ErrorResponseException ex, WebRequest request) {
-                ProblemDetail problemDetail = ex.getBody();
-
-                String code = (String) problemDetail.getProperties().getOrDefault("code", "UNKNOWN_ERROR");
-
-                // Safely cast details, filtering out non-ErrorDetail objects if any (though
-                // BusinessException enforces it now)
-                List<ErrorDetail> details = Collections.emptyList();
-                if (problemDetail.getProperties().get("details") instanceof List<?> rawDetails) {
-                        details = rawDetails.stream()
-                                        .filter(item -> item instanceof ErrorDetail)
-                                        .map(item -> (ErrorDetail) item)
-                                        .toList();
+                // Sanitize leftover ProblemDetail strings if any
+                if (message != null && message.contains("ProblemDetail[")) {
+                        message = "An unexpected error occurred";
                 }
 
-                ApiError apiError = buildApiError(
-                                HttpStatus.valueOf(problemDetail.getStatus()),
-                                code,
-                                problemDetail.getDetail(),
-                                request,
-                                details);
-
-                return createResponseEntity(apiError, null, HttpStatus.valueOf(problemDetail.getStatus()), request);
+                return createErrorResponse(statusCode, code, message != null ? message : "An unexpected error occurred",
+                                details, request);
         }
 
-        @ExceptionHandler(ConstraintViolationException.class)
-        public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
-                List<ErrorDetail> errors = ex.getConstraintViolations().stream()
-                                .map(violation -> ErrorDetail.of(
-                                                violation.getPropertyPath().toString(),
-                                                violation.getMessage(),
-                                                ErrorType.CONSTRAINT_VIOLATION.name()))
-                                .toList();
-
-                ApiError apiError = buildApiError(
-                                HttpStatus.UNPROCESSABLE_ENTITY,
-                                ErrorType.VALIDATION_ERROR.name(),
-                                "Validation failed",
-                                request,
-                                errors);
-
-                return createResponseEntity(apiError, null, HttpStatus.UNPROCESSABLE_ENTITY, request);
-        }
-
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<Object> handleAllUncaughtException(Exception ex, WebRequest request) {
-                // Sanitize message: do NOT expose ex.getMessage()
-                log.error("Unexpected error occurred", ex);
-
-                ApiError apiError = buildApiError(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                ErrorCode.INTERNAL_SERVER_ERROR.code(),
-                                "An unexpected internal error occurred", // Sanitized
-                                request,
-                                Collections.emptyList());
-
-                return createResponseEntity(apiError, null, HttpStatus.INTERNAL_SERVER_ERROR, request);
-        }
-
-        // --- Helpers ---
-
-        private ApiError buildApiError(
-                        HttpStatus status,
-                        String code,
-                        String message,
-                        WebRequest request,
-                        List<ErrorDetail> details) {
-
-                String path = request.getContextPath(); // WebRequest doesn't give full path easily like
-                                                        // HttpServletRequest
-                // casting to get full path if possible
-                if (request instanceof org.springframework.web.context.request.ServletWebRequest servletRequest) {
-                        path = servletRequest.getRequest().getRequestURI();
-                        String query = servletRequest.getRequest().getQueryString();
-                        if (query != null) {
-                                path += "?" + query;
-                        }
-                } else {
-                        path = request.getDescription(false).replace("uri=", "");
-                }
-
-                // Try to get requestId from MDC
-                String requestId = MDC.get(TRACE_ID_KEY);
-                if (requestId == null) {
-                        // Try to get from header
-                        requestId = request.getHeader("X-Request-Id");
-                }
-
-                return ApiError.builder()
+        private ResponseEntity<Object> createErrorResponse(HttpStatusCode status, String code, String message,
+                        List<ErrorDetail> details, WebRequest request) {
+                ApiError apiError = ApiError.builder()
                                 .status(status.value())
                                 .code(code)
                                 .message(message)
-                                .path(path)
+                                .path(resolvePath(request))
                                 .details(details != null ? details : Collections.emptyList())
                                 .timestamp(Instant.now())
-                                .requestId(requestId)
+                                .requestId(resolveRequestId(request))
                                 .build();
+
+                return new ResponseEntity<>(apiError, status);
+        }
+
+        private String resolvePath(WebRequest request) {
+                if (request instanceof org.springframework.web.context.request.ServletWebRequest servletRequest) {
+                        String path = servletRequest.getRequest().getRequestURI();
+                        String query = servletRequest.getRequest().getQueryString();
+                        return query != null ? path + "?" + query : path;
+                }
+                return request.getDescription(false).replace("uri=", "");
+        }
+
+        private String resolveRequestId(WebRequest request) {
+                String requestId = MDC.get(TRACE_ID_KEY);
+                return requestId != null ? requestId : request.getHeader("X-Request-Id");
+        }
+
+        private ErrorDetail mapFieldError(org.springframework.validation.FieldError error) {
+                return ErrorDetail.of(error.getField(), error.getDefaultMessage(), ErrorType.VALIDATION_ERROR.name());
+        }
+
+        private ErrorDetail mapConstraintViolation(jakarta.validation.ConstraintViolation<?> violation) {
+                return ErrorDetail.of(violation.getPropertyPath().toString(), violation.getMessage(),
+                                ErrorType.CONSTRAINT_VIOLATION.name());
         }
 }

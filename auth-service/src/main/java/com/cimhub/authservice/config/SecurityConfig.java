@@ -27,6 +27,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SecurityProperties securityProperties;
+    private final org.springframework.web.servlet.HandlerExceptionResolver handlerExceptionResolver;
 
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
@@ -48,6 +49,9 @@ public class SecurityConfig {
 
                     registry.anyRequest().authenticated(); // require authentication for any other request
                 })
+                .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
+                    handlerExceptionResolver.resolveException(request, response, null, authException);
+                }))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

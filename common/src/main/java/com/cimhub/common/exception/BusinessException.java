@@ -47,4 +47,9 @@ public abstract class BusinessException extends ErrorResponseException {
     public ServiceErrorCode getErrorCode() {
         return errorCode;
     }
+
+    @Override
+    public String getMessage() {
+        return getBody().getDetail();
+    }
 }
