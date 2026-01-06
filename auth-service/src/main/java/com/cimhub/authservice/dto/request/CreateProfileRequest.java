@@ -1,12 +1,13 @@
 package com.cimhub.authservice.dto.request;
 
 import lombok.Builder;
+
 import java.util.Date;
 
 @Builder
 public record CreateProfileRequest(
         String userId,
-        String emailId,
+        String email,
         String fullName,
         String phoneNumber,
         int age,
