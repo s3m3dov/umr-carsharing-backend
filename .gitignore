@@ -13,7 +13,7 @@ target/
 .springBeans
 .sts4-cache
 
-# Sensitive files
+### Sensitive files ###
 **/firebase-sdk.json
 src/main/resources/firebaseSdk/firebase-sdk.json
 src/main/resources/application.properties
@@ -21,6 +21,12 @@ src/main/resources/application-*.properties
 tanzania.pub
 tanzania-eureka-server.tar
 tanzania
+secrets/
+.env
+
+### Kubernetes Secrets ###
+gitops/base/secrets.yaml
+gitops/overlays/*/secrets.yaml
 
 #Codespace files
 ngrok.zip
@@ -51,8 +57,4 @@ build/
 
 ### VS Code ###
 .vscode/
-.env
 
-### Kubernetes Secrets ###
-gitops/base/secrets.yaml
-gitops/overlays/*/secrets.yaml
