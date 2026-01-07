@@ -53,6 +53,9 @@ spring:
       retry:
         enabled: true
 
+server:
+  forward-headers-strategy: framework
+
 management:
   endpoints:
     web:
@@ -66,7 +69,6 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-    use-root-path: true
     urls:
       - name: user
         url: /user-service/v3/api-docs
@@ -80,6 +82,8 @@ springdoc:
         url: /ride-service/v3/api-docs
       - name: notification
         url: /notification-service/v3/api-docs
+  api-docs:
+    enabled: true
 
 gateway:
   security:
@@ -87,7 +91,6 @@ gateway:
       - /auth-service/api/auth/login
       - /auth-service/api/auth/signup
       - /auth-service/api/auth/validate
-      - /health/**
       - /webjars/**
     docs-paths:
       - /v3/api-docs/**

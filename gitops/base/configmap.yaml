@@ -9,7 +9,7 @@ data:
   # GCP Configuration
   GCP_PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
   GCP_REGION: "europe-north1"
-  GKE_CLUSTER_NAME: "autopilot-carsharing-cluster-01"
+  GKE_CLUSTER_NAME: "autopilot-cluster-1"
   EXTERNAL_IP: "34.160.91.182"
   
   # Legacy field (deprecated, use GCP_PROJECT_ID instead)

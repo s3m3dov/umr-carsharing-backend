@@ -248,7 +248,7 @@ Wait 5-10 minutes for GCE load balancer provisioning.
 Ensure Docker is authenticated:
 
 ```bash
-gcloud auth configure-docker gcr.io
+gcloud auth configure-docker eu.gcr.io
 ```
 
 Check Docker daemon is running:
@@ -275,7 +275,7 @@ kubectl scale deployment auth-service --replicas=2 -n carsharing
 
 ```bash
 kubectl set image deployment/auth-service \
-  auth-service=gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service:v1.0.0 \
+  auth-service=eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service:v1.0.0 \
   -n carsharing
 ```
 
