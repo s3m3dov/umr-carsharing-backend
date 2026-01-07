@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spring-cloud
       containers:
       - name: ride-service
-        image: gcr.io/project-id/ride-service:latest
+        image: eu.gcr.io/project-id/ride-service:latest
         ports:
         - containerPort: 8080
           name: http

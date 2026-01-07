@@ -9,25 +9,25 @@ resources:
 
 # Use local image tags
 images:
-  - name: gcr.io/project-id/auth-service
+  - name: eu.gcr.io/project-id/auth-service
     newName: auth-service
     newTag: local
-  - name: gcr.io/project-id/user-service
+  - name: eu.gcr.io/project-id/user-service
     newName: user-service
     newTag: local
-  - name: gcr.io/project-id/vehicle-service
+  - name: eu.gcr.io/project-id/vehicle-service
     newName: vehicle-service
     newTag: local
-  - name: gcr.io/project-id/trip-service
+  - name: eu.gcr.io/project-id/trip-service
     newName: trip-service
     newTag: local
-  - name: gcr.io/project-id/ride-service
+  - name: eu.gcr.io/project-id/ride-service
     newName: ride-service
     newTag: local
-  - name: gcr.io/project-id/notification-service
+  - name: eu.gcr.io/project-id/notification-service
     newName: notification-service
     newTag: local
-  - name: gcr.io/project-id/api-gateway
+  - name: eu.gcr.io/project-id/api-gateway
     newName: api-gateway
     newTag: local
 
