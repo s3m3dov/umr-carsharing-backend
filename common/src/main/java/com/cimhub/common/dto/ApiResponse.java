@@ -1,6 +1,7 @@
 package com.cimhub.common.dto;
 
 import com.cimhub.common.dto.response.ApiError;
+import com.cimhub.common.dto.response.ErrorBody;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -102,7 +103,7 @@ public class ApiResponse<T> {
         return error(ApiError.builder()
                 .code(code)
                 .message(message)
-                .path(path)
+                .error(ErrorBody.of(path))
                 .build());
     }
 }

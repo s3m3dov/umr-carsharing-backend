@@ -4,7 +4,7 @@ import java.util.Date;
 
 public record UserResponse(
         String fullName,
-        String emailId,
+        String email,
         String userId,
         String phoneNumber,
         int age,

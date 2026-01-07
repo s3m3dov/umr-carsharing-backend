@@ -1,8 +1,11 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.exception.BusinessException;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
+import com.cimhub.tripservice.exception.AlreadyBookedException;
+import com.cimhub.tripservice.exception.InsufficientSeatsException;
+import com.cimhub.tripservice.exception.TripNotAvailableException;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
@@ -10,7 +13,6 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,13 +33,11 @@ public class JoinTripService {
                                 request.passengerId(), request.tripId());
 
                 Trip trip = tripsRepository.findById(request.tripId())
-                                .orElseThrow(() -> BusinessException.notFound("Trip", request.tripId()));
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Trip not found with id: " + request.tripId()));
 
                 if (!"OFFERED".equals(trip.getTripStatus()) && !"AVAILABLE".equals(trip.getTripStatus())) {
-                        throw new BusinessException(
-                                        "TRIP_NOT_AVAILABLE",
-                                        "Trip is not available for booking",
-                                        HttpStatus.BAD_REQUEST);
+                    throw new TripNotAvailableException("Trip is not available for booking");
                 }
 
                 List<Booking> existingBookings = bookingRepository.findByTripId(request.tripId());
@@ -46,21 +46,16 @@ public class JoinTripService {
                                                 b.getStatus() != BookingStatus.CANCELLED);
 
                 if (alreadyBooked) {
-                        throw new BusinessException(
-                                        "ALREADY_BOOKED",
-                                        "You have already booked this trip",
-                                        HttpStatus.CONFLICT);
+                    throw new AlreadyBookedException("You have already booked this trip");
                 }
 
                 int requestedSeats = request.requestedSeats();
                 int availableSeats = trip.getOfferedSeat() - trip.getCurrSeats();
 
                 if (availableSeats < requestedSeats) {
-                        throw new BusinessException(
-                                        "INSUFFICIENT_SEATS",
+                    throw new InsufficientSeatsException(
                                         String.format("Only %d seats available, but %d requested", availableSeats,
-                                                        requestedSeats),
-                                        HttpStatus.BAD_REQUEST);
+                                                requestedSeats));
                 }
 
                 Points pickupPoints = new Points();
