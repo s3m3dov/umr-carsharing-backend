@@ -1,0 +1,12 @@
+package com.cimhub.common.exception;
+
+public enum ErrorType {
+    DUPLICATE_RESOURCE,
+    NOT_FOUND,
+    AUTH_ERROR,
+    VALIDATION_ERROR,
+    SYSTEM_ERROR,
+    BUSINESS_RULE_VIOLATION,
+    RESOURCE_EXHAUSTED,
+    CONSTRAINT_VIOLATION
+}

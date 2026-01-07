@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: carsharing
+
+resources:
+  - ../../base
+  - ingress-production.yaml
+  - backend-config.yaml
+
+# Production images from GCR
+images:
+  - name: gcr.io/PROJECT_ID/auth-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/user-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/vehicle-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/trip-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/ride-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/notification-service
+    newTag: latest
+  - name: gcr.io/PROJECT_ID/api-gateway
+    newTag: latest
+
+# GKE-specific configuration
+patches:
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cloud.google.com/neg: '{"ingress": true}'
+    target:
+      kind: Service
+      name: api-gateway
+  - patch: |-
+      - op: add
+        path: /metadata/annotations/cloud.google.com~1backend-config
+        value: '{"default": "carsharing-backend-config"}'
+    target:
+      kind: Service
+      name: api-gateway

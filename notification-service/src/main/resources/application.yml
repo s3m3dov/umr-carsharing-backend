@@ -1,35 +1,35 @@
 server:
-  port: ${PORT:8085}
-
+  forward-headers-strategy: framework
 spring:
   application:
     name: notification-service
+  main:
+    cloud-platform: kubernetes
   cloud:
+    kubernetes:
+      discovery:
+        enabled: true
     loadbalancer:
       retry:
         enabled: true
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
-    registry-fetch-interval-seconds: 5
-    initial-instance-info-replication-interval-seconds: 5
-  instance:
-    prefer-ip-address: true
-    hostname: ${HOSTNAME:localhost}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+  server:
+    url: /notification-service
 
 firebase:
   config:

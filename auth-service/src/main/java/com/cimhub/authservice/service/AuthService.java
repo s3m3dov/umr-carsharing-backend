@@ -1,7 +1,5 @@
 package com.cimhub.authservice.service;
 
-import com.cimhub.authservice.client.UserServiceClient;
-import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
@@ -11,7 +9,8 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
-import com.cimhub.common.exception.BusinessException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,88 +29,74 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserServiceClient userServiceClient;
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
-        log.info("Registering new user: {}", request.emailId());
+        String normalizedEmail = request.email().toLowerCase();
+        log.info("Registering new user: {}", normalizedEmail);
 
-        if (authUserRepository.findByEmailId(request.emailId()) != null) {
-            throw new com.cimhub.authservice.exception.UserAlreadyExistsException(
-                    "User Already Exists with emailId: " + request.emailId());
+        if (authUserRepository.findByEmail(normalizedEmail) != null) {
+            throw new UserAlreadyExistsException(
+                    "User Already Exists with email: " + normalizedEmail);
         }
 
         User newUser = new User();
-        newUser.setUserId(request.emailId().toLowerCase());
-        newUser.setEmailId(request.emailId());
+        newUser.setUserId(normalizedEmail);
+        newUser.setEmail(normalizedEmail);
         newUser.setPassword(passwordEncoder.encode(request.password()));
         newUser.setCreatedDate(new Date());
         authUserRepository.save(newUser);
 
-        CreateProfileRequest profileRequest = CreateProfileRequest.builder()
-                .userId(newUser.getUserId())
-                .emailId(newUser.getEmailId())
-                .fullName(request.fullName())
-                .phoneNumber(request.phoneNumber())
-                .age(request.age())
-                .dob(request.dob())
-                .empId(request.empId())
-                .organisationName(request.organisationName())
-                .profilePicUrl(request.profilePicUrl())
-                .build();
-
-        try {
-            userServiceClient.createUserProfile(profileRequest);
-        } catch (Exception e) {
-            log.error("Failed to create user profile for {}. Rolling back auth user.", request.emailId(), e);
-            authUserRepository.delete(newUser);
-            throw new RuntimeException("Failed to create user profile: " + e.getMessage());
-        }
+        // User profile creation logic removed as per requirement.
+        // The user-service will handle profile creation via event sourcing later if
+        // needed,
+        // or it is assumed the user will create it separately.
 
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
-                        .username(newUser.getEmailId())
+                        .username(newUser.getEmail())
                         .password(newUser.getPassword())
                         .roles("USER")
                         .build());
 
         return SignUpResponse.builder()
                 .token(token)
-                .emailId(newUser.getEmailId())
+                .email(newUser.getEmail())
                 .build();
     }
 
     public LoginResponse login(LoginRequest request) {
-        log.info("Login check for user: {}", request.emailId());
+        String normalizedEmail = request.email().toLowerCase();
+        log.info("Login check for user: {}", normalizedEmail);
 
         try {
             authenticationManager.authenticate(
                     new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            request.emailId(),
+                            normalizedEmail,
                             request.password()));
         } catch (Exception e) {
-            log.warn("Login failed for user {}: {}", request.emailId(), e.getMessage());
-            throw BusinessException.unauthorized("Invalid credentials");
+            log.warn("Login failed for user {}: {}", normalizedEmail, e.getMessage());
+            throw new UnauthorizedException("Invalid credentials");
         }
 
-        User userData = authUserRepository.findByEmailId(request.emailId().toLowerCase());
+        User userData = authUserRepository.findByEmail(normalizedEmail);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                .username(userData.getEmailId())
+                .username(userData.getEmail())
                 .password(userData.getPassword())
                 .roles("USER")
                 .build();
 
         String token = jwtService.generateToken(userDetails);
 
-        return new LoginResponse(token, userData.getEmailId());
+        return new LoginResponse(token, userData.getEmail());
     }
 
     public ValidateTokenResponse validateToken(ValidateTokenRequest request) {
         try {
-            String emailId = jwtService.extractUsername(request.token());
-            boolean isTokenValid = jwtService.isTokenValid(request.token(), emailId);
+            String email = jwtService.extractUsername(request.token());
+            boolean isTokenValid = jwtService.isTokenValid(request.token(), email);
 
-            return new ValidateTokenResponse(isTokenValid, emailId);
+            return new ValidateTokenResponse(isTokenValid, email);
         } catch (Exception e) {
             log.warn("Token validation failed: {}", e.getMessage());
             return new ValidateTokenResponse(false, null);

@@ -1,115 +1,162 @@
 package com.cimhub.common.exception;
 
 import com.cimhub.common.dto.response.ApiError;
-import com.cimhub.common.dto.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import com.cimhub.common.dto.response.ErrorBody;
+import com.cimhub.common.dto.response.ErrorDetail;
+import com.cimhub.common.filter.RequestIdFilter;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.web.ErrorResponseException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.MDC;
+import org.springframework.http.*;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * Global exception handler for all REST controllers
- * Converts exceptions to standardized ApiResponse<Void> with ApiError
- */
-@RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+@RestControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-        /**
-         * Handle validation errors (from @Valid annotation)
-         */
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ApiResponse<Void>> handleValidationErrors(
+        private static final String TRACE_ID_KEY = RequestIdFilter.MDC_KEY;
+
+        // --- ResponseEntityExceptionHandler Overrides ---
+
+        @Override
+        protected ResponseEntity<Object> handleMethodArgumentNotValid(
                         MethodArgumentNotValidException ex,
-                        HttpServletRequest request) {
+                        HttpHeaders headers,
+                        HttpStatusCode status,
+                        WebRequest request) {
 
-                List<String> details = ex.getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                                .collect(Collectors.toList());
+                List<ErrorDetail> errors = ex.getBindingResult().getFieldErrors().stream()
+                                .map(this::mapFieldError)
+                                .toList();
 
-                ApiError error = ApiError.builder()
-                                .code("VALIDATION_ERROR")
-                                .message("Invalid request parameters")
-                                .path(request.getRequestURI())
-                                .details(details)
-                                .build();
-
-                log.warn("Validation error on {}: {}", request.getRequestURI(), details);
-
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(ApiResponse.error(error));
+                return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorType.VALIDATION_ERROR.name(),
+                                "Validation failed", errors, request);
         }
 
-        /**
-         * Handle business exception (custom base exception)
-         */
-        @ExceptionHandler(BusinessException.class)
-        public ResponseEntity<ApiResponse<Void>> handleBusinessException(
-                        BusinessException ex,
-                        HttpServletRequest request) {
-
-                ApiError error = ApiError.builder()
-                                .code(ex.getErrorCode())
-                                .message(ex.getMessage())
-                                .path(request.getRequestURI())
-                                .build();
-
-                log.warn("Business exception on {}: {} - {}",
-                                request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
-
-                return ResponseEntity
-                                .status(ex.getHttpStatus())
-                                .body(ApiResponse.error(error));
-        }
-
-        /**
-         * Handle illegal argument exceptions
-         */
-        @ExceptionHandler(IllegalArgumentException.class)
-        public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
-                        IllegalArgumentException ex,
-                        HttpServletRequest request) {
-
-                ApiError error = ApiError.builder()
-                                .code("INVALID_ARGUMENT")
-                                .message(ex.getMessage())
-                                .path(request.getRequestURI())
-                                .build();
-
-                log.warn("Invalid argument on {}: {}", request.getRequestURI(), ex.getMessage());
-
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(ApiResponse.error(error));
-        }
-
-        /**
-         * Handle all other unexpected exceptions
-         */
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ApiResponse<Void>> handleGenericException(
+        @Override
+        protected ResponseEntity<Object> handleExceptionInternal(
                         Exception ex,
-                        HttpServletRequest request) {
+                        @Nullable Object body,
+                        HttpHeaders headers,
+                        HttpStatusCode statusCode,
+                        WebRequest request) {
 
-                log.error("Unexpected error on {}", request.getRequestURI(), ex);
+                if (body instanceof ApiError) {
+                        return super.handleExceptionInternal(ex, body, headers, statusCode, request);
+                }
 
-                ApiError error = ApiError.builder()
-                                .code("INTERNAL_ERROR")
-                                .message("An unexpected error occurred")
-                                .path(request.getRequestURI())
+                return createGenericErrorResponse(ex, body, statusCode, request);
+        }
+
+        // --- Custom Exception Handlers ---
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+                List<ErrorDetail> errors = ex.getConstraintViolations().stream()
+                                .map(this::mapConstraintViolation)
+                                .toList();
+
+                return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorType.VALIDATION_ERROR.name(),
+                                "Validation failed", errors, request);
+        }
+
+        @ExceptionHandler(BusinessException.class)
+        public ResponseEntity<Object> handleBusinessException(BusinessException ex, WebRequest request) {
+                return createErrorResponse(ex.getErrorCode().getHttpStatus(), ex.getErrorCode().code(), ex.getMessage(),
+                                Collections.emptyList(), request);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<Object> handleAllUncaughtException(Exception ex, WebRequest request) {
+                log.error("Unexpected error occurred", ex);
+                return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR.code(),
+                                "An unexpected internal error occurred", Collections.emptyList(), request);
+        }
+
+        // --- Helpers ---
+
+        private ResponseEntity<Object> createGenericErrorResponse(Exception ex, Object body, HttpStatusCode statusCode,
+                        WebRequest request) {
+                String message = "An unexpected error occurred";
+                String code = ErrorCode.INTERNAL_SERVER_ERROR.code();
+                List<ErrorDetail> details = Collections.emptyList();
+
+                if (body instanceof ProblemDetail problemDetail) {
+                        message = problemDetail.getDetail();
+
+                        Object codeProp = problemDetail.getProperties() != null
+                                        ? problemDetail.getProperties().get("code")
+                                        : null;
+                        if (codeProp instanceof String c) {
+                                code = c;
+                        }
+
+                        if (problemDetail.getProperties() != null
+                                        && problemDetail.getProperties().get("details") instanceof List<?> rawDetails) {
+                                details = rawDetails.stream()
+                                                .filter(item -> item instanceof ErrorDetail)
+                                                .map(item -> (ErrorDetail) item)
+                                                .toList();
+                        }
+                } else if (!(ex instanceof ErrorResponseException) && statusCode.is5xxServerError()) {
+                        message = "An unexpected internal error occurred";
+                }
+
+                // Sanitize leftover ProblemDetail strings if any
+                if (message != null && message.contains("ProblemDetail[")) {
+                        message = "An unexpected error occurred";
+                }
+
+                return createErrorResponse(statusCode, code, message != null ? message : "An unexpected error occurred",
+                                details, request);
+        }
+
+        private ResponseEntity<Object> createErrorResponse(HttpStatusCode status, String code, String message,
+                        List<ErrorDetail> details, WebRequest request) {
+                ErrorBody errorBody = ErrorBody.of(resolvePath(request), details);
+
+                ApiError apiError = ApiError.builder()
+                                .status(status.value())
+                                .code(code)
+                                .message(message)
+                                .error(errorBody)
+                                .timestamp(Instant.now())
+                                .requestId(resolveRequestId(request))
                                 .build();
 
-                return ResponseEntity
-                                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body(ApiResponse.error(error));
+                return new ResponseEntity<>(apiError, status);
+        }
+
+        private String resolvePath(WebRequest request) {
+                if (request instanceof org.springframework.web.context.request.ServletWebRequest servletRequest) {
+                        String path = servletRequest.getRequest().getRequestURI();
+                        String query = servletRequest.getRequest().getQueryString();
+                        return query != null ? path + "?" + query : path;
+                }
+                return request.getDescription(false).replace("uri=", "");
+        }
+
+        private String resolveRequestId(WebRequest request) {
+                String requestId = MDC.get(TRACE_ID_KEY);
+                return requestId != null ? requestId : request.getHeader("X-Request-Id");
+        }
+
+        private ErrorDetail mapFieldError(org.springframework.validation.FieldError error) {
+                return ErrorDetail.of(error.getField(), error.getDefaultMessage(), ErrorType.VALIDATION_ERROR.name());
+        }
+
+        private ErrorDetail mapConstraintViolation(jakarta.validation.ConstraintViolation<?> violation) {
+                return ErrorDetail.of(violation.getPropertyPath().toString(), violation.getMessage(),
+                                ErrorType.CONSTRAINT_VIOLATION.name());
         }
 }

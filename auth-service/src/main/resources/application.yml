@@ -1,7 +1,14 @@
+server:
+  forward-headers-strategy: framework
 spring:
   application:
     name: auth-service
+  main:
+    cloud-platform: kubernetes
   cloud:
+    kubernetes:
+      discovery:
+        enabled: true
     loadbalancer:
       retry:
         enabled: true
@@ -9,36 +16,37 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
 
-server:
-  port: ${PORT:8087}
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
-    registry-fetch-interval-seconds: 5
-    initial-instance-info-replication-interval-seconds: 5
-  instance:
-    prefer-ip-address: true
-    hostname: ${HOSTNAME:localhost}
-    non-secure-port-enabled: true
-    secure-port-enabled: false
-    non-secure-port: ${PORT:8087}
-    statusPageUrl: http://${eureka.instance.hostname}/actuator/info
-    healthCheckUrl: http://${eureka.instance.hostname}/actuator/health
-    homePageUrl: http://${eureka.instance.hostname}/
-
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+auth:
+  security:
+    public-paths:
+      - /api/auth/login
+      - /api/auth/signup
+      - /api/auth/validate
+    docs-paths:
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /webjars/**
+    actuator-paths:
+      - /actuator/health/**
+      - /actuator/info/**
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+  server:
+    url: /auth-service
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}

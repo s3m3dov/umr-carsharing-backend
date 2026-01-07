@@ -52,3 +52,7 @@ build/
 ### VS Code ###
 .vscode/
 .env
+
+### Kubernetes Secrets ###
+gitops/base/secrets.yaml
+gitops/overlays/*/secrets.yaml
