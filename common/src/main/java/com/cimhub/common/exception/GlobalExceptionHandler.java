@@ -9,6 +9,7 @@ import org.springframework.web.ErrorResponseException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,6 +42,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
                 return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ErrorType.VALIDATION_ERROR.name(),
                                 "Validation failed", errors, request);
+        }
+
+        @Override
+        protected ResponseEntity<Object> handleHttpMessageNotReadable(
+                        HttpMessageNotReadableException ex,
+                        HttpHeaders headers,
+                        HttpStatusCode status,
+                        WebRequest request) {
+
+                log.warn("Failed to read request body: {}", ex.getMessage());
+
+                String message = "Invalid request format";
+                if (ex.getCause() != null) {
+                        String causeMessage = ex.getCause().getMessage();
+                        if (causeMessage != null) {
+                                // Extract meaningful error info from Jackson exceptions
+                                if (causeMessage.contains("Cannot deserialize")) {
+                                        message = "Invalid data format in request body";
+                                } else if (causeMessage.contains("required") || causeMessage.contains("missing")) {
+                                        message = "Missing required fields in request body";
+                                } else if (causeMessage.contains("not a valid")) {
+                                        message = "Invalid value provided in request body";
+                                }
+                        }
+                }
+
+                return createErrorResponse(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST.code(),
+                                message, Collections.emptyList(), request);
         }
 
         @Override
