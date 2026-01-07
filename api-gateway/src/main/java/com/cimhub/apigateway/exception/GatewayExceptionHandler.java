@@ -65,6 +65,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         String requestId = exchange.getRequest().getHeaders().getFirst("X-Request-Id");
 
         ApiError apiError = ApiError.builder()
+                .status(attrs.status().value())
                 .code(attrs.errorCode().code())
                 .message(attrs.message())
                 .path(exchange.getRequest().getURI().getPath())
