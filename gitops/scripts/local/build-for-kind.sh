@@ -5,18 +5,12 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../common.sh"
+PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
+
 TAG="${1:-local}"
 CLUSTER_NAME="carsharing-local"
-
-SERVICES=(
-    "auth-service"
-    "user-service"
-    "vehicle-service"
-    "trip-service"
-    "ride-service"
-    "notification-service"
-    "api-gateway"
-)
 
 echo "🐳 Building Docker images for Kind..."
 echo "   Tag: $TAG"
@@ -31,7 +25,7 @@ if ! kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
 fi
 
 # Build and load each service
-for service in "${SERVICES[@]}"; do
+for service in "${ALL_SERVICES[@]}"; do
     echo ""
     echo "📦 Building $service..."
     
@@ -52,7 +46,7 @@ echo ""
 echo "🎉 All images built and loaded into Kind!"
 echo ""
 echo "Images in cluster:"
-for service in "${SERVICES[@]}"; do
+for service in "${ALL_SERVICES[@]}"; do
     echo "  - $service:$TAG"
 done
 echo ""

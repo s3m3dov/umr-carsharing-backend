@@ -10,23 +10,40 @@ resources:
 
 # Production images from GCR
 images:
-  - name: gcr.io/PROJECT_ID/auth-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/user-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/user-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/vehicle-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/vehicle-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/trip-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/ride-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/ride-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/notification-service
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service
     newTag: latest
-  - name: gcr.io/PROJECT_ID/api-gateway
+  - name: gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
     newTag: latest
 
 # GKE-specific configuration
 patches:
+  # Set replicas to 1 for all deployments
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+  
+  # Set minReplicas to 1 for all HPAs
+  - patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+    target:
+      kind: HorizontalPodAutoscaler
+  
+  # GCE Ingress configuration
   - patch: |-
       - op: add
         path: /metadata/annotations

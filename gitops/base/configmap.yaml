@@ -5,6 +5,16 @@ metadata:
   namespace: carsharing
 data:
   ALLOWED_ORIGINS: "*"
+
+  # GCP Configuration
+  GCP_PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
+  GCP_REGION: "europe-north1"
+  GKE_CLUSTER_NAME: "autopilot-carsharing-cluster-01"
+  EXTERNAL_IP: "34.160.91.182"
+  
+  # Legacy field (deprecated, use GCP_PROJECT_ID instead)
+  PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
+
   # Service ports
   AUTH_SERVICE_PORT: "8089"
   USER_SERVICE_PORT: "8081"
