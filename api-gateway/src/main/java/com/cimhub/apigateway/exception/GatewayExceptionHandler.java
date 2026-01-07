@@ -1,6 +1,7 @@
 package com.cimhub.apigateway.exception;
 
 import com.cimhub.common.dto.response.ApiError;
+import com.cimhub.common.dto.response.ErrorBody;
 import com.cimhub.common.exception.BusinessException;
 import com.cimhub.common.exception.ErrorCode;
 import com.cimhub.common.exception.ServiceErrorCode;
@@ -17,6 +18,9 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.util.Collections;
 
 /**
  * Global exception handler for API Gateway.
@@ -63,12 +67,14 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         String requestId = exchange.getRequest().getHeaders().getFirst("X-Request-Id");
+        String path = exchange.getRequest().getURI().getPath();
 
         ApiError apiError = ApiError.builder()
                 .status(attrs.status().value())
                 .code(attrs.errorCode().code())
                 .message(attrs.message())
-                .path(exchange.getRequest().getURI().getPath())
+                .error(ErrorBody.of(path, Collections.emptyList()))
+                .timestamp(Instant.now())
                 .requestId(requestId)
                 .build();
 
