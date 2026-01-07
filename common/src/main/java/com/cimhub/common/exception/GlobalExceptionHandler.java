@@ -1,6 +1,7 @@
 package com.cimhub.common.exception;
 
 import com.cimhub.common.dto.response.ApiError;
+import com.cimhub.common.dto.response.ErrorBody;
 import com.cimhub.common.dto.response.ErrorDetail;
 import com.cimhub.common.filter.RequestIdFilter;
 import jakarta.validation.ConstraintViolationException;
@@ -122,12 +123,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         private ResponseEntity<Object> createErrorResponse(HttpStatusCode status, String code, String message,
                         List<ErrorDetail> details, WebRequest request) {
+                ErrorBody errorBody = ErrorBody.of(resolvePath(request), details);
+
                 ApiError apiError = ApiError.builder()
                                 .status(status.value())
                                 .code(code)
                                 .message(message)
-                                .path(resolvePath(request))
-                                .details(details != null ? details : Collections.emptyList())
+                                .error(errorBody)
                                 .timestamp(Instant.now())
                                 .requestId(resolveRequestId(request))
                                 .build();
