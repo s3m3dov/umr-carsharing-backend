@@ -7,45 +7,16 @@ set -e
 
 # Get the directory of this script and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/../common.sh"
+PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
 
 # Default tag
 TAG="${GCP_IMAGE_TAG:-latest}"
 REGISTRY="gcr.io"
 
-# All available services
-ALL_SERVICES=(
-    "auth-service"
-    "user-service"
-    "vehicle-service"
-    "trip-service"
-    "ride-service"
-    "notification-service"
-    "api-gateway"
-)
-
-# Function to extract value from ConfigMap YAML
-get_configmap_value() {
-    local key=$1
-    local configmap_file="$PROJECT_ROOT/gitops/base/configmap.yaml"
-    
-    if [ -f "$configmap_file" ]; then
-        # Extract value using grep and sed
-        grep "^  $key:" "$configmap_file" | sed 's/.*: "\(.*\)"/\1/' | tr -d '"'
-    fi
-}
-
 # Get project ID from environment or ConfigMap
-if [ -z "$GCP_PROJECT_ID" ]; then
-    GCP_PROJECT_ID=$(get_configmap_value "GCP_PROJECT_ID")
-fi
-
-if [ -z "$GCP_PROJECT_ID" ]; then
-    echo "❌ Error: GCP_PROJECT_ID not found"
-    echo "   Set it with: export GCP_PROJECT_ID=your-project-id"
-    echo "   Or configure it in: gitops/base/configmap.yaml"
-    exit 1
-fi
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-$(get_configmap_value "GCP_PROJECT_ID" "$PROJECT_ROOT")}"
+validate_config "GCP_PROJECT_ID" "$GCP_PROJECT_ID" "gitops/base/configmap.yaml"
 
 # Determine which services to build
 if [ $# -eq 0 ]; then
@@ -97,9 +68,9 @@ FAILED_SERVICES=()
 
 for service in "${SERVICES_TO_BUILD[@]}"; do
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    print_separator
     echo "📦 Building $service..."
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    print_separator
     
     IMAGE_NAME="$REGISTRY/$GCP_PROJECT_ID/$service:$TAG"
     
@@ -127,9 +98,9 @@ for service in "${SERVICES_TO_BUILD[@]}"; do
 done
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+print_separator
 echo "📊 Build Summary"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+print_separator
 echo "   ✅ Successful: $SUCCESS_COUNT"
 echo "   ❌ Failed: $FAIL_COUNT"
 
