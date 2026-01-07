@@ -41,10 +41,13 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        return extractToken(exchange.getRequest(), path)
-                .flatMap(this::validateTokenWithAuthService)
-                .flatMap(response -> authorize(exchange, chain, response))
-                .onErrorMap(this::mapToUnauthorizedIfNeeded);
+        // TEMPORARILY DISABLED AUTH ENFORCEMENT
+        // return extractToken(exchange.getRequest(), path)
+        // .flatMap(this::validateTokenWithAuthService)
+        // .flatMap(response -> authorize(exchange, chain, response))
+        // .onErrorMap(this::mapToUnauthorizedIfNeeded);
+
+        return chain.filter(exchange);
     }
 
     /**
@@ -117,9 +120,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
 
     private boolean isPublicPath(String path) {
         return Stream.of(
-                        securityProperties.getPublicPaths(),
-                        securityProperties.getDocsPaths(),
-                        securityProperties.getActuatorPaths())
+                securityProperties.getPublicPaths(),
+                securityProperties.getDocsPaths(),
+                securityProperties.getActuatorPaths())
                 .flatMap(Collection::stream)
                 .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
