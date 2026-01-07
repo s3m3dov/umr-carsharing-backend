@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spring-cloud
       containers:
       - name: notification-service
-        image: gcr.io/PROJECT_ID/notification-service:latest
+        image: gcr.io/project-id/notification-service:latest
         ports:
         - containerPort: 8080
           name: http

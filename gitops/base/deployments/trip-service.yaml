@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spring-cloud
       containers:
       - name: trip-service
-        image: gcr.io/PROJECT_ID/trip-service:latest
+        image: gcr.io/project-id/trip-service:latest
         ports:
         - containerPort: 8080
           name: http
