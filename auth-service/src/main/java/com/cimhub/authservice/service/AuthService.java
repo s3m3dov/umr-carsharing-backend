@@ -1,7 +1,5 @@
 package com.cimhub.authservice.service;
 
-import com.cimhub.authservice.client.UserServiceClient;
-import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
@@ -11,9 +9,8 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
-import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.exception.UnauthorizedException;
-import feign.FeignException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,7 +29,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserServiceClient userServiceClient;
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
         String normalizedEmail = request.email().toLowerCase();
@@ -50,29 +46,10 @@ public class AuthService {
         newUser.setCreatedDate(new Date());
         authUserRepository.save(newUser);
 
-        CreateProfileRequest profileRequest = CreateProfileRequest.builder()
-                .userId(newUser.getUserId())
-                .email(newUser.getEmail())
-                .fullName(request.fullName())
-                .phoneNumber(request.phoneNumber())
-                .age(request.age())
-                .dob(request.dob())
-                .empId(request.empId())
-                .organisationName(request.organisationName())
-                .profilePicUrl(request.profilePicUrl())
-                .build();
-
-        try {
-            userServiceClient.createUserProfile(profileRequest);
-        } catch (FeignException.Conflict e) {
-            log.error("User profile already exists for {}. Rolling back auth user.", normalizedEmail);
-            authUserRepository.delete(newUser);
-            throw new UserAlreadyExistsException("User profile already exists for " + normalizedEmail);
-        } catch (Exception e) {
-            log.error("Failed to create user profile for {}. Rolling back auth user.", normalizedEmail, e);
-            authUserRepository.delete(newUser);
-            throw new RuntimeException("Failed to create user profile: " + e.getMessage());
-        }
+        // User profile creation logic removed as per requirement.
+        // The user-service will handle profile creation via event sourcing later if
+        // needed,
+        // or it is assumed the user will create it separately.
 
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
