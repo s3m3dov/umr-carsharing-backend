@@ -7,23 +7,14 @@ set -e
 
 CLUSTER_NAME="carsharing-local"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")"
+source "$SCRIPT_DIR/../common.sh"
+PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
 
 echo "🚀 Setting up Kind cluster for local development..."
 
-# Check if kind is installed
-if ! command -v kind &> /dev/null; then
-    echo "❌ Error: kind is not installed"
-    echo "   Install from: https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
-    exit 1
-fi
-
-# Check if kubectl is installed
-if ! command -v kubectl &> /dev/null; then
-    echo "❌ Error: kubectl is not installed"
-    echo "   Install from: https://kubernetes.io/docs/tasks/tools/"
-    exit 1
-fi
+# Check required commands
+require_command "kind" "https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
+require_command "kubectl" "https://kubernetes.io/docs/tasks/tools/"
 
 # Check if cluster already exists
 if kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
