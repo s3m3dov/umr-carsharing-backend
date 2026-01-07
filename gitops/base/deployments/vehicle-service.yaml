@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spring-cloud
       containers:
       - name: vehicle-service
-        image: gcr.io/PROJECT_ID/vehicle-service:latest
+        image: gcr.io/project-id/vehicle-service:latest
         ports:
         - containerPort: 8080
           name: http
