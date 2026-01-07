@@ -7,7 +7,7 @@ on:
     branches: [ main, dev ]
 
 env:
-  REGISTRY: gcr.io
+  REGISTRY: eu.gcr.io
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
@@ -74,7 +74,7 @@ jobs:
     - name: Configure Docker for GCR
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
       run: |
-        gcloud auth configure-docker gcr.io
+        gcloud auth configure-docker eu.gcr.io
     
     - name: Extract metadata
       id: meta

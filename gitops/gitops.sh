@@ -47,7 +47,7 @@ WORKFLOW EXAMPLE:
 ───────────────────────────────────────────────────────────────────────────
   setup-gcp                Configure kubectl for GKE cluster
                            Reads from ConfigMap:
-                           - GKE_CLUSTER_NAME: autopilot-carsharing-cluster-01
+                           - GKE_CLUSTER_NAME: autopilot-cluster-1
                            - GCP_REGION: europe-north1
                            - GCP_PROJECT_ID: project-b05bd45b-70e8-4b7f-a65
 

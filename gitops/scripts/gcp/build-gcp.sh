@@ -12,7 +12,7 @@ PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
 
 # Default tag
 TAG="${GCP_IMAGE_TAG:-latest}"
-REGISTRY="gcr.io"
+REGISTRY="eu.gcr.io"
 
 # Get project ID from environment or ConfigMap
 GCP_PROJECT_ID="${GCP_PROJECT_ID:-$(get_configmap_value "GCP_PROJECT_ID" "$PROJECT_ROOT")}"
@@ -54,7 +54,7 @@ echo ""
 
 # Configure Docker for GCR
 echo "🔑 Configuring Docker for GCR..."
-if ! gcloud auth configure-docker gcr.io --quiet 2>/dev/null; then
+if ! gcloud auth configure-docker eu.gcr.io --quiet 2>/dev/null; then
     echo "⚠️  Warning: Could not configure Docker auth (may already be configured)"
 fi
 
@@ -75,6 +75,7 @@ for service in "${SERVICES_TO_BUILD[@]}"; do
     IMAGE_NAME="$REGISTRY/$GCP_PROJECT_ID/$service:$TAG"
     
     if docker build \
+        --platform linux/amd64 \
         -f "./$service/Dockerfile" \
         -t "$IMAGE_NAME" \
         . ; then

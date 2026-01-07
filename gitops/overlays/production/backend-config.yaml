@@ -4,12 +4,9 @@ metadata:
   name: carsharing-backend-config
   namespace: carsharing
 spec:
-  cors:
-    allowOrigins:
-      - "*"
-    allowMethods:
-      - "*"
-    allowHeaders:
-      - "*"
-    maxAge: 3600
-    allowCredentials: false
+  customResponseHeaders:
+    headers:
+      - "Access-Control-Allow-Origin: *"
+      - "Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,OPTIONS"
+      - "Access-Control-Allow-Headers: Authorization,Content-Type,Accept,Origin,X-Requested-With"
+      - "Access-Control-Max-Age: 3600"
