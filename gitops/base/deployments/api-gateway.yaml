@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spring-cloud
       containers:
       - name: api-gateway
-        image: gcr.io/project-id/api-gateway:latest
+        image: eu.gcr.io/project-id/api-gateway:latest
         ports:
         - containerPort: 8080
           name: http

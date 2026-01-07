@@ -10,26 +10,26 @@ resources:
 
 # Production images from GCR
 images:
-  - name: gcr.io/project-id/auth-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service
+  - name: eu.gcr.io/project-id/auth-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service
     newTag: latest
-  - name: gcr.io/project-id/user-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/user-service
+  - name: eu.gcr.io/project-id/user-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/user-service
     newTag: latest
-  - name: gcr.io/project-id/vehicle-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/vehicle-service
+  - name: eu.gcr.io/project-id/vehicle-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/vehicle-service
     newTag: latest
-  - name: gcr.io/project-id/trip-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
+  - name: eu.gcr.io/project-id/trip-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
     newTag: latest
-  - name: gcr.io/project-id/ride-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/ride-service
+  - name: eu.gcr.io/project-id/ride-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/ride-service
     newTag: latest
-  - name: gcr.io/project-id/notification-service
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service
+  - name: eu.gcr.io/project-id/notification-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service
     newTag: latest
-  - name: gcr.io/project-id/api-gateway
-    newName: gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
+  - name: eu.gcr.io/project-id/api-gateway
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
     newTag: latest
 
 # GKE-specific configuration
