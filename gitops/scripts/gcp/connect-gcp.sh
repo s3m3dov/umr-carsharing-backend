@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to configure kubectl for existing GKE Autopilot cluster
-# Usage: ./setup-gcp.sh
+# Usage: ./connect-gcp.sh
 
 set -e
 
