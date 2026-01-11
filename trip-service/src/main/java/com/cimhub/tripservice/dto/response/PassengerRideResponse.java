@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.model.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
@@ -12,7 +13,7 @@ public record PassengerRideResponse(
         String tripId,
         String driverId,
         String vehicleNumber,
-        String rideStatus,
+        BookingStatus rideStatus,
         Points pickupLocation,
         Points dropoffLocation,
 
