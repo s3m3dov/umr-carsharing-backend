@@ -44,8 +44,8 @@ public class Booking {
     private BookingStatus status;
 
     // Timing (stored in UTC for consistency)
-    private Instant bookingStartTimeUTC;
-    private String timezone; // Original timezone
+    private Instant rideStartTimeUTC;
+    private String rideTimezone; // Original timezone
 
     // Pricing
     private double estimatedPrice;

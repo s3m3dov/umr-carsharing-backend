@@ -78,8 +78,8 @@ public class JoinTripService {
                 .dropoffLocation(dropoffPoints)
                 .requestedSeats(requestedSeats)
                 .status(BookingStatus.CONFIRMED)
-                .bookingStartTimeUTC(trip.getTripStartDateTimeUTC())
-                .timezone(trip.getTripTimezone())
+                .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
+                .rideTimezone(trip.getTripTimezone())
                 .createdAt(Instant.now())
                 .build();
 
