@@ -39,23 +39,23 @@ public class AuthService {
                     "User Already Exists with email: " + normalizedEmail);
         }
 
-        User newUser = new User();
-        newUser.setUserId(normalizedEmail);
-        newUser.setEmail(normalizedEmail);
-        newUser.setPassword(passwordEncoder.encode(request.password()));
-        newUser.setCreatedDate(new Date());
-        authUserRepository.save(newUser);
+        User newAuthUser = new User();
+        newAuthUser.setUserId(normalizedEmail);
+        newAuthUser.setEmail(normalizedEmail);
+        newAuthUser.setPassword(passwordEncoder.encode(request.password()));
+        newAuthUser.setCreatedDate(new Date());
+        authUserRepository.save(newAuthUser);
 
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
-                        .username(newUser.getEmail())
-                        .password(newUser.getPassword())
+                        .username(newAuthUser.getEmail())
+                        .password(newAuthUser.getPassword())
                         .roles("USER")
                         .build());
 
         return SignUpResponse.builder()
                 .token(token)
-                .email(newUser.getEmail())
+                .email(newAuthUser.getEmail())
                 .build();
     }
 
@@ -73,17 +73,17 @@ public class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        User userData = authUserRepository.findByEmail(normalizedEmail);
+        User authUserData = authUserRepository.findByEmail(normalizedEmail);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                .username(userData.getEmail())
-                .password(userData.getPassword())
+                .username(authUserData.getEmail())
+                .password(authUserData.getPassword())
                 .roles("USER")
                 .build();
 
         String token = jwtService.generateToken(userDetails);
 
-        return new LoginResponse(token, userData.getEmail());
+        return new LoginResponse(token, authUserData.getEmail());
     }
 
     public ValidateTokenResponse validateToken(ValidateTokenRequest request) {
