@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.model.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
@@ -23,6 +24,6 @@ public record TripResponse(
         String userTimezone,
         int totalSeats,
         int availableSeats,
-        String tripStatus,
+        TripStatus tripStatus,
         double pricePerKm) {
 }

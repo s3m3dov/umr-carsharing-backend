@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
@@ -68,8 +69,8 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is("OFFERED"),
-                Criteria.where("tripStatus").is("AVAILABLE")));
+                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with source near ({}, {}) within {} km",
@@ -95,8 +96,8 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is("OFFERED"),
-                Criteria.where("tripStatus").is("AVAILABLE")));
+                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips with destination near ({}, {}) within {} km",
@@ -183,8 +184,8 @@ public class TripGeospatialService {
                 .nearSphere(sourceLocation)
                 .maxDistance(sourceDistance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is("OFFERED"),
-                Criteria.where("tripStatus").is("AVAILABLE")));
+                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         // Add time range filter
         // This will also automatically filter out trips with null tripStartDateTimeUTC
@@ -293,7 +294,7 @@ public class TripGeospatialService {
      * @return List of trips with source within the bounding box
      */
     public List<Trip> findTripsInArea(double minLatitude, double minLongitude, double maxLatitude,
-                                      double maxLongitude) {
+            double maxLongitude) {
         Query query = new Query();
         query.addCriteria(Criteria.where("sourceLocation")
                 .within(new org.springframework.data.mongodb.core.geo.GeoJsonPolygon(
@@ -303,8 +304,9 @@ public class TripGeospatialService {
                         new Point(minLongitude, maxLatitude),
                         new Point(minLongitude, minLatitude))));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is("OFFERED"),
-                Criteria.where("tripStatus").is("AVAILABLE")));
+                // TODO: Make this like Trip.status (no raw string)
+                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
         log.info("Found {} trips in area ({}, {}) to ({}, {})",

@@ -30,7 +30,7 @@ public class Trip {
     private String tripId; // Remove @NotBlank - MongoDB auto-generates this
 
     @NotBlank
-    private String tripStatus;
+    private TripStatus tripStatus;
 
     @NotBlank
     private String vehicleNumber;

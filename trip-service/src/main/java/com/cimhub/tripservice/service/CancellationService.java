@@ -7,6 +7,7 @@ import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class CancellationService {
 
         private final BookingRepository bookingRepository;
         private final TripsRepository tripsRepository;
+        private final TripService tripService;
 
         @Transactional
         public String cancelRide(CancelTripRequest request) {
@@ -75,7 +77,7 @@ public class CancellationService {
                         throw new UnauthorizedException("You are not authorized to cancel this trip");
                 }
 
-                if ("CANCELLED".equals(trip.getTripStatus())) {
+                if (trip.getTripStatus() == TripStatus.CANCELLED) {
                         throw new AlreadyCancelledException("This trip has already been cancelled");
                 }
 
@@ -88,8 +90,7 @@ public class CancellationService {
                         }
                 }
 
-                trip.setTripStatus("CANCELLED");
-                tripsRepository.save(trip);
+                tripService.updateStatus(tripId, TripStatus.CANCELLED);
 
                 log.info("Trip {} cancelled successfully by driver {}. {} bookings cancelled",
                                 tripId, driverId, bookings.size());
