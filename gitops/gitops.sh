@@ -71,6 +71,7 @@ WORKFLOW EXAMPLE:
   3. ./gitops.sh build-gcp       # Build and push images
   4. ./gitops.sh deploy-gcp      # Deploy to GKE
   5. Access at: http://34.160.91.182
+  6. ./gitops.sh dashboard       # Deploy Kubernetes Dashboard
 
 SELECTIVE DEPLOYMENT:
   # Build only auth and user services
