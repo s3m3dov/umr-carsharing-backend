@@ -21,7 +21,7 @@ public class OpenApiConfig {
         public OpenAPI tripServiceOpenAPI() {
                 Server server = new Server();
                 server.setUrl(serverUrl);
-                server.setDescription("Trip Service - Development");
+                server.setDescription("Trip Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");

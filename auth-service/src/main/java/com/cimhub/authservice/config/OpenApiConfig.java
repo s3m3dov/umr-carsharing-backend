@@ -21,7 +21,7 @@ public class OpenApiConfig {
         public OpenAPI authServiceOpenAPI() {
                 Server server = new Server();
                 server.setUrl(serverUrl);
-                server.setDescription("Auth Service - Development");
+                server.setDescription("Auth Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");
