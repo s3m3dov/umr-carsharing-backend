@@ -110,16 +110,19 @@ public class TripGeospatialService {
      * Note: MongoDB doesn't allow multiple $geoNear operations in one query,
      * so we search by source first, then filter by destination in memory
      *
-     * @param sourceLatitude              Source latitude
-     * @param sourceLongitude             Source longitude
-     * @param sourceRadiusKm              Source search radius in km
-     * @param destinationLatitude         Destination latitude
-     * @param destinationLongitude        Destination longitude
-     * @param destRadiusKm                Destination search radius in km
-     * @param earliestDepartureTime (Optional) Earliest departure time for range filtering (ISO 8601 format)
-     * @param latestDepartureTime   (Optional) Latest departure time for range filtering (ISO 8601 format)
+     * @param sourceLatitude        Source latitude
+     * @param sourceLongitude       Source longitude
+     * @param sourceRadiusKm        Source search radius in km
+     * @param destinationLatitude   Destination latitude
+     * @param destinationLongitude  Destination longitude
+     * @param destRadiusKm          Destination search radius in km
+     * @param earliestDepartureTime (Optional) Earliest departure time for range
+     *                              filtering (ISO 8601 format)
+     * @param latestDepartureTime   (Optional) Latest departure time for range
+     *                              filtering (ISO 8601 format)
      * @param requestedSeats        (Optional) Number of seats requested
-     * @param effectiveUserId       (Optional) ID of the user making the request (to exclude their own trips)
+     * @param effectiveUserId       (Optional) ID of the user making the request (to
+     *                              exclude their own trips)
      * @return List of matching trips
      */
     public List<Trip> findTripsMatchingRoute(
@@ -207,13 +210,13 @@ public class TripGeospatialService {
 
         // Step 0.1: Filter by available seats (offered seats should be >= requested
         // seats)
-        // This means: (offeredSeat - currSeats) >= requestedSeats
+        // This means: (totalSeats - bookedSeats) >= requestedSeats
         // Which translates to: availableSeats >= requestedSeats
         if (requestedSeats != null && requestedSeats > 0) {
             // We need to filter in-memory since MongoDB doesn't support computed field
             // queries directly
-            // But we can at least ensure offeredSeat >= requestedSeats as a baseline
-            query.addCriteria(Criteria.where("offeredSeat").gte(requestedSeats));
+            // But we can at least ensure totalSeats >= requestedSeats as a baseline
+            query.addCriteria(Criteria.where("totalSeats").gte(requestedSeats));
         }
 
         // Step 0.2: Exclude trips created by the current user (don't show user their
@@ -261,9 +264,9 @@ public class TripGeospatialService {
                     }
 
                     // Step 0.1 (continued): Check actual available seats
-                    // availableSeats = offeredSeat - currSeats
+                    // availableSeats = totalSeats - bookedSeats
                     if (requestedSeats != null && requestedSeats > 0) {
-                        int availableSeats = trip.getOfferedSeat() - trip.getCurrSeats();
+                        int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
                         return availableSeats >= requestedSeats;
                     }
 
@@ -273,7 +276,8 @@ public class TripGeospatialService {
 
         log.info(
                 "Found {} trips matching route from ({}, {}) to ({}, {}) within {} km and {} km with {} requested seats for user {}",
-                matchingTrips.size(), sourceLatitude, sourceLongitude, destinationLatitude, destinationLongitude, sourceRadiusKm, destRadiusKm,
+                matchingTrips.size(), sourceLatitude, sourceLongitude, destinationLatitude, destinationLongitude,
+                sourceRadiusKm, destRadiusKm,
                 requestedSeats, effectiveUserId);
 
         return matchingTrips;
@@ -282,13 +286,14 @@ public class TripGeospatialService {
     /**
      * Find trips within a specific area (bounding box)
      *
-     * @param minLatitude Minimum latitude
+     * @param minLatitude  Minimum latitude
      * @param minLongitude Minimum longitude
-     * @param maxLatitude Maximum latitude
+     * @param maxLatitude  Maximum latitude
      * @param maxLongitude Maximum longitude
      * @return List of trips with source within the bounding box
      */
-    public List<Trip> findTripsInArea(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) {
+    public List<Trip> findTripsInArea(double minLatitude, double minLongitude, double maxLatitude,
+                                      double maxLongitude) {
         Query query = new Query();
         query.addCriteria(Criteria.where("sourceLocation")
                 .within(new org.springframework.data.mongodb.core.geo.GeoJsonPolygon(
@@ -353,8 +358,10 @@ public class TripGeospatialService {
         } else {
             // No timezone, assume system timezone
             LocalDateTime localDateTime = LocalDateTime.parse(dateTimeStr);
-            // TODO: Consider allowing client to specify default timezone instead of system default
-            // TODO: System represents everything in UTC internally or provides timezone context
+            // TODO: Consider allowing client to specify default timezone instead of system
+            // default
+            // TODO: System represents everything in UTC internally or provides timezone
+            // context
             ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.systemDefault());
             log.debug("No timezone in input '{}', using system default: {}", dateTimeStr, ZoneId.systemDefault());
             return zonedDateTime;

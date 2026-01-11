@@ -53,7 +53,7 @@ public class CancellationService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 String.format("Trip with id %s not found", booking.getTripId())));
 
-                trip.setCurrSeats(trip.getCurrSeats() - booking.getRequestedSeats());
+                trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
                 tripsRepository.save(trip);
 
                 log.info("Booking {} cancelled successfully by passenger {}", bookingId, passengerId);

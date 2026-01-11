@@ -48,8 +48,8 @@ public class OfferRideService {
                 newTrip.setDestinationAddress(request.destinationAddress());
                 newTrip.setTripStartDateTimeUTC(request.tripStartDateTime().toInstant());
                 newTrip.setTripTimezone(timezone);
-                newTrip.setOfferedSeat(request.offeredSeat());
-                newTrip.setCurrSeats(0);
+                newTrip.setTotalSeats(request.totalSeats());
+                newTrip.setBookedSeats(0);
                 newTrip.setTripStatus("AVAILABLE");
 
                 tripGeospatialService.enrichTripWithGeospatialData(newTrip, mainRoute);

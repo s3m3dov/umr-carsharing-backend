@@ -78,8 +78,8 @@ public class UpcomingRidesService {
                                 trip.getTripStartDateTimeUTC(),
                                 trip.getTripTimezone());
 
-                int bookedSeats = trip.getCurrSeats();
-                int availableSeats = trip.getOfferedSeat() - bookedSeats;
+                int bookedSeats = trip.getBookedSeats();
+                int availableSeats = trip.getTotalSeats() - bookedSeats;
                 double estimatedEarnings = (trip.getRouteDistance() / 1000.0) * trip.getPricePerKm();
 
                 return DriverTripResponse.builder()
@@ -91,7 +91,7 @@ public class UpcomingRidesService {
                                 .destinationAddress(trip.getDestinationAddress())
                                 .tripStartDateTime(tripTimeInOriginalZone)
                                 .tripTimezone(trip.getTripTimezone())
-                                .offeredSeat(trip.getOfferedSeat())
+                                .totalSeats(trip.getTotalSeats())
                                 .availableSeats(availableSeats)
                                 .bookedSeats(bookedSeats)
                                 .passengers(new ArrayList<>())

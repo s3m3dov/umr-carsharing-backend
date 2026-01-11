@@ -15,9 +15,10 @@ public interface TripsRepository extends MongoRepository<Trip, String> {
     List<Trip> findByDriverIdAndTripStartDateTimeUTCBetween(
             @Param("driverId") @NotBlank String driverId,
             @Param("start") Instant start,
-            @Param("end") Instant end
-    );
+            @Param("end") Instant end);
 
-    // You can keep the old method for backward compatibility if needed, but it's not timezone-safe
-    // List<Trips> findByDriverIdAndTripStartDate(@Param("driverId") @NotBlank String driverId, @Param("tripStartDate") Date tripStartDate);
+    // You can keep the old method for backward compatibility if needed, but it's
+    // not timezone-safe
+    // List<Trips> findByDriverIdAndTripStartDate(@Param("driverId") @NotBlank
+    // String driverId, @Param("tripStartDate") Date tripStartDate);
 }

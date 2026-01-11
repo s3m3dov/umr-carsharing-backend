@@ -29,8 +29,8 @@ public class JoinTripService {
 
         @Transactional
         public String joinTrip(JoinTripRequest request) {
-                log.info("Processing join trip request for passenger: {}, tripId: {}",
-                                request.passengerId(), request.tripId());
+            log.info("Processing join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
+                    request.passengerId(), request.tripId(), request.requestedSeats());
 
                 Trip trip = tripsRepository.findById(request.tripId())
                         .orElseThrow(() -> new ResourceNotFoundException(
@@ -50,7 +50,7 @@ public class JoinTripService {
                 }
 
                 int requestedSeats = request.requestedSeats();
-                int availableSeats = trip.getOfferedSeat() - trip.getCurrSeats();
+            int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
 
                 if (availableSeats < requestedSeats) {
                     throw new InsufficientSeatsException(
@@ -81,7 +81,7 @@ public class JoinTripService {
 
                 bookingRepository.save(booking);
 
-                trip.setCurrSeats(trip.getCurrSeats() + requestedSeats);
+            trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
                 tripsRepository.save(trip);
 
                 log.info("Passenger {} successfully joined trip {}. Seats booked: {}",
