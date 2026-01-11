@@ -21,7 +21,7 @@ public class OpenApiConfig {
         public OpenAPI rideServiceOpenAPI() {
                 Server server = new Server();
                 server.setUrl(serverUrl);
-                server.setDescription("Ride Service - Development");
+                server.setDescription("Ride Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");

@@ -21,7 +21,7 @@ public class OpenApiConfig {
         public OpenAPI vehicleServiceOpenAPI() {
                 Server server = new Server();
                 server.setUrl(serverUrl);
-                server.setDescription("Vehicle Service - Development");
+                server.setDescription("Vehicle Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");
