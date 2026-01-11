@@ -46,11 +46,6 @@ public class AuthService {
         newUser.setCreatedDate(new Date());
         authUserRepository.save(newUser);
 
-        // User profile creation logic removed as per requirement.
-        // The user-service will handle profile creation via event sourcing later if
-        // needed,
-        // or it is assumed the user will create it separately.
-
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
                         .username(newUser.getEmail())
