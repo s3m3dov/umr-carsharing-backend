@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -47,7 +50,11 @@ public class OfferRideService {
                 newTrip.setVehicleNumber(request.vehicleNumber());
                 newTrip.setSourceAddress(request.sourceAddress());
                 newTrip.setDestinationAddress(request.destinationAddress());
-                newTrip.setTripStartDateTimeUTC(request.tripStartDateTime().toInstant());
+
+                // Truncate to seconds to ignore milliseconds
+                ZonedDateTime truncatedStartTime = request.tripStartDateTime().truncatedTo(ChronoUnit.SECONDS);
+                newTrip.setTripStartDateTimeUTC(truncatedStartTime.toInstant());
+
                 newTrip.setTripTimezone(timezone);
                 newTrip.setTotalSeats(request.totalSeats());
                 newTrip.setBookedSeats(0);
@@ -63,7 +70,7 @@ public class OfferRideService {
                                 .vehicleNumber(newTrip.getVehicleNumber())
                                 .sourceAddress(newTrip.getSourceAddress())
                                 .destinationAddress(newTrip.getDestinationAddress())
-                                .tripStartDateTime(request.tripStartDateTime())
+                                .tripStartDateTime(truncatedStartTime)
                                 .tripTimezone(timezone)
                                 .routeGeometry(mainRoute.geometry())
                                 .routeDistanceInMeters(mainRoute.distance())
