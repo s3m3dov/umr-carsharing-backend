@@ -64,7 +64,7 @@ public class UpcomingRidesService {
                                 .rideId(booking.getBookingId())
                                 .tripId(booking.getTripId())
                                 .driverId(booking.getDriverId())
-                                .rideStatus(booking.getStatus().name())
+                                .rideStatus(booking.getStatus())
                                 .pickupLocation(booking.getPickupLocation())
                                 .dropoffLocation(booking.getDropoffLocation())
                                 .tripStartDateTime(bookingTimeInOriginalZone)
