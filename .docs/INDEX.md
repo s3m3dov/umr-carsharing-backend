@@ -28,4 +28,4 @@ The "what" and "why" behind the carpooling platform.
 
 ## 📝 Other
 
-- **[Changelog](changelog.md)**: Version history and project updates.
+- **[Changelog](../CHANGELOG.md)**: Version history and project updates.
