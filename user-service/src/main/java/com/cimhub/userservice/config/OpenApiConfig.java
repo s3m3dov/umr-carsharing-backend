@@ -14,32 +14,32 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${server.port:8081}")
-    private String serverPort;
+        @Value("${springdoc.server.url:/user-service}")
+        private String serverUrl;
 
-    @Bean
-    public OpenAPI userServiceOpenAPI() {
-        Server server = new Server();
-        server.setUrl("http://localhost:" + serverPort);
-        server.setDescription("User Service - Development");
+        @Bean
+        public OpenAPI userServiceOpenAPI() {
+                Server server = new Server();
+                server.setUrl(serverUrl);
+                server.setDescription("User Service");
 
-        Contact contact = new Contact();
-        contact.setEmail("Samadov@students.uni-marburg.de");
-        contact.setName("Hikmat Samadov");
+                Contact contact = new Contact();
+                contact.setEmail("Samadov@students.uni-marburg.de");
+                contact.setName("Hikmat Samadov");
 
-        License license = new License()
-                .name("Apache 2.0")
-                .url("http://www.apache.org/licenses/LICENSE-2.0.html");
+                License license = new License()
+                                .name("Apache 2.0")
+                                .url("http://www.apache.org/licenses/LICENSE-2.0.html");
 
-        Info info = new Info()
-                .title("User Service API")
-                .version("1.0.0")
-                .contact(contact)
-                .description("User management and authentication service for the Car Sharing platform")
-                .license(license);
+                Info info = new Info()
+                                .title("User Service API")
+                                .version("1.0.0")
+                                .contact(contact)
+                                .description("User management and authentication service for the Car Sharing platform")
+                                .license(license);
 
-        return new OpenAPI()
-                .info(info)
-                .servers(List.of(server));
-    }
+                return new OpenAPI()
+                                .info(info)
+                                .servers(List.of(server));
+        }
 }

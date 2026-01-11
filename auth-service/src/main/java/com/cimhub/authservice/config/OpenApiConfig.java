@@ -14,14 +14,14 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-        @Value("${server.port:8087}")
-        private String serverPort;
+        @Value("${springdoc.server.url:/auth-service}")
+        private String serverUrl;
 
         @Bean
         public OpenAPI authServiceOpenAPI() {
                 Server server = new Server();
-                server.setUrl("http://localhost:" + serverPort);
-                server.setDescription("Auth Service - Development");
+                server.setUrl(serverUrl);
+                server.setDescription("Auth Service");
 
                 Contact contact = new Contact();
                 contact.setEmail("Samadov@students.uni-marburg.de");

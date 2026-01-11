@@ -8,7 +8,7 @@
 ## 🧭 Phase 0: Current State (Completed ✅)
 
 - **Evolution:** Transformed from a monolithic prototype into a distributed microservices system.
-- **Architecture:** Spring Cloud based (Eureka, API Gateway, Feign).
+- **Architecture:** Spring Cloud based (Kubernetes Discovery, API Gateway, Feign).
 - **Security:** JWT Authentication and centralized authorization via Auth Service.
 - **Data:** MongoDB Atlas with geospatial capabilities (2D Indexing).
 - **Logic:** Trip offering, search (OSRM), and Booking management.

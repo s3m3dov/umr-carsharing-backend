@@ -47,41 +47,50 @@ public class UserController {
                 return ResponseEntity.ok(ApiResponse.success(userInfo));
         }
 
-        @Operation(summary = "Register new user", description = "Creates a new user account in the system")
-        @ApiResponses(value = {
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input or user already exists")
-        })
-        @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<ApiResponse<SignUpResponse>> registerUser(
-                        @Valid @RequestBody RegisterUserRequest request) {
-                log.info("Signup request for email: {}", request.emailId());
-                SignUpResponse signUpResponse = userService.registerUser(request);
-                return ResponseEntity
-                                .status(HttpStatus.CREATED)
-                                .body(ApiResponse.success(signUpResponse));
-        }
+        // @Operation(summary = "Register new user", description = "Creates a new user
+        // account in the system")
+        // @ApiResponses(value = {
+        // @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201",
+        // description = "User registered successfully"),
+        // @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+        // description = "Invalid input or user already exists")
+        // })
+        // @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE,
+        // produces = MediaType.APPLICATION_JSON_VALUE)
+        // public ResponseEntity<ApiResponse<SignUpResponse>> registerUser(
+        // @Valid @RequestBody RegisterUserRequest request) {
+        // log.info("Signup request for email: {}", request.email());
+        // SignUpResponse signUpResponse = userService.registerUser(request);
+        // return ResponseEntity
+        // .status(HttpStatus.CREATED)
+        // .body(ApiResponse.success(signUpResponse));
+        // }
 
-        @Operation(summary = "User login", description = "Authenticates a user and returns login details")
-        @ApiResponses(value = {
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials")
-        })
-        @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<ApiResponse<LoginResponse>> login(
-                        @Valid @RequestBody LoginRequest request) {
-                log.info("Login request for email: {}", request.emailId());
-                LoginResponse loginResponse = userService.login(request);
-                return ResponseEntity.ok(ApiResponse.success(loginResponse));
-        }
+        // @Operation(summary = "User login", description = "Authenticates a user and
+        // returns login details")
+        // @ApiResponses(value = {
+        // @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+        // description = "Login successful"),
+        // @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+        // description = "Invalid credentials")
+        // })
+        // @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE,
+        // produces = MediaType.APPLICATION_JSON_VALUE)
+        // public ResponseEntity<ApiResponse<LoginResponse>> login(
+        // @Valid @RequestBody LoginRequest request) {
+        // log.info("Login request for email: {}", request.email());
+        // LoginResponse loginResponse = userService.login(request);
+        // return ResponseEntity.ok(ApiResponse.success(loginResponse));
+        // }
 
         @Operation(summary = "Create user profile", description = "Creates a detailed user profile")
         @PostMapping(value = "/profile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        public ResponseEntity<ApiResponse<String>> createProfile(@Valid @RequestBody CreateProfileRequest request) {
+        public ResponseEntity<ApiResponse<UserResponse>> createProfile(
+                        @Valid @RequestBody CreateProfileRequest request) {
                 log.info("Create user profile for userId: {}", request.userId());
-                userService.createProfile(request);
+                UserResponse userProfile = userService.createProfile(request);
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
-                                .body(ApiResponse.success("Profile created successfully"));
+                                .body(ApiResponse.success(userProfile));
         }
 }

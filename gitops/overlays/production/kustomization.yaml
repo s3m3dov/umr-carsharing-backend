@@ -1,0 +1,78 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: carsharing
+
+resources:
+  - ../../base
+  - ingress-production.yaml
+  - backend-config.yaml
+
+# Production images from GCR
+images:
+  - name: eu.gcr.io/project-id/auth-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/user-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/user-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/vehicle-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/vehicle-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/trip-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/ride-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/ride-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/notification-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service
+    newTag: latest
+  - name: eu.gcr.io/project-id/api-gateway
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
+    newTag: latest
+
+# GKE-specific configuration
+patches:
+  # Set replicas to 1 for all deployments
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+  
+  # Set minReplicas to 1 for all HPAs
+  - patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+    target:
+      kind: HorizontalPodAutoscaler
+  
+  # GCE Ingress configuration
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cloud.google.com/neg: '{"ingress": true}'
+    target:
+      kind: Service
+      name: api-gateway
+  - patch: |-
+      - op: add
+        path: /metadata/annotations/cloud.google.com~1backend-config
+        value: '{"ports": {"80": "carsharing-backend-config"}}'
+    target:
+      kind: Service
+      name: api-gateway
+  - patch: |-
+      - op: replace
+        path: /spec/ports/0/port
+        value: 80
+      - op: replace
+        path: /spec/ports/0/targetPort
+        value: 8080
+    target:
+      kind: Service
+      name: api-gateway
