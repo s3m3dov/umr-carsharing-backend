@@ -9,7 +9,7 @@ import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
-import com.cimhub.tripservice.service.UpcomingRidesService;
+import com.cimhub.tripservice.service.ActiveRidesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class TripController {
     private final OfferRideService offerRideService;
     private final CancellationService cancellationService;
     private final TripGeospatialService geoService;
-    private final UpcomingRidesService upcomingRidesService;
+    private final ActiveRidesService activeRidesService;
 
     @PostMapping("/offer")
     public ResponseEntity<ApiResponse<OfferRideResponse>> offerTrip(
@@ -83,7 +83,8 @@ public class TripController {
         log.info("Searching for matching route trips");
         // TODO: Implement Pagination
         // TODO: Fix important terms and make them consistent across services
-        // TODO: Architecture needs to be changed, and service responsibilities need to be better defined
+        // TODO: Architecture needs to be changed, and service responsibilities need to
+        // be better defined
 
         // Validate time range parameters
         if (earliestDepartureTime != null && latestDepartureTime != null) {
@@ -103,17 +104,16 @@ public class TripController {
                 earliestDepartureTime,
                 latestDepartureTime,
                 requestedSeats,
-                effectiveUserId
-        );
+                effectiveUserId);
 
         return ResponseEntity.ok(ApiResponse.success(trips));
     }
 
-    @GetMapping("/upcoming/driver/{driverId}")
-    public ResponseEntity<ApiResponse<List<DriverTripResponse>>> getDriverUpcomingTrips(
+    @GetMapping("/active/driver/{driverId}")
+    public ResponseEntity<ApiResponse<List<DriverTripResponse>>> getDriverActiveTrips(
             @PathVariable String driverId) {
-        log.info("Fetching upcoming trips for driver: {}", driverId);
-        List<DriverTripResponse> upcomingTrips = upcomingRidesService.findDriverUpcomingTrips(driverId);
-        return ResponseEntity.ok(ApiResponse.success(upcomingTrips));
+        log.info("Fetching active trips for driver: {}", driverId);
+        List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
+        return ResponseEntity.ok(ApiResponse.success(activeTrips));
     }
 }

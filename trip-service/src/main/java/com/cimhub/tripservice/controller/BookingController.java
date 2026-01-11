@@ -6,7 +6,7 @@ import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.JoinTripService;
-import com.cimhub.tripservice.service.UpcomingRidesService;
+import com.cimhub.tripservice.service.ActiveRidesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class BookingController {
 
     private final JoinTripService joinTripService;
     private final CancellationService cancellationService;
-    private final UpcomingRidesService upcomingRidesService;
+    private final ActiveRidesService activeRidesService;
 
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<String>> joinTrip(
@@ -44,11 +44,11 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @GetMapping("/upcoming/passenger/{passengerId}")
-    public ResponseEntity<ApiResponse<List<PassengerRideResponse>>> getPassengerUpcomingBookings(
+    @GetMapping("/active/passenger/{passengerId}")
+    public ResponseEntity<ApiResponse<List<PassengerRideResponse>>> getPassengerActiveBookings(
             @PathVariable String passengerId) {
-        log.info("Fetching upcoming bookings for passenger: {}", passengerId);
-        List<PassengerRideResponse> upcomingBookings = upcomingRidesService.findPassengerUpcomingRides(passengerId);
-        return ResponseEntity.ok(ApiResponse.success(upcomingBookings));
+        log.info("Fetching active bookings for passenger: {}", passengerId);
+        List<PassengerRideResponse> activeBookings = activeRidesService.findPassengerActiveRides(passengerId);
+        return ResponseEntity.ok(ApiResponse.success(activeBookings));
     }
 }
