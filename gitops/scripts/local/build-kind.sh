@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to build Docker images and load them into Kind cluster
-# Usage: ./build-for-kind.sh [tag]
+# Usage: ./build-kind.sh [tag]
 
 set -e
 

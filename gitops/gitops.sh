@@ -21,8 +21,9 @@ USAGE:
 
 🏠 LOCAL DEVELOPMENT COMMANDS (Kind Cluster)
 ───────────────────────────────────────────────────────────────────────────
-  setup                     Create local Kind cluster with ingress
-  secrets                   Create secrets from .env file
+  setup-local                 Create local Kind cluster with ingress
+  connect-local               Switch kubectl context to local Kind cluster
+  secrets                     Create secrets from .env file
   build [env]               Build Docker images for Kind (default: local)
   apply [env]               Apply Kubernetes manifests (default: local)
   ingress                   Port-forward ingress (access at localhost:8888)
@@ -45,7 +46,7 @@ WORKFLOW EXAMPLE:
 
 ☁️  GCP PRODUCTION COMMANDS (GKE Autopilot)
 ───────────────────────────────────────────────────────────────────────────
-  setup-gcp                Configure kubectl for GKE cluster
+  connect-gcp                Configure kubectl for GKE cluster
                            Reads from ConfigMap:
                            - GKE_CLUSTER_NAME: autopilot-cluster-1
                            - GCP_REGION: europe-north1
@@ -66,7 +67,7 @@ WORKFLOW EXAMPLE:
                              ./gitops.sh deploy-gcp auth-service
 
 WORKFLOW EXAMPLE:
-  1. ./gitops.sh setup-gcp       # Configure kubectl (one-time)
+  1. ./gitops.sh connect-gcp      # Configure kubectl (one-time)
   2. ./gitops.sh secrets         # Create secrets from .env
   3. ./gitops.sh build-gcp       # Build and push images
   4. ./gitops.sh deploy-gcp      # Deploy to GKE
@@ -107,9 +108,13 @@ OVERLAY_PATH="gitops/overlays/$ENV"
 cd "$PROJECT_ROOT"
 
 case $COMMAND in
-    setup)
+    setup-local)
         echo "Setting up local cluster..."
         ./gitops/scripts/local/setup-kind.sh
+        ;;
+    connect-local)
+        echo "🔌 Connecting to local Kind cluster..."
+        kind export kubeconfig --name "carsharing-local"
         ;;
     secrets)
         echo "Creating secrets..."
@@ -117,11 +122,13 @@ case $COMMAND in
         ;;
     build)
         echo "Building images..."
-        ./gitops/scripts/local/build-for-kind.sh "${ENV:-local}"
+        ./gitops/scripts/local/build-kind.sh "${ENV:-local}"
         ;;
     apply)
         echo "Applying configuration for environment: $ENV"
         kubectl apply -k "$OVERLAY_PATH"
+        echo "Restarting all deployments in 'carsharing' namespace to pick up new images..."
+        kubectl rollout restart deployment -n carsharing
         ;;
     ingress)
         echo "🚀 Starting automatic port-forwarding for Ingress Local..."
@@ -155,9 +162,9 @@ case $COMMAND in
         echo "http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
         echo "Get your token with: kubectl -n kubernetes-dashboard create token admin-user"
         ;;
-    setup-gcp)
+    connect-gcp)
         echo "🔧 Configuring kubectl for GKE cluster..."
-        ./gitops/scripts/gcp/setup-gcp.sh
+        ./gitops/scripts/gcp/connect-gcp.sh
         ;;
     build-gcp)
         echo "🐳 Building and pushing images to GCR..."
@@ -167,8 +174,12 @@ case $COMMAND in
         if [ -z "$2" ]; then
             echo "🚀 Deploying all services to GKE..."
             kubectl apply -k gitops/overlays/production
+            echo "Restarting all deployments in 'carsharing' namespace to pick up new images..."
+            kubectl rollout restart deployment -n carsharing
         else
             echo "🔄 Restarting specific services in GKE..."
+            # Apply first to ensure manifests are up to date
+            kubectl apply -k gitops/overlays/production
             for service in "${@:2}"; do
                 echo "  - Restarting $service"
                 kubectl rollout restart deployment "$service" -n carsharing
