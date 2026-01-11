@@ -21,7 +21,7 @@ public record TripResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTimeInUserTimezone,
 
         String userTimezone,
-        int offeredSeat,
+        int totalSeats,
         int availableSeats,
         String tripStatus,
         double pricePerKm) {

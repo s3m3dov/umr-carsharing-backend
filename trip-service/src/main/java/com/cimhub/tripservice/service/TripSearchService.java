@@ -46,8 +46,8 @@ public class TripSearchService {
                                 .tripTimezone(trip.getTripTimezone())
                                 .tripStartDateTimeInUserTimezone(tripTimeInUserZone)
                                 .userTimezone(userTimezone)
-                                .offeredSeat(trip.getOfferedSeat())
-                                .availableSeats(trip.getOfferedSeat() - trip.getCurrSeats())
+                                .totalSeats(trip.getTotalSeats())
+                                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
                                 .tripStatus(trip.getTripStatus())
                                 .pricePerKm(trip.getPricePerKm())
                                 .build();

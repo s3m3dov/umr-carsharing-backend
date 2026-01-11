@@ -52,10 +52,10 @@ public class Trip {
     private Point destinationLocation;
 
     @Min(1L)
-    private int offeredSeat;
+    private int totalSeats;
 
     @Min(0L)
-    private int currSeats;
+    private int bookedSeats;
 
     // Store in UTC for consistency across timezones
     private Instant tripStartDateTimeUTC;

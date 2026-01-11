@@ -19,7 +19,7 @@ public record DriverTripResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
 
         String tripTimezone,
-        int offeredSeat,
+        int totalSeats,
         int availableSeats,
         int bookedSeats,
         List<PassengerInfo> passengers,

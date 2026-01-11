@@ -15,5 +15,5 @@ public record OfferRideRequest(
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
 
-        int offeredSeat) {
+        int totalSeats) {
 }
