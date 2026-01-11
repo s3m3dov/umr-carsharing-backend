@@ -24,7 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void createProfile(CreateProfileRequest request) {
+    public UserResponse createProfile(CreateProfileRequest request) {
         log.info("Creating user profile for userId: {}", request.userId());
 
         User existingUser = userRepository.findByUserId(request.userId());
@@ -53,6 +53,18 @@ public class UserService {
 
         userRepository.save(newUser);
         log.info("User profile created successfully for userId: {}", request.userId());
+
+        return new UserResponse(
+                newUser.getFullName(),
+                newUser.getEmail(),
+                newUser.getUserId(),
+                newUser.getUserType(),
+                newUser.getPhoneNumber(),
+                newUser.getAge(),
+                newUser.getDob(),
+                newUser.getEmpId(),
+                newUser.getOrganisationName(),
+                newUser.getProfilePicUrl());
     }
 
     public UserResponse getUserInfo(String userId) {
@@ -66,6 +78,7 @@ public class UserService {
                 foundUser.getFullName(),
                 foundUser.getEmail(),
                 foundUser.getUserId(),
+                foundUser.getUserType(),
                 foundUser.getPhoneNumber(),
                 foundUser.getAge(),
                 foundUser.getDob(),
