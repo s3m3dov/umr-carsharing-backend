@@ -35,7 +35,7 @@ For detailed information, please refer to the following documents:
 5. **[Product Roadmap](.docs/product/roadmap.md)**  
    Planned features and enhancements.
 
-6. **[Changelog](.docs/changelog.md)**  
+6. **[Changelog](CHANGELOG.md)**  
    Version history and updates.
 
 ## 📊 Presentations

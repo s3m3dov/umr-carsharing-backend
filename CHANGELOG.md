@@ -1,0 +1,288 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on **Keep a Changelog**
+<https://keepachangelog.com/en/1.1.0/>
+and this project adheres to **Semantic Versioning**
+<https://semver.org/spec/v2.0.0.html>
+
+---
+
+## [Unreleased]
+
+### Added
+
+- (no entries)
+
+### Changed
+
+- (no entries)
+
+### Fixed
+
+- (no entries)
+
+---
+
+## [v0.6.0] – Trip Lifecycle & Identity Fields (2026-01-11)
+
+**Author:** s3m3dov
+
+### Added
+
+- `TripStatus` enum introduced and integrated across services (including join flow behavior)
+- `UserType` field added to profile creation and login response; included in `UserResponse`
+- Swagger annotations for trip start date-time fields (request + response models)
+- Trip search enhancements:
+  - Improved parameter naming
+  - Optional time-range filtering
+  - Additional validation
+
+### Changed
+
+- Renamed `UpcomingRidesService` → `ActiveRidesService` and updated related methods
+- Simplified `ApiResponse` success message to a static standard message
+- OpenAPI server descriptions updated to remove "Development" suffix
+- Deprecated user-service endpoints commented (kept for reference)
+- Script naming clarified:
+  - `build-for-kind.sh` → `build-kind.sh`
+  - `setup-gcp.sh` → `connect-gcp.sh`
+
+### Fixed
+
+- Fixed empty booking response for passengers
+
+---
+
+## [v0.5.1] – GCP Deployment & Request Tracing (2026-01-05 to 2026-01-07)
+
+**Author:** s3m3dov
+
+### Added
+
+- Request ID propagation across gateway and services:
+  - `RequestIdFilter` for services
+  - `RequestIdGatewayFilter` for API gateway
+- Initial GCP/GKE deployment support:
+  - Deployment scripts for cloud environment
+  - GCP-specific documentation
+  - GitOps configuration updates for cloud deployments
+- Docker build improvements:
+  - Registry migration from `gcr.io` → `eu.gcr.io`
+  - Added `linux/amd64` platform support for cross-platform builds
+  - Standardized image paths across deployments and kustomization overlays
+
+### Changed
+
+- GitOps scripts refactored:
+  - Centralized common utilities into `common.sh`
+  - Removed redundant helper files
+- Error response standardization:
+  - Introduced/refined `ErrorBody`, `ErrorDetails`, `ErrorDetail` models
+  - Standardized usage of `ServiceErrorCode` across all services
+  - Improved `HttpMessageNotReadableException` error details
+- Ingress and networking configuration:
+  - Enabled and tuned forward headers for proxy support
+  - Updated ingress class configuration to GCE
+  - CORS configuration updates for cloud environment
+- Scaling adjustments:
+  - Reduced replica counts for cost optimization
+  - Temporarily disabled some non-essential deployments
+
+### Security
+
+- JWT authorization enforcement temporarily disabled in `JwtValidationFilter` (explicitly marked as temporary for development purposes)
+
+---
+
+## [v0.5.0] – Kubernetes Migration (2026-01-03 to 2026-01-04)
+
+**Author:** s3m3dov
+
+### Added
+
+- Kubernetes-first deployment approach for both local (Kind) and production environments
+- GitOps-oriented structure for manifest management and secrets workflow
+- Service accounts for all microservices
+- Comprehensive health probes (liveness and readiness) with updated probe paths
+- Centralized security configuration via `SecurityProperties`
+
+### Changed
+
+- Standardized all service ports to **8080**
+- Migrated all services to Kubernetes with consistent service types (ClusterIP/LoadBalancer)
+- Optimized resource requests and limits across all services
+- Updated API Gateway routing for Kubernetes networking
+- OpenAPI configuration adjusted for Kubernetes service discovery
+- Security configuration refactored:
+  - Improved public/docs/actuator path matching logic
+  - Enhanced actuator sub-path handling
+  - Simplified JWT validation filter with optimized path checks
+
+### Removed
+
+- Eureka-specific service discovery dependencies and configuration
+- Legacy Docker Compose-only deployment approach
+
+---
+
+## [v0.4.3] – Documentation & Roadmap (2026-01-02)
+
+**Author:** s3m3dov
+
+### Added
+
+- Phase 1 task list and development checklist documentation
+- Detailed roadmap with structured phases and deliverables
+- Comprehensive README with organized documentation links
+- This changelog file
+
+### Changed
+
+- Reorganized documentation directories and structure
+- Updated documentation links to reflect new repository layout
+
+---
+
+## [v0.4.2] – Local Development Workflow (2026-01-01)
+
+**Author:** s3m3dov
+
+### Added
+
+- Dockerfile configurations using supervisord for service deployment
+- Improved local development experience with Docker Compose
+
+### Changed
+
+- Renamed `build.sh` → `run-compose.sh` for clarity
+- Application configuration updates:
+  - Enabled load balancer retry mechanisms
+  - Adjusted Eureka registry fetch intervals
+
+---
+
+## [v0.4.1] – API Standardization (2025-12-31)
+
+**Author:** s3m3dov
+
+### Added
+
+- Standardized `ApiResponse` model for consistent success responses
+- Standardized `ApiError` model for consistent error responses
+- Global exception handling with improved consistency across all services
+
+### Changed
+
+- Domain model consolidation:
+  - Introduced `Booking` to consolidate ride/rider-related entities
+- Major naming consistency refactor:
+  - `Users` → `User`
+  - Aligned `Rides`/`Trips` nomenclature to `Ride`/`Trip`
+- Refactored and expanded controllers for booking and trip operations
+- Reorganized package structure for better maintainability
+- Enhanced exception handling patterns across services
+
+---
+
+## [v0.4.0] – OpenAPI Integration & Configuration (2025-12-30)
+
+**Author:** s3m3dov
+
+### Added
+
+- Springdoc OpenAPI dependencies and configuration across all services
+- Dynamic OpenAPI documentation generation
+- CORS support for API documentation endpoints
+
+### Changed
+
+- Standardized namespace to `com.cimhub` across entire codebase
+- MongoDB URI configuration migrated to environment variables
+- Docker Compose improvements:
+  - Enhanced environment variable handling with example `.env` file
+  - Improved healthcheck formatting and reliability
+- Docker build optimizations with better layer caching
+- Updated documentation for microservices architecture and local setup
+
+### Removed
+
+- Redundant Google Maven mirror configuration from Dockerfiles
+- Unused Docker templates and unnecessary compose file declarations
+- Legacy version declarations from docker-compose.yml
+
+---
+
+## [v0.3.0] – Core Ride Features & Security (2025-09-28 to 2025-10-31)
+
+**Author:** VipulSingh-10
+
+### Added
+
+- Ride proximity search with MongoDB geospatial indexing
+- OpenStreetMap (OSM) and OSRM integration for route tracking
+- Distance calculation and route optimization
+- Comprehensive booking workflow:
+  - Driver: offer ride, view bookings, cancel rides
+  - Passenger: search rides, join rides, cancel bookings
+- Health check endpoints across all microservices
+
+### Changed
+
+- Standardized inter-service communication to HTTP-based approach
+- Migrated from containerized MongoDB to MongoDB Atlas for production
+- Docker and docker-compose configuration updates for improved local orchestration
+
+### Security
+
+- Integrated Spring Security framework with JWT authentication
+- Implemented API Gateway authorization flow via Auth Service
+- Fixed security filter misconfigurations and hardcoded port issues
+
+### Infrastructure
+
+- Added retry logic for Maven builds to handle transient failures
+- Service dependency handling improvements in Docker Compose
+- CORS configuration fixes across gateway and service ecosystem
+
+---
+
+## [v0.2.0] – Microservices Architecture (2025-06-18)
+
+**Author:** VipulSingh-10
+
+### Added
+
+- Complete migration from monolithic to microservices architecture
+- Netflix Eureka Discovery Server for service registration and discovery
+- Docker support for all microservices
+- Service-to-service communication patterns
+
+### Changed
+
+- Decomposed monolithic application into independent microservices:
+  - User Service
+  - Vehicle Service
+  - Trip Service
+  - Auth Service
+  - API Gateway
+  - Discovery Server (Eureka)
+
+---
+
+## [v0.1.0] – Initial Release (2025-06-16)
+
+**Author:** VipulSingh-10
+
+### Added
+
+- Initial backend implementation with core functionality
+- Domain models for users, vehicles, and trips
+- Basic REST API endpoints
+- MongoDB integration
+- Demo and presentation materials
+
+### Fixed
+
+- Made `mvnw` (Maven Wrapper) executable on Unix systems
