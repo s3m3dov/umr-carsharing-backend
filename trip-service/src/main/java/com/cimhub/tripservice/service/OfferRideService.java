@@ -3,6 +3,7 @@ package com.cimhub.tripservice.service;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.routes.OSMRoute;
 import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
@@ -50,7 +51,7 @@ public class OfferRideService {
                 newTrip.setTripTimezone(timezone);
                 newTrip.setTotalSeats(request.totalSeats());
                 newTrip.setBookedSeats(0);
-                newTrip.setTripStatus("AVAILABLE");
+                newTrip.setTripStatus(TripStatus.AVAILABLE);
 
                 tripGeospatialService.enrichTripWithGeospatialData(newTrip, mainRoute);
 
