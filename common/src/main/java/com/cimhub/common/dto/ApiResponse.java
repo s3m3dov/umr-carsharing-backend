@@ -45,11 +45,9 @@ public class ApiResponse<T> {
      * Create a successful response with data
      */
     public static <T> ApiResponse<T> success(T data) {
-        String message = (data != null) ? data.getClass().getSimpleName() + " has been returned"
-                : "Operation successful";
         return ApiResponse.<T>builder()
                 .data(data)
-                .message(message)
+                .message("Operation successful")
                 .timestamp(Instant.now())
                 .build();
     }
