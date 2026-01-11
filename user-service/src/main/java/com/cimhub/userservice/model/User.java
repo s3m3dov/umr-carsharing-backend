@@ -1,7 +1,9 @@
 package com.cimhub.userservice.model;
 
+import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -30,6 +32,9 @@ public class User {
 
     @NotBlank
     private String password;
+
+    @NotNull
+    private UserType userType;
 
     @Positive
     private int age;

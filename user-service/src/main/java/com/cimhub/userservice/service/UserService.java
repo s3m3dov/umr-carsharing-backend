@@ -33,10 +33,13 @@ public class UserService {
         }
 
         User newUser = new User();
-        // Since it's a record, we can't use BeanUtils easily if we want to be clean,
-        // but User is still a POJO.
+        // TODO: Add RateLimiter (Globally)
+        // TODO: Make DB calls (create/update/delete) locking to avoid race conditions
+        // TODO: Make User models in AuthService and UserService consistent
+
         newUser.setUserId(request.userId());
         newUser.setEmail(request.email());
+        newUser.setUserType(request.userType());
         newUser.setFullName(request.fullName());
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
@@ -105,6 +108,7 @@ public class UserService {
                 return new LoginResponse(
                         userData.getFullName(),
                         userData.getUserId(),
+                        userData.getUserType(),
                         true,
                         null);
             } else {
