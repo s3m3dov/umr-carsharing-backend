@@ -1,17 +1,20 @@
 package com.cimhub.userservice.model;
 
+import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
 @Data
-@Document
+@Document(collection = "users")
 public class User {
     @Id
     private String userId;
@@ -21,13 +24,17 @@ public class User {
 
     @NotBlank
     @Email
-    private String emailId;
+    @Indexed(unique = true)
+    private String email;
 
     @NotBlank
     private String phoneNumber;
 
     @NotBlank
     private String password;
+
+    @NotNull
+    private UserType userType;
 
     @Positive
     private int age;
@@ -50,8 +57,8 @@ public class User {
     }
 
     public void initializeCreatedBy() {
-        if (this.createdBy == null && this.emailId != null) {
-            this.createdBy = this.emailId;
+        if (this.createdBy == null && this.email != null) {
+            this.createdBy = this.email;
         }
     }
 }

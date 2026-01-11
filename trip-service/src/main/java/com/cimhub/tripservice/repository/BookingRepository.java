@@ -26,10 +26,12 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findByPassengerIdAndTripId(String passengerId, String tripId);
 
     // Find bookings by passenger and time range
-    List<Booking> findByPassengerIdAndBookingStartTimeUTCBetween(
+    List<Booking> findByPassengerIdAndRideStartTimeUTCBetween(
             @Param("passengerId") @NotBlank String passengerId,
             @Param("start") Instant start,
             @Param("end") Instant end);
+
+    List<Booking> findByPassengerIdAndStatusIn(String passengerId, List<BookingStatus> statuses);
 
     // Find bookings by status
     List<Booking> findByStatus(BookingStatus status);

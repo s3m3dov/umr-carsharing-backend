@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.model.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.ZonedDateTime;
@@ -12,14 +14,14 @@ public record DriverTripResponse(
         String tripId,
         String driverId,
         String vehicleNumber,
-        String tripStatus,
+        TripStatus tripStatus,
         Points sourceAddress,
         Points destinationAddress,
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
+        @Schema(example = "2026-01-11T13:09:26Z") @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
 
         String tripTimezone,
-        int offeredSeat,
+        int totalSeats,
         int availableSeats,
         int bookedSeats,
         List<PassengerInfo> passengers,

@@ -9,7 +9,7 @@ import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
-import com.cimhub.tripservice.service.UpcomingRidesService;
+import com.cimhub.tripservice.service.ActiveRidesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class TripController {
     private final OfferRideService offerRideService;
     private final CancellationService cancellationService;
     private final TripGeospatialService geoService;
-    private final UpcomingRidesService upcomingRidesService;
+    private final ActiveRidesService activeRidesService;
 
     @PostMapping("/offer")
     public ResponseEntity<ApiResponse<OfferRideResponse>> offerTrip(
@@ -70,27 +70,50 @@ public class TripController {
 
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponse<List<Trip>>> searchMatchingRoute(
-            @RequestParam double sourceLat,
-            @RequestParam double sourceLon,
+            @RequestParam double sourceLatitude,
+            @RequestParam double sourceLongitude,
             @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
-            @RequestParam double destLat,
-            @RequestParam double destLon,
-            @RequestParam(defaultValue = "5.0") double destRadiusKm,
-            @RequestParam String rideStartTime,
+            @RequestParam double destinationLatitude,
+            @RequestParam double destinationLongitude,
+            @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
+            @RequestParam(required = false) String earliestDepartureTime,
+            @RequestParam(required = false) String latestDepartureTime,
             @RequestParam Integer requestedSeats,
             @RequestParam String effectiveUserId) {
         log.info("Searching for matching route trips");
+        // TODO: Implement Pagination
+        // TODO: Fix important terms and make them consistent across services
+        // TODO: Architecture needs to be changed, and service responsibilities need to
+        // be better defined
+
+        // Validate time range parameters
+        if (earliestDepartureTime != null && latestDepartureTime != null) {
+            // Basic validation will be done in service layer
+            log.info("Using time range: {} to {}", earliestDepartureTime, latestDepartureTime);
+        } else {
+            log.info("No time range specified, searching all available trips");
+        }
+
         List<Trip> trips = geoService.findTripsMatchingRoute(
-                sourceLat, sourceLon, sourceRadiusKm,
-                destLat, destLon, destRadiusKm, rideStartTime, requestedSeats, effectiveUserId);
+                sourceLatitude,
+                sourceLongitude,
+                sourceRadiusKm,
+                destinationLatitude,
+                destinationLongitude,
+                destinationRadiusKm,
+                earliestDepartureTime,
+                latestDepartureTime,
+                requestedSeats,
+                effectiveUserId);
+
         return ResponseEntity.ok(ApiResponse.success(trips));
     }
 
-    @GetMapping("/upcoming/driver/{driverId}")
-    public ResponseEntity<ApiResponse<List<DriverTripResponse>>> getDriverUpcomingTrips(
+    @GetMapping("/active/driver/{driverId}")
+    public ResponseEntity<ApiResponse<List<DriverTripResponse>>> getDriverActiveTrips(
             @PathVariable String driverId) {
-        log.info("Fetching upcoming trips for driver: {}", driverId);
-        List<DriverTripResponse> upcomingTrips = upcomingRidesService.findDriverUpcomingTrips(driverId);
-        return ResponseEntity.ok(ApiResponse.success(upcomingTrips));
+        log.info("Fetching active trips for driver: {}", driverId);
+        List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
+        return ResponseEntity.ok(ApiResponse.success(activeTrips));
     }
 }

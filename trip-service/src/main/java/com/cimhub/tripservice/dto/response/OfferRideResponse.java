@@ -3,6 +3,7 @@ package com.cimhub.tripservice.dto.response;
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.OSRM.Geometry;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.ZonedDateTime;
@@ -14,7 +15,7 @@ public record OfferRideResponse(
         Points sourceAddress,
         Points destinationAddress,
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
+        @Schema(example = "2026-01-11T13:09:26+01:00") @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime tripStartDateTime,
 
         String tripTimezone,
         Geometry routeGeometry,

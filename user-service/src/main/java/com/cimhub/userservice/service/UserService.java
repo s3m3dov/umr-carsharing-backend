@@ -1,5 +1,8 @@
 package com.cimhub.userservice.service;
 
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.request.LoginRequest;
 import com.cimhub.userservice.dto.request.RegisterUserRequest;
@@ -8,7 +11,6 @@ import com.cimhub.userservice.dto.response.SignUpResponse;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.User;
 import com.cimhub.userservice.repository.UserRepository;
-import com.cimhub.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,19 +24,22 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void createProfile(CreateProfileRequest request) {
+    public UserResponse createProfile(CreateProfileRequest request) {
         log.info("Creating user profile for userId: {}", request.userId());
 
         User existingUser = userRepository.findByUserId(request.userId());
         if (existingUser != null) {
-            throw BusinessException.alreadyExists("User profile", request.userId());
+            throw new UserAlreadyExistsException("User profile already exists for " + request.userId());
         }
 
         User newUser = new User();
-        // Since it's a record, we can't use BeanUtils easily if we want to be clean,
-        // but User is still a POJO.
+        // TODO: Add RateLimiter (Globally)
+        // TODO: Make DB calls (create/update/delete) locking to avoid race conditions
+        // TODO: Make User models in AuthService and UserService consistent
+
         newUser.setUserId(request.userId());
-        newUser.setEmailId(request.emailId());
+        newUser.setEmail(request.email());
+        newUser.setUserType(request.userType());
         newUser.setFullName(request.fullName());
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
@@ -43,24 +48,37 @@ public class UserService {
         newUser.setOrganisationName(request.organisationName());
         newUser.setProfilePicUrl(request.profilePicUrl());
 
-        newUser.setCreatedBy(request.emailId());
+        newUser.setCreatedBy(request.email());
         newUser.setCreatedDate(new Date());
 
         userRepository.save(newUser);
         log.info("User profile created successfully for userId: {}", request.userId());
+
+        return new UserResponse(
+                newUser.getFullName(),
+                newUser.getEmail(),
+                newUser.getUserId(),
+                newUser.getUserType(),
+                newUser.getPhoneNumber(),
+                newUser.getAge(),
+                newUser.getDob(),
+                newUser.getEmpId(),
+                newUser.getOrganisationName(),
+                newUser.getProfilePicUrl());
     }
 
     public UserResponse getUserInfo(String userId) {
         User foundUser = userRepository.findByUserId(userId);
 
         if (foundUser == null) {
-            throw BusinessException.notFound("User", userId);
+            throw new ResourceNotFoundException("User with id " + userId + " not found");
         }
 
         return new UserResponse(
                 foundUser.getFullName(),
-                foundUser.getEmailId(),
+                foundUser.getEmail(),
                 foundUser.getUserId(),
+                foundUser.getUserType(),
                 foundUser.getPhoneNumber(),
                 foundUser.getAge(),
                 foundUser.getDob(),
@@ -70,10 +88,11 @@ public class UserService {
     }
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
+        String normalizedEmail = request.email().toLowerCase();
         User newUser = new User();
         newUser.setFullName(request.fullName());
-        newUser.setEmailId(request.emailId());
-        newUser.setUserId(request.emailId().toLowerCase());
+        newUser.setEmail(normalizedEmail);
+        newUser.setUserId(normalizedEmail);
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
         newUser.setDob(request.dob());
@@ -85,7 +104,7 @@ public class UserService {
         log.info("Registering new user: {}", newUser.getUserId());
         userRepository.save(newUser);
 
-        User savedUser = userRepository.findByUserId(request.emailId().toLowerCase());
+        User savedUser = userRepository.findByUserId(normalizedEmail);
         return new SignUpResponse(
                 savedUser.getUserId(),
                 savedUser.getFullName(),
@@ -93,21 +112,23 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User userData = userRepository.findByUserId(request.emailId().toLowerCase());
-        log.info("Login check for user: {}", request.emailId());
+        String normalizedEmail = request.email().toLowerCase();
+        User userData = userRepository.findByUserId(normalizedEmail);
+        log.info("Login check for user: {}", normalizedEmail);
 
         if (userData != null) {
             if (userData.getPassword() != null && userData.getPassword().equals(request.password())) {
                 return new LoginResponse(
                         userData.getFullName(),
                         userData.getUserId(),
+                        userData.getUserType(),
                         true,
                         null);
             } else {
-                throw BusinessException.unauthorized("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
             }
         } else {
-            throw BusinessException.unauthorized("Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
     }
 }

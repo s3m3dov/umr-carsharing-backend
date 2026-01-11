@@ -1,55 +1,55 @@
 package com.cimhub.common.exception;
 
-import lombok.Getter;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.ErrorResponseException;
+
+import com.cimhub.common.dto.response.ErrorDetail;
+import java.util.List;
 
 /**
- * Base exception for business logic errors
- * Extends RuntimeException to avoid checked exception handling
+ * Base exception for business logic errors.
+ * Extends ErrorResponseException to leverage Spring's ProblemDetail mechanism.
  */
-@Getter
-public class BusinessException extends RuntimeException {
+public abstract class BusinessException extends ErrorResponseException {
 
-    private final String errorCode;
-    private final HttpStatus httpStatus;
+    private final ServiceErrorCode errorCode;
 
-    public BusinessException(String errorCode, String message, HttpStatus httpStatus) {
-        super(message);
+    /**
+     * Create a business exception with ServiceErrorCode and optional custom
+     * message.
+     */
+    protected BusinessException(ServiceErrorCode errorCode, String message) {
+        this(errorCode, message, null);
+    }
+
+    /**
+     * Create a business exception with ServiceErrorCode, message, and details.
+     */
+    protected BusinessException(ServiceErrorCode errorCode, String message, List<ErrorDetail> details) {
+        super(HttpStatusCode.valueOf(errorCode.getHttpStatus().value()),
+                createProblemDetail(errorCode, message, details), null);
         this.errorCode = errorCode;
-        this.httpStatus = httpStatus;
     }
 
-    public BusinessException(String errorCode, String message) {
-        this(errorCode, message, HttpStatus.BAD_REQUEST);
+    private static ProblemDetail createProblemDetail(ServiceErrorCode errorCode, String message,
+            List<ErrorDetail> details) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(errorCode.getHttpStatus());
+        problemDetail.setDetail(message != null ? message : errorCode.getDefaultMessage());
+
+        problemDetail.setProperty("code", errorCode.code());
+        if (details != null && !details.isEmpty()) {
+            problemDetail.setProperty("details", details);
+        }
+        return problemDetail;
     }
 
-    // Common business exceptions as static factory methods
-
-    public static BusinessException notFound(String resource, String id) {
-        return new BusinessException(
-                "RESOURCE_NOT_FOUND",
-                String.format("%s with id '%s' not found", resource, id),
-                HttpStatus.NOT_FOUND);
+    public ServiceErrorCode getErrorCode() {
+        return errorCode;
     }
 
-    public static BusinessException alreadyExists(String resource, String identifier) {
-        return new BusinessException(
-                "RESOURCE_ALREADY_EXISTS",
-                String.format("%s with %s already exists", resource, identifier),
-                HttpStatus.CONFLICT);
-    }
-
-    public static BusinessException unauthorized(String message) {
-        return new BusinessException(
-                "UNAUTHORIZED",
-                message,
-                HttpStatus.UNAUTHORIZED);
-    }
-
-    public static BusinessException forbidden(String message) {
-        return new BusinessException(
-                "FORBIDDEN",
-                message,
-                HttpStatus.FORBIDDEN);
+    @Override
+    public String getMessage() {
+        return getBody().getDetail();
     }
 }

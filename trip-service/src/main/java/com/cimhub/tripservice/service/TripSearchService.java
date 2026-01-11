@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,8 @@ public class TripSearchService {
                 List<Trip> allTrips = tripsRepository.findAll();
 
                 return allTrips.stream()
-                                .filter(trip -> "OFFERED".equals(trip.getTripStatus())
-                                                || "AVAILABLE".equals(trip.getTripStatus()))
+                                .filter(trip -> trip.getTripStatus() == TripStatus.OFFERED
+                                                || trip.getTripStatus() == TripStatus.AVAILABLE)
                                 .map(trip -> convertToResponse(trip, userTimezone))
                                 .collect(Collectors.toList());
         }
@@ -46,8 +47,8 @@ public class TripSearchService {
                                 .tripTimezone(trip.getTripTimezone())
                                 .tripStartDateTimeInUserTimezone(tripTimeInUserZone)
                                 .userTimezone(userTimezone)
-                                .offeredSeat(trip.getOfferedSeat())
-                                .availableSeats(trip.getOfferedSeat() - trip.getCurrSeats())
+                                .totalSeats(trip.getTotalSeats())
+                                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
                                 .tripStatus(trip.getTripStatus())
                                 .pricePerKm(trip.getPricePerKm())
                                 .build();
