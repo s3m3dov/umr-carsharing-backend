@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * Standardized error response contract.
  * All error responses across the system use this format.
- * 
  * Root fields:
  * - status: HTTP status code (single source of truth)
  * - code: Application/business code (always present)
