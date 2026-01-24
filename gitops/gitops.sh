@@ -67,9 +67,9 @@ WORKFLOW EXAMPLE:
                              ./gitops.sh deploy-gcp auth-service
 
 WORKFLOW EXAMPLE:
-  1. ./gitops.sh connect-gcp      # Configure kubectl (one-time)
-  2. ./gitops.sh secrets         # Create secrets from .env
-  3. ./gitops.sh build-gcp       # Build and push images
+  1. ./gitops.sh build-gcp       # Build and push images
+  2. ./gitops.sh connect-gcp     # Configure kubectl
+  3. ./gitops.sh secrets         # Create secrets from .env
   4. ./gitops.sh deploy-gcp      # Deploy to GKE
   5. Access at: http://34.160.91.182
   6. ./gitops.sh dashboard       # Deploy Kubernetes Dashboard
@@ -173,16 +173,17 @@ case $COMMAND in
     deploy-gcp)
         if [ -z "$2" ]; then
             echo "🚀 Deploying all services to GKE..."
+            echo "🗑️  Deleting old pods as fail-safe..."
+            kubectl delete pods --all -n carsharing --grace-period=30
+            echo "📦 Creating new pods from updated manifests..."
             kubectl apply -k gitops/overlays/production
-            echo "Restarting all deployments in 'carsharing' namespace to pick up new images..."
-            kubectl rollout restart deployment -n carsharing
         else
-            echo "🔄 Restarting specific services in GKE..."
-            # Apply first to ensure manifests are up to date
+            echo "🔄 Deploying specific services to GKE..."
+            echo "📦 Applying updated manifests..."
             kubectl apply -k gitops/overlays/production
             for service in "${@:2}"; do
-                echo "  - Restarting $service"
-                kubectl rollout restart deployment "$service" -n carsharing
+                echo "🗑️  Deleting old pods for $service..."
+                kubectl delete pods -l app="$service" -n carsharing --grace-period=30
             done
         fi
         ;;
