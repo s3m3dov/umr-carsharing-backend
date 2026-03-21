@@ -26,6 +26,14 @@ The "what" and "why" behind the carpooling platform.
 
 ---
 
+## 📚 Domain Reference
+
+Core terminology and domain concepts.
+
+- **[Glossary](domain/glossary.md)**: Definitions for User, Driver, Passenger, Trip, Booking, Ride, and more.
+
+---
+
 ## 📝 Other
 
 - **[Changelog](../CHANGELOG.md)**: Version history and project updates.
