@@ -105,6 +105,7 @@ REQUESTED → CONFIRMED → IN_PROGRESS → COMPLETED
 A passenger's actual journey segment within a trip. While a trip is the driver's full route, a ride is a passenger's specific portion: pickup → dropoff.
 
 **Key Differences:**
+
 | **Trip** | **Ride** |
 |----------|----------|
 | Driver's full journey | Passenger's segment |
