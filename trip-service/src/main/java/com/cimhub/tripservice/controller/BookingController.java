@@ -51,4 +51,12 @@ public class BookingController {
         List<PassengerRideResponse> activeBookings = activeRidesService.findPassengerActiveRides(passengerId);
         return ResponseEntity.ok(ApiResponse.success(activeBookings));
     }
+
+    @GetMapping("/history/passenger/{passengerId}")
+    public ResponseEntity<ApiResponse<List<PassengerRideResponse>>> getPassengerRideHistory(
+            @PathVariable String passengerId) {
+        log.info("Fetching ride history for passenger: {}", passengerId);
+        List<PassengerRideResponse> rideHistory = activeRidesService.findPassengerRideHistory(passengerId);
+        return ResponseEntity.ok(ApiResponse.success(rideHistory));
+    }
 }
