@@ -116,4 +116,12 @@ public class TripController {
         List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
         return ResponseEntity.ok(ApiResponse.success(activeTrips));
     }
+
+    @GetMapping("/history/driver/{driverId}")
+    public ResponseEntity<ApiResponse<List<DriverTripResponse>>> getDriverTripHistory(
+            @PathVariable String driverId) {
+        log.info("Fetching trip history for driver: {}", driverId);
+        List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
+        return ResponseEntity.ok(ApiResponse.success(tripHistory));
+    }
 }
