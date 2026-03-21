@@ -41,6 +41,20 @@ public class ActiveRidesService {
                                 .collect(Collectors.toList());
         }
 
+        public List<DriverTripResponse> findDriverTripHistory(String driverId) {
+                log.info("Fetching trip history for driver: {}", driverId);
+
+                List<TripStatus> historyStatuses = List.of(
+                                TripStatus.COMPLETED,
+                                TripStatus.CANCELLED);
+
+                List<Trip> pastTrips = tripsRepository.findByDriverIdAndTripStatusIn(driverId, historyStatuses);
+
+                return pastTrips.stream()
+                                .map(this::convertToDriverTripResponse)
+                                .collect(Collectors.toList());
+        }
+
         public List<PassengerRideResponse> findPassengerActiveRides(String passengerId) {
                 log.info("Fetching active rides for passenger: {}", passengerId);
 
