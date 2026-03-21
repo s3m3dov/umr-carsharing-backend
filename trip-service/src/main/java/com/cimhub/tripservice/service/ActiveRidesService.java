@@ -57,6 +57,21 @@ public class ActiveRidesService {
                                 .collect(Collectors.toList());
         }
 
+        public List<PassengerRideResponse> findPassengerRideHistory(String passengerId) {
+                log.info("Fetching ride history for passenger: {}", passengerId);
+
+                List<BookingStatus> historyStatuses = List.of(
+                                BookingStatus.COMPLETED,
+                                BookingStatus.CANCELLED);
+
+                List<Booking> pastBookings = bookingRepository.findByPassengerIdAndStatusIn(passengerId,
+                                historyStatuses);
+
+                return pastBookings.stream()
+                                .map(this::convertToPassengerRideResponse)
+                                .collect(Collectors.toList());
+        }
+
         private PassengerRideResponse convertToPassengerRideResponse(Booking booking) {
                 ZonedDateTime bookingTimeInOriginalZone = timezoneService.convertToTimezone(
                                 booking.getRideStartTimeUTC(),
