@@ -2,6 +2,9 @@ package com.cimhub.tripservice.model;
 
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.OSRM.Geometry;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -10,16 +13,21 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Data;
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.geo.Point;
 
 import java.time.Instant;
 import java.util.List;
 
-@Document(collection = "trips")
+/**
+ * Trip model - stores trip information for the carsharing platform.
+ * Uses JPA annotations for database-agnostic design.
+ * MongoDB-specific geospatial indexing is retained for performance optimization.
+ * Stored in "trips" collection/table.
+ */
+@Entity
+@Table(name = "trips")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

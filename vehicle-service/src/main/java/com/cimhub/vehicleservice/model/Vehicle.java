@@ -1,13 +1,20 @@
 package com.cimhub.vehicleservice.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Vehicle model - stores vehicle information.
+ * Uses JPA annotations for database-agnostic design (works with relational and document databases).
+ * Stored in "vehicles" collection/table.
+ */
 @Data
-@Document(collection = "vehicles")
+@Entity
+@Table(name = "vehicles")
 @NoArgsConstructor
 public class Vehicle {
     @NotBlank
