@@ -13,11 +13,10 @@ public record CreateProfileRequest(
 
                 @NotNull(message = "UserType is required") UserType userType,
 
-                String fullName,
+                String firstName,
+                String lastName,
                 String phoneNumber,
                 int age,
-                Date dob,
-                String empId,
-                String organisationName,
-                String profilePicUrl) {
+                String vehicleModel,
+                String licensePlate) {
 }

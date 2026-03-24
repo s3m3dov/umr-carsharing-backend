@@ -1,5 +1,6 @@
 package com.cimhub.userservice.service;
 
+import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.exception.UnauthorizedException;
@@ -9,6 +10,8 @@ import com.cimhub.userservice.dto.request.RegisterUserRequest;
 import com.cimhub.userservice.dto.response.LoginResponse;
 import com.cimhub.userservice.dto.response.SignUpResponse;
 import com.cimhub.userservice.dto.response.UserResponse;
+import com.cimhub.userservice.model.Driver;
+import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.model.User;
 import com.cimhub.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,39 +35,58 @@ public class UserService {
             throw new UserAlreadyExistsException("User profile already exists for " + request.userId());
         }
 
-        User newUser = new User();
-        // TODO: Add RateLimiter (Globally)
-        // TODO: Make DB calls (create/update/delete) locking to avoid race conditions
-        // TODO: Make User models in AuthService and UserService consistent
+        // Create appropriate user type based on userType enum
+        User newUser = createUserByType(request.userType());
 
         newUser.setUserId(request.userId());
         newUser.setEmail(request.email());
-        newUser.setUserType(request.userType());
-        newUser.setFullName(request.fullName());
+        newUser.setFirstName(request.firstName());
+        newUser.setLastName(request.lastName());
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
-        newUser.setDob(request.dob());
-        newUser.setEmpId(request.empId());
-        newUser.setOrganisationName(request.organisationName());
-        newUser.setProfilePicUrl(request.profilePicUrl());
+
+        // Set vehicle info if this is a driver
+        if (newUser instanceof Driver driver && request.vehicleModel() != null) {
+            driver.setVehicleModel(request.vehicleModel());
+            driver.setLicensePlate(request.licensePlate());
+        }
 
         newUser.setCreatedBy(request.email());
         newUser.setCreatedDate(new Date());
 
         userRepository.save(newUser);
-        log.info("User profile created successfully for userId: {}", request.userId());
+        log.info("User profile created successfully for userId: {} as {}", request.userId(), request.userType());
+
+        return mapUserToResponse(newUser);
+    }
+
+    private User createUserByType(UserType userType) {
+        return switch (userType) {
+            case DRIVER -> new Driver();
+            case PASSENGER -> new Passenger();
+            default -> new Passenger();
+        };
+    }
+
+    private UserResponse mapUserToResponse(User user) {
+        String vehicleModel = null;
+        String licensePlate = null;
+
+        if (user instanceof Driver driver) {
+            vehicleModel = driver.getVehicleModel();
+            licensePlate = driver.getLicensePlate();
+        }
 
         return new UserResponse(
-                newUser.getFullName(),
-                newUser.getEmail(),
-                newUser.getUserId(),
-                newUser.getUserType(),
-                newUser.getPhoneNumber(),
-                newUser.getAge(),
-                newUser.getDob(),
-                newUser.getEmpId(),
-                newUser.getOrganisationName(),
-                newUser.getProfilePicUrl());
+                user.getUserId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getUserType(),
+                user.getPhoneNumber(),
+                user.getAge(),
+                vehicleModel,
+                licensePlate);
     }
 
     public UserResponse getUserInfo(String userId) {
@@ -74,61 +96,24 @@ public class UserService {
             throw new ResourceNotFoundException("User with id " + userId + " not found");
         }
 
-        return new UserResponse(
-                foundUser.getFullName(),
-                foundUser.getEmail(),
-                foundUser.getUserId(),
-                foundUser.getUserType(),
-                foundUser.getPhoneNumber(),
-                foundUser.getAge(),
-                foundUser.getDob(),
-                foundUser.getEmpId(),
-                foundUser.getOrganisationName(),
-                foundUser.getProfilePicUrl());
+        return mapUserToResponse(foundUser);
     }
 
+    /**
+     * Deprecated: Use auth-service for registration instead.
+     * This method is kept for backward compatibility but should not be called.
+     */
+    @Deprecated(forRemoval = true)
     public SignUpResponse registerUser(RegisterUserRequest request) {
-        String normalizedEmail = request.email().toLowerCase();
-        User newUser = new User();
-        newUser.setFullName(request.fullName());
-        newUser.setEmail(normalizedEmail);
-        newUser.setUserId(normalizedEmail);
-        newUser.setPhoneNumber(request.phoneNumber());
-        newUser.setAge(request.age());
-        newUser.setDob(request.dob());
-        newUser.setEmpId(request.empId());
-        newUser.setOrganisationName(request.organisationName());
-        newUser.setProfilePicUrl(request.profilePicUrl());
-        newUser.setCreatedDate(new Date());
-
-        log.info("Registering new user: {}", newUser.getUserId());
-        userRepository.save(newUser);
-
-        User savedUser = userRepository.findByUserId(normalizedEmail);
-        return new SignUpResponse(
-                savedUser.getUserId(),
-                savedUser.getFullName(),
-                true);
+        throw new UnsupportedOperationException("Registration must be done through auth-service");
     }
 
+    /**
+     * Deprecated: Use auth-service for login instead.
+     * This method is kept for backward compatibility but should not be called.
+     */
+    @Deprecated(forRemoval = true)
     public LoginResponse login(LoginRequest request) {
-        String normalizedEmail = request.email().toLowerCase();
-        User userData = userRepository.findByUserId(normalizedEmail);
-        log.info("Login check for user: {}", normalizedEmail);
-
-        if (userData != null) {
-            if (userData.getPassword() != null && userData.getPassword().equals(request.password())) {
-                return new LoginResponse(
-                        userData.getFullName(),
-                        userData.getUserId(),
-                        userData.getUserType(),
-                        true,
-                        null);
-            } else {
-                throw new UnauthorizedException("Invalid credentials");
-            }
-        } else {
-            throw new UnauthorizedException("Invalid credentials");
-        }
+        throw new UnsupportedOperationException("Login must be done through auth-service");
     }
 }

@@ -4,7 +4,6 @@ import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -13,6 +12,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+/**
+ * Base User model for the carsharing platform.
+ * Subclasses (Driver, Passenger) extend this with role-specific fields.
+ * MongoDB stores the actual type using the _class field for polymorphism.
+ */
 @Data
 @Document(collection = "users")
 public class User {
@@ -20,18 +24,17 @@ public class User {
     private String userId;
 
     @NotBlank
-    private String fullName;
+    private String firstName;
+
+    @NotBlank
+    private String lastName;
 
     @NotBlank
     @Email
     @Indexed(unique = true)
     private String email;
 
-    @NotBlank
     private String phoneNumber;
-
-    @NotBlank
-    private String password;
 
     @NotNull
     private UserType userType;
@@ -39,14 +42,7 @@ public class User {
     @Positive
     private int age;
 
-    @Past
     private Date dob;
-
-    private String empId;
-
-    private String organisationName;
-
-    private String profilePicUrl;
 
     private Date createdDate = new Date();
 
