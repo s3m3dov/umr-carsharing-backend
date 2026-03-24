@@ -6,7 +6,7 @@ This project has been transformed from a monolithic architecture to a microservi
 
 ## Architecture Overview
 
-The system is built using a microservices architecture, leveraging Spring Boot and Spring Cloud. It uses Google Maps API for location services, Firebase for real-time data, and MongoDB for persistence.
+The system is built using a microservices architecture, leveraging Spring Boot and Spring Cloud. It uses Google Maps API for location services, Firebase for real-time notifications, and MongoDB for persistence. Authentication is handled internally via a dedicated JWT-based Auth Service.
 
 ### Technology Stack
 
@@ -14,9 +14,11 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 - **Framework**: Spring Boot with Spring MVC, Spring Cloud (Kubernetes Discovery, API Gateway, Feign)
 - **Database**:
   - MongoDB Atlas (for persistent storage)
-  - Firebase Realtime Database (for real-time data)
+  - Firebase Realtime Database (for real-time notifications ONLY)
 - **APIs**:
   - Google Maps API (for directions and distance calculations)
+- **Authentication**:
+  - Internal JWT-based Identity Provider (Auth Service)
 - **Other Libraries**:
   - Lombok (for reducing boilerplate code)
   - Spring Data Mongo (for MongoDB integration)
@@ -34,9 +36,13 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 
 ### Development Notes
 
-- CORS is managed at the **Kubernetes Ingress level**, keeping the application code environment-agnostic.
-- The application handles complex distance calculations for matching rides.
-- Each microservice has its own MongoDB database for strict data isolation.
+### Security
+
+The system uses a decentralized security model managed at the API Gateway level:
+- **Authentication**: JWT-based authentication using an internal `auth-service`. Firebase is NOT used for authentication.
+- **Identity Propagation**: The API Gateway validates incoming JWTs and propagates user identity to downstream services via `X-User-Id` and `X-User-Role` headers.
+- **Authorization**: Role-Based Access Control (RBAC) is enforced at the service level based on these headers.
+- **CORS**: Managed at the Kubernetes Ingress level.
 
 ### Supporting Infrastructure
 

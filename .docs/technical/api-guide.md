@@ -4,14 +4,15 @@ This guide provides a comprehensive overview of how to interact with the Car Sha
 
 ## 🔑 Authentication
 
-All protected endpoints require a JWT (JSON Web Token) in the `Authorization` header.
+All protected endpoints require an internal JWT (JSON Web Token) in the `Authorization` header. **Firebase tokens are NOT supported for direct API calls.**
 
 ```http
 Authorization: Bearer <your_jwt_token>
 ```
 
-- **Login/Signup**: Use the `/api/users/login` and `/api/users/signup` endpoints to obtain a token.
-- **Service Identity**: The API Gateway extracts the `userId` from the token and passes it to internal services via the `X-User-Id` header.
+- **Login/Signup**: Use the `/api/auth/login` and `/api/auth/signup` endpoints in the **Auth Service** to obtain a token.
+- **Service Identity**: The API Gateway validates the JWT, extracts the identity, and passes it to internal services via the `X-User-Id` and `X-User-Role` headers.
+- **Note to Mobile Developers**: Do not use the Firebase Flutter SDK for authentication. Call the backend APIs directly to manage user sessions.
 
 ## 📡 Common Response Format
 
