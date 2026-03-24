@@ -41,13 +41,10 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // TEMPORARILY DISABLED AUTH ENFORCEMENT
-        // return extractToken(exchange.getRequest(), path)
-        // .flatMap(this::validateTokenWithAuthService)
-        // .flatMap(response -> authorize(exchange, chain, response))
-        // .onErrorMap(this::mapToUnauthorizedIfNeeded);
-
-        return chain.filter(exchange);
+        return extractToken(exchange.getRequest(), path)
+                .flatMap(this::validateTokenWithAuthService)
+                .flatMap(response -> authorize(exchange, chain, response))
+                .onErrorMap(this::mapToUnauthorizedIfNeeded);
     }
 
     /**
@@ -65,6 +62,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .mutate()
                 .header(GatewayConstants.USER_EMAIL_HEADER, response.email())
                 .header(GatewayConstants.USER_ID_HEADER, response.email().toLowerCase())
+                .header(GatewayConstants.USER_ROLE_HEADER, response.role())
                 .build();
 
         return chain.filter(
@@ -144,6 +142,6 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private record TokenValidationRequest(String token) {
     }
 
-    private record TokenValidationResponse(String email, boolean valid) {
+    private record TokenValidationResponse(String email, boolean valid, String role) {
     }
 }
