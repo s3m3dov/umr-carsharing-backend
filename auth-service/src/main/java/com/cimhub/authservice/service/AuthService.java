@@ -1,5 +1,6 @@
 package com.cimhub.authservice.service;
 
+import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
@@ -29,6 +30,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserServiceClient userServiceClient;
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
         String normalizedEmail = request.email().toLowerCase();
@@ -39,23 +41,43 @@ public class AuthService {
                     "User Already Exists with email: " + normalizedEmail);
         }
 
+        // Step 1: Create auth credentials
         User newAuthUser = new User();
         newAuthUser.setUserId(normalizedEmail);
         newAuthUser.setEmail(normalizedEmail);
         newAuthUser.setPassword(passwordEncoder.encode(request.password()));
+        newAuthUser.setUserType(request.userType());
         newAuthUser.setCreatedDate(new Date());
         authUserRepository.save(newAuthUser);
 
+        // Step 2: Create user profile in user-service
+        CreateProfileRequest profileRequest = CreateProfileRequest.builder()
+                .userId(normalizedEmail)
+                .email(normalizedEmail)
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .userType(request.userType())
+                .phoneNumber(request.phoneNumber())
+                .age(request.age())
+                .vehicleModel(request.vehicleModel())
+                .licensePlate(request.licensePlate())
+                .build();
+
+        userServiceClient.createProfile(profileRequest);
+
+        // Step 3: Generate JWT with role
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
                         .username(newAuthUser.getEmail())
                         .password(newAuthUser.getPassword())
                         .roles("USER")
-                        .build());
+                        .build(),
+                newAuthUser.getUserType().name());
 
         return SignUpResponse.builder()
                 .token(token)
                 .email(newAuthUser.getEmail())
+                .role(newAuthUser.getUserType().name())
                 .build();
     }
 
@@ -81,20 +103,21 @@ public class AuthService {
                 .roles("USER")
                 .build();
 
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(userDetails, authUserData.getUserType().name());
 
-        return new LoginResponse(token, authUserData.getEmail());
+        return new LoginResponse(token, authUserData.getEmail(), authUserData.getUserType().name());
     }
 
     public ValidateTokenResponse validateToken(ValidateTokenRequest request) {
         try {
             String email = jwtService.extractUsername(request.token());
             boolean isTokenValid = jwtService.isTokenValid(request.token(), email);
+            String role = jwtService.extractRole(request.token());
 
-            return new ValidateTokenResponse(isTokenValid, email);
+            return new ValidateTokenResponse(isTokenValid, email, role);
         } catch (Exception e) {
             log.warn("Token validation failed: {}", e.getMessage());
-            return new ValidateTokenResponse(false, null);
+            return new ValidateTokenResponse(false, null, null);
         }
     }
 }
