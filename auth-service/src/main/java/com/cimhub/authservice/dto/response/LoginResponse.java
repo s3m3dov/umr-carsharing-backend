@@ -2,5 +2,6 @@ package com.cimhub.authservice.dto.response;
 
 public record LoginResponse(
         String token,
-        String email) {
+        String email,
+        String role) {
 }

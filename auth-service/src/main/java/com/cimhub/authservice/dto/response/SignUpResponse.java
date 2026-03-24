@@ -5,5 +5,6 @@ import lombok.Builder;
 @Builder
 public record SignUpResponse(
         String token,
-        String email) {
+        String email,
+        String role) {
 }

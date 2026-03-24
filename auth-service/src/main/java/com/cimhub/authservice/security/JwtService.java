@@ -27,7 +27,11 @@ public class JwtService {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-    
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
     private  <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -48,6 +52,12 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails){
         return generateToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateToken(UserDetails userDetails, String role){
+        HashMap<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        return generateToken(claims, userDetails);
     }
 
     public String generateToken(
