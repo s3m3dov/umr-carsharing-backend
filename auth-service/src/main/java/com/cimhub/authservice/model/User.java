@@ -1,20 +1,27 @@
 package com.cimhub.authservice.model;
 
 import com.cimhub.common.enums.UserType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+/**
+ * Auth User model - stores authentication credentials.
+ * Uses JPA annotations for database-agnostic design (works with relational and document databases).
+ * Stored in "users" collection/table.
+ */
 @Data
-@Document(collection = "users")
+@Entity
+@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -24,7 +31,7 @@ public class User {
 
     @NotBlank
     @Email
-    @Indexed(unique = true)
+    @Column(unique = true)
     private String email;
 
     @NotBlank

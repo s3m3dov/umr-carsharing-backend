@@ -1,22 +1,25 @@
 package com.cimhub.tripservice.model;
 
 import com.cimhub.common.models.Points;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
 /**
- * Booking entity - represents a passenger's seat reservation on a trip
- * Consolidates the previous Ride and Rider entities into a single, clear
- * concept
+ * Booking entity - represents a passenger's seat reservation on a trip.
+ * Consolidates the previous Ride and Rider entities into a single, clear concept.
+ * Uses JPA annotations for database-agnostic design (works with relational and document databases).
+ * Stored in "bookings" collection/table.
  */
-@Document(collection = "bookings")
+@Entity
+@Table(name = "bookings")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
