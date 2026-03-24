@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/carsharing}
+  jpa:
+    enabled: false
+  datasource:
+    enabled: false
+
+logging:
+  level:
+    com.cimhub.reviewservice.repository: DEBUG

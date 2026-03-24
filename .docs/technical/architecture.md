@@ -32,7 +32,8 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 4. **Vehicle Service** (Port 8080) - Vehicle registration and management
 5. **Trip Service** (Port 8080) - Trip creation and management
 6. **Ride Service** (Port 8080) - Ride finding and joining
-7. **Notification Service** (Port 8080) - Real-time notifications and WebSocket
+7. **Review Service** (Port 8080) - Mutual reviews and ratings between drivers and passengers
+8. **Notification Service** (Port 8080) - Real-time notifications and WebSocket
 
 ### Development Notes
 
@@ -77,6 +78,14 @@ The system uses a decentralized security model managed at the API Gateway level:
 - Ride matching algorithms
 - Integration with Google Maps API
 
+### Review Service
+
+- Submission of reviews and ratings (1-5 stars) after completed trips
+- Validation that only trip participants can leave reviews
+- Retrieval of reviews by driver, passenger, or trip
+- Aggregation and caching of average ratings for user profiles
+- Inter-service communication with Trip Service to validate trip completion status
+
 ### Notification Service
 
 - WebSocket connections for real-time updates
@@ -113,11 +122,16 @@ The application uses **MongoDB Atlas** for persistent storage with a shared data
 - Vehicle-related collections (Vehicle Service)
 - Trip-related collections (Trip Service)
 - Ride-related collections (Ride Service)
+- Review-related collections (Review Service)
 
 **Firebase Realtime Database** is used for real-time notifications and live updates.
 
 > [!NOTE]
 > While the current implementation uses a shared database, the microservices architecture allows for future migration to separate databases per service if needed for better isolation and scalability.
+
+## Service Dependencies
+
+The Review Service depends on the Trip Service for validating trip completion status before allowing reviews to be submitted. Only participants of completed trips can leave reviews for one another.
 
 ## Development Guidelines
 
