@@ -1,15 +1,9 @@
-# Phase 1 TODO - Core Logic & Quality Polish
+# TODO - Phase 1: Core Logic & Quality Polish
 
 > **Current Status:** ~75% Complete
 > **Last Updated:** 2026-03-25
 
-This document tracks the remaining work for Phase 1 of the Car Sharing Backend roadmap.
-
----
-
-## Overview
-
-Phase 1 focuses on refining state consistency, enhancing API quality, and implementing enterprise logging standards. The core microservices are functional, but several quality improvements are pending.
+This document tracks all work for Phase 1 - both completed and pending.
 
 ---
 
@@ -27,38 +21,24 @@ Phase 1 focuses on refining state consistency, enhancing API quality, and implem
 ## Completed Items ✅
 
 ### 1. Trip State Machine ✅
-
-**Implemented:**
 - `TripStatus`: `CREATED` → `AVAILABLE` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
 - Transition validation in `TripService`
 - Trips currently created directly as `AVAILABLE` (CREATED state exists but unused)
 
----
-
 ### 2. Booking State Machine ✅
-
-**Implemented:**
 - `BookingStatus`: `REQUESTED` → `REJECTED` | `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
 - Added `REJECTED` state to match glossary
 - Bookings start as `REQUESTED` (driver must accept/reject)
 - Seat count decremented on rejection
 
----
-
 ### 3. Fare & Cost Calculation ✅
-
-**Implemented:**
 - Renamed `pricePerKm` → `pricePerSeat` throughout:
   - `Trip.java` model
   - `Booking.java` model
   - `TripResponse`, `DriverTripResponse`, `PassengerRideResponse`
   - `ActiveRidesService`, `TripSearchService`
 
----
-
 ### 4. API Restructuring ✅
-
-**Implemented:**
 - **New RideController** (passenger-facing):
   - `POST /api/rides/book` - Book a ride
   - `POST /api/rides/cancel` - Cancel ride
@@ -73,37 +53,21 @@ Phase 1 focuses on refining state consistency, enhancing API quality, and implem
   - `@Tag(name = "Trip Management")` - Driver operations
   - `@Tag(name = "Trip Search")` - Passenger search operations
 
----
-
 ### 5. Model Updates ✅
-
-**Implemented:**
 - Renamed `joinedRidersId` → `joinedPassengersId` in Trip model
+- Renamed `pricePerKm` → `pricePerSeat` throughout
 
 ---
 
 ## Pending Items ❌
 
-### 1. Pagination ❌
+### Phase 1: API Quality & DX
 
-**Current State:**
-- No pagination support in controllers
-- All endpoints return full `List<T>` without limits
+#### Pagination & Sorting ❌
 
-**Required Implementation:**
-
-Add Spring Data `Pageable` support to search endpoints:
-
-```java
-@GetMapping("/search/matching-route")
-public ResponseEntity<ApiResponse<Page<Trip>>> searchMatchingRoute(
-    // ... existing params
-    Pageable pageable) {
-
-    Page<Trip> trips = geoService.findTripsMatchingRoute(..., pageable);
-    return ResponseEntity.ok(ApiResponse.success(trips));
-}
-```
+- [ ] Create `PageRequestDTO` and `PagedResponseDTO` in the `common` module.
+- [ ] Implement pagination in `TripRepository` and `BookingRepository`.
+- [ ] Update controllers to support `page`, `size`, and `sort` query parameters.
 
 **Acceptance Criteria:**
 - All search endpoints support `page`, `size`, and `sort` parameters
@@ -111,66 +75,73 @@ public ResponseEntity<ApiResponse<Page<Trip>>> searchMatchingRoute(
 
 ---
 
-### 2. Advanced Filtering ❌
+#### Search Filtering ❌
 
-**Current State:**
-- Basic filtering: radius, time range, seat availability
-- Missing: price range, vehicle type
-
-**Required Implementation:**
-
-Add filters to search endpoints:
-- `@RequestParam(required = false) Double minPrice`
-- `@RequestParam(required = false) Double maxPrice`
+- [ ] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
+- [ ] Add `carType` and `minAvailableSeats` filters.
+- [ ] Implement dynamic query predicate builders.
 
 ---
 
-### 3. JSON Logging ❌
+#### Input Validation ❌
 
-**Current State:**
-- Default Spring Boot text logging
-
-**Required Implementation:**
-
-Add `logstash-logback-encoder` and configure JSON logging.
+- [ ] Apply JSR-303 annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Size`, `@Future`) to all incoming DTOs.
+- [ ] Ensure nested objects are validated using `@Valid`.
+- [ ] Verify `GlobalExceptionHandler` correctly catches validation errors.
 
 ---
 
-### 4. Audit Trail ❌
+### Phase 1: Enterprise Logging & Observability
 
-**Current State:**
-- No audit event persistence
+#### Structured JSON Logging ❌
 
-**Required Implementation:**
-
-Create `AuditEvent` model and `AuditService` for critical actions.
+- [ ] Add `net.logstash.logback:logstash-logback-encoder` dependency to `pom.xml`.
+- [ ] Create `logback-spring.xml` template in each service.
+- [ ] Configure JSON output for `prod` profile.
 
 ---
 
-### 5. Trip Stops/Waypoints ❌ (Planned)
+#### Grafana & Loki Integration ❌
 
-**Feature:** Drivers can add intermediate stops to their route
+- [ ] Set up Loki as log aggregation backend
+- [ ] Configure Grafana datasources for Loki
+- [ ] Create dashboards for service health and metrics
+- [ ] Add Prometheus metrics collection via Micrometer
 
-**Required Implementation:**
-- Add `stops` field to Trip model (List<Points>)
-- Update OfferRideRequest to accept stops
-- Update OSRM routing to include waypoints
+---
+
+#### Audit Trail ❌
+
+- [ ] Create `audit_events` collection in MongoDB.
+- [ ] Implement `AuditService` for critical domain actions.
+- [ ] Persist `userId`, `action`, `correlationId`, `timestamp`, and `payload`.
+
+---
+
+### Phase 1: Trip Features
+
+#### Trip Stops/Waypoints ❌
+
+- [ ] Add `stops` field to Trip model (List<Points>)
+- [ ] Update OfferRideRequest to accept stops
+- [ ] Update OSRM routing to include waypoints
+- [ ] Search by stops (not just endpoints)
 
 ---
 
 ## Priority Order
 
-1. **High Priority**: Pagination, Audit Trail
-2. **Medium Priority**: JSON Logging, Advanced Filtering
-3. **Low Priority**: Trip Stops/Waypoints
+1. **High**: Pagination, Audit Trail
+2. **Medium**: JSON Logging, Grafana/Loki, Search Filtering
+3. **Low**: Input Validation, Trip Stops/Waypoints
 
 ---
 
 ## Related Files
 
-- [Roadmap](roadmap.md) - Full project roadmap
-- [Glossary](../domain/glossary.md) - Domain terminology
-- [Implementation Status](../technical/implementation-status.md) - Change log
+- [roadmap.md](roadmap.md) - Full project roadmap
+- [glossary.md](../domain/glossary.md) - Domain terminology
+- [tasks.md](tasks.md) - Task list format
 
 ---
 
