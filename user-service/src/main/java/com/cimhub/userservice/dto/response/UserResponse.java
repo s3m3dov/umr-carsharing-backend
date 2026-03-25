@@ -26,9 +26,6 @@ public record UserResponse(
         @Schema(description = "User's age", example = "32")
         int age,
 
-        @Schema(description = "Vehicle make and model", example = "Tesla Model 3")
-        String vehicleModel,
-
-        @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
-        String licensePlate) {
+        @Schema(description = "Driver's license number", example = "LD-123456789")
+        String licenseNumber) {
 }

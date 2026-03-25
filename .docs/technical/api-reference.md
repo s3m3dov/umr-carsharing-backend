@@ -105,8 +105,7 @@ Creates a new user account and returns a JWT token.
   "userType": "DRIVER",
   "phoneNumber": "+49 123 456789",
   "age": 32,
-  "vehicleModel": "Tesla Model 3",
-  "licensePlate": "HE-XX-1234"
+  "licenseNumber": "LD-123456789"
 }
 ```
 
@@ -686,8 +685,7 @@ curl -X POST http://localhost:8081/auth-service/api/auth/signup \
     "userType": "DRIVER",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "vehicleModel": "Tesla Model 3",
-    "licensePlate": "HE-XX-1234"
+    "licenseNumber": "LD-123456789"
   }'
 ```
 

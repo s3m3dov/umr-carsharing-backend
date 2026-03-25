@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(
         name = "RegisterUserRequest",
-        description = "User registration request containing personal information and optional vehicle details",
+        description = "User registration request containing personal information",
         example = AuthApiExamples.SIGNUP_REQUEST
 )
 public record RegisterUserRequest(
@@ -35,9 +35,6 @@ public record RegisterUserRequest(
         @Schema(description = "User's age (optional)", example = "32")
         int age,
 
-        @Schema(description = "Vehicle model (required for DRIVER, optional for PASSENGER)", example = "Tesla Model 3")
-        String vehicleModel,
-
-        @Schema(description = "Vehicle license plate (required for DRIVER, optional for PASSENGER)", example = "HE-XX-1234")
-        String licensePlate) {
+        @Schema(description = "Driver's license number (required for DRIVER, optional for PASSENGER)", example = "LD-123456789")
+        String licenseNumber) {
 }

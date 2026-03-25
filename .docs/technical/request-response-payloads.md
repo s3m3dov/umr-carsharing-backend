@@ -55,8 +55,7 @@ Source: `ApiExamples.LOGIN_RESPONSE` → imported in `AuthController` annotation
   "userType": "DRIVER",
   "phoneNumber": "+49 123 456789",
   "age": 32,
-  "vehicleModel": "Tesla Model 3",
-  "licensePlate": "HE-XX-1234"
+  "licenseNumber": "LD-123456789"
 }
 ```
 Source: `ApiExamples.SIGNUP_REQUEST` → imported in `RegisterUserRequest.java` DTO

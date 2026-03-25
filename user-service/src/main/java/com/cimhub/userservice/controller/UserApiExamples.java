@@ -17,8 +17,7 @@ public final class UserApiExamples {
               "lastName": "Driver",
               "phoneNumber": "+49 123 456789",
               "age": 32,
-              "vehicleModel": "Tesla Model 3",
-              "licensePlate": "HE-XX-1234"
+              "licenseNumber": "LD-123456789"
             }""";
 
     // ---- Responses ----

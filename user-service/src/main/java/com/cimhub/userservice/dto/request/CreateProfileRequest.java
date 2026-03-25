@@ -24,6 +24,5 @@ public record CreateProfileRequest(
                 String lastName,
                 String phoneNumber,
                 int age,
-                String vehicleModel,
-                String licensePlate) {
+                String licenseNumber) {
 }
