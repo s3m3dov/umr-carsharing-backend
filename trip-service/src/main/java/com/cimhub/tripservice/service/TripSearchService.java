@@ -50,7 +50,7 @@ public class TripSearchService {
                                 .totalSeats(trip.getTotalSeats())
                                 .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
                                 .tripStatus(trip.getTripStatus())
-                                .pricePerKm(trip.getPricePerKm())
+                                .pricePerSeat(trip.getPricePerSeat())
                                 .build();
         }
 }

@@ -72,7 +72,7 @@ public class OfferRideService {
                                 .destinationAddress(newTrip.getDestinationAddress())
                                 .tripStartDateTime(truncatedStartTime)
                                 .tripTimezone(timezone)
-                                .routeGeometry(mainRoute.geometry())
+                                .routeGeometry(newTrip.getRouteGeometry())
                                 .routeDistanceInMeters(mainRoute.distance())
                                 .routeDistanceInKm(mainRoute.distance() / 1000.0)
                                 .routeDurationInSeconds(mainRoute.duration())

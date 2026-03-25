@@ -1,7 +1,10 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.tripservice.dto.OSRM.Geometry;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
@@ -29,12 +32,20 @@ import java.util.List;
 public class TripGeospatialService {
 
     private final MongoTemplate mongoTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void enrichTripWithGeospatialData(Trip trip, com.cimhub.tripservice.dto.OSRM.Route route) {
         if (trip == null || route == null)
             return;
 
-        trip.setRouteGeometry(route.geometry());
+        Geometry geometry = route.geometry();
+        if (geometry != null) {
+            try {
+                trip.setRouteGeometry(objectMapper.writeValueAsString(geometry));
+            } catch (JsonProcessingException e) {
+                log.warn("Failed to serialize route geometry: {}", e.getMessage());
+            }
+        }
         trip.setRouteDistance(route.distance());
         trip.setRouteDuration(route.duration());
 

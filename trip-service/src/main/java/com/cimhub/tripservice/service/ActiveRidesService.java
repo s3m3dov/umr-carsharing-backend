@@ -101,6 +101,8 @@ public class ActiveRidesService {
                                 .tripStartDateTime(bookingTimeInOriginalZone)
                                 .tripTimezone(booking.getRideTimezone())
                                 .bookedSeats(booking.getRequestedSeats())
+                                .pricePerSeat(booking.getPricePerSeat())
+                                .estimatedFare(booking.getEstimatedPrice())
                                 .build();
         }
 
@@ -111,7 +113,7 @@ public class ActiveRidesService {
 
                 int bookedSeats = trip.getBookedSeats();
                 int availableSeats = trip.getTotalSeats() - bookedSeats;
-                double estimatedEarnings = (trip.getRouteDistance() / 1000.0) * trip.getPricePerKm();
+                double estimatedEarnings = bookedSeats * trip.getPricePerSeat();
 
                 return DriverTripResponse.builder()
                                 .tripId(trip.getTripId())
@@ -128,7 +130,7 @@ public class ActiveRidesService {
                                 .passengers(new ArrayList<>())
                                 .routeDistanceInKm(trip.getRouteDistance() / 1000.0)
                                 .routeDurationInMinutes(trip.getRouteDuration() / 60.0)
-                                .pricePerKm(trip.getPricePerKm())
+                                .pricePerSeat(trip.getPricePerSeat())
                                 .estimatedEarnings(estimatedEarnings)
                                 .build();
         }
