@@ -4,6 +4,7 @@ import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
 import com.cimhub.apigateway.constant.GatewayConstants;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -101,7 +102,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .uri(serviceProperties.getAuth().getValidateUrl())
                 .bodyValue(new TokenValidationRequest(token))
                 .retrieve()
-                .bodyToMono(TokenValidationResponse.class);
+                .bodyToMono(AuthServiceResponse.class)
+                .map(AuthServiceResponse::data);
     }
 
     /**
@@ -142,6 +144,16 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private record TokenValidationRequest(String token) {
     }
 
-    private record TokenValidationResponse(String email, boolean valid, String role) {
+    private record AuthServiceResponse(TokenValidationResponse data) {
+    }
+
+    private record TokenValidationResponse(
+            @JsonProperty("isValid") boolean isValid,
+            String email,
+            String role) {
+
+        public boolean valid() {
+            return isValid;
+        }
     }
 }
