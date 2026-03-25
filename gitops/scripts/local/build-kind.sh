@@ -51,4 +51,4 @@ for service in "${ALL_SERVICES[@]}"; do
 done
 echo ""
 echo "Next step:"
-echo "   ./gitops/gitops.sh apply local"
+echo "   ./gitops.sh local deploy"
