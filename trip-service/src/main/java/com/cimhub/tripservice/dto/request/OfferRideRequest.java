@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.dto.request;
 
+import com.cimhub.tripservice.config.ApiExamples;
 import com.cimhub.common.models.Points;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -8,6 +9,11 @@ import lombok.Builder;
 
 import java.time.ZonedDateTime;
 
+@Schema(
+        name = "OfferRideRequest",
+        description = "Request to create a new trip",
+        example = ApiExamples.OFFER_TRIP_REQUEST
+)
 @Builder
 public record OfferRideRequest(
         String driverId,
