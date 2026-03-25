@@ -17,7 +17,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse<T> {
+public class ApiResponseWrapper<T> {
 
     /**
      * Response data - present on success
@@ -44,8 +44,8 @@ public class ApiResponse<T> {
     /**
      * Create a successful response with data
      */
-    public static <T> ApiResponse<T> success(T data) {
-        return ApiResponse.<T>builder()
+    public static <T> ApiResponseWrapper<T> success(T data) {
+        return ApiResponseWrapper.<T>builder()
                 .data(data)
                 .message("Operation successful")
                 .timestamp(Instant.now())
@@ -55,8 +55,8 @@ public class ApiResponse<T> {
     /**
      * Create a successful response with message
      */
-    public static <T> ApiResponse<T> success(String message) {
-        return ApiResponse.<T>builder()
+    public static <T> ApiResponseWrapper<T> success(String message) {
+        return ApiResponseWrapper.<T>builder()
                 .message(message)
                 .timestamp(Instant.now())
                 .build();
@@ -65,8 +65,8 @@ public class ApiResponse<T> {
     /**
      * Create a successful response with data and message
      */
-    public static <T> ApiResponse<T> success(T data, String message) {
-        return ApiResponse.<T>builder()
+    public static <T> ApiResponseWrapper<T> success(T data, String message) {
+        return ApiResponseWrapper.<T>builder()
                 .data(data)
                 .message(message)
                 .timestamp(Instant.now())
@@ -76,8 +76,8 @@ public class ApiResponse<T> {
     /**
      * Create an error response with structured error
      */
-    public static <T> ApiResponse<T> error(ApiError error) {
-        return ApiResponse.<T>builder()
+    public static <T> ApiResponseWrapper<T> error(ApiError error) {
+        return ApiResponseWrapper.<T>builder()
                 .error(error)
                 .message("An error occurred")
                 .timestamp(Instant.now())
@@ -87,7 +87,7 @@ public class ApiResponse<T> {
     /**
      * Create an error response with code and message
      */
-    public static <T> ApiResponse<T> error(String code, String message) {
+    public static <T> ApiResponseWrapper<T> error(String code, String message) {
         return error(ApiError.builder()
                 .code(code)
                 .message(message)
@@ -97,7 +97,7 @@ public class ApiResponse<T> {
     /**
      * Create an error response with code, message, and path
      */
-    public static <T> ApiResponse<T> error(String code, String message, String path) {
+    public static <T> ApiResponseWrapper<T> error(String code, String message, String path) {
         return error(ApiError.builder()
                 .code(code)
                 .message(message)
