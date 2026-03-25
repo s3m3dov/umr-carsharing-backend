@@ -56,7 +56,6 @@ public class OpenApiConfig {
 				.info(info)
 				.servers(List.of(server))
 				.components(new Components()
-						.addSecuritySchemes("Bearer Authentication", securityScheme))
-				.addSecurityItem(securityRequirement);
+						.addSecuritySchemes("Bearer Authentication", securityScheme));
 	}
 }
