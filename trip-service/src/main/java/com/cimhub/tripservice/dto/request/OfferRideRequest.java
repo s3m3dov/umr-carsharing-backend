@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.tripservice.config.ApiExamples;
+import com.cimhub.tripservice.controller.TripApiExamples;
 import com.cimhub.common.models.Points;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,16 +12,24 @@ import java.time.ZonedDateTime;
 @Schema(
         name = "OfferRideRequest",
         description = "Request to create a new trip",
-        example = ApiExamples.OFFER_TRIP_REQUEST
+        example = TripApiExamples.OFFER_TRIP_REQUEST
 )
 @Builder
 public record OfferRideRequest(
+        @Schema(description = "Driver's user ID", example = "user_123")
         String driverId,
+
+        @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
         String vehicleNumber,
+
+        @Schema(description = "Trip starting location")
         Points sourceAddress,
+
+        @Schema(description = "Trip destination location")
         Points destinationAddress,
 
         @Schema(example = "2026-01-11T13:09:26.095Z", description = "ISO-8601 date-time with timezone offset (e.g., 'Z' for UTC or '+01:00'). Milliseconds are optional.") @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX") ZonedDateTime tripStartDateTime,
 
+        @Schema(description = "Total number of seats available for passengers", example = "3")
         @Min(value = 1, message = "Total seats must be at least 1") int totalSeats) {
 }

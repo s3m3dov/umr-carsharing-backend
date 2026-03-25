@@ -15,7 +15,7 @@
 
 ## Example Files by Service
 
-All example files are in the `controller/` package alongside their Api interface.
+All example files are in the `controller/` package alongside their controller.
 
 ### Auth Service
 **File:** `auth-service/.../controller/AuthApiExamples.java`

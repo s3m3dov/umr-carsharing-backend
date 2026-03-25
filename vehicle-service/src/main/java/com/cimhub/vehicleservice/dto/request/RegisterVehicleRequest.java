@@ -1,13 +1,13 @@
 package com.cimhub.vehicleservice.dto.request;
 
-import com.cimhub.vehicleservice.config.ApiExamples;
+import com.cimhub.vehicleservice.controller.VehicleApiExamples;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 @Schema(
         name = "RegisterVehicleRequest",
         description = "Vehicle registration request containing vehicle details",
-        example = ApiExamples.REGISTER_VEHICLE_REQUEST
+        example = VehicleApiExamples.REGISTER_VEHICLE_REQUEST
 )
 public record RegisterVehicleRequest(
         @Schema(description = "Driver's user ID who owns the vehicle", example = "user_123")

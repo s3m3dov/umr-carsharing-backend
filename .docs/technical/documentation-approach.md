@@ -5,25 +5,30 @@
 Embedding extensive Swagger annotations and JSON examples directly in controllers:
 - Makes source files bloated and hard to read (~10 lines of annotations per ~4 lines of logic)
 - Mixes concerns (implementation logic vs. API documentation)
-- Creates name clashes between `@ApiResponse` (Swagger) and `ApiResponseWrapper` (DTO)
+- Creates name clashes between `@ApiResponse` (Swagger) and `ApiResponse` (DTO)
 
-## Solution: Interface-Based API Documentation
+## Solution: Controller-Based Documentation with Separate Examples
 
-This project separates documentation from implementation using a **3-file pattern per service**:
+This project uses a **2-file pattern per service**:
 
 ```
 controller/
-  AuthApi.java            ← Interface with all Swagger annotations
   AuthApiExamples.java    ← JSON example payloads as constants
-  AuthController.java     ← Clean implementation (business logic only)
+  AuthController.java     ← Swagger annotations + business logic
 ```
 
 ### How It Works
 
-**Api Interface** — defines the API contract with full OpenAPI annotations:
+**Controller** — contains Swagger annotations and business logic in one file:
 ```java
+@Slf4j
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 @Tag(name = "Authentication Management", description = "...")
-public interface AuthApi {
+public class AuthController {
+
+    private final AuthService authService;
 
     @Operation(summary = "User login", description = "...")
     @ApiResponses({
@@ -31,17 +36,6 @@ public interface AuthApi {
             content = @Content(examples = @ExampleObject(value = AuthApiExamples.LOGIN_RESPONSE))),
         @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    ResponseEntity<ApiResponseWrapper<LoginResponse>> login(LoginRequest request);
-}
-```
-
-**Controller** — implements the interface, contains only logic:
-```java
-@RestController
-@RequestMapping("/api/auth")
-public class AuthController implements AuthApi {
-
-    @Override
     @PostMapping("/login")
     public ResponseEntity<ApiResponseWrapper<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request) {
@@ -51,7 +45,7 @@ public class AuthController implements AuthApi {
 }
 ```
 
-**Examples** — JSON payloads referenced by the interface:
+**Examples** — JSON payloads referenced by the controller:
 ```java
 public final class AuthApiExamples {
     public static final String LOGIN_RESPONSE = """
@@ -67,17 +61,17 @@ public final class AuthApiExamples {
 
 | Aspect | Benefit |
 |--------|---------|
-| **Code readability** | Controllers contain only business logic |
-| **Name clash** | `@ApiResponse` (Swagger) and `ApiResponseWrapper` (DTO) live in separate files |
-| **Maintainability** | Update docs in interface, update examples in constants — no controller changes |
+| **Code readability** | Examples stored as constants, not embedded in annotations |
+| **Name clash** | `@ApiResponse` (Swagger) and `ApiResponseWrapper` (DTO) — different names, no conflict |
+| **Maintainability** | Update examples in `*ApiExamples.java` without touching controller logic |
 | **Swagger UI** | Full examples visible via `@ExampleObject` + `@Schema` on DTOs |
-| **Discoverability** | API contract reviewable in one interface per service |
+| **Single file** | All endpoint docs live with their implementation |
 
 ## Where Examples Live
 
 | Type | Location | Visible In |
 |------|----------|------------|
-| **Endpoint response examples** | `*ApiExamples.java` constants → `@ExampleObject` in Api interface | Swagger UI |
+| **Endpoint response examples** | `*ApiExamples.java` constants → `@ExampleObject` in controller | Swagger UI |
 | **DTO field examples** | `@Schema` on record fields | Swagger UI schema section |
 | **Full request/response docs** | `.docs/technical/api-reference.md` | GitHub / IDE |
 | **cURL + code samples** | `.docs/technical/integration-examples.md` | GitHub / IDE |
@@ -87,9 +81,9 @@ public final class AuthApiExamples {
 
 ### Adding a New Endpoint
 
-1. Add method + Swagger annotations to the Api interface
-2. Add JSON constants to the ApiExamples class
-3. Implement with `@Override` in the controller
+1. Add method + Swagger annotations to the controller
+2. Add JSON constants to the `*ApiExamples.java` class
+3. Implement the business logic in the controller method
 4. Add `@Schema` examples to any new DTOs
 5. Update markdown docs in `.docs/technical/`
 
