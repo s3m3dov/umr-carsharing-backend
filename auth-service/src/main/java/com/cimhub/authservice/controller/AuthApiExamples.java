@@ -72,29 +72,64 @@ public final class AuthApiExamples {
 
     public static final String ERROR_INVALID_CREDENTIALS = """
             {
-              "success": false,
-              "error": "INVALID_CREDENTIALS",
-              "message": "Invalid email or password"
+              "status": 401,
+              "code": "INVALID_CREDENTIALS",
+              "message": "Invalid email or password",
+              "error": {
+                "path": "/api/auth/login",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12345"
             }""";
 
     public static final String ERROR_USER_EXISTS = """
             {
-              "success": false,
-              "error": "USER_ALREADY_EXISTS",
-              "message": "User with email john.driver@example.com already exists"
+              "status": 409,
+              "code": "USER_ALREADY_EXISTS",
+              "message": "User with email john.driver@example.com already exists",
+              "error": {
+                "path": "/api/auth/signup",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12346"
             }""";
 
     public static final String ERROR_VALIDATION = """
             {
-              "success": false,
-              "error": "VALIDATION_ERROR",
-              "message": "Email is required"
+              "status": 400,
+              "code": "VALIDATION_ERROR",
+              "message": "Invalid input data",
+              "error": {
+                "path": "/api/auth/signup",
+                "details": [
+                  {
+                    "field": "email",
+                    "message": "Email is required",
+                    "type": "NotBlank"
+                  },
+                  {
+                    "field": "password",
+                    "message": "Password must be at least 8 characters",
+                    "type": "Size"
+                  }
+                ]
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12347"
             }""";
 
     public static final String ERROR_INVALID_TOKEN = """
             {
-              "success": false,
-              "error": "INVALID_TOKEN",
-              "message": "Invalid or expired token"
+              "status": 401,
+              "code": "INVALID_TOKEN",
+              "message": "Invalid or expired token",
+              "error": {
+                "path": "/api/auth/validate",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12348"
             }""";
 }

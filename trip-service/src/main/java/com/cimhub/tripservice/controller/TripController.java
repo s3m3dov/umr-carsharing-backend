@@ -48,8 +48,16 @@ public class TripController {
                     description = "Trip created successfully",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.OFFER_TRIP_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid trip data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid trip data",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_TRIP_DATA))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_UNAUTHORIZED))
+            )
     })
     @PostMapping("/offer")
     public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
@@ -71,8 +79,16 @@ public class TripController {
                     description = "Cancelled successfully",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.CANCEL_TRIP_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Trip not found"),
-            @ApiResponse(responseCode = "409", description = "Cannot cancel (already in progress)")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Cannot cancel (already in progress)",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_IN_PROGRESS))
+            )
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
@@ -89,10 +105,14 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Trips found",
+                    description = "Matching trips found",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid coordinates or radius")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid search parameters",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+            )
     })
     @GetMapping("/search/near-source")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearSource(
@@ -114,7 +134,11 @@ public class TripController {
                     description = "Trips found",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid coordinates or radius")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid coordinates or radius",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+            )
     })
     @GetMapping("/search/near-destination")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearDestination(
@@ -133,10 +157,14 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Matching trips found",
+                    description = "Trips found",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid coordinates or radius",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+            )
     })
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
@@ -183,7 +211,11 @@ public class TripController {
                     description = "Active trips retrieved",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ACTIVE_TRIPS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Driver not found")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Driver not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+            )
     })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
@@ -203,7 +235,11 @@ public class TripController {
                     description = "Trip history retrieved",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ACTIVE_TRIPS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Driver not found")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Driver not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+            )
     })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(

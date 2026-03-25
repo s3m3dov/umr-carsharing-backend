@@ -58,15 +58,38 @@ public final class UserApiExamples {
 
     public static final String ERROR_USER_NOT_FOUND = """
             {
-              "success": false,
-              "error": "USER_NOT_FOUND",
-              "message": "User with ID user_123 not found"
+              "status": 404,
+              "code": "USER_NOT_FOUND",
+              "message": "User with ID user_123 not found",
+              "error": {
+                "path": "/api/users/user_123",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12349"
             }""";
 
     public static final String ERROR_INVALID_DATA = """
             {
-              "success": false,
-              "error": "VALIDATION_ERROR",
-              "message": "Invalid user data provided"
+              "status": 400,
+              "code": "VALIDATION_ERROR",
+              "message": "Invalid user data provided",
+              "error": {
+                "path": "/api/users/profile",
+                "details": [
+                  {
+                    "field": "phoneNumber",
+                    "message": "Phone number is required",
+                    "type": "NotBlank"
+                  },
+                  {
+                    "field": "age",
+                    "message": "Age must be at least 18",
+                    "type": "Min"
+                  }
+                ]
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12350"
             }""";
 }
