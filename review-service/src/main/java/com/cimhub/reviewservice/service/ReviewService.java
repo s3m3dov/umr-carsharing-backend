@@ -162,7 +162,7 @@ public class ReviewService {
 
         if (reviews.isEmpty()) {
             return AverageRatingResponse.builder()
-                    .driverId(driverId)
+                    .subjectId(driverId)
                     .averageRating(0.0)
                     .totalReviews(0)
                     .build();
@@ -174,7 +174,7 @@ public class ReviewService {
                 .orElse(0.0);
 
         return AverageRatingResponse.builder()
-                .driverId(driverId)
+                .subjectId(driverId)
                 .averageRating(averageRating)
                 .totalReviews(reviews.size())
                 .build();

@@ -1,6 +1,6 @@
 package com.cimhub.reviewservice.controller;
 
-import com.cimhub.common.dto.ApiResponse;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -34,7 +34,7 @@ public class ReviewController {
      * @return the created review
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<ReviewResponse>> submitReview(
+    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitReview(
             @RequestHeader("X-User-Id") String userId,
             @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
@@ -42,7 +42,7 @@ public class ReviewController {
         ReviewResponse response = reviewService.submitReview(userId, userRole, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
+                .body(ApiResponseWrapper.success(response));
     }
 
     /**
@@ -52,11 +52,11 @@ public class ReviewController {
      * @return list of reviews about the driver
      */
     @GetMapping("/driver/{driverId}")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviewsByDriver(
+    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getReviewsByDriver(
             @PathVariable String driverId) {
         log.info("Fetching reviews for driver: {}", driverId);
         List<ReviewResponse> reviews = reviewService.getReviewsByDriver(driverId);
-        return ResponseEntity.ok(ApiResponse.success(reviews));
+        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
     }
 
     /**
@@ -66,11 +66,11 @@ public class ReviewController {
      * @return list of reviews about the user
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviewsByUser(
+    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getReviewsByUser(
             @PathVariable String userId) {
         log.info("Fetching reviews for user: {}", userId);
         List<ReviewResponse> reviews = reviewService.getReviewsByUser(userId);
-        return ResponseEntity.ok(ApiResponse.success(reviews));
+        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
     }
 
     /**
@@ -80,11 +80,11 @@ public class ReviewController {
      * @return list of reviews for the trip
      */
     @GetMapping("/trip/{tripId}")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviewsByTrip(
+    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getReviewsByTrip(
             @PathVariable String tripId) {
         log.info("Fetching reviews for trip: {}", tripId);
         List<ReviewResponse> reviews = reviewService.getReviewsByTrip(tripId);
-        return ResponseEntity.ok(ApiResponse.success(reviews));
+        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
     }
 
     /**
@@ -94,11 +94,11 @@ public class ReviewController {
      * @return list of reviews given by the user
      */
     @GetMapping("/given")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviewsGiven(
+    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getReviewsGiven(
             @RequestHeader("X-User-Id") String userId) {
         log.info("Fetching reviews given by user: {}", userId);
         List<ReviewResponse> reviews = reviewService.getReviewsGiven(userId);
-        return ResponseEntity.ok(ApiResponse.success(reviews));
+        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
     }
 
     /**
@@ -108,11 +108,11 @@ public class ReviewController {
      * @return list of reviews received by the user
      */
     @GetMapping("/received")
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviewsReceived(
+    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getReviewsReceived(
             @RequestHeader("X-User-Id") String userId) {
         log.info("Fetching reviews received by user: {}", userId);
         List<ReviewResponse> reviews = reviewService.getReviewsReceived(userId);
-        return ResponseEntity.ok(ApiResponse.success(reviews));
+        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
     }
 
     /**
@@ -122,10 +122,10 @@ public class ReviewController {
      * @return average rating response
      */
     @GetMapping("/driver/{driverId}/average-rating")
-    public ResponseEntity<ApiResponse<AverageRatingResponse>> getAverageRating(
+    public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getAverageRating(
             @PathVariable String driverId) {
         log.info("Fetching average rating for driver: {}", driverId);
         AverageRatingResponse response = reviewService.getAverageRating(driverId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }

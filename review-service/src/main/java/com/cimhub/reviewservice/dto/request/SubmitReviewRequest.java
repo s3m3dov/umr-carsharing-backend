@@ -1,10 +1,17 @@
 package com.cimhub.reviewservice.dto.request;
 
+import com.cimhub.reviewservice.controller.ReviewApiExamples;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
+
+@Schema(
+        name = "SubmitReviewRequest",
+        description = "Request to submit a review for a completed trip",
+        example = ReviewApiExamples.SUBMIT_REVIEW_REQUEST
+)
 
 @Builder
 public record SubmitReviewRequest(
