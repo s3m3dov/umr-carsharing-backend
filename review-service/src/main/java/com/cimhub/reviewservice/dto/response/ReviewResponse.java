@@ -1,12 +1,19 @@
 package com.cimhub.reviewservice.dto.response;
 
 import com.cimhub.common.enums.UserType;
+import com.cimhub.reviewservice.controller.ReviewApiExamples;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.Instant;
+
+@Schema(
+        name = "ReviewResponse",
+        description = "Response containing review details",
+        example = ReviewApiExamples.SUBMIT_REVIEW_RESPONSE
+)
 
 @Builder
 public record ReviewResponse(

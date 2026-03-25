@@ -10,6 +10,9 @@ resources:
 
 # Production images from GCR
 images:
+  - name: eu.gcr.io/project-id/api-gateway
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
+    newTag: latest
   - name: eu.gcr.io/project-id/auth-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service
     newTag: latest
@@ -19,11 +22,11 @@ images:
   - name: eu.gcr.io/project-id/trip-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
     newTag: latest
+  - name: eu.gcr.io/project-id/review-service
+    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/review-service
+    newTag: latest
   - name: eu.gcr.io/project-id/notification-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service
-    newTag: latest
-  - name: eu.gcr.io/project-id/api-gateway
-    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/api-gateway
     newTag: latest
 
 # GKE-specific configuration

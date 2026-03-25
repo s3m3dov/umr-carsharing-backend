@@ -8,11 +8,12 @@ resources:
   - configmap.yaml
   - secrets.yaml
   - rbac/spring-cloud-rbac.yaml
+  - deployments/api-gateway.yaml
   - deployments/auth-service.yaml
   - deployments/user-service.yaml
   - deployments/trip-service.yaml
+  - deployments/review-service.yaml
   - deployments/notification-service.yaml
-  - deployments/api-gateway.yaml
 
 # Common labels applied to all resources
 labels:

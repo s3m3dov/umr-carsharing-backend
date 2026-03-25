@@ -1,9 +1,12 @@
 package com.cimhub.reviewservice.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +41,22 @@ public class OpenApiConfig {
                 .description("Review management service for the Car Sharing platform")
                 .license(license);
 
+        SecurityScheme securityScheme = new SecurityScheme()
+                .name("Bearer Authentication")
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .in(SecurityScheme.In.HEADER)
+                .description("Enter JWT token obtained from /api/auth/login or /api/auth/signup");
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Bearer Authentication");
+
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(server));
+                .servers(List.of(server))
+                .components(new Components()
+                        .addSecuritySchemes("Bearer Authentication", securityScheme))
+                .addSecurityItem(securityRequirement);
     }
 }
