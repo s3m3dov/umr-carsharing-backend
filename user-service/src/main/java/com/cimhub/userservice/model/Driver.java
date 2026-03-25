@@ -13,8 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @EqualsAndHashCode(callSuper = true)
 @Document(collection = "users")
 public class Driver extends User {
-    private String vehicleModel;
-    private String licensePlate;
+    private String licenseNumber;
 
     public Driver() {
         super();

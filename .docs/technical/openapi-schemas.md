@@ -122,15 +122,10 @@ User registration data.
       "minimum": 18,
       "maximum": 120
     },
-    "vehicleModel": {
+    "licenseNumber": {
       "type": "string",
-      "description": "Vehicle model for drivers (optional)",
-      "example": "Tesla Model 3"
-    },
-    "licensePlate": {
-      "type": "string",
-      "description": "Vehicle license plate for drivers (optional)",
-      "example": "HE-XX-1234"
+      "description": "Driver's license number (required for DRIVER, optional for PASSENGER)",
+      "example": "LD-123456789"
     }
   },
   "required": ["firstName", "lastName", "email", "password", "userType"]
@@ -1027,7 +1022,6 @@ enum VehicleType {
 | password | string | 8 | 255 | Yes |
 | phoneNumber | string | 10 | 20 | No |
 | age | integer | 18 | 120 | No |
-| vehicleModel | string | 1 | 100 | No |
 | availableSeats | integer | 1 | 8 | Yes |
 | pricePerSeat | decimal | 0.0 | 999.99 | No |
 | notes | string | 0 | 500 | No |

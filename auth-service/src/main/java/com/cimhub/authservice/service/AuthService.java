@@ -68,8 +68,7 @@ public class AuthService {
                 .userType(request.userType())
                 .phoneNumber(request.phoneNumber())
                 .age(request.age())
-                .vehicleModel(request.vehicleModel())
-                .licensePlate(request.licensePlate())
+                .licenseNumber(request.licenseNumber())
                 .build();
 
         userServiceClient.createProfile(profileRequest);

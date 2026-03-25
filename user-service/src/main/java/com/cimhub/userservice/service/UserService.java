@@ -45,10 +45,9 @@ public class UserService {
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
 
-        // Set vehicle info if this is a driver
-        if (newUser instanceof Driver driver && request.vehicleModel() != null) {
-            driver.setVehicleModel(request.vehicleModel());
-            driver.setLicensePlate(request.licensePlate());
+        // Set the driver's license number if this is a driver
+        if (newUser instanceof Driver driver) {
+            driver.setLicenseNumber(request.licenseNumber());
         }
 
         newUser.setCreatedBy(request.email());
@@ -69,12 +68,10 @@ public class UserService {
     }
 
     private UserResponse mapUserToResponse(User user) {
-        String vehicleModel = null;
-        String licensePlate = null;
+        String licenseNumber = null;
 
         if (user instanceof Driver driver) {
-            vehicleModel = driver.getVehicleModel();
-            licensePlate = driver.getLicensePlate();
+            licenseNumber = driver.getLicenseNumber();
         }
 
         return new UserResponse(
@@ -85,8 +82,7 @@ public class UserService {
                 user.getUserType(),
                 user.getPhoneNumber(),
                 user.getAge(),
-                vehicleModel,
-                licensePlate);
+                licenseNumber);
     }
 
     public UserResponse getUserInfo(String userId) {

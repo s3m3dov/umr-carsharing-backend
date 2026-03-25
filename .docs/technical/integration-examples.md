@@ -51,8 +51,7 @@ curl -X POST http://localhost:8081/auth-service/api/auth/signup \
     "userType": "DRIVER",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "vehicleModel": "Tesla Model 3",
-    "licensePlate": "HE-XX-1234"
+    "licenseNumber": "LD-123456789"
   }'
 ```
 
@@ -241,8 +240,7 @@ async function register(userData) {
       userType: userData.userType,
       phoneNumber: userData.phoneNumber,
       age: userData.age,
-      vehicleModel: userData.vehicleModel,
-      licensePlate: userData.licensePlate
+      licenseNumber: userData.licenseNumber
     })
   });
 
