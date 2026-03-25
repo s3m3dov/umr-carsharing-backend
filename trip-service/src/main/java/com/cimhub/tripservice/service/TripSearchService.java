@@ -22,7 +22,7 @@ public class TripSearchService {
                 List<Trip> allTrips = tripsRepository.findAll();
 
                 return allTrips.stream()
-                                .filter(trip -> trip.getTripStatus() == TripStatus.OFFERED
+                                .filter(trip -> trip.getTripStatus() == TripStatus.CREATED
                                                 || trip.getTripStatus() == TripStatus.AVAILABLE)
                                 .map(trip -> convertToResponse(trip, userTimezone))
                                 .collect(Collectors.toList());

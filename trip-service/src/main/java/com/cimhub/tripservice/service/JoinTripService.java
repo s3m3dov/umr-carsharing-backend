@@ -37,7 +37,7 @@ public class JoinTripService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Trip not found with id: " + request.tripId()));
 
-        if (trip.getTripStatus() != TripStatus.OFFERED && trip.getTripStatus() != TripStatus.AVAILABLE) {
+        if (trip.getTripStatus() != TripStatus.CREATED && trip.getTripStatus() != TripStatus.AVAILABLE) {
             throw new TripNotAvailableException("Trip is not available for booking");
         }
 

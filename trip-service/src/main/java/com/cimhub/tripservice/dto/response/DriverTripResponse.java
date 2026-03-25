@@ -21,7 +21,7 @@ public record DriverTripResponse(
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
         String vehicleNumber,
 
-        @Schema(description = "Current trip status", example = "OFFERED")
+        @Schema(description = "Current trip status", example = "AVAILABLE")
         TripStatus tripStatus,
 
         @Schema(description = "Trip starting location")

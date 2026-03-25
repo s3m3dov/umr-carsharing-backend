@@ -46,7 +46,7 @@ public record TripResponse(
         @Schema(description = "Number of seats still available", example = "3")
         int availableSeats,
 
-        @Schema(description = "Current trip status", example = "OFFERED")
+        @Schema(description = "Current trip status", example = "AVAILABLE")
         TripStatus tripStatus,
 
         @Schema(description = "Price per seat in EUR", example = "15.50")
