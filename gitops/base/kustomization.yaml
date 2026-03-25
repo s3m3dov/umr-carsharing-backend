@@ -10,9 +10,7 @@ resources:
   - rbac/spring-cloud-rbac.yaml
   - deployments/auth-service.yaml
   - deployments/user-service.yaml
-  - deployments/vehicle-service.yaml
   - deployments/trip-service.yaml
-  - deployments/ride-service.yaml
   - deployments/notification-service.yaml
   - deployments/api-gateway.yaml
 

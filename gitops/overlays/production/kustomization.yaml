@@ -16,14 +16,8 @@ images:
   - name: eu.gcr.io/project-id/user-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/user-service
     newTag: latest
-  - name: eu.gcr.io/project-id/vehicle-service
-    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/vehicle-service
-    newTag: latest
   - name: eu.gcr.io/project-id/trip-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/trip-service
-    newTag: latest
-  - name: eu.gcr.io/project-id/ride-service
-    newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/ride-service
     newTag: latest
   - name: eu.gcr.io/project-id/notification-service
     newName: eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/notification-service

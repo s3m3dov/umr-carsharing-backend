@@ -28,9 +28,7 @@
 		<module>api-gateway</module>
 		<module>user-service</module>
 		<module>auth-service</module>
-		<module>vehicle-service</module>
 		<module>trip-service</module>
-		<module>ride-service</module>
 		<module>review-service</module>
 		<module>notification-service</module>
 		<module>common</module>

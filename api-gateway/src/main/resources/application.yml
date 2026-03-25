@@ -25,22 +25,10 @@ spring:
             - Path=/auth-service/**
           filters:
             - StripPrefix=1
-        - id: vehicle-service
-          uri: http://vehicle-service:8080
-          predicates:
-            - Path=/vehicle-service/**
-          filters:
-            - StripPrefix=1
         - id: trip-service
           uri: http://trip-service:8080
           predicates:
             - Path=/trip-service/**
-          filters:
-            - StripPrefix=1
-        - id: ride-service
-          uri: http://ride-service:8080
-          predicates:
-            - Path=/ride-service/**
           filters:
             - StripPrefix=1
         - id: notification-service
@@ -74,12 +62,8 @@ springdoc:
         url: /user-service/v3/api-docs
       - name: auth
         url: /auth-service/v3/api-docs
-      - name: vehicle
-        url: /vehicle-service/v3/api-docs
       - name: trip
         url: /trip-service/v3/api-docs
-      - name: ride
-        url: /ride-service/v3/api-docs
       - name: notification
         url: /notification-service/v3/api-docs
   api-docs:
