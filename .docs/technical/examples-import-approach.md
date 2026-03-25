@@ -2,7 +2,7 @@
 
 ## Overview
 
-The API documentation is structured using an **interface-based pattern** that separates Swagger annotations from controller logic. This avoids cluttering business code with documentation boilerplate while keeping examples visible in Swagger UI.
+The API documentation uses **Swagger annotations directly on controllers** with examples stored in separate `*ApiExamples.java` files. This keeps JSON payloads out of annotations while maintaining clean, self-documented controllers.
 
 ## Structure
 
@@ -10,41 +10,57 @@ Each service follows this layout in its `controller/` package:
 
 ```
 controller/
-  AuthApi.java            ← Interface: @Operation, @ApiResponses, @Tag
   AuthApiExamples.java    ← Constants: JSON example payloads
-  AuthController.java     ← Implementation: business logic only
+  AuthController.java     ← @Tag, @Operation, @ApiResponses + business logic
 ```
 
 ### Why This Structure?
 
-1. **Name clash resolution**: Swagger's `@ApiResponse` annotation and the project's `ApiResponseWrapper` DTO would clash if both lived in the same file. The interface isolates Swagger annotations from controller code.
-2. **Readability**: Each endpoint has ~10 lines of Swagger annotations vs ~4 lines of logic. Mixing them makes controllers unreadable.
-3. **Single responsibility**: API contract (interface) is separate from implementation (controller).
+1. **Clean annotations**: Examples stored as constants avoid embedding large JSON in `@ExampleObject`.
+2. **Name clash resolution**: Swagger's `@ApiResponse` annotation and the project's `ApiResponseWrapper` DTO coexist cleanly because the DTO is renamed to avoid the clash.
+3. **Maintainability**: Editing examples in a dedicated file is cleaner than scrolling through annotation-littered controllers.
+4. **Single file per controller**: All endpoint documentation lives with the implementation for easier navigation.
 
 ## File Roles
 
-### Api Interface (e.g. `AuthApi.java`)
+### Controller (e.g. `AuthController.java`)
 
-Holds all OpenAPI annotations: `@Tag`, `@Operation`, `@ApiResponses`, `@ApiResponse`, `@Parameter`.
+Holds Spring MVC annotations, Swagger annotations, and business logic. All in one file.
 
 ```java
-@Tag(name = "Authentication Management", description = "...")
-public interface AuthApi {
+@Slf4j
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Tag(name = "Authentication Management", description = "User registration, login, and token validation APIs...")
+public class AuthController {
 
-    @Operation(summary = "User login", description = "...")
+    private final AuthService authService;
+
+    @Operation(
+            summary = "User login",
+            description = "Authenticates a user with email and password..."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Login successful",
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = AuthApiExamples.LOGIN_RESPONSE))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    ResponseEntity<ApiResponseWrapper<LoginResponse>> login(LoginRequest request);
+    @PostMapping(value = "/login", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponseWrapper<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
 }
 ```
 
 ### ApiExamples (e.g. `AuthApiExamples.java`)
 
-`final` utility class with `static final String` constants — JSON payloads for `@ExampleObject`.
+`final` utility class with `static final String` constants — JSON payloads referenced by Swagger `@ExampleObject` annotations.
 
 ```java
 public final class AuthApiExamples {
@@ -63,53 +79,30 @@ public final class AuthApiExamples {
 }
 ```
 
-### Controller (e.g. `AuthController.java`)
-
-Implements the Api interface. Contains only Spring MVC annotations and business logic.
-
-```java
-@RestController
-@RequestMapping("/api/auth")
-@RequiredArgsConstructor
-public class AuthController implements AuthApi {
-
-    private final AuthService authService;
-
-    @Override
-    @PostMapping(value = "/login", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<LoginResponse>> login(
-            @Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
-    }
-}
-```
-
 ## Files Per Service
 
-| Service | Interface | Examples | Controller |
-|---------|-----------|----------|------------|
-| Auth | `AuthApi.java` | `AuthApiExamples.java` | `AuthController.java` |
-| User | `UserApi.java` | `UserApiExamples.java` | `UserController.java` |
-| Vehicle | `VehicleApi.java` | `VehicleApiExamples.java` | `VehicleController.java` |
-| Trip | `TripApi.java` | `TripApiExamples.java` | `TripController.java` |
-| Booking | `BookingApi.java` | `BookingApiExamples.java` | `BookingController.java` |
+| Service | Examples | Controller |
+|---------|----------|------------|
+| Auth | `AuthApiExamples.java` | `AuthController.java` |
+| User | `UserApiExamples.java` | `UserController.java` |
+| Vehicle | `VehicleApiExamples.java` | `VehicleController.java` |
+| Trip | `TripApiExamples.java` | `TripController.java` |
+| Booking | `BookingApiExamples.java` | `BookingController.java` |
 
-All files live in each service's `controller/` package. No cross-package imports needed for examples since interface and examples are co-located.
+All files live in each service's `controller/` package. No cross-package imports needed since both controller and examples are co-located.
 
 ## DTO Response Wrapper
 
-The project uses `ApiResponseWrapper<T>` (in `com.cimhub.common.dto`) as the unified response envelope — not `ApiResponse`, which would clash with the Swagger annotation of the same name.
+The project uses `ApiResponseWrapper<T>` (in `com.cimhub.common.dto`) as the unified response envelope. The DTO was renamed from `ApiResponse` to avoid naming conflicts with Swagger's `@ApiResponse` annotation.
 
 ```java
-// No clash — different names
-import io.swagger.v3.oas.annotations.responses.ApiResponse;  // in Api interfaces
-import com.cimhub.common.dto.ApiResponseWrapper;              // in controllers
+import io.swagger.v3.oas.annotations.responses.ApiResponse;        // Swagger annotation
+import com.cimhub.common.dto.ApiResponseWrapper;                  // Response DTO
 ```
 
-## DTO-Level Examples
+## DTO-Level Documentation
 
-Request/response DTOs also reference examples via `@Schema`:
+Request/response DTOs use `@Schema` annotations for descriptions and examples:
 
 ```java
 @Schema(name = "LoginRequest", description = "User login credentials",
@@ -117,7 +110,14 @@ Request/response DTOs also reference examples via `@Schema`:
 public record LoginRequest(...) {}
 ```
 
-These appear in Swagger UI schema sections and are defined in the same `*ApiExamples` class.
+Field-level descriptions are also supported:
+
+```java
+@Schema(description = "User's email address", example = "john.driver@example.com")
+String email,
+```
+
+These appear in Swagger UI schema sections.
 
 ## Maintenance
 
@@ -125,9 +125,9 @@ These appear in Swagger UI schema sections and are defined in the same `*ApiExam
 Edit the constant in the `*ApiExamples.java` file. Changes propagate to Swagger UI on restart.
 
 ### Add a new endpoint
-1. Add method signature + Swagger annotations to the Api interface
-2. Add example constants to the ApiExamples class
-3. Implement the method in the controller with `@Override`
+1. Add method signature + Swagger annotations (`@Operation`, `@ApiResponses`) to the controller
+2. Add example constants to the `*ApiExamples.java` class
+3. Implement the business logic in the controller method
 
 ### Add a new service
-Follow the same 3-file pattern: `ServiceApi.java`, `ServiceApiExamples.java`, `ServiceController.java`.
+Follow the same 2-file pattern: `ServiceApiExamples.java`, `ServiceController.java`.

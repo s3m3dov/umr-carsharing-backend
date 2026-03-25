@@ -1,6 +1,6 @@
 package com.cimhub.userservice.dto.request;
 
-import com.cimhub.userservice.config.ApiExamples;
+import com.cimhub.userservice.controller.UserApiExamples;
 import com.cimhub.common.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,7 @@ import java.util.Date;
 @Schema(
         name = "CreateProfileRequest",
         description = "Request to create or update user profile",
-        example = ApiExamples.CREATE_PROFILE_REQUEST
+        example = UserApiExamples.CREATE_PROFILE_REQUEST
 )
 public record CreateProfileRequest(
                 @NotBlank(message = "User ID is required") String userId,

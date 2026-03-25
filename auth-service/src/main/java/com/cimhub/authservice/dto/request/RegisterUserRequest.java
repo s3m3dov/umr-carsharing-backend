@@ -1,6 +1,6 @@
 package com.cimhub.authservice.dto.request;
 
-import com.cimhub.authservice.config.ApiExamples;
+import com.cimhub.authservice.controller.AuthApiExamples;
 import com.cimhub.common.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 @Schema(
         name = "RegisterUserRequest",
         description = "User registration request containing personal information and optional vehicle details",
-        example = ApiExamples.SIGNUP_REQUEST
+        example = AuthApiExamples.SIGNUP_REQUEST
 )
 public record RegisterUserRequest(
         @Schema(description = "User's first name", example = "John")
