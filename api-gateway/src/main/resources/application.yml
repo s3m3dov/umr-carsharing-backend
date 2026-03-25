@@ -37,6 +37,12 @@ spring:
             - Path=/notification-service/**
           filters:
             - StripPrefix=1
+        - id: review-service
+          uri: http://review-service:8080
+          predicates:
+            - Path=/review-service/**
+          filters:
+            - StripPrefix=1
     loadbalancer:
       retry:
         enabled: true
@@ -66,6 +72,8 @@ springdoc:
         url: /trip-service/v3/api-docs
       - name: notification
         url: /notification-service/v3/api-docs
+      - name: review
+        url: /review-service/v3/api-docs
   api-docs:
     enabled: true
 
