@@ -77,9 +77,9 @@ This document tracks all work for Phase 1 - both completed and pending.
 
 #### Search Filtering ❌
 
-- [ ] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
-- [ ] Add `carType` and `minAvailableSeats` filters.
-- [ ] Implement dynamic query predicate builders.
+- [x] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
+- [x] Add `carType` and `minAvailableSeats` filters.
+- [x] Implement dynamic query predicate builders.
 
 **Implementation Status: Done ✅**
 
