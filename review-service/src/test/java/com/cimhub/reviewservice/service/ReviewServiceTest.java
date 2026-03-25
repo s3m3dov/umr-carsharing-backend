@@ -356,7 +356,7 @@ class ReviewServiceTest {
         AverageRatingResponse response = reviewService.getAverageRating(driverId);
 
         // Assert
-        assertEquals(driverId, response.driverId());
+        assertEquals(driverId, response.subjectId());
         assertEquals(4.666666666666667, response.averageRating(), 0.01);
         assertEquals(3, response.totalReviews());
     }
@@ -372,7 +372,7 @@ class ReviewServiceTest {
         AverageRatingResponse response = reviewService.getAverageRating(driverId);
 
         // Assert
-        assertEquals(driverId, response.driverId());
+        assertEquals(driverId, response.subjectId());
         assertEquals(0.0, response.averageRating());
         assertEquals(0, response.totalReviews());
     }
@@ -394,7 +394,7 @@ class ReviewServiceTest {
         AverageRatingResponse response = reviewService.getAverageRating(driverId);
 
         // Assert
-        assertEquals(driverId, response.driverId());
+        assertEquals(driverId, response.subjectId());
         assertEquals(4.0, response.averageRating());
         assertEquals(1, response.totalReviews());
     }
