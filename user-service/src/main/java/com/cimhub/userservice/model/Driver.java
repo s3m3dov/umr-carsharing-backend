@@ -1,18 +1,19 @@
 package com.cimhub.userservice.model;
 
 import com.cimhub.common.enums.UserType;
-import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Driver model extending User with vehicle-specific information.
  * Only drivers have vehicle details.
- * Stored in "users" table (inherited from User via JPA SINGLE_TABLE inheritance).
+ * Uses MongoDB for persistence.
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Entity
+@Document(collection = "users")
 public class Driver extends User {
     private String licenseNumber;
 
