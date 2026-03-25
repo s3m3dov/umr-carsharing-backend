@@ -13,6 +13,7 @@ Welcome to the Car Sharing Backend documentation.
 - **[Request & Response Payloads](technical/request-response-payloads.md)**: Full payload map by service
 
 ### Architecture & Infrastructure
+- **[BlaBlaCar Architecture Overview](technical/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
 - **[Architecture & Tech Stack](technical/architecture.md)**: System design, microservices, and technical capabilities
 - **[API Development Guide](technical/api-guide.md)**: Authentication, response formats, and implementation details
 - **[Operations & Setup](technical/operations.md)**: Environment variables and cluster setup (Kind)
