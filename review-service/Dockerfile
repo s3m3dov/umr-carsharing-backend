@@ -1,31 +1,38 @@
-# Build stage
+# syntax=docker/dockerfile:1.4
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
-WORKDIR /build
+WORKDIR /root
 
-# Copy the entire project
-COPY . .
+# Copy only POM files first for better layer caching
+COPY pom.xml .
+COPY common/pom.xml ./common/
+COPY review-service/pom.xml ./review-service/
 
-# Build the application
-RUN mvn clean package -DskipTests
+# Download dependencies (cached layer)
+RUN --mount=type=cache,target=/root/.m2 \
+  mvn -N install && \
+  cd common && mvn dependency:go-offline -DskipTests
+
+# Copy source code
+COPY common/src ./common/src
+COPY review-service/src ./review-service/src
+
+# Build with cached dependencies
+RUN --mount=type=cache,target=/root/.m2 \
+  cd common && mvn clean install -DskipTests && \
+  cd ../review-service && mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 
+# Install CA certificates for MongoDB Atlas SSL/TLS connections
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends ca-certificates ca-certificates-java && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+COPY --from=build /root/review-service/target/*.jar app.jar
 
-# Copy the JAR from build stage
-COPY --from=build /build/target/*.jar application.jar
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Expose port
-EXPOSE 8080
-
-# Default to MongoDB profile, can be overridden at runtime
-ENV SPRING_PROFILES_ACTIVE=mongodb
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "application.jar"]
+EXPOSE 8084
+ENTRYPOINT ["java", "-jar", "app.jar"]
