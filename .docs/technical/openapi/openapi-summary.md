@@ -6,10 +6,8 @@
 
 Complete OpenAPI/Swagger documentation with examples is now available across all services:
 - **Auth Service** (login, signup, token validation)
-- **User Service** (profiles)
-- **Vehicle Service** (registration, management)
-- **Trip Service** (creation, search, cancellation)
-- **Booking Service** (joins, cancellations)
+- **User Service** (profiles, vehicle management)
+- **Trip Service** (creation, search, booking, cancellation)
 
 ### ✅ Payload Examples Imported from Files
 
@@ -18,7 +16,6 @@ All response payload examples are **imported from centralized `ApiExamples.java`
 ```
 auth-service/src/main/java/.../config/ApiExamples.java
 user-service/src/main/java/.../config/ApiExamples.java
-vehicle-service/src/main/java/.../config/ApiExamples.java
 trip-service/src/main/java/.../config/ApiExamples.java
 ```
 
@@ -144,13 +141,6 @@ Each service has centralized example constants:
 - ERROR_USER_NOT_FOUND
 - ERROR_INVALID_DATA
 
-**vehicle-service/config/ApiExamples.java:**
-- GET_VEHICLES_RESPONSE
-- REGISTER_VEHICLE_RESPONSE
-- ERROR_VEHICLE_EXISTS
-- ERROR_VEHICLE_LIMIT
-- ERROR_NO_VEHICLES
-
 **trip-service/config/ApiExamples.java:**
 - OFFER_TRIP_RESPONSE
 - SEARCH_TRIPS_RESPONSE
@@ -258,9 +248,7 @@ public class ApiExamples {
 ```
 http://localhost:8081/auth-service/swagger-ui.html
 http://localhost:8082/user-service/swagger-ui.html
-http://localhost:8083/vehicle-service/swagger-ui.html
 http://localhost:8084/trip-service/swagger-ui.html
-http://localhost:8085/ride-service/swagger-ui.html
 ```
 
 ### OpenAPI JSON Spec

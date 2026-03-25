@@ -5,10 +5,8 @@
 This is the comprehensive API documentation for the Car Sharing microservices platform. The platform is built using Spring Boot microservices architecture with the following components:
 
 - **Auth Service**: Authentication and JWT token management
-- **User Service**: User profile management
-- **Vehicle Service**: Vehicle registration and management
-- **Trip Service**: Trip creation, searching, and management
-- **Ride Service**: Ride booking and management
+- **User Service**: User profile and vehicle management
+- **Trip Service**: Trip creation, searching, booking, and management
 - **Notification Service**: User notifications
 
 All APIs return standardized JSON responses and support OpenAPI 3.0 documentation.
@@ -19,9 +17,7 @@ All APIs return standardized JSON responses and support OpenAPI 3.0 documentatio
 |---------|-----|--------------|
 | Auth Service | `http://localhost:8081/auth-service` | `http://localhost:8081/auth-service/v3/api-docs` |
 | User Service | `http://localhost:8082/user-service` | `http://localhost:8082/user-service/v3/api-docs` |
-| Vehicle Service | `http://localhost:8083/vehicle-service` | `http://localhost:8083/vehicle-service/v3/api-docs` |
 | Trip Service | `http://localhost:8084/trip-service` | `http://localhost:8084/trip-service/v3/api-docs` |
-| Ride Service | `http://localhost:8085/ride-service` | `http://localhost:8085/ride-service/v3/api-docs` |
 
 ## Authentication
 
@@ -288,9 +284,9 @@ Creates or updates a user's detailed profile.
 
 ---
 
-## 3. Vehicle Service API
+## 3. Vehicle Management (User Service)
 
-The Vehicle Service handles vehicle registration and management for drivers.
+Vehicle management is now part of the User Service and handles vehicle registration and management for drivers.
 
 ### Endpoints
 
@@ -579,9 +575,9 @@ Retrieves completed and cancelled trips for a driver.
 
 ---
 
-## 5. Ride Service API (Bookings)
+## 5. Booking API (Trip Service)
 
-The Ride Service (accessible via `/api/bookings`) manages passenger bookings on trips.
+The Trip Service (accessible via `/api/bookings`) manages passenger bookings on trips.
 
 ### Endpoints
 
@@ -693,7 +689,7 @@ Response includes JWT token: `eyJhbGc...`
 
 ### Step 2: Register Vehicle
 ```bash
-curl -X POST http://localhost:8083/vehicle-service/api/vehicles/register \
+curl -X POST http://localhost:8082/user-service/api/vehicles/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
@@ -751,7 +747,7 @@ curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?
 
 ### Step 3: Join a Trip
 ```bash
-curl -X POST http://localhost:8085/ride-service/api/bookings/join \
+curl -X POST http://localhost:8084/trip-service/api/bookings/join \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
