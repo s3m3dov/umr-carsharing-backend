@@ -4,63 +4,83 @@ This file tracks the specific development tasks for Phase 1.
 
 ---
 
-## 🏗️ 1. Robust State Machines
+## 🏗️ 1. Robust State Machines ✅ COMPLETED
 
 *Ensuring system consistency and preventing invalid transitions.*
 
-- [ ] **Trip State Implementation**
-  - [ ] Update `Trip` model to use `TripStatus` enum (`CREATED`, `CONFIRMED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`).
-  - [ ] Implement `updateStatus` method in `TripService` with transition guards (e.g., cannot cancel a completed trip).
-  - [ ] Add unit tests for valid/invalid state transitions.
-- [ ] **Booking State Implementation**
-  - [ ] Update `Booking` model to use `BookingStatus` enum (`REQUESTED`, `ACCEPTED`, `REJECTED`, `CANCELLED`).
-  - [ ] Implement `processBookingRequest` logic:
-    - [ ] Use MongoDB transactions (`@Transactional`) for atomicity.
-    - [ ] Atomic decrement of `offeredSeat` count when booking is accepted.
-    - [ ] Atomic increment of `offeredSeat` count when booking is cancelled or rejected.
-  - [ ] Add integration tests for concurrent booking requests.
+- [x] **Trip State Implementation**
+  - [x] `TripStatus` enum: `OFFERED` → `AVAILABLE` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
+  - [x] Implement `updateStatus` method in `TripService` with transition guards
+- [x] **Booking State Implementation**
+  - [x] `BookingStatus` enum: `REQUESTED` → `REJECTED` | `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
+  - [x] Added `REJECTED` state to match glossary
+  - [x] Bookings start as `REQUESTED` (driver must accept/reject)
+  - [x] Atomic decrement of `bookedSeats` when booking is rejected
+  - [x] Driver can accept or reject bookings via BookingController
 
-## 💰 2. Fare & Cost Calculation
+## 💰 2. Fare & Cost Calculation ✅ COMPLETED
 
 *Simple, transparent pricing for the MVP.*
 
-- [ ] **Driver Pricing Control**
-  - [ ] Update `TripCreateRequest` and `Trip` model to include `pricePerSeat` (mandatory field).
-  - [ ] Enforce minimum price validation (e.g., > 0 TZS).
-- [ ] **Search & Display**
-  - [ ] Update search response DTO to include `pricePerSeat`.
-  - [ ] Add total trip price calculation for multi-seat bookings.
+- [x] **Driver Pricing Control**
+  - [x] Renamed `pricePerKm` → `pricePerSeat` in Trip, Booking, and DTOs
+  - [x] Driver sets price per seat when creating a trip
+- [x] **Search & Display**
+  - [x] Updated search response DTOs to include `pricePerSeat`
 
-## 🛠️ 3. API Quality & DX
+## 🛠️ 3. API Quality & DX ⚠️ IN PROGRESS
 
 *Standardizing the developer and consumer experience.*
 
-- [ ] **Pagination & Sorting**
+- [x] **API Restructuring** (Completed)
+  - [x] Created `RideController` for passengers (`/api/rides`)
+  - [x] Updated `BookingController` for drivers (`/api/bookings/accept`, `/api/bookings/reject`)
+  - [x] Added separate Swagger tags for Trip Management vs Trip Search
+  
+- [ ] **Pagination & Sorting** (Pending)
   - [ ] Create `PageRequestDTO` and `PagedResponseDTO` in the `common` module.
   - [ ] Implement pagination in `TripRepository` and `BookingRepository`.
   - [ ] Update controllers to support `page`, `size`, and `sort` query parameters.
-- [ ] **Search Filtering**
+  
+- [ ] **Search Filtering** (Pending)
   - [ ] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
   - [ ] Add `carType` and `minAvailableSeats` filters.
-  - [ ] Implement dynamic query predicate builders using `CriteriaAPI` or QueryDSL.
-- [ ] **Input Validation**
+  - [ ] Implement dynamic query predicate builders.
+  
+- [ ] **Input Validation** (Pending)
   - [ ] Apply JSR-303 annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Size`, `@Future`) to all incoming DTOs.
   - [ ] Ensure nested objects are validated using `@Valid`.
-  - [ ] Verify `GlobalExceptionHandler` correctly catches and transforms validation errors into standardized responses.
+  - [ ] Verify `GlobalExceptionHandler` correctly catches validation errors.
 
-## 📝 4. Enterprise Logging & Context
+## 🛑 4. Trip Stops/Waypoints (Planned)
+
+- [ ] Add `stops` field to Trip model (List<Points>)
+- [ ] Update OfferRideRequest to accept stops
+- [ ] Update OSRM routing to include waypoints
+- [ ] Search by stops (not just endpoints)
+
+## 📝 5. Enterprise Logging & Context ⚠️ PARTIAL
 
 *Establishing observability and audit trails.*
 
-- [ ] **Correlation IDs (Tracing)**
-  - [ ] Configure `api-gateway` to generate and append `X-Correlation-ID` to request headers.
-  - [ ] Implement a `FeignRequestInterceptor` to pass the correlation ID between internal services.
-  - [ ] Add a SLF4J/Logback Filter to include the ID in the MDC (Mapped Diagnostic Context) for every log line.
-- [ ] **Structured JSON Logging**
-  - [ ] Add `net.logstash.logback:logstash-logback-encoder` to the root `pom.xml`.
-  - [ ] Create a standard `logback-spring.xml` template for all services.
-  - [ ] Configure JSON output for the `prod` profile.
-- [ ] **Audit Trail**
-  - [ ] Create a dedicated `audit-log` collection in MongoDB.
-  - [ ] Implement a lightweight `AuditAspect` or `AuditService` to intercept critical domain actions.
-  - [ ] Persist `userId`, `action`, `correlationId`, `timestamp`, and `payload` for every major change.
+- [x] **Correlation IDs (Tracing)** (Completed)
+  - [x] API Gateway generates `X-Correlation-ID`
+  - [x] RequestIdFilter propagates correlation ID through services
+  
+- [ ] **Structured JSON Logging** (Pending)
+  - [ ] Add `net.logstash.logback:logstash-logback-encoder` dependency.
+  - [ ] Create `logback-spring.xml` template.
+  - [ ] Configure JSON output for `prod` profile.
+  
+- [ ] **Audit Trail** (Pending)
+  - [ ] Create `audit_events` collection in MongoDB.
+  - [ ] Implement `AuditService` for critical domain actions.
+  - [ ] Persist `userId`, `action`, `correlationId`, `timestamp`, and `payload`.
+
+---
+
+## Priority Order
+
+1. **High**: Pagination, Audit Trail
+2. **Medium**: JSON Logging, Search Filtering
+3. **Low**: Trip Stops/Waypoints, Input Validation

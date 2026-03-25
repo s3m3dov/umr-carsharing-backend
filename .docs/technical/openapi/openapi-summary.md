@@ -163,8 +163,8 @@ Each service has centralized example constants:
 
 ### For API Users
 1. **Read:** [.docs/README.md](./)
-2. **Reference:** [API_DOCUMENTATION.md](./api-reference.md)
-3. **Code:** [API_INTEGRATION_EXAMPLES.md](./integration-examples.md)
+2. **Reference:** [API_DOCUMENTATION.md](../_main/api-reference.md)
+3. **Code:** [API_INTEGRATION_EXAMPLES.md](../testing/integration-examples.md)
 4. **Try:** Visit `http://localhost:PORT/service/swagger-ui.html`
 
 ### For Developers Adding Endpoints
@@ -270,9 +270,9 @@ curl http://localhost:8081/auth-service/v3/api-docs | jq
 
 ### Markdown Documentation
 - Start: [.docs/README.md](./)
-- API Reference: [API_DOCUMENTATION.md](./api-reference.md)
-- Examples: [API_INTEGRATION_EXAMPLES.md](./integration-examples.md)
-- Management: [EXAMPLES_IMPORT_APPROACH.md](./examples-import-approach.md)
+- API Reference: [API_DOCUMENTATION.md](../_main/api-reference.md)
+- Examples: [API_INTEGRATION_EXAMPLES.md](../testing/integration-examples.md)
+- Management: [EXAMPLES_IMPORT_APPROACH.md](examples-import-approach.md)
 
 ## Quick Checklist
 
@@ -292,8 +292,8 @@ curl http://localhost:8081/auth-service/v3/api-docs | jq
 1. **Verify in Swagger:** Visit `http://localhost:PORT/service/swagger-ui.html`
 2. **Read docs:** Start with [README.md](./)
 3. **Try endpoints:** Use Swagger UI "Try it out" button
-4. **Integrate:** Follow [API_INTEGRATION_EXAMPLES.md](./integration-examples.md)
-5. **Contribute:** Follow [DOCUMENTATION_APPROACH.md](./documentation-approach.md) for new endpoints
+4. **Integrate:** Follow [API_INTEGRATION_EXAMPLES.md](../testing/integration-examples.md)
+5. **Contribute:** Follow [DOCUMENTATION_APPROACH.md](documentation-approach.md) for new endpoints
 
 ---
 

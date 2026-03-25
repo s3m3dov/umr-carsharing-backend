@@ -31,12 +31,13 @@
 
 *Refining state consistency and enhancing developer experience.*
 
-### 1. Robust State Machines
+### 1. Robust State Machines (Completed ✅)
 
 - **Goal:** Prevent inconsistent states (e.g., joining a cancelled trip).
-- **Trip States:** `CREATED` → `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` → `CANCELLED`
-- **Booking States:** `REQUESTED` → `ACCEPTED` → `REJECTED` → `CANCELLED`
+- **Trip States:** `CREATED` → `AVAILABLE` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
+- **Booking States:** `REQUESTED` → `REJECTED` | `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
 - **Logic:** Guarded transitions and atomic seat count updates using MongoDB transactions.
+- **Changes:** Bookings now start as REQUESTED; driver must accept/reject. Trips created directly as AVAILABLE (CREATED state available but not used).
 
 ### 2. Trip Routing & Stops (Pending)
 
@@ -47,28 +48,29 @@
   - **Route Calculation:** OSRM calculates optimal route with waypoints.
   - **Seat Constraints:** Stop-specific seat availability tracking.
 
-### 3. Fare & Cost Calculation (Pending)
+### 3. Fare & Cost Calculation (Completed ✅)
 
 - **Goal:** Keep pricing simple and driver-controlled in the initial version.
-- **Features:**
-  - **Driver-defined price:** Driver sets the total price per seat when creating a trip.
-  - **Single currency:** All prices handled in TZS.
-  - **No automated pricing (for now):** Recommendations deferred to Phase 6.
+- **Changes:**
+  - Renamed `pricePerKm` → `pricePerSeat` throughout codebase
+  - Driver sets price per seat when creating a trip
 
-### 4. API Quality & DX (Mostly Completed ✅)
+
+### 4. API Quality & DX (In Progress ⚠️)
 
 - [ ] **Pagination & Sorting:** Standardize across all GET endpoints (Trips, Bookings, Users). [Pending]
 - [ ] **Filtering:** Search by price range, car type, and seat availability. [Pending]
 - [x] **Error Handling:** Standardized `ApiResponse` and `ApiError` with business-specific codes.
 - [x] **OpenAPI/Swagger:** Dynamic configuration with CORS support and Gateway aggregation.
+- [x] **API Restructuring:** Created RideController for passengers, updated BookingController for drivers. [Completed]
 - [ ] **Input Validation:** Strict JSR-303 constraints on all Request DTOs. [Pending]
 
 ### 5. Enterprise Logging & Context
 
-- [ ] **Correlation IDs:** API Gateway propagation through all services.
-- [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness.
-- [ ] **MDC Tracing:** Request and user context in logs.
-- [ ] **Audit Trail:** Event persistence for critical domain actions (Phase 3 readiness).
+- [x] **Correlation IDs:** API Gateway propagation through all services. [Completed]
+- [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness. [Pending]
+- [x] **MDC Tracing:** Request and user context in logs. [Completed]
+- [ ] **Audit Trail:** Event persistence for critical domain actions. [Pending]
 
 ---
 

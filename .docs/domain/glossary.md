@@ -60,20 +60,23 @@ A user with elevated permissions for platform management. Admins can moderate co
 ---
 
 ### Trip
-A driver's published journey from origin to destination with specific departure time, available seats, and pricing. A trip may serve multiple passengers, each with their own pickup/dropoff points along the route.
+A driver's published journey from origin to destination with specific departure time, available seats, and pricing. A trip may serve multiple passengers, each with their own pickup/dropoff points along the route. Drivers can optionally define intermediate stops (waypoints) along their route to make it easier for passengers to find rides.
 
 **Lifecycle States:**
 ```
-OFFERED → AVAILABLE → IN_PROGRESS → COMPLETED
-             ↓
-         CANCELLED
+CREATED → AVAILABLE → IN_PROGRESS → COMPLETED
+              ↓
+          CANCELLED
 ```
+
+> **Note:** Trips are currently created as `AVAILABLE` directly. The `CREATED` state exists in the state machine but is not actively used - the driver would need to explicitly "publish" a trip to transition from CREATED to AVAILABLE.
 
 **Key Attributes:**
 - `tripId`: Unique identifier
 - `driverId`: User ID of the driver
 - `vehicleNumber`: Driver's registered vehicle
 - `sourceAddress` / `destinationAddress`: Trip endpoints
+- `stops`: Optional list of intermediate waypoints (in future) (e.g., cities/towns along the route) 
 - `totalSeats`: Maximum passengers allowed
 - `bookedSeats`: Currently occupied seats
 - `tripStartDateTimeUTC`: Departure time in UTC
@@ -123,5 +126,5 @@ A passenger's actual journey segment within a trip. While a trip is the driver's
 ## Related Documents
 
 - [User Flows](../product/user-flows.md) - Detailed user journeys
-- [API Guide](../technical/api-guide.md) - Endpoint documentation
-- [Architecture](../technical/architecture.md) - System design
+- [API Guide](../technical/_main/api-guide.md) - Endpoint documentation
+- [Architecture](../technical/_main/architecture.md) - System design
