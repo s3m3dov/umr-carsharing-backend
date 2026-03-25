@@ -30,7 +30,7 @@ public class ActiveRidesService {
                 log.info("Fetching active trips for driver: {}", driverId);
 
                 List<TripStatus> activeStatuses = List.of(
-                                TripStatus.OFFERED,
+                                TripStatus.CREATED,
                                 TripStatus.AVAILABLE,
                                 TripStatus.IN_PROGRESS);
 

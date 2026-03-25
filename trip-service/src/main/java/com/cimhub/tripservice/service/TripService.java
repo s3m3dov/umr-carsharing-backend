@@ -24,7 +24,7 @@ public class TripService {
     private static final Map<TripStatus, Set<TripStatus>> VALID_TRANSITIONS = new HashMap<>();
 
     static {
-        VALID_TRANSITIONS.put(TripStatus.OFFERED, EnumSet.of(TripStatus.AVAILABLE, TripStatus.CANCELLED));
+        VALID_TRANSITIONS.put(TripStatus.CREATED, EnumSet.of(TripStatus.AVAILABLE, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.AVAILABLE, EnumSet.of(TripStatus.IN_PROGRESS, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.IN_PROGRESS, EnumSet.of(TripStatus.COMPLETED, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.COMPLETED, EnumSet.noneOf(TripStatus.class));

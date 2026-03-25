@@ -80,7 +80,7 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
@@ -107,7 +107,7 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
@@ -195,7 +195,7 @@ public class TripGeospatialService {
                 .nearSphere(sourceLocation)
                 .maxDistance(sourceDistance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         // Add time range filter
@@ -316,7 +316,7 @@ public class TripGeospatialService {
                         new Point(minLongitude, minLatitude))));
         query.addCriteria(new Criteria().orOperator(
                 // TODO: Make this like Trip.status (no raw string)
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
