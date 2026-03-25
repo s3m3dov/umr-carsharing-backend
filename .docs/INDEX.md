@@ -7,7 +7,7 @@ Welcome to the Car Sharing Backend documentation.
 ## Technical Documentation
 
 ### API Reference
-- **[API Reference](technical/_main/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides
+- **[API Reference](technical/_main/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
 - **[OpenAPI Schemas](technical/openapi/openapi-schemas.md)**: All DTO schemas, validation rules, and field constraints
 - **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
@@ -57,6 +57,4 @@ Welcome to the Car Sharing Backend documentation.
 | API Gateway | 8080 | — |
 | Auth Service | 8081 | `/auth-service/swagger-ui.html` |
 | User Service | 8082 | `/user-service/swagger-ui.html` |
-| Vehicle Service | 8083 | `/vehicle-service/swagger-ui.html` |
 | Trip Service | 8084 | `/trip-service/swagger-ui.html` |
-| Ride Service | 8085 | `/ride-service/swagger-ui.html` |

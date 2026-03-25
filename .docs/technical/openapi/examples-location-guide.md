@@ -44,18 +44,6 @@ All example files are in the `controller/` package alongside their controller.
 | `ERROR_USER_NOT_FOUND` | User doesn't exist |
 | `ERROR_INVALID_DATA` | Invalid input |
 
-### Vehicle Service
-**File:** `vehicle-service/.../controller/VehicleApiExamples.java`
-
-| Constant | Description |
-|----------|-------------|
-| `REGISTER_VEHICLE_REQUEST` | Vehicle registration |
-| `GET_VEHICLES_RESPONSE` | List of vehicles |
-| `REGISTER_VEHICLE_RESPONSE` | Registration success |
-| `ERROR_VEHICLE_EXISTS` | Duplicate plate |
-| `ERROR_VEHICLE_LIMIT` | Max 5 vehicles |
-| `ERROR_NO_VEHICLES` | No vehicles found |
-
 ### Trip Service
 **File:** `trip-service/.../controller/TripApiExamples.java`
 
@@ -100,7 +88,7 @@ auth-service/.../dto/response/
   ValidateTokenResponse.java   ← @Schema with inline field examples
 ```
 
-Same pattern for user-service, vehicle-service, and trip-service DTOs.
+Same pattern for user-service and trip-service DTOs.
 
 ---
 
@@ -110,7 +98,6 @@ Same pattern for user-service, vehicle-service, and trip-service DTOs.
 |---------|-----|
 | Auth Service | http://localhost:8081/auth-service/swagger-ui.html |
 | User Service | http://localhost:8082/user-service/swagger-ui.html |
-| Vehicle Service | http://localhost:8083/vehicle-service/swagger-ui.html |
 | Trip Service | http://localhost:8084/trip-service/swagger-ui.html |
 
 ---

@@ -90,13 +90,13 @@ curl -X POST http://localhost:8082/user-service/api/users/profile \
   }'
 ```
 
-### Vehicle Service
+### Vehicle Management (User Service)
 
 #### Register Vehicle
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X POST http://localhost:8083/vehicle-service/api/vehicles/register \
+curl -X POST http://localhost:8082/user-service/api/vehicles/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -113,7 +113,7 @@ curl -X POST http://localhost:8083/vehicle-service/api/vehicles/register \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8083/vehicle-service/api/vehicles/user_123 \
+curl -X GET http://localhost:8082/user-service/api/vehicles/user_123 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -170,13 +170,13 @@ curl -X POST http://localhost:8084/trip-service/api/trips/cancel \
   }'
 ```
 
-### Ride Service (Bookings)
+### Booking (Trip Service)
 
 #### Join a Trip
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X POST http://localhost:8085/ride-service/api/bookings/join \
+curl -X POST http://localhost:8084/trip-service/api/bookings/join \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -191,7 +191,7 @@ curl -X POST http://localhost:8085/ride-service/api/bookings/join \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8085/ride-service/api/bookings/active/passenger/user_456 \
+curl -X GET http://localhost:8084/trip-service/api/bookings/active/passenger/user_456 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -312,13 +312,13 @@ class CarSharingAPI {
     return this.request('/user-service/api/users/profile', 'POST', profileData);
   }
 
-  // Vehicle endpoints
+  // Vehicle endpoints (User Service)
   async registerVehicle(vehicleData) {
-    return this.request('/vehicle-service/api/vehicles/register', 'POST', vehicleData);
+    return this.request('/user-service/api/vehicles/register', 'POST', vehicleData);
   }
 
   async getUserVehicles(userId) {
-    return this.request(`/vehicle-service/api/vehicles/${userId}`);
+    return this.request(`/user-service/api/vehicles/${userId}`);
   }
 
   // Trip endpoints
@@ -337,13 +337,13 @@ class CarSharingAPI {
     return this.request(`/trip-service/api/trips/active/driver/${driverId}`);
   }
 
-  // Booking endpoints
+  // Booking endpoints (Trip Service)
   async joinTrip(bookingData) {
-    return this.request('/ride-service/api/bookings/join', 'POST', bookingData);
+    return this.request('/trip-service/api/bookings/join', 'POST', bookingData);
   }
 
   async getActiveBookings(passengerId) {
-    return this.request(`/ride-service/api/bookings/active/passenger/${passengerId}`);
+    return this.request(`/trip-service/api/bookings/active/passenger/${passengerId}`);
   }
 }
 ```
@@ -529,7 +529,7 @@ class CarSharingAPI:
     def join_trip(self, booking_data: Dict[str, Any]) -> Dict[str, Any]:
         """Join a trip as passenger"""
         response = self.session.post(
-            f'{self.base_url}/ride-service/api/bookings/join',
+            f'{self.base_url}/trip-service/api/bookings/join',
             json=booking_data,
             headers=self._get_headers()
         )
