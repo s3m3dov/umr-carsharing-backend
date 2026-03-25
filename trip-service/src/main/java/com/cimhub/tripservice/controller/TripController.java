@@ -30,7 +30,8 @@ import java.util.List;
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Trip Management", description = "APIs for drivers to create trips (offers), search available trips, cancel trips, and view trip history. Includes geospatial search capabilities.")
+@Tag(name = "Trip Management", description = "APIs for drivers to create trips (offers), manage their trips, cancel trips, and view trip history.")
+@Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
 public class TripController {
 
     private final OfferRideService offerRideService;

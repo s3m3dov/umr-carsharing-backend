@@ -48,10 +48,10 @@ public record PassengerRideResponse(
         @Schema(description = "Estimated duration of the ride segment in minutes", example = "35.0")
         Double rideDurationInMinutes,
 
-        @Schema(description = "Price per kilometer in EUR", example = "0.15")
-        Double pricePerKm,
+        @Schema(description = "Price per seat for this ride in EUR", example = "15.50")
+        Double pricePerSeat,
 
-        @Schema(description = "Estimated fare for this ride in EUR", example = "6.78")
+        @Schema(description = "Estimated fare for this ride in EUR", example = "15.50")
         Double estimatedFare,
 
         @Schema(description = "Details about the driver")

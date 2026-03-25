@@ -77,7 +77,7 @@ public class JoinTripService {
                 .pickupLocation(pickupPoints)
                 .dropoffLocation(dropoffPoints)
                 .requestedSeats(requestedSeats)
-                .status(BookingStatus.CONFIRMED)
+                .status(BookingStatus.REQUESTED)
                 .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
                 .rideTimezone(trip.getTripTimezone())
                 .createdAt(Instant.now())
@@ -88,9 +88,55 @@ public class JoinTripService {
         trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
         tripsRepository.save(trip);
 
-        log.info("Passenger {} successfully joined trip {}. Seats booked: {}",
+        log.info("Passenger {} requested to join trip {}. Seats requested: {}",
                 request.passengerId(), request.tripId(), requestedSeats);
 
-        return "Successfully joined the trip. Booking confirmed!";
+        return "Booking request submitted. Waiting for driver confirmation.";
+    }
+
+    @Transactional
+    public String acceptBooking(String bookingId) {
+        log.info("Accepting booking: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.REQUESTED) {
+            throw new IllegalStateException("Booking is not in REQUESTED state");
+        }
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setUpdatedAt(Instant.now());
+        bookingRepository.save(booking);
+
+        log.info("Booking {} accepted", bookingId);
+        return "Booking accepted successfully";
+    }
+
+    @Transactional
+    public String rejectBooking(String bookingId) {
+        log.info("Rejecting booking: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.REQUESTED) {
+            throw new IllegalStateException("Booking is not in REQUESTED state");
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setUpdatedAt(Instant.now());
+        bookingRepository.save(booking);
+
+        Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
+        if (trip != null) {
+            trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
+            tripsRepository.save(trip);
+        }
+
+        log.info("Booking {} rejected", bookingId);
+        return "Booking rejected";
     }
 }

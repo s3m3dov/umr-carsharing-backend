@@ -49,6 +49,6 @@ public record TripResponse(
         @Schema(description = "Current trip status", example = "OFFERED")
         TripStatus tripStatus,
 
-        @Schema(description = "Price per kilometer in EUR", example = "0.15")
-        double pricePerKm) {
+        @Schema(description = "Price per seat in EUR", example = "15.50")
+        double pricePerSeat) {
 }

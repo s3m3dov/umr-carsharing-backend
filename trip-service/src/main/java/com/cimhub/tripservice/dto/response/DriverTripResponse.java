@@ -55,8 +55,8 @@ public record DriverTripResponse(
         @Schema(description = "Estimated route duration in minutes", example = "90.0")
         Double routeDurationInMinutes,
 
-        @Schema(description = "Price per kilometer in EUR", example = "0.15")
-        Double pricePerKm,
+        @Schema(description = "Price per seat in EUR", example = "15.50")
+        Double pricePerSeat,
 
         @Schema(description = "Estimated total earnings for this trip in EUR", example = "18.81")
         Double estimatedEarnings) {
