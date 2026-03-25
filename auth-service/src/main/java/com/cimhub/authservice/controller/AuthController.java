@@ -45,8 +45,16 @@ public class AuthController {
                     description = "User successfully registered",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.SIGNUP_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid input - missing fields or invalid email"),
-            @ApiResponse(responseCode = "409", description = "User with this email already exists")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input - missing fields or invalid email",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "User with this email already exists",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_USER_EXISTS))
+            )
     })
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<SignUpResponse>> registerUser(
@@ -68,8 +76,16 @@ public class AuthController {
                     description = "Login successful",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.LOGIN_RESPONSE))
             ),
-            @ApiResponse(responseCode = "401", description = "Invalid email or password"),
-            @ApiResponse(responseCode = "400", description = "Missing required fields")
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid email or password",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_CREDENTIALS))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Missing required fields",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+            )
     })
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<LoginResponse>> login(
@@ -89,8 +105,16 @@ public class AuthController {
                     description = "Token is valid",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.VALIDATE_TOKEN_RESPONSE))
             ),
-            @ApiResponse(responseCode = "401", description = "Token is invalid or expired"),
-            @ApiResponse(responseCode = "400", description = "Token field missing")
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token is invalid or expired",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_TOKEN))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Token field missing",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+            )
     })
     @PostMapping(value = "/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<ValidateTokenResponse>> validateToken(

@@ -73,8 +73,72 @@ public final class BookingApiExamples {
 
     public static final String ERROR_TRIP_FULL = """
             {
-              "success": false,
-              "error": "TRIP_FULL",
-              "message": "No available seats on this trip"
+              "status": 409,
+              "code": "INSUFFICIENT_SEATS",
+              "message": "No available seats on this trip",
+              "error": {
+                "path": "/api/bookings/join",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12353"
+            }""";
+
+    public static final String ERROR_TRIP_NOT_FOUND = """
+            {
+              "status": 404,
+              "code": "TRIP_NOT_FOUND",
+              "message": "Trip trip_001 not found",
+              "error": {
+                "path": "/api/bookings/join",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12360"
+            }""";
+
+    public static final String ERROR_BOOKING_NOT_FOUND = """
+            {
+              "status": 404,
+              "code": "BOOKING_NOT_FOUND",
+              "message": "Booking not found",
+              "error": {
+                "path": "/api/bookings/cancel",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12361"
+            }""";
+
+    public static final String ERROR_INVALID_BOOKING_DATA = """
+            {
+              "status": 400,
+              "code": "VALIDATION_ERROR",
+              "message": "Invalid booking data provided",
+              "error": {
+                "path": "/api/bookings/join",
+                "details": [
+                  {
+                    "field": "requestedSeats",
+                    "message": "Requested seats must be at least 1",
+                    "type": "Min"
+                  }
+                ]
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12362"
+            }""";
+
+    public static final String ERROR_TRIP_IN_PROGRESS = """
+            {
+              "status": 409,
+              "code": "TRIP_IN_PROGRESS",
+              "message": "Cannot cancel booking for trip that is already in progress",
+              "error": {
+                "path": "/api/bookings/cancel",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12363"
             }""";
 }

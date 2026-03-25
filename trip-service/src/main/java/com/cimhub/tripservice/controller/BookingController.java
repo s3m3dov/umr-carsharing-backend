@@ -44,9 +44,21 @@ public class BookingController {
                     description = "Booking confirmed",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid booking data"),
-            @ApiResponse(responseCode = "404", description = "Trip not found"),
-            @ApiResponse(responseCode = "409", description = "No available seats")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid booking data",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_INVALID_BOOKING_DATA))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_NOT_FOUND))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "No available seats",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_FULL))
+            )
     })
     @PostMapping("/join")
     public ResponseEntity<ApiResponseWrapper<String>> joinTrip(
@@ -68,8 +80,16 @@ public class BookingController {
                     description = "Booking cancelled",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.CANCEL_BOOKING_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Booking not found"),
-            @ApiResponse(responseCode = "409", description = "Cannot cancel (trip in progress)")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Booking not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Cannot cancel (trip in progress)",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_IN_PROGRESS))
+            )
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelBooking(
@@ -89,7 +109,11 @@ public class BookingController {
                     description = "Active bookings retrieved",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ACTIVE_BOOKINGS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Passenger not found")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Passenger not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            )
     })
     @GetMapping("/active/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerActiveBookings(
@@ -109,7 +133,11 @@ public class BookingController {
                     description = "Ride history retrieved",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ACTIVE_BOOKINGS_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "Passenger not found")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Passenger not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            )
     })
     @GetMapping("/history/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerRideHistory(

@@ -43,7 +43,11 @@ public class UserController {
                         description = "User found and profile returned",
                         content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.GET_USER_RESPONSE))
                 ),
-                @ApiResponse(responseCode = "404", description = "User not found")
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.ERROR_USER_NOT_FOUND))
+                )
         })
         @GetMapping(value = "/{userId}")
         public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
@@ -56,7 +60,7 @@ public class UserController {
 
         @Operation(
                 summary = "Create user profile",
-                description = "Creates or updates user profile with additional information. Called after signup to complete setup."
+                description = "Creates or updates user profile with additional information. Called during signup to complete setup. NO NEED TO SEND SEPARATE REQUEST."
         )
         @ApiResponses(value = {
                 @ApiResponse(
@@ -64,8 +68,16 @@ public class UserController {
                         description = "Profile created successfully",
                         content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.CREATE_PROFILE_RESPONSE))
                 ),
-                @ApiResponse(responseCode = "400", description = "Invalid profile data"),
-                @ApiResponse(responseCode = "404", description = "User not found")
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid profile data",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.ERROR_INVALID_DATA))
+                ),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.ERROR_USER_NOT_FOUND))
+                )
         })
         @PostMapping(value = "/profile", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<ApiResponseWrapper<UserResponse>> createProfile(

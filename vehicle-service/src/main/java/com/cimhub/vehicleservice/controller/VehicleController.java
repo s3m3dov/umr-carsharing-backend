@@ -45,7 +45,11 @@ public class VehicleController {
                     description = "Vehicles retrieved successfully",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.GET_VEHICLES_RESPONSE))
             ),
-            @ApiResponse(responseCode = "404", description = "No vehicles found for user")
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No vehicles found for user",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_NO_VEHICLES))
+            )
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
@@ -66,8 +70,16 @@ public class VehicleController {
                     description = "Vehicle registered successfully",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.REGISTER_VEHICLE_RESPONSE))
             ),
-            @ApiResponse(responseCode = "400", description = "Invalid input or vehicle already exists"),
-            @ApiResponse(responseCode = "409", description = "License plate in use or limit exceeded")
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or vehicle already exists",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_INVALID_VEHICLE_DATA))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "License plate in use or limit exceeded",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_VEHICLE_LIMIT))
+            )
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<Void>> registerVehicle(

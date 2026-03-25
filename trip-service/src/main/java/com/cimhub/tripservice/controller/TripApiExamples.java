@@ -101,15 +101,83 @@ public final class TripApiExamples {
 
     public static final String ERROR_TRIP_NOT_FOUND = """
             {
-              "success": false,
-              "error": "TRIP_NOT_FOUND",
-              "message": "Trip trip_001 not found"
+              "status": 404,
+              "code": "TRIP_NOT_FOUND",
+              "message": "Trip trip_001 not found",
+              "error": {
+                "path": "/api/trips/trip_001",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12351"
             }""";
 
     public static final String ERROR_TRIP_IN_PROGRESS = """
             {
-              "success": false,
-              "error": "TRIP_IN_PROGRESS",
-              "message": "Cannot cancel trip that is already in progress"
+              "status": 409,
+              "code": "TRIP_IN_PROGRESS",
+              "message": "Cannot cancel trip that is already in progress",
+              "error": {
+                "path": "/api/trips/cancel",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12352"
+            }""";
+
+    public static final String ERROR_INVALID_TRIP_DATA = """
+            {
+              "status": 400,
+              "code": "VALIDATION_ERROR",
+              "message": "Invalid trip data provided",
+              "error": {
+                "path": "/api/trips/offer",
+                "details": [
+                  {
+                    "field": "totalSeats",
+                    "message": "Total seats must be between 1 and 8",
+                    "type": "Min"
+                  },
+                  {
+                    "field": "tripStartDateTime",
+                    "message": "Trip start time must be in the future",
+                    "type": "FutureOrPresent"
+                  }
+                ]
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12357"
+            }""";
+
+    public static final String ERROR_INVALID_COORDINATES = """
+            {
+              "status": 400,
+              "code": "VALIDATION_ERROR",
+              "message": "Invalid coordinates or radius provided",
+              "error": {
+                "path": "/api/trips/search/near-source",
+                "details": [
+                  {
+                    "field": "latitude",
+                    "message": "Latitude must be between -90 and 90",
+                    "type": "Range"
+                  }
+                ]
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12358"
+            }""";
+
+    public static final String ERROR_UNAUTHORIZED = """
+            {
+              "status": 401,
+              "code": "UNAUTHORIZED",
+              "message": "Authentication required",
+              "error": {
+                "path": "/api/trips/offer",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12359"
             }""";
 }
