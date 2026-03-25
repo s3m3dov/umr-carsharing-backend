@@ -42,10 +42,10 @@ This file tracks the specific development tasks for Phase 1.
   - [ ] Implement pagination in `TripRepository` and `BookingRepository`.
   - [ ] Update controllers to support `page`, `size`, and `sort` query parameters.
   
-- [ ] **Search Filtering** (Pending)
-  - [ ] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
-  - [ ] Add `carType` and `minAvailableSeats` filters.
-  - [ ] Implement dynamic query predicate builders.
+- [x] **Search Filtering** (Completed)
+  - [x] Add `minPrice` and `maxPrice` filters to `TripSearchRequest`.
+  - [x] Add `carType` and `minAvailableSeats` filters.
+  - [x] Implement dynamic query predicate builders.
   
 - [ ] **Input Validation** (Pending)
   - [ ] Apply JSR-303 annotations (`@NotNull`, `@NotBlank`, `@Min`, `@Size`, `@Future`) to all incoming DTOs.

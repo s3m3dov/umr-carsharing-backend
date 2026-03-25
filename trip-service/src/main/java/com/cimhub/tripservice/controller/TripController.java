@@ -177,8 +177,12 @@ public class TripController {
             @Parameter(description = "Radius around dropoff in km", example = "5.0") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
-            @Parameter(description = "Number of seats required", example = "2") @RequestParam Integer requestedSeats,
-            @Parameter(description = "User ID of the passenger searching", example = "user_456") @RequestParam String effectiveUserId) {
+            @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
+            @Parameter(description = "User ID of the passenger searching", example = "user_456") @RequestParam String effectiveUserId,
+            @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
+            @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
+            @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
+            @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
         log.info("Searching for matching route trips");
 
         if (earliestDepartureTime != null && latestDepartureTime != null) {
@@ -197,7 +201,11 @@ public class TripController {
                 earliestDepartureTime,
                 latestDepartureTime,
                 requestedSeats,
-                effectiveUserId);
+                effectiveUserId,
+                minPrice,
+                maxPrice,
+                carType,
+                minAvailableSeats);
 
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }

@@ -48,6 +48,7 @@ public class OfferRideService {
                 Trip newTrip = new Trip();
                 newTrip.setDriverId(request.driverId());
                 newTrip.setVehicleNumber(request.vehicleNumber());
+                newTrip.setCarType(request.carType());
                 newTrip.setSourceAddress(request.sourceAddress());
                 newTrip.setDestinationAddress(request.destinationAddress());
 
