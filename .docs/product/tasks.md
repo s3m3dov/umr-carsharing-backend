@@ -72,6 +72,12 @@ This file tracks the specific development tasks for Phase 1.
   - [ ] Create `logback-spring.xml` template.
   - [ ] Configure JSON output for `prod` profile.
   
+- [ ] **Grafana & Loki Integration** (Pending)
+  - [ ] Set up Loki as log aggregation backend
+  - [ ] Configure Grafana datasources for Loki
+  - [ ] Create dashboards for service health and metrics
+  - [ ] Add Prometheus metrics collection via Micrometer
+  
 - [ ] **Audit Trail** (Pending)
   - [ ] Create `audit_events` collection in MongoDB.
   - [ ] Implement `AuditService` for critical domain actions.
