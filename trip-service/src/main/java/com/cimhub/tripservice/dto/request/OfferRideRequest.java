@@ -22,6 +22,9 @@ public record OfferRideRequest(
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
         String vehicleNumber,
 
+        @Schema(description = "Car type (e.g., SEDAN, SUV, VAN)", example = "SEDAN")
+        String carType,
+
         @Schema(description = "Trip starting location")
         Points sourceAddress,
 

@@ -40,6 +40,9 @@ public class Trip {
     private String vehicleNumber;
 
     @NotBlank
+    private String carType;
+
+    @NotBlank
     private String driverId;
 
     @NotBlank

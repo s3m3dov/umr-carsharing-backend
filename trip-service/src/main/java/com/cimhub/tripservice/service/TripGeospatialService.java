@@ -143,7 +143,11 @@ public class TripGeospatialService {
             String earliestDepartureTime,
             String latestDepartureTime,
             Integer requestedSeats,
-            String effectiveUserId) {
+            String effectiveUserId,
+            Double minPrice,
+            Double maxPrice,
+            String carType,
+            Integer minAvailableSeats) {
 
         // Step 0: Parse time parameters and calculate the search range
         Instant searchWindowStart = null;
@@ -237,6 +241,19 @@ public class TripGeospatialService {
             query.addCriteria(Criteria.where("driverId").ne(effectiveUserId));
         }
 
+        // Add price range filter
+        if (minPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").gte(minPrice));
+        }
+        if (maxPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").lte(maxPrice));
+        }
+
+        // Add car type filter
+        if (carType != null && !carType.isEmpty()) {
+            query.addCriteria(Criteria.where("carType").is(carType));
+        }
+
         List<Trip> tripsNearSource = mongoTemplate.find(query, Trip.class);
 
         log.info("Found {} trips near source ({}, {}) within {} km after initial filtering",
@@ -279,7 +296,17 @@ public class TripGeospatialService {
                     // availableSeats = totalSeats - bookedSeats
                     if (requestedSeats != null && requestedSeats > 0) {
                         int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
-                        return availableSeats >= requestedSeats;
+                        if (availableSeats < requestedSeats) {
+                            return false;
+                        }
+                    }
+
+                    // Check minAvailableSeats filter
+                    if (minAvailableSeats != null && minAvailableSeats > 0) {
+                        int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
+                        if (availableSeats < minAvailableSeats) {
+                            return false;
+                        }
                     }
 
                     return true;

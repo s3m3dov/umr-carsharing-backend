@@ -41,6 +41,7 @@ public class TripSearchService {
                                 .tripId(trip.getTripId())
                                 .driverId(trip.getDriverId())
                                 .vehicleNumber(trip.getVehicleNumber())
+                                .carType(trip.getCarType())
                                 .sourceAddress(trip.getSourceAddress())
                                 .destinationAddress(trip.getDestinationAddress())
                                 .tripStartDateTime(tripTimeInOriginalZone)

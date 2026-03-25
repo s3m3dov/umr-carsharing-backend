@@ -14,6 +14,7 @@ public final class TripApiExamples {
             {
               "driverId": "user_123",
               "vehicleNumber": "HE-XX-1234",
+              "carType": "SEDAN",
               "sourceAddress": {
                 "latitude": 50.8154,
                 "longitude": 8.6747

@@ -81,6 +81,13 @@ This document tracks all work for Phase 1 - both completed and pending.
 - [ ] Add `carType` and `minAvailableSeats` filters.
 - [ ] Implement dynamic query predicate builders.
 
+**Implementation Status: Done ✅**
+
+- Added `carType` field to Trip model
+- Updated `/search/matching-route` endpoint with new filter params: `minPrice`, `maxPrice`, `carType`, `minAvailableSeats`
+- Implemented price range filtering in MongoDB query
+- Implemented minAvailableSeats filtering in-memory
+
 ---
 
 #### Input Validation ❌

@@ -91,10 +91,15 @@ public class ActiveRidesService {
                                 booking.getRideStartTimeUTC(),
                                 booking.getRideTimezone());
 
+                Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
+                String carType = trip != null ? trip.getCarType() : null;
+
                 return PassengerRideResponse.builder()
                                 .rideId(booking.getBookingId())
                                 .tripId(booking.getTripId())
                                 .driverId(booking.getDriverId())
+                                .vehicleNumber(booking.getVehicleNumber())
+                                .carType(carType)
                                 .rideStatus(booking.getStatus())
                                 .pickupLocation(booking.getPickupLocation())
                                 .dropoffLocation(booking.getDropoffLocation())
@@ -119,6 +124,7 @@ public class ActiveRidesService {
                                 .tripId(trip.getTripId())
                                 .driverId(trip.getDriverId())
                                 .vehicleNumber(trip.getVehicleNumber())
+                                .carType(trip.getCarType())
                                 .tripStatus(trip.getTripStatus())
                                 .sourceAddress(trip.getSourceAddress())
                                 .destinationAddress(trip.getDestinationAddress())
