@@ -31,7 +31,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Trip Management", description = "APIs for drivers to create trips (offers), manage their trips, cancel trips, and view trip history.")
-@Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
 public class TripController {
 
     private final OfferRideService offerRideService;
@@ -99,6 +98,7 @@ public class TripController {
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
+    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips near pickup location",
             description = "Finds trips with pickup within radius. Default 5km."
@@ -125,6 +125,7 @@ public class TripController {
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
 
+    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips near dropoff location",
             description = "Finds trips with dropoff within radius. Default 5km."
@@ -151,6 +152,7 @@ public class TripController {
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
 
+    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips matching a route",
             description = "Advanced search: finds trips matching pickup and dropoff with optional time filter."
