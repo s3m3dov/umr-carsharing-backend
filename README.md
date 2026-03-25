@@ -23,10 +23,10 @@ For detailed information, please refer to the following documents:
 1. **[Operations & Setup Guide](.docs/technical/operations.md)**  
    Environment variables, local cluster setup (Kind), and GitOps workflow.
 
-2. **[Architecture & Technology Stack](.docs/technical/architecture.md)**  
+2. **[Architecture & Technology Stack](.docs/technical/_main/architecture.md)**  
    Overview of microservices, tech stack, and key technical capabilities.
 
-3. **[API Guide & Integration](.docs/technical/api-guide.md)**  
+3. **[API Guide & Integration](.docs/technical/_main/api-guide.md)**  
    Authentication, common response formats, and technical implementation details.
 
 4. **[User Flows](.docs/product/user-flows.md)**  

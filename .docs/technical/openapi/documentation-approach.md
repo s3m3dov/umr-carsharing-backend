@@ -95,4 +95,4 @@ Edit the constant in `*ApiExamples.java`. Restart to see changes in Swagger UI.
 
 - **[Examples Import Approach](examples-import-approach.md)** — detailed file structure and naming conventions
 - **[Examples Location Guide](examples-location-guide.md)** — where to find specific payloads
-- **[API Reference](api-reference.md)** — complete endpoint documentation
+- **[API Reference](../_main/api-reference.md)** — complete endpoint documentation
