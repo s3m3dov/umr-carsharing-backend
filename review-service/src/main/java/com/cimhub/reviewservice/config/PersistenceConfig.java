@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 /**
  * Persistence configuration for enabling MongoDB repositories.
+ * Also scans user-service repositories to access user data directly.
  */
 @Configuration
 @Slf4j
@@ -13,11 +14,12 @@ public class PersistenceConfig {
 
     @Configuration
     @EnableMongoRepositories(basePackages = {
-            "com.cimhub.reviewservice.repository"
+            "com.cimhub.reviewservice.repository",
+            "com.cimhub.userservice.repository"
     })
     public static class MongoConfig {
         public MongoConfig() {
-            log.info("MongoDB persistence configuration loaded");
+            log.info("MongoDB persistence configuration loaded - includes user-service repositories");
         }
     }
 }

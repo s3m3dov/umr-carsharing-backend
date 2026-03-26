@@ -8,6 +8,7 @@ This is the comprehensive API documentation for the Car Sharing microservices pl
 - **User Service**: User profile and vehicle management
 - **Trip Service**: Trip creation, searching, booking, and management
 - **Notification Service**: User notifications
+- **Review Service**: Driver and passenger reviews
 
 All APIs return standardized JSON responses and support OpenAPI 3.0 documentation.
 
@@ -18,6 +19,7 @@ All APIs return standardized JSON responses and support OpenAPI 3.0 documentatio
 | Auth Service | `http://localhost:8081/auth-service` | `http://localhost:8081/auth-service/v3/api-docs` |
 | User Service | `http://localhost:8082/user-service` | `http://localhost:8082/user-service/v3/api-docs` |
 | Trip Service | `http://localhost:8084/trip-service` | `http://localhost:8084/trip-service/v3/api-docs` |
+| Review Service | `http://localhost:8085/review-service` | `http://localhost:8085/review-service/v3/api-docs` |
 
 ## Authentication
 
@@ -662,6 +664,207 @@ Retrieves completed and cancelled bookings for a passenger.
 - `passengerId` (path, required): Passenger's user ID
 
 **Authentication:** Required
+
+---
+
+## 6. Review Service API
+
+The Review Service manages driver and passenger reviews after trip completion. The service uses path-based endpoints to distinguish between driver and passenger reviews.
+
+### Endpoints
+
+#### 6.1 Submit a Review for a Driver (Passenger)
+
+**POST** `/api/reviews/driver`
+
+Passenger submits a review for a driver after completing a trip.
+
+**Request:**
+```json
+{
+  "userId": "user_456",
+  "userRole": "PASSENGER",
+  "tripId": "trip_001",
+  "bookingId": "booking_001",
+  "rating": 5,
+  "comment": "Great driver, very comfortable ride!"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "reviewId": "review_001",
+    "tripId": "trip_001",
+    "bookingId": "booking_001",
+    "reviewerId": "user_456",
+    "reviewerType": "PASSENGER",
+    "revieweeId": "user_123",
+    "revieweeType": "DRIVER",
+    "rating": 5,
+    "comment": "Great driver, very comfortable ride!",
+    "status": "PUBLISHED",
+    "createdAt": "2026-03-25T10:00:00Z"
+  },
+  "message": "Review submitted successfully"
+}
+```
+
+**Error Responses:**
+- 400: Invalid review data or trip not completed
+- 404: Driver or user not found
+- 409: Review already exists for this trip
+- 403: Unauthorized to review (not the passenger of this booking)
+
+**Authentication:** Required (PASSENGER role)
+
+---
+
+#### 6.2 Submit a Review for a Passenger (Driver)
+
+**POST** `/api/reviews/passenger`
+
+Driver submits a review for a passenger after completing a trip.
+
+**Request:**
+```json
+{
+  "userId": "user_123",
+  "userRole": "DRIVER",
+  "tripId": "trip_001",
+  "bookingId": "booking_001",
+  "rating": 4,
+  "comment": "Good passenger, on time and polite"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "reviewId": "review_002",
+    "tripId": "trip_001",
+    "bookingId": "booking_001",
+    "reviewerId": "user_123",
+    "reviewerType": "DRIVER",
+    "revieweeId": "user_456",
+    "revieweeType": "PASSENGER",
+    "rating": 4,
+    "comment": "Good passenger, on time and polite",
+    "status": "PUBLISHED",
+    "createdAt": "2026-03-25T10:30:00Z"
+  },
+  "message": "Review submitted successfully"
+}
+```
+
+**Error Responses:**
+- 400: Invalid review data or trip not completed
+- 404: Passenger or user not found
+- 409: Review already exists for this trip
+- 403: Unauthorized to review (not the driver of this trip)
+
+**Authentication:** Required (DRIVER role)
+
+---
+
+#### 6.3 Get All Reviews for a Driver
+
+**GET** `/api/reviews/driver/{driverId}`
+
+Retrieves all reviews about a specific driver.
+
+**Parameters:**
+- `driverId` (path, required): Driver's unique identifier
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "reviewId": "review_001",
+      "tripId": "trip_001",
+      "bookingId": "booking_001",
+      "reviewerId": "user_456",
+      "reviewerType": "PASSENGER",
+      "revieweeId": "user_123",
+      "revieweeType": "DRIVER",
+      "rating": 5,
+      "comment": "Great driver!",
+      "status": "PUBLISHED",
+      "createdAt": "2026-03-25T10:00:00Z"
+    }
+  ],
+  "message": "Reviews retrieved successfully"
+}
+```
+
+**Error Responses:**
+- 404: Driver not found or no reviews exist
+
+**Authentication:** Required
+
+---
+
+#### 6.4 Get All Reviews for a Passenger
+
+**GET** `/api/reviews/passenger/{passengerId}`
+
+Retrieves all reviews about a specific passenger.
+
+**Parameters:**
+- `passengerId` (path, required): Passenger's unique identifier
+
+**Error Responses:**
+- 404: Passenger not found or no reviews exist
+
+**Authentication:** Required
+
+---
+
+#### 6.5 Get Driver's Average Rating
+
+**GET** `/api/reviews/driver/{driverId}/average-rating`
+
+Calculates and returns the average rating for a driver.
+
+**Parameters:**
+- `driverId` (path, required): Driver's unique identifier
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "subjectId": "user_123",
+    "averageRating": 4.75,
+    "totalReviews": 4
+  },
+  "message": "Average rating retrieved successfully"
+}
+```
+
+**Error Responses:**
+- 404: Driver not found
+
+**Authentication:** Required
+
+---
+
+### Review Validation Rules
+
+1. **Trip Completion**: Both trip and booking must be in COMPLETED status
+2. **Participant Validation**: 
+   - Only passengers can review drivers
+   - Only drivers can review passengers
+   - Reviewer must be the actual passenger/driver of the specific booking
+3. **One Review Per Booking**: A user can only submit one review per trip/booking combination
+
+**Note:** The TripServiceClient in review-service returns false silently on errors. This may mask service unavailability issues in some edge cases.
 
 ---
 

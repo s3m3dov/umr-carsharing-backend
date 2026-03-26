@@ -1,5 +1,6 @@
 package com.cimhub.reviewservice.repository;
 
+import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.model.Review;
 
 import java.util.List;
@@ -25,6 +26,11 @@ public interface ReviewRepository {
      * Find all reviews for a specific reviewee (person being reviewed).
      */
     List<Review> findByRevieweeId(String revieweeId);
+
+    /**
+     * Find all reviews for a specific reviewee by type (DRIVER or PASSENGER).
+     */
+    List<Review> findByRevieweeIdAndRevieweeType(String revieweeId, UserType revieweeType);
 
     /**
      * Find all reviews for a specific trip.

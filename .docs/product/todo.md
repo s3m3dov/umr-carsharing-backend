@@ -73,6 +73,11 @@ This document tracks all work for Phase 1 - both completed and pending.
 - All search endpoints support `page`, `size`, and `sort` parameters
 - Default page size: 20, Maximum: 100
 
+### Review Service Pagination
+
+- [ ] Add pagination to `/api/reviews/driver/{driverId}` and `/api/reviews/passenger/{passengerId}`
+- [ ] Query params: `page`, `size`, `sortBy` (e.g., `?page=0&size=20&sortBy=createdAt,desc`)
+
 ---
 
 #### Search Filtering ❌
