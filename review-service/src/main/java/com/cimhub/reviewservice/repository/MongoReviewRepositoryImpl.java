@@ -1,5 +1,6 @@
 package com.cimhub.reviewservice.repository;
 
+import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.model.Review;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * MongoDB implementation of the ReviewRepository interface.
- * Delegates to Spring Data MongoDB for database operations.
- */
 @Component
 @Profile("mongodb")
 @RequiredArgsConstructor
@@ -37,6 +34,12 @@ public class MongoReviewRepositoryImpl implements ReviewRepository {
     public List<Review> findByRevieweeId(String revieweeId) {
         log.debug("Finding reviews by reviewee ID using MongoDB: {}", revieweeId);
         return mongoReviewDataRepository.findByRevieweeId(revieweeId);
+    }
+
+    @Override
+    public List<Review> findByRevieweeIdAndRevieweeType(String revieweeId, UserType revieweeType) {
+        log.debug("Finding reviews by reviewee ID and type using MongoDB: {}, {}", revieweeId, revieweeType);
+        return mongoReviewDataRepository.findByRevieweeIdAndRevieweeType(revieweeId, revieweeType);
     }
 
     @Override

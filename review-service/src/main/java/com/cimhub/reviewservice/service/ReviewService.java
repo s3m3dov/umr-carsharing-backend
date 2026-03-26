@@ -4,12 +4,16 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
+import com.cimhub.reviewservice.exception.DriverNotFoundException;
+import com.cimhub.reviewservice.exception.PassengerNotFoundException;
 import com.cimhub.reviewservice.exception.ReviewAlreadyExistsException;
+import com.cimhub.reviewservice.exception.ReviewsNotFoundException;
 import com.cimhub.reviewservice.exception.TripNotCompletedException;
 import com.cimhub.reviewservice.exception.UnauthorizedReviewerException;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.ReviewRepository;
+import com.cimhub.reviewservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,56 +22,48 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * Service for managing reviews in the system.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
     private final TripServiceClient tripServiceClient;
 
-    /**
-     * Submit a new review for a trip.
-     * Validates that:
-     * 1. The trip/booking is completed
-     * 2. The reviewer has not already reviewed this trip
-     * 3. The reviewer was part of the trip
-     *
-     * @param userId the ID of the user submitting the review (from X-User-Id header)
-     * @param userRole the role of the user (DRIVER or PASSENGER, from X-User-Role header)
-     * @param request the review submission request
-     * @return the created review response
-     */
     @Transactional
-    public ReviewResponse submitReview(String userId, String userRole, SubmitReviewRequest request) {
-        log.info("Submitting review from user: {} for trip: {}", userId, request.tripId());
+    public ReviewResponse submitDriverReview(SubmitReviewRequest request) {
+        log.info("Submitting driver review from user: {} for trip: {}", request.userId(), request.tripId());
 
-        // Validate trip is completed
-        if (!tripServiceClient.isTripCompleted(request.tripId())) {
-            throw new TripNotCompletedException("Trip must be completed before review can be submitted");
+        validateUserRole(request.userRole(), "PASSENGER", "Only passengers can review drivers");
+
+        if (!userRepository.existsByUserId(request.userId())) {
+            throw new PassengerNotFoundException("Reviewer user not found: " + request.userId());
         }
 
-        // Validate booking is completed
-        if (!tripServiceClient.isBookingCompleted(request.bookingId())) {
-            throw new TripNotCompletedException("Booking must be completed before review can be submitted");
-        }
+        validateTripAndBookingCompleted(request.tripId(), request.bookingId());
 
-        // Check if review already exists
-        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(userId, request.tripId(), request.bookingId())) {
+        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(request.userId(), request.tripId(), request.bookingId())) {
             throw new ReviewAlreadyExistsException("You have already reviewed this trip");
         }
 
-        UserType reviewerType = UserType.valueOf(userRole);
+        String driverId = tripServiceClient.getTripDriverId(request.tripId());
+        if (driverId == null) {
+            throw new DriverNotFoundException("Driver not found for trip: " + request.tripId());
+        }
 
-        // Create and save the review
+        String bookingPassengerId = tripServiceClient.getBookingPassengerId(request.bookingId());
+        if (!request.userId().equals(bookingPassengerId)) {
+            throw new UnauthorizedReviewerException("You are not the passenger of this booking");
+        }
+
         Review review = Review.builder()
                 .tripId(request.tripId())
                 .bookingId(request.bookingId())
-                .reviewerId(userId)
-                .reviewerType(reviewerType)
+                .reviewerId(request.userId())
+                .reviewerType(UserType.PASSENGER)
+                .revieweeId(driverId)
+                .revieweeType(UserType.DRIVER)
                 .rating(request.rating())
                 .comment(request.comment())
                 .status(ReviewStatus.PUBLISHED)
@@ -75,90 +71,100 @@ public class ReviewService {
                 .build();
 
         Review savedReview = reviewRepository.save(review);
-        log.info("Review saved with ID: {}", savedReview.getReviewId());
+        log.info("Driver review saved with ID: {}", savedReview.getReviewId());
 
         return mapToResponse(savedReview);
     }
 
-    /**
-     * Get all reviews for a specific driver.
-     *
-     * @param driverId the driver's ID
-     * @return list of reviews about the driver
-     */
-    public List<ReviewResponse> getReviewsByDriver(String driverId) {
+    @Transactional
+    public ReviewResponse submitPassengerReview(SubmitReviewRequest request) {
+        log.info("Submitting passenger review from user: {} for trip: {}", request.userId(), request.tripId());
+
+        validateUserRole(request.userRole(), "DRIVER", "Only drivers can review passengers");
+
+        if (!userRepository.existsByUserId(request.userId())) {
+            throw new DriverNotFoundException("Reviewer user not found: " + request.userId());
+        }
+
+        validateTripAndBookingCompleted(request.tripId(), request.bookingId());
+
+        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(request.userId(), request.tripId(), request.bookingId())) {
+            throw new ReviewAlreadyExistsException("You have already reviewed this trip");
+        }
+
+        String driverId = tripServiceClient.getTripDriverId(request.tripId());
+        if (!request.userId().equals(driverId)) {
+            throw new UnauthorizedReviewerException("Only the driver of this trip can review passengers");
+        }
+
+        String passengerId = tripServiceClient.getBookingPassengerId(request.bookingId());
+        if (passengerId == null) {
+            throw new PassengerNotFoundException("Passenger not found for booking: " + request.bookingId());
+        }
+
+        Review review = Review.builder()
+                .tripId(request.tripId())
+                .bookingId(request.bookingId())
+                .reviewerId(request.userId())
+                .reviewerType(UserType.DRIVER)
+                .revieweeId(passengerId)
+                .revieweeType(UserType.PASSENGER)
+                .rating(request.rating())
+                .comment(request.comment())
+                .status(ReviewStatus.PUBLISHED)
+                .createdAt(Instant.now())
+                .build();
+
+        Review savedReview = reviewRepository.save(review);
+        log.info("Passenger review saved with ID: {}", savedReview.getReviewId());
+
+        return mapToResponse(savedReview);
+    }
+
+    public List<ReviewResponse> getDriverReviews(String driverId) {
         log.info("Fetching reviews for driver: {}", driverId);
-        List<Review> reviews = reviewRepository.findByRevieweeId(driverId);
+        
+        if (!userRepository.existsByUserId(driverId)) {
+            throw new DriverNotFoundException("Driver not found: " + driverId);
+        }
+
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(driverId, UserType.DRIVER);
+        
+        if (reviews.isEmpty()) {
+            throw new ReviewsNotFoundException("No reviews found for driver: " + driverId);
+        }
+
         return reviews.stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    /**
-     * Get all reviews for a specific passenger.
-     *
-     * @param userId the passenger's ID
-     * @return list of reviews about the passenger
-     */
-    public List<ReviewResponse> getReviewsByUser(String userId) {
-        log.info("Fetching reviews for user: {}", userId);
-        List<Review> reviews = reviewRepository.findByRevieweeId(userId);
+    public List<ReviewResponse> getPassengerReviews(String passengerId) {
+        log.info("Fetching reviews for passenger: {}", passengerId);
+        
+        if (!userRepository.existsByUserId(passengerId)) {
+            throw new PassengerNotFoundException("Passenger not found: " + passengerId);
+        }
+
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(passengerId, UserType.PASSENGER);
+        
+        if (reviews.isEmpty()) {
+            throw new ReviewsNotFoundException("No reviews found for passenger: " + passengerId);
+        }
+
         return reviews.stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    /**
-     * Get all reviews for a specific trip.
-     *
-     * @param tripId the trip's ID
-     * @return list of reviews for the trip
-     */
-    public List<ReviewResponse> getReviewsByTrip(String tripId) {
-        log.info("Fetching reviews for trip: {}", tripId);
-        List<Review> reviews = reviewRepository.findByTripId(tripId);
-        return reviews.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    /**
-     * Get all reviews submitted by the current user.
-     *
-     * @param userId the user's ID
-     * @return list of reviews given by the user
-     */
-    public List<ReviewResponse> getReviewsGiven(String userId) {
-        log.info("Fetching reviews given by user: {}", userId);
-        List<Review> reviews = reviewRepository.findByReviewerId(userId);
-        return reviews.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    /**
-     * Get all reviews received by the current user.
-     *
-     * @param userId the user's ID
-     * @return list of reviews received by the user
-     */
-    public List<ReviewResponse> getReviewsReceived(String userId) {
-        log.info("Fetching reviews received by user: {}", userId);
-        List<Review> reviews = reviewRepository.findByRevieweeId(userId);
-        return reviews.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    /**
-     * Calculate the average rating for a driver.
-     *
-     * @param driverId the driver's ID
-     * @return average rating response
-     */
-    public AverageRatingResponse getAverageRating(String driverId) {
+    public AverageRatingResponse getDriverAverageRating(String driverId) {
         log.info("Calculating average rating for driver: {}", driverId);
-        List<Review> reviews = reviewRepository.findByRevieweeId(driverId);
+
+        if (!userRepository.existsByUserId(driverId)) {
+            throw new DriverNotFoundException("Driver not found: " + driverId);
+        }
+
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(driverId, UserType.DRIVER);
 
         if (reviews.isEmpty()) {
             return AverageRatingResponse.builder()
@@ -180,9 +186,51 @@ public class ReviewService {
                 .build();
     }
 
-    /**
-     * Map a Review entity to a ReviewResponse DTO.
-     */
+    public AverageRatingResponse getPassengerAverageRating(String passengerId) {
+        log.info("Calculating average rating for passenger: {}", passengerId);
+
+        if (!userRepository.existsByUserId(passengerId)) {
+            throw new PassengerNotFoundException("Passenger not found: " + passengerId);
+        }
+
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(passengerId, UserType.PASSENGER);
+
+        if (reviews.isEmpty()) {
+            return AverageRatingResponse.builder()
+                    .subjectId(passengerId)
+                    .averageRating(0.0)
+                    .totalReviews(0)
+                    .build();
+        }
+
+        double averageRating = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+
+        return AverageRatingResponse.builder()
+                .subjectId(passengerId)
+                .averageRating(averageRating)
+                .totalReviews(reviews.size())
+                .build();
+    }
+
+    private void validateUserRole(String userRole, String expectedRole, String errorMessage) {
+        if (!expectedRole.equalsIgnoreCase(userRole)) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    private void validateTripAndBookingCompleted(String tripId, String bookingId) {
+        if (!tripServiceClient.isTripCompleted(tripId)) {
+            throw new TripNotCompletedException("Trip must be completed before review can be submitted");
+        }
+
+        if (!tripServiceClient.isBookingCompleted(bookingId)) {
+            throw new TripNotCompletedException("Booking must be completed before review can be submitted");
+        }
+    }
+
     private ReviewResponse mapToResponse(Review review) {
         return ReviewResponse.builder()
                 .reviewId(review.getReviewId())

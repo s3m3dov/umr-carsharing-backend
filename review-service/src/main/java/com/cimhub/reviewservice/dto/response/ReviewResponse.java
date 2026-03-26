@@ -12,7 +12,7 @@ import java.time.Instant;
 @Schema(
         name = "ReviewResponse",
         description = "Response containing review details",
-        example = ReviewApiExamples.SUBMIT_REVIEW_RESPONSE
+        example = ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE
 )
 
 @Builder
