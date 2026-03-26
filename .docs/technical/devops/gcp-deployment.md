@@ -6,28 +6,25 @@ This guide covers deploying the CarSharing backend to Google Cloud Platform (GCP
 
 ## Prerequisites
 
+### Initial Setup
+
+If this is your first time setting up the GCP project, GKE cluster, or Artifact Registry, please follow the [**GCP Initial Setup Guide**](./gcp-initial-setup.md) first.
+
 ### Required Tools
 
 - **gcloud CLI**: [Install Guide](https://cloud.google.com/sdk/docs/install)
 - **kubectl**: Installed with gcloud or [standalone](https://kubernetes.io/docs/tasks/tools/)
 - **Docker**: [Install Guide](https://docs.docker.com/get-docker/)
 
-### GCP Resources
-
-- **GKE Cluster**: `autopilot-carsharing-cluster-01` (already created)
-- **Project ID**: `project-b05bd45b-70e8-4b7f-a65`
-- **Region**: `europe-north1`
-- **External IP**: `34.160.91.182`
-
 ## Configuration
 
 All GCP settings are centralized in [`gitops/base/configmap.yaml`](file:///Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/gitops/base/configmap.yaml):
 
 ```yaml
-GCP_PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
+GCP_PROJECT_ID: "groovy-vector-482912-b0"
 GCP_REGION: "europe-north1"
-GKE_CLUSTER_NAME: "autopilot-carsharing-cluster-01"
-EXTERNAL_IP: "34.160.91.182"
+GKE_CLUSTER_NAME: "autopilot-cluster-1"
+EXTERNAL_IP: "35.186.208.67"
 ```
 
 ## MongoDB Atlas Setup
@@ -146,9 +143,9 @@ kubectl logs -n carsharing -l app=auth-service --tail=50
 
 ### 6. Access the Application
 
-- **Swagger UI**: <http://34.160.91.182/swagger-ui.html>
-- **Health Check**: <http://34.160.91.182/actuator/health>
-- **API Gateway**: <http://34.160.91.182>
+- **Swagger UI**: <http://35.186.208.67/swagger-ui.html>
+- **Health Check**: <http://35.186.208.67/actuator/health>
+- **API Gateway**: <http://35.186.208.67>
 
 ## Selective Deployment
 
@@ -266,7 +263,7 @@ kubectl scale deployment auth-service --replicas=2 -n carsharing
 
 ```bash
 kubectl set image deployment/auth-service \
-  auth-service=eu.gcr.io/project-b05bd45b-70e8-4b7f-a65/auth-service:v1.0.0 \
+  auth-service=eu.gcr.io/groovy-vector-482912-b0/auth-service:v1.0.0 \
   -n carsharing
 ```
 
@@ -287,7 +284,7 @@ kubectl get configmap carsharing-config -n carsharing -o yaml
 For automated deployments, set these environment variables in your CI/CD pipeline:
 
 ```bash
-export GCP_PROJECT_ID=project-b05bd45b-70e8-4b7f-a65
+export GCP_PROJECT_ID=groovy-vector-482912-b0
 export GCP_REGION=europe-north1
 export GKE_CLUSTER_NAME=autopilot-carsharing-cluster-01
 export GCP_IMAGE_TAG=$CI_COMMIT_SHA  # or version tag

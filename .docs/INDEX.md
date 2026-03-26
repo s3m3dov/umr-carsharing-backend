@@ -13,12 +13,12 @@ Welcome to the Car Sharing Backend documentation.
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
 
 ### Architecture & Infrastructure
-- **[Microservice Organization Strategy](technical/microservice-organization-strategy.md)**: Phased evolution plan for service architecture
-- **[BlaBlaCar Architecture Overview](technical/_main/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
-- **[Architecture & Tech Stack](technical/_main/architecture.md)**: System design, microservices, and technical capabilities
-- **[API Development Guide](technical/_main/api-guide.md)**: Authentication, response formats, and implementation details
-- **[Operations & Setup](technical/operations.md)**: Environment variables and cluster setup (Kind)
+- **[Architecture & Tech Stack](technical/crucial/architecture.md)**: System design, microservices, and technical capabilities
+- **[API Development Guide](technical/crucial/api-guide.md)**: Authentication, response formats, and implementation details
+- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
+- **[BlaBlaCar Architecture Overview](technical/crucial/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
 - **[GitOps Workflow](technical/devops/gitops.md)**: Deployment rules, scripts, and commands
+- **[GCP Initial Setup](technical/devops/gcp-initial-setup.md)**: First-time cloud setup guide (GKE, Artifact Registry, Static IP)
 - **[GCP Deployment](technical/devops/gcp-deployment.md)**: Cloud deployment guide
 
 ### Documentation Internals
