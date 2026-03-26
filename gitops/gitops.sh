@@ -83,7 +83,7 @@ USAGE:
 │    • Applies K8s manifests       │    • Check deployment status          │
 │    • Restarts all deployments    │                                       │
 │                                  │                                       │
-│ 5. ./gitops.sh local ingress     │ 5. Access: http://34.160.91.182       │
+│ 5. ./gitops.sh local ingress     │ 5. Access External GCP IP      │
 │    • Auto-switches to local      │    • External load balancer IP        │
 │    • Port-forwards :8888 → :80   │    • No port-forward needed           │
 │    • Access: localhost:8888      │                                       │
@@ -278,7 +278,7 @@ USAGE:
         - Optional: for visual cluster management in production
 
   Production Access:
-      URL: http://34.160.91.182
+      URL: http://35.186.208.67
       Load balancer takes ~2 minutes after deploy to route traffic
 
 ═══════════════════════════════════════════════════════════════════════════
@@ -326,7 +326,7 @@ GCP PRODUCTION - FIRST TIME DEPLOYMENT:
   2. ./gitops.sh gcp secrets     # Create secrets in GKE
   3. ./gitops.sh gcp deploy      # Deploy to production (~2-5 min)
   4. Wait ~2 minutes for load balancer
-  5. Access: http://34.160.91.182
+  5. Access the external IP
 
 GCP PRODUCTION - UPDATE SPECIFIC SERVICES:
   1. ./gitops.sh gcp build auth-service user-service  # Build only 2 services
@@ -579,7 +579,7 @@ elif [ "$TARGET" == "gcp" ]; then
             echo "❌ Error: Command 'ingress' is not supported for target 'gcp'"
             echo ""
             echo "💡 GKE uses an external load balancer. No port-forwarding needed."
-            echo "   Access your application at: http://34.160.91.182"
+            echo "   Access your application at: http://35.186.208.67"
             exit 1
             ;;
         
