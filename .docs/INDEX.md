@@ -20,6 +20,7 @@ Welcome to the Car Sharing Backend documentation.
 - **[GitOps Workflow](technical/devops/gitops.md)**: Deployment rules, scripts, and commands
 - **[GCP Initial Setup](technical/devops/gcp-initial-setup.md)**: First-time cloud setup guide (GKE, Artifact Registry, Static IP)
 - **[GCP Deployment](technical/devops/gcp-deployment.md)**: Cloud deployment guide
+- **[Monitoring & Logging](technical/devops/monitoring.md)**: Kubernetes Dashboard, Prometheus, Grafana, Loki
 
 ### Documentation Internals
 - **[Documentation Approach](technical/openapi/documentation-approach.md)**: Clean code + comprehensive docs philosophy
