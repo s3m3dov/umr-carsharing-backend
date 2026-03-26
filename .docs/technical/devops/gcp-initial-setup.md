@@ -70,7 +70,7 @@ Update your `gitops/base/configmap.yaml` with this IP address in the `EXTERNAL_I
 Utilize the GitOps command to connect your local `kubectl` to the new cluster:
 
 ```bash
-./gitops.sh gcp status
+./gitops/gitops.sh gcp status
 ```
 *Note: The first time you run any GCP command, it will trigger `./gitops/scripts/gcp/connect-gcp.sh` to configure your context.*
 
@@ -104,6 +104,21 @@ If you encounter timeout errors when using `kubectl`, authorize your current IP 
       --enable-master-authorized-networks \
       --master-authorized-networks [YOUR_IP]/32
     ```
+
+## 9. Maintenance and Global Updates
+
+If you change your **Project ID**, **External IP**, or **Cluster Name** at any point, you must ensure consistency across the entire repository.
+
+**Important Note**: Use a global **Find and Replace** (e.g., `Cmd+Shift+F` in VS Code) to update these values across the following key files:
+- `gitops/base/configmap.yaml`: Primary source of truth for GitOps scripts.
+- `gitops/overlays/production/ingress-production.yaml`: Static IP name reference.
+- `.docs/` directory: All technical guides and reference material.
+
+Always verify that your local environment is synchronized after a change:
+```bash
+# Re-run the connection script to update your local context
+./gitops/gitops.sh gcp status
+```
 
 ## Next Steps
 

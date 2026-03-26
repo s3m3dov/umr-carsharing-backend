@@ -57,7 +57,7 @@ gcloud container clusters describe autopilot-carsharing-cluster-01 \
 
 ### 1. Configure kubectl
 
-The GKE cluster is already provisioned. The `./gitops.sh gcp` commands automatically handle context switching.
+The GKE cluster is already provisioned. The `./gitops/gitops.sh gcp` commands automatically handle context switching.
 
 ### 2. Create Secrets
 
@@ -91,13 +91,13 @@ kubectl apply -f gitops/base/secrets.yaml
 Build all services:
 
 ```bash
-./gitops.sh gcp build
+./gitops/gitops.sh gcp build
 ```
 
 Or build specific services:
 
 ```bash
-./gitops.sh gcp build auth-service user-service
+./gitops/gitops.sh gcp build auth-service user-service
 ```
 
 This will:
@@ -112,13 +112,13 @@ This will:
 Deploy all services:
 
 ```bash
-./gitops.sh gcp deploy
+./gitops/gitops.sh gcp deploy
 ```
 
 Or deploy specific services:
 
 ```bash
-./gitops.sh gcp deploy auth-service trip-service
+./gitops/gitops.sh gcp deploy auth-service trip-service
 ```
 
 ### 5. Verify Deployment
@@ -153,21 +153,21 @@ kubectl logs -n carsharing -l app=auth-service --tail=50
 
 ```bash
 # Build only auth and user services
-./gitops.sh gcp build auth-service user-service
+./gitops/gitops.sh gcp build auth-service user-service
 
 # Build with custom tag
 export GCP_IMAGE_TAG=v1.0.0
-./gitops.sh gcp build
+./gitops/gitops.sh gcp build
 ```
 
 ### Deploy Specific Services
 
 ```bash
 # Deploy only trip service
-./gitops.sh gcp deploy trip-service
+./gitops/gitops.sh gcp deploy trip-service
 
 # Deploy multiple services
-./gitops.sh gcp deploy auth-service user-service
+./gitops/gitops.sh gcp deploy auth-service user-service
 ```
 
 ## Resource Configuration
@@ -293,9 +293,9 @@ export GCP_IMAGE_TAG=$CI_COMMIT_SHA  # or version tag
 Then run:
 
 ```bash
-./gitops.sh gcp build
-./gitops.sh gcp secrets
-./gitops.sh gcp deploy
+./gitops/gitops.sh gcp build
+./gitops/gitops.sh gcp secrets
+./gitops/gitops.sh gcp deploy
 ```
 
 ## Cost Optimization
