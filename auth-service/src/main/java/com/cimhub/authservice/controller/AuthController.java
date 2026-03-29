@@ -1,9 +1,12 @@
 package com.cimhub.authservice.controller;
 
+import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
+import com.cimhub.authservice.dto.request.ResetPasswordRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
+import com.cimhub.authservice.dto.response.ResetPasswordResponse;
 import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
@@ -124,6 +127,54 @@ public class AuthController {
         if (!response.isValid()) {
             throw new UnauthorizedException("Invalid or expired token");
         }
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Initiate password reset",
+            description = "Sends a password reset token to the user's email"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Reset token sent if email exists"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid email format"
+            )
+    })
+    @PostMapping(value = "/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        log.info("Password reset request for user: {}", request.email());
+        ResetPasswordResponse response = authService.initiatePasswordReset(request);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Confirm password reset",
+            description = "Resets the user's password using the reset token"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password reset successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input - missing fields"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired reset token"
+            )
+    })
+    @PostMapping(value = "/reset-password/confirm", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> confirmResetPassword(
+            @Valid @RequestBody ConfirmResetPasswordRequest request) {
+        log.info("Password reset confirmation request");
+        ResetPasswordResponse response = authService.confirmPasswordReset(request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }
