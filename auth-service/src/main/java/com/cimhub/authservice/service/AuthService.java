@@ -1,10 +1,13 @@
 package com.cimhub.authservice.service;
 
+import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
+import com.cimhub.authservice.dto.request.ResetPasswordRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
+import com.cimhub.authservice.dto.response.ResetPasswordResponse;
 import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
@@ -20,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -127,5 +131,54 @@ public class AuthService {
             log.warn("Token validation failed: {}", e.getMessage());
             return new ValidateTokenResponse(false, null, null);
         }
+    }
+
+    public ResetPasswordResponse initiatePasswordReset(ResetPasswordRequest request) {
+        String normalizedEmail = request.email().toLowerCase();
+        log.info("Password reset initiated for user: {}", normalizedEmail);
+
+        User user = authUserRepository.findByEmail(normalizedEmail);
+        if (user != null) {
+            String resetToken = UUID.randomUUID().toString();
+            Date expiryDate = new Date(System.currentTimeMillis() + 3600000);
+            
+            user.setResetToken(resetToken);
+            user.setResetTokenExpiry(expiryDate);
+            authUserRepository.save(user);
+            
+            log.info("Reset token generated for user: {}", normalizedEmail);
+        } else {
+            log.warn("Password reset requested for non-existent user: {}", normalizedEmail);
+        }
+
+        return new ResetPasswordResponse("If the email exists, a reset link has been sent");
+    }
+
+    public ResetPasswordResponse confirmPasswordReset(ConfirmResetPasswordRequest request) {
+        log.info("Password reset confirmation received");
+
+        User user = authUserRepository.findByResetToken(request.token());
+
+        if (user == null) {
+            log.warn("Invalid reset token");
+            throw new UnauthorizedException("Invalid or expired reset token");
+        }
+
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().before(new Date())) {
+            log.warn("Expired reset token for user: {}", user.getEmail());
+            user.setResetToken(null);
+            user.setResetTokenExpiry(null);
+            authUserRepository.save(user);
+            throw new UnauthorizedException("Invalid or expired reset token");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        authUserRepository.save(user);
+
+        log.info("Password successfully reset for user: {}", user.getEmail());
+
+        return new ResetPasswordResponse("Password has been reset successfully");
     }
 }

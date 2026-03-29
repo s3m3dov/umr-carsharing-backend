@@ -37,4 +37,7 @@ public class User {
     private UserType userType;
 
     private Date createdDate = new Date();
+
+    private String resetToken;
+    private Date resetTokenExpiry;
 }
