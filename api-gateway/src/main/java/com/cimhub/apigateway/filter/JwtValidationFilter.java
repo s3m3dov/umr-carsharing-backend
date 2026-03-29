@@ -36,15 +36,25 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
+        // Strip any incoming X-User-* headers to prevent identity spoofing
+        ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
+                .headers(headers -> {
+                    headers.remove(GatewayConstants.USER_ID_HEADER);
+                    headers.remove(GatewayConstants.USER_EMAIL_HEADER);
+                    headers.remove(GatewayConstants.USER_ROLE_HEADER);
+                })
+                .build();
+        ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
+
         // Skip JWT validation for public endpoints
         if (isPublicPath(path)) {
             log.debug("Public path accessed: {}", path);
-            return chain.filter(exchange);
+            return chain.filter(sanitizedExchange);
         }
 
-        return extractToken(exchange.getRequest(), path)
+        return extractToken(sanitizedExchange.getRequest(), path)
                 .flatMap(this::validateTokenWithAuthService)
-                .flatMap(response -> authorize(exchange, chain, response))
+                .flatMap(response -> authorize(sanitizedExchange, chain, response))
                 .onErrorMap(this::mapToUnauthorizedIfNeeded);
     }
 
