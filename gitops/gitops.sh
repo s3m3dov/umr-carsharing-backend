@@ -514,7 +514,35 @@ if [ "$TARGET" == "local" ]; then
             echo "   2. Visit: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
             echo "   3. Get token: kubectl -n kubernetes-dashboard create token admin-user"
             ;;
-        
+
+        monitoring)
+            switch_context "local"
+            SUBCOMMAND=${1:-install}
+            case $SUBCOMMAND in
+                install)
+                    echo "Installing monitoring stack..."
+                    ./gitops/scripts/monitoring/setup-monitoring.sh
+                    ;;
+                uninstall)
+                    echo "Removing monitoring stack..."
+                    ./gitops/scripts/monitoring/teardown-monitoring.sh
+                    ;;
+                status)
+                    echo "Monitoring stack status:"
+                    kubectl get pods -n monitoring
+                    ;;
+                grafana)
+                    echo "Port-forwarding Grafana on http://localhost:3000 (Ctrl+C to stop)..."
+                    kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+                    ;;
+                *)
+                    echo "Unknown monitoring subcommand: $SUBCOMMAND"
+                    echo "Available: install, uninstall, status, grafana"
+                    exit 1
+                    ;;
+            esac
+            ;;
+
         # ============================================================
         # ERROR HANDLING
         # ============================================================
@@ -620,7 +648,35 @@ elif [ "$TARGET" == "gcp" ]; then
             echo "   2. Visit: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
             echo "   3. Get token: kubectl -n kubernetes-dashboard create token admin-user"
             ;;
-        
+
+        monitoring)
+            switch_context "gcp"
+            SUBCOMMAND=${1:-install}
+            case $SUBCOMMAND in
+                install)
+                    echo "Installing monitoring stack on GKE..."
+                    ./gitops/scripts/monitoring/setup-monitoring.sh
+                    ;;
+                uninstall)
+                    echo "Removing monitoring stack from GKE..."
+                    ./gitops/scripts/monitoring/teardown-monitoring.sh
+                    ;;
+                status)
+                    echo "Monitoring stack status:"
+                    kubectl get pods -n monitoring
+                    ;;
+                grafana)
+                    echo "Port-forwarding Grafana on http://localhost:3000 (Ctrl+C to stop)..."
+                    kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+                    ;;
+                *)
+                    echo "Unknown monitoring subcommand: $SUBCOMMAND"
+                    echo "Available: install, uninstall, status, grafana"
+                    exit 1
+                    ;;
+            esac
+            ;;
+
         # ============================================================
         # ERROR HANDLING
         # ============================================================
