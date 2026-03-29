@@ -20,11 +20,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${TEMPO_ENDPOINT:http://tempo.monitoring.svc.cluster.local:4318/v1/traces}
 auth:
   security:
     public-paths:
@@ -39,6 +48,7 @@ auth:
     actuator-paths:
       - /actuator/health/**
       - /actuator/info/**
+      - /actuator/prometheus
 
 springdoc:
   api-docs:
