@@ -1,5 +1,6 @@
 package com.cimhub.authservice.controller;
 
+import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
@@ -24,7 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -175,6 +179,33 @@ public class AuthController {
             @Valid @RequestBody ConfirmResetPasswordRequest request) {
         log.info("Password reset confirmation request");
         ResetPasswordResponse response = authService.confirmPasswordReset(request);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Change password",
+            description = "Changes the password for the currently authenticated user. Requires the current password for verification."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password changed successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Current password is incorrect or user not authenticated"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input - missing fields or password too short"
+            )
+    })
+    @PutMapping(value = "/change-password", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        log.info("Password change request for user: {}", userDetails.getUsername());
+        ResetPasswordResponse response = authService.changePassword(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }

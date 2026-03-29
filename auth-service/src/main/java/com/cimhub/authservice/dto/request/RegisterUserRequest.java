@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Schema(
         name = "RegisterUserRequest",
@@ -24,7 +25,8 @@ public record RegisterUserRequest(
         @Email(message = "Invalid email format") String email,
 
         @Schema(description = "User's password (must be strong)", example = "SecurePassword123!")
-        @NotBlank(message = "Password is required") String password,
+        @NotBlank(message = "Password is required")
+        @Size(min = 8, message = "Password must be at least 8 characters") String password,
 
         @Schema(description = "User type: DRIVER or PASSENGER", example = "DRIVER")
         @NotNull(message = "User type is required") UserType userType,

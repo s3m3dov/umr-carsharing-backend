@@ -1,5 +1,6 @@
 package com.cimhub.authservice.service;
 
+import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
@@ -40,20 +41,17 @@ public class AuthService {
         String normalizedEmail = request.email().toLowerCase();
         log.info("Registering new user: {}", normalizedEmail);
 
-        // Check if user already exists in auth-service
-        if (authUserRepository.findByEmail(normalizedEmail) != null) {
+        if (authUserRepository.findByEmail(normalizedEmail).isPresent()) {
             throw new UserAlreadyExistsException(
                     "User Already Exists with email: " + normalizedEmail);
         }
 
-        // Check if profile already exists in user-service to prevent conflicts
         if (userServiceClient.profileExists(normalizedEmail)) {
             log.warn("User profile already exists in user-service for email: {}", normalizedEmail);
             throw new UserAlreadyExistsException(
                     "User profile already exists: " + normalizedEmail);
         }
 
-        // Step 1: Create auth credentials
         User newAuthUser = new User();
         newAuthUser.setUserId(normalizedEmail);
         newAuthUser.setEmail(normalizedEmail);
@@ -62,22 +60,25 @@ public class AuthService {
         newAuthUser.setCreatedDate(new Date());
         authUserRepository.save(newAuthUser);
 
-        // Step 2: Create user profile in user-service
-        // This call now handles 409 conflicts gracefully (idempotent)
-        CreateProfileRequest profileRequest = CreateProfileRequest.builder()
-                .userId(normalizedEmail)
-                .email(normalizedEmail)
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .userType(request.userType())
-                .phoneNumber(request.phoneNumber())
-                .age(request.age())
-                .licenseNumber(request.licenseNumber())
-                .build();
+        try {
+            CreateProfileRequest profileRequest = CreateProfileRequest.builder()
+                    .userId(normalizedEmail)
+                    .email(normalizedEmail)
+                    .firstName(request.firstName())
+                    .lastName(request.lastName())
+                    .userType(request.userType())
+                    .phoneNumber(request.phoneNumber())
+                    .age(request.age())
+                    .licenseNumber(request.licenseNumber())
+                    .build();
 
-        userServiceClient.createProfile(profileRequest);
+            userServiceClient.createProfile(profileRequest);
+        } catch (Exception e) {
+            log.error("Failed to create profile in user-service, rolling back auth user: {}", normalizedEmail, e);
+            authUserRepository.deleteById(normalizedEmail);
+            throw new RuntimeException("Registration failed: unable to create user profile", e);
+        }
 
-        // Step 3: Generate JWT with role
         String token = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User.builder()
                         .username(newAuthUser.getEmail())
@@ -95,7 +96,7 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         String normalizedEmail = request.email().toLowerCase();
-        log.info("Login check for user: {}", normalizedEmail);
+        log.info("Login attempt for user: {}", normalizedEmail);
 
         try {
             authenticationManager.authenticate(
@@ -103,11 +104,12 @@ public class AuthService {
                             normalizedEmail,
                             request.password()));
         } catch (Exception e) {
-            log.warn("Login failed for user {}: {}", normalizedEmail, e.getMessage());
+            log.warn("Login failed for user: {}", normalizedEmail);
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        User authUserData = authUserRepository.findByEmail(normalizedEmail);
+        User authUserData = authUserRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                 .username(authUserData.getEmail())
@@ -137,19 +139,19 @@ public class AuthService {
         String normalizedEmail = request.email().toLowerCase();
         log.info("Password reset initiated for user: {}", normalizedEmail);
 
-        User user = authUserRepository.findByEmail(normalizedEmail);
-        if (user != null) {
-            String resetToken = UUID.randomUUID().toString();
-            Date expiryDate = new Date(System.currentTimeMillis() + 3600000);
-            
-            user.setResetToken(resetToken);
-            user.setResetTokenExpiry(expiryDate);
-            authUserRepository.save(user);
-            
-            log.info("Reset token generated for user: {}", normalizedEmail);
-        } else {
-            log.warn("Password reset requested for non-existent user: {}", normalizedEmail);
-        }
+        authUserRepository.findByEmail(normalizedEmail).ifPresentOrElse(
+                user -> {
+                    String resetToken = UUID.randomUUID().toString();
+                    Date expiryDate = new Date(System.currentTimeMillis() + 3600000);
+
+                    user.setResetToken(resetToken);
+                    user.setResetTokenExpiry(expiryDate);
+                    authUserRepository.save(user);
+
+                    log.info("Reset token generated for user: {}", normalizedEmail);
+                },
+                () -> log.warn("Password reset requested for non-existent user: {}", normalizedEmail)
+        );
 
         return new ResetPasswordResponse("If the email exists, a reset link has been sent");
     }
@@ -157,12 +159,11 @@ public class AuthService {
     public ResetPasswordResponse confirmPasswordReset(ConfirmResetPasswordRequest request) {
         log.info("Password reset confirmation received");
 
-        User user = authUserRepository.findByResetToken(request.token());
-
-        if (user == null) {
-            log.warn("Invalid reset token");
-            throw new UnauthorizedException("Invalid or expired reset token");
-        }
+        User user = authUserRepository.findByResetToken(request.token())
+                .orElseThrow(() -> {
+                    log.warn("Invalid reset token");
+                    return new UnauthorizedException("Invalid or expired reset token");
+                });
 
         if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().before(new Date())) {
             log.warn("Expired reset token for user: {}", user.getEmail());
@@ -180,5 +181,21 @@ public class AuthService {
         log.info("Password successfully reset for user: {}", user.getEmail());
 
         return new ResetPasswordResponse("Password has been reset successfully");
+    }
+
+    public ResetPasswordResponse changePassword(String userEmail, ChangePasswordRequest request) {
+        User user = authUserRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        authUserRepository.save(user);
+
+        log.info("Password changed for user: {}", userEmail);
+
+        return new ResetPasswordResponse("Password has been changed successfully");
     }
 }

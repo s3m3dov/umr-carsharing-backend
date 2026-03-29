@@ -12,9 +12,13 @@ import java.util.HashMap;
 public class JwtService {
 
     private final String secretKey;
+    private final long expirationMs;
 
-    public JwtService(@Value("${jwt.secret-key}") String secretKey) {
+    public JwtService(
+            @Value("${jwt.secret-key}") String secretKey,
+            @Value("${jwt.expiration-ms}") long expirationMs) {
         this.secretKey = secretKey;
+        this.expirationMs = expirationMs;
     }
     public boolean isTokenValid(String Token, String username) {
         final String extractedUsername = extractUsername(Token);
@@ -69,7 +73,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSignInKey(), io.jsonwebtoken.SignatureAlgorithm.HS256)
                 .compact();
     }
