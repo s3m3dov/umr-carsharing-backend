@@ -61,6 +61,7 @@ public class ReviewService {
         }
 
         Review review = Review.builder()
+                .updatedAt(Instant.now())
                 .tripId(request.tripId())
                 .bookingId(request.bookingId())
                 .reviewerId(request.userId())
@@ -107,6 +108,7 @@ public class ReviewService {
         }
 
         Review review = Review.builder()
+                .updatedAt(Instant.now())
                 .tripId(request.tripId())
                 .bookingId(request.bookingId())
                 .reviewerId(request.userId())
@@ -249,6 +251,7 @@ public class ReviewService {
                 .comment(review.getComment())
                 .status(review.getStatus())
                 .createdAt(review.getCreatedAt())
+                .updatedAt(review.getUpdatedAt())
                 .build();
     }
 }

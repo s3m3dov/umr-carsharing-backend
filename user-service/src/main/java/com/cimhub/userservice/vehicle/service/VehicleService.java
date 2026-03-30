@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,9 @@ public class VehicleService {
         newVehicle.setVehicleType(request.vehicleType());
         newVehicle.setVehicleColor(request.vehicleColor());
         newVehicle.setSeatingCapacity(request.seatingCapacity());
+        Instant now = Instant.now();
+        newVehicle.setCreatedAt(now);
+        newVehicle.setUpdatedAt(now);
 
         Vehicle savedVehicle = vehicleRepository.save(newVehicle);
         auditService.logCreate(EntityType.VEHICLE, savedVehicle.getId(), request.userId(), "Vehicle registered by user");

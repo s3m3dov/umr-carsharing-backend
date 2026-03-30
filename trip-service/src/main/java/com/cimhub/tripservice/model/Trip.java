@@ -76,5 +76,8 @@ public class Trip {
 
     private List<ObjectId> joinedBookingIds;
     @Builder.Default
-    private Instant createdDate = Instant.now();
+    private Instant createdAt = Instant.now();
+
+    @Builder.Default
+    private Instant updatedAt = Instant.now();
 }

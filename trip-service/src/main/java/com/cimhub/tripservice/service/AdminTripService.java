@@ -50,6 +50,7 @@ public class AdminTripService {
         Trip trip = tripsRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found: " + tripId));
         trip.setTripStatus(TripStatus.CANCELLED);
+        trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);
         auditService.logCancel(EntityType.TRIP, tripId, adminEmail, "Trip cancelled by admin");
         log.info("Trip {} cancelled by admin {}", tripId, adminEmail);
@@ -72,7 +73,8 @@ public class AdminTripService {
                 .routeDuration(trip.getRouteDuration())
                 .tripStartDateTimeUTC(trip.getTripStartDateTimeUTC())
                 .tripTimezone(trip.getTripTimezone())
-                .createdDate(trip.getCreatedDate())
+                .createdAt(trip.getCreatedAt())
+                .updatedAt(trip.getUpdatedAt())
                 .build();
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class AdminReviewService {
         Review review = reviewDataRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.FLAGGED);
+        review.setUpdatedAt(Instant.now());
         reviewDataRepository.save(review);
         auditService.logFlag(EntityType.REVIEW, reviewId, adminEmail, "Review flagged by admin");
         log.info("Review {} flagged by admin {}", reviewId, adminEmail);
@@ -51,6 +54,7 @@ public class AdminReviewService {
         Review review = reviewDataRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.REMOVED);
+        review.setUpdatedAt(Instant.now());
         reviewDataRepository.save(review);
         auditService.logDelete(EntityType.REVIEW, reviewId, adminEmail, "Review removed by admin");
         log.info("Review {} removed by admin {}", reviewId, adminEmail);
@@ -60,6 +64,7 @@ public class AdminReviewService {
         Review review = reviewDataRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.PUBLISHED);
+        review.setUpdatedAt(Instant.now());
         reviewDataRepository.save(review);
         auditService.logPublish(EntityType.REVIEW, reviewId, adminEmail, "Review published by admin");
         log.info("Review {} published by admin {}", reviewId, adminEmail);
@@ -79,6 +84,7 @@ public class AdminReviewService {
                 .comment(review.getComment())
                 .status(review.getStatus())
                 .createdAt(review.getCreatedAt())
+                .updatedAt(review.getUpdatedAt())
                 .build();
     }
 

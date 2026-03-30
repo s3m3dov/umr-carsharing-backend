@@ -84,12 +84,14 @@ public class JoinTripService {
                 .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
                 .rideTimezone(trip.getTripTimezone())
                 .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         bookingRepository.save(booking);
         auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(), "Booking request submitted by passenger");
 
         trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
+        trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);
 
         log.info("Passenger {} requested to join trip {}. Seats requested: {}",
@@ -139,6 +141,7 @@ public class JoinTripService {
         Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
         if (trip != null) {
             trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
+            trip.setUpdatedAt(Instant.now());
             tripsRepository.save(trip);
         }
 

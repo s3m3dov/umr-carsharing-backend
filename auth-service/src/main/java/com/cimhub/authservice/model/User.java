@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -36,7 +37,9 @@ public class User {
     @NotNull
     private UserType userType;
 
-    private Date createdDate = new Date();
+    private Instant createdAt = Instant.now();
+
+    private Instant updatedAt = Instant.now();
 
     private String resetToken;
     private Date resetTokenExpiry;

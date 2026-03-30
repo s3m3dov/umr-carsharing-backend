@@ -48,6 +48,10 @@ public record ReviewResponse(
         ReviewStatus status,
 
         @Schema(description = "Timestamp when the review was created", example = "2026-03-24T12:34:56.789Z")
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        Instant createdAt) {
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant createdAt,
+
+        @Schema(description = "Timestamp when the review was last updated", example = "2026-03-24T12:45:00.123Z")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant updatedAt) {
 }

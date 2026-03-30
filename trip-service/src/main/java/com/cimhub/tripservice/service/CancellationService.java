@@ -60,6 +60,7 @@ public class CancellationService {
                                                 String.format("Trip with id %s not found", booking.getTripId())));
 
                 trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
+                trip.setUpdatedAt(Instant.now());
                 tripsRepository.save(trip);
 
                 log.info("Booking {} cancelled successfully by passenger {}", bookingId, passengerId);

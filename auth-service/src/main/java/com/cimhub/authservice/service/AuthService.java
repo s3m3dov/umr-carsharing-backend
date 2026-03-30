@@ -27,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -62,7 +63,9 @@ public class AuthService {
         newAuthUser.setEmail(normalizedEmail);
         newAuthUser.setPassword(passwordEncoder.encode(request.password()));
         newAuthUser.setUserType(request.userType());
-        newAuthUser.setCreatedDate(new Date());
+        Instant now = Instant.now();
+        newAuthUser.setCreatedAt(now);
+        newAuthUser.setUpdatedAt(now);
         authUserRepository.save(newAuthUser);
         auditService.logCreate(EntityType.USER, normalizedEmail, normalizedEmail, "Auth account registered");
 
@@ -158,6 +161,7 @@ public class AuthService {
 
                     user.setResetToken(resetToken);
                     user.setResetTokenExpiry(expiryDate);
+                    user.setUpdatedAt(Instant.now());
                     authUserRepository.save(user);
                     auditService.logUpdate(EntityType.USER, user.getUserId(), normalizedEmail,
                             "Password reset token generated");
@@ -183,6 +187,7 @@ public class AuthService {
             log.warn("Expired reset token for user: {}", user.getEmail());
             user.setResetToken(null);
             user.setResetTokenExpiry(null);
+            user.setUpdatedAt(Instant.now());
             authUserRepository.save(user);
             auditService.logUpdate(EntityType.USER, user.getUserId(), user.getEmail(),
                     "Expired reset token cleared");
@@ -192,6 +197,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
+        user.setUpdatedAt(Instant.now());
         authUserRepository.save(user);
         auditService.logUpdate(EntityType.USER, user.getUserId(), user.getEmail(),
                 "Password reset completed");
@@ -210,6 +216,7 @@ public class AuthService {
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setUpdatedAt(Instant.now());
         authUserRepository.save(user);
         auditService.logUpdate(EntityType.USER, user.getUserId(), userEmail,
                 "Password changed by user");

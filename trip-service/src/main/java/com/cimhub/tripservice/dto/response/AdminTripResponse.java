@@ -2,6 +2,7 @@ package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.model.TripStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -23,5 +24,8 @@ public record AdminTripResponse(
         double routeDuration,
         Instant tripStartDateTimeUTC,
         String tripTimezone,
-        Instant createdDate) {
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant createdAt,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant updatedAt) {
 }

@@ -61,4 +61,8 @@ public class Review {
     @Field("createdAt")
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    @Field("updatedAt")
+    @Builder.Default
+    private Instant updatedAt = Instant.now();
 }
