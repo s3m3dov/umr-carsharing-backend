@@ -28,6 +28,11 @@ public class JwtService {
     public boolean isTokenExpired(String Token){
         return extractClaim(Token, Claims::getExpiration).before(new Date());
     }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
