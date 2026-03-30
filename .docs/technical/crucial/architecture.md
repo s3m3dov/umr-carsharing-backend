@@ -6,7 +6,7 @@ This project has been transformed from a monolithic architecture to a microservi
 
 ## Architecture Overview
 
-The system is built using a microservices architecture, leveraging Spring Boot and Spring Cloud. It uses Google Maps API for location services, Firebase for real-time notifications, and MongoDB for persistence. Authentication is handled internally via a dedicated JWT-based Auth Service.
+The system is built using a microservices architecture, leveraging Spring Boot and Spring Cloud. It uses OSRM for route and distance calculations, Firebase for real-time notifications, and MongoDB for persistence. Authentication is handled internally via a dedicated JWT-based Auth Service.
 
 ### Technology Stack
 
@@ -16,7 +16,7 @@ The system is built using a microservices architecture, leveraging Spring Boot a
   - MongoDB Atlas (for persistent storage)
   - Firebase Realtime Database (for real-time notifications ONLY)
 - **APIs**:
-  - Google Maps API (for directions and distance calculations)
+  - OSRM (for directions and distance calculations)
 - **Authentication**:
   - Internal JWT-based Identity Provider (Auth Service)
 - **Other Libraries**:
@@ -76,7 +76,7 @@ The system uses a decentralized security model managed at the API Gateway level:
 - Find available rides
 - Join trip requests
 - Ride matching algorithms
-- Integration with Google Maps API
+- Integration with OSRM
 
 ### Review Service
 

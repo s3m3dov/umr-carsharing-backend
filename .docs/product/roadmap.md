@@ -111,7 +111,7 @@
 - **Metrics:** Actuator integration for Prometheus.
 - **Health Checks:**
   - Deep health checks for MongoDB, OSRM, and Firebase connectivity.
-  - **Custom Health Indicators:** Build indicators for Google Maps API quota usage and OSRM response times.
+  - **Custom Health Indicators:** Build indicators for OSRM response times and external dependency health.
 - **Business Metric Indicators:** Custom Actuator endpoints to expose anonymous stats like "Total active trips" or "Successful matches today" for internal monitoring.
 - **Distributed Tracing:** Micrometer Tracing to follow requests across microservices.
 

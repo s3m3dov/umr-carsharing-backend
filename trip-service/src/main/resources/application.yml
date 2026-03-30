@@ -48,10 +48,6 @@ springdoc:
   server:
     url: /trip-service
 
-google:
-  maps:
-    api-key: ${GOOGLE_API_KEY:your-google-maps-api-key}
-
 minDistanceInMetersBetween2PickupPoints: 500
 
 services:
