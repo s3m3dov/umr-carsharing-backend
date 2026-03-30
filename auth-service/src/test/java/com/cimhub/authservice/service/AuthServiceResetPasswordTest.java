@@ -8,6 +8,7 @@ import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.service.AuditService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,11 +43,21 @@ class AuthServiceResetPasswordTest {
     @Mock
     private UserServiceClient userServiceClient;
 
+    @Mock
+    private AuditService auditService;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(jwtService, authenticationManager, authUserRepository, passwordEncoder, userServiceClient);
+        authService = new AuthService(
+                jwtService,
+                authenticationManager,
+                authUserRepository,
+                passwordEncoder,
+                userServiceClient,
+                auditService
+        );
     }
 
     @Test
@@ -56,7 +68,7 @@ class AuthServiceResetPasswordTest {
         user.setPassword("hashedPassword");
         user.setUserType(UserType.DRIVER);
 
-        when(authUserRepository.findByEmail(email.toLowerCase())).thenReturn(user);
+        when(authUserRepository.findByEmail(email.toLowerCase())).thenReturn(Optional.of(user));
         when(authUserRepository.save(any(User.class))).thenReturn(user);
 
         ResetPasswordRequest request = new ResetPasswordRequest(email);
@@ -71,7 +83,7 @@ class AuthServiceResetPasswordTest {
     void initiatePasswordReset_WithNonExistentUser_ShouldReturnGenericMessage() {
         String email = "nonexistent@example.com";
 
-        when(authUserRepository.findByEmail(email.toLowerCase())).thenReturn(null);
+        when(authUserRepository.findByEmail(email.toLowerCase())).thenReturn(Optional.empty());
 
         ResetPasswordRequest request = new ResetPasswordRequest(email);
         ResetPasswordResponse response = authService.initiatePasswordReset(request);
@@ -94,7 +106,7 @@ class AuthServiceResetPasswordTest {
         user.setResetToken(token);
         user.setResetTokenExpiry(futureExpiry);
 
-        when(authUserRepository.findByResetToken(token)).thenReturn(user);
+        when(authUserRepository.findByResetToken(token)).thenReturn(Optional.of(user));
         when(authUserRepository.save(any(User.class))).thenReturn(user);
         when(passwordEncoder.encode(anyString())).thenReturn("newHashedPassword");
 
@@ -111,7 +123,7 @@ class AuthServiceResetPasswordTest {
     void confirmPasswordReset_WithInvalidToken_ShouldThrowException() {
         String token = "invalid-token";
 
-        when(authUserRepository.findByResetToken(token)).thenReturn(null);
+        when(authUserRepository.findByResetToken(token)).thenReturn(Optional.empty());
 
         ConfirmResetPasswordRequest request = new ConfirmResetPasswordRequest(token, "newPassword");
 
@@ -128,7 +140,7 @@ class AuthServiceResetPasswordTest {
         user.setResetToken(token);
         user.setResetTokenExpiry(pastExpiry);
 
-        when(authUserRepository.findByResetToken(token)).thenReturn(user);
+        when(authUserRepository.findByResetToken(token)).thenReturn(Optional.of(user));
         when(authUserRepository.save(any(User.class))).thenReturn(user);
 
         ConfirmResetPasswordRequest request = new ConfirmResetPasswordRequest(token, "newPassword");
@@ -146,7 +158,7 @@ class AuthServiceResetPasswordTest {
         user.setResetToken(token);
         user.setResetTokenExpiry(null);
 
-        when(authUserRepository.findByResetToken(token)).thenReturn(user);
+        when(authUserRepository.findByResetToken(token)).thenReturn(Optional.of(user));
 
         ConfirmResetPasswordRequest request = new ConfirmResetPasswordRequest(token, "newPassword");
 

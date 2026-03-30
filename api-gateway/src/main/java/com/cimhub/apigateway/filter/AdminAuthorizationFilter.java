@@ -17,7 +17,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -51,7 +50,7 @@ public class AdminAuthorizationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isAdminPath(String path) {
-        return Stream.of(securityProperties.getAdminPaths())
+        return securityProperties.getAdminPaths().stream()
                 .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 

@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +33,7 @@ public class AdminBookingController {
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> listBookings(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.listBookings(pageable)));
     }
@@ -76,7 +75,7 @@ public class AdminBookingController {
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> getPassengerBookings(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Passenger ID") @PathVariable String passengerId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(
                 adminBookingService.getPassengerBookings(passengerId, pageable)));
