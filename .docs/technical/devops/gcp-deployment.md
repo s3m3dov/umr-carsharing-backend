@@ -76,8 +76,6 @@ echo -n "mongodb+srv://user:pass@cluster.mongodb.net/carsharingDB" | base64
 # JWT Secret
 echo -n "your-jwt-secret-key" | base64
 
-# Google API Key (for trip-service)
-echo -n "your-google-maps-api-key" | base64
 ```
 
 Edit `gitops/base/secrets.yaml` and add the base64-encoded values, then apply:
