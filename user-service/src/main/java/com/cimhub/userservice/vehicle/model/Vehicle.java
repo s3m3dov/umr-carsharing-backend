@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
+
 /**
  * Vehicle model for storing vehicle information.
  * Uses MongoDB for persistence.
@@ -30,4 +32,7 @@ public class Vehicle {
     private String vehicleName;
     private String vehicleColor;
     private String seatingCapacity;
+
+    private Instant createdAt = Instant.now();
+    private Instant updatedAt = Instant.now();
 }

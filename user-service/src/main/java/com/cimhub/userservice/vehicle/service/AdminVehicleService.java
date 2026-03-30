@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -40,6 +42,9 @@ public class AdminVehicleService {
         vehicle.setVehicleType(request.vehicleType());
         vehicle.setVehicleColor(request.vehicleColor());
         vehicle.setSeatingCapacity(request.seatingCapacity());
+        Instant now = Instant.now();
+        vehicle.setCreatedAt(now);
+        vehicle.setUpdatedAt(now);
 
         Vehicle saved = vehicleRepository.save(vehicle);
         auditService.logCreate(EntityType.VEHICLE, saved.getId(), adminEmail, "Vehicle created by admin");
@@ -55,6 +60,7 @@ public class AdminVehicleService {
         if (request.vehicleType() != null) vehicle.setVehicleType(request.vehicleType());
         if (request.vehicleColor() != null) vehicle.setVehicleColor(request.vehicleColor());
         if (request.seatingCapacity() != null) vehicle.setSeatingCapacity(request.seatingCapacity());
+        vehicle.setUpdatedAt(Instant.now());
 
         vehicleRepository.save(vehicle);
         auditService.logUpdate(EntityType.VEHICLE, vehicleId, adminEmail, "Vehicle updated");
@@ -79,6 +85,8 @@ public class AdminVehicleService {
                 .vehicleType(v.getVehicleType())
                 .vehicleColor(v.getVehicleColor())
                 .seatingCapacity(v.getSeatingCapacity())
+                .createdAt(v.getCreatedAt())
+                .updatedAt(v.getUpdatedAt())
                 .build();
     }
 }

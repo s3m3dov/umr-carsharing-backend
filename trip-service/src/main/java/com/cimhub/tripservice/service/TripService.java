@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class TripService {
 
         log.info("Transitioning trip {} from {} to {}", tripId, trip.getTripStatus(), newStatus);
         trip.setTripStatus(newStatus);
+        trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);
     }
 
