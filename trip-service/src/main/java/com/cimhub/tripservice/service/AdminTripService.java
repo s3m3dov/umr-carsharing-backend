@@ -1,8 +1,8 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -22,7 +22,7 @@ import java.util.List;
 public class AdminTripService {
 
     private final TripsRepository tripsRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<AdminTripResponse> listTrips(Pageable pageable) {
         return tripsRepository.findAll(pageable).map(this::mapToResponse);
@@ -51,7 +51,7 @@ public class AdminTripService {
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found: " + tripId));
         trip.setTripStatus(TripStatus.CANCELLED);
         tripsRepository.save(trip);
-        audit("CANCEL", "TRIP", tripId, adminEmail, "Trip cancelled by admin");
+        auditService.logCancel(EntityType.TRIP, tripId, adminEmail, "Trip cancelled by admin");
         log.info("Trip {} cancelled by admin {}", tripId, adminEmail);
     }
 
@@ -74,15 +74,5 @@ public class AdminTripService {
                 .tripTimezone(trip.getTripTimezone())
                 .createdDate(trip.getCreatedDate())
                 .build();
-    }
-
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
     }
 }

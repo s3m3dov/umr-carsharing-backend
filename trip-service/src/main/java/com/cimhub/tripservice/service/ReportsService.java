@@ -1,5 +1,11 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.AuditAction;
+import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.model.AuditLog;
+import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.tripservice.dto.response.AuditLogResponse;
 import com.cimhub.tripservice.dto.response.BookingSummaryReport;
 import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
 import com.cimhub.tripservice.dto.response.PassengerActivityReport;
@@ -11,8 +17,17 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +37,8 @@ public class ReportsService {
 
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final MongoTemplate mongoTemplate;
 
     public DriverPerformanceReport getDriverPerformanceReport() {
         long completed = tripsRepository.countByTripStatus(TripStatus.COMPLETED);
@@ -86,6 +103,75 @@ public class ReportsService {
                 .activeBookings(active)
                 .completedBookings(completed)
                 .cancelledBookings(cancelled)
+                .build();
+    }
+
+    public Page<AuditLogResponse> getAuditLogs(
+            AuditAction action,
+            EntityType entityType,
+            String performedBy,
+            Instant from,
+            Instant to,
+            Pageable pageable
+    ) {
+        Query query = new Query();
+        List<Criteria> filters = new ArrayList<>();
+
+        if (action != null) {
+            filters.add(Criteria.where("action").is(action));
+        }
+        if (entityType != null) {
+            filters.add(Criteria.where("entityType").is(entityType));
+        }
+        if (performedBy != null && !performedBy.isBlank()) {
+            filters.add(Criteria.where("performedBy").is(performedBy));
+        }
+
+        if (from != null || to != null) {
+            Criteria timeCriteria = Criteria.where("timestamp");
+            if (from != null) {
+                timeCriteria = timeCriteria.gte(from);
+            }
+            if (to != null) {
+                timeCriteria = timeCriteria.lte(to);
+            }
+            filters.add(timeCriteria);
+        }
+
+        if (!filters.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(filters.toArray(new Criteria[0])));
+        }
+
+        long total = mongoTemplate.count(query, AuditLog.class);
+        if (pageable.getSort().isUnsorted()) {
+            query.with(Sort.by(Sort.Direction.DESC, "timestamp"));
+        }
+        query.with(pageable);
+
+        List<AuditLogResponse> logs = mongoTemplate.find(query, AuditLog.class)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new PageImpl<>(logs, pageable, total);
+    }
+
+    public AuditLogResponse getAuditLog(String id) {
+        AuditLog auditLog = auditLogRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Audit log not found: " + id));
+        return toResponse(auditLog);
+    }
+
+    private AuditLogResponse toResponse(AuditLog auditLog) {
+        return AuditLogResponse.builder()
+                .id(auditLog.getId())
+                .action(auditLog.getAction())
+                .entityType(auditLog.getEntityType())
+                .entityId(auditLog.getEntityId())
+                .performedBy(auditLog.getPerformedBy())
+                .details(auditLog.getDetails())
+                .serviceName(auditLog.getServiceName())
+                .timestamp(auditLog.getTimestamp())
                 .build();
     }
 }

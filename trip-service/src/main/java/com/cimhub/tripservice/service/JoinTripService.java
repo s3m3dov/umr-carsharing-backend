@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.models.Points;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
 import com.cimhub.tripservice.exception.InsufficientSeatsException;
@@ -27,6 +29,7 @@ public class JoinTripService {
 
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
+    private final AuditService auditService;
 
     @Transactional
     public String joinTrip(JoinTripRequest request) {
@@ -84,6 +87,7 @@ public class JoinTripService {
                 .build();
 
         bookingRepository.save(booking);
+        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(), "Booking request submitted by passenger");
 
         trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
         tripsRepository.save(trip);
@@ -109,6 +113,7 @@ public class JoinTripService {
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
+        auditService.logApprove(EntityType.BOOKING, bookingId, booking.getDriverId(), "Booking accepted by driver");
 
         log.info("Booking {} accepted", bookingId);
         return "Booking accepted successfully";
@@ -129,6 +134,7 @@ public class JoinTripService {
         booking.setStatus(BookingStatus.REJECTED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
+        auditService.logReject(EntityType.BOOKING, bookingId, booking.getDriverId(), "Booking rejected by driver");
 
         Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
         if (trip != null) {

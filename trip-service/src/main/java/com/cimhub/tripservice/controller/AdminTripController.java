@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/trips/admin")
+@RequestMapping("/api/admin/trips")
 @RequiredArgsConstructor
 @Tag(name = "Admin - Trip Management", description = "Admin endpoints for managing trips")
 @ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
