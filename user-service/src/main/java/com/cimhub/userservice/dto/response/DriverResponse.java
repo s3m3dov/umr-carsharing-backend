@@ -2,9 +2,10 @@ package com.cimhub.userservice.dto.response;
 
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Builder
 public record DriverResponse(
@@ -17,5 +18,8 @@ public record DriverResponse(
         int age,
         String licenseNumber,
         DriverStatus driverStatus,
-        Date createdDate) {
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant createdAt,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant updatedAt) {
 }
