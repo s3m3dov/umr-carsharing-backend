@@ -37,6 +37,9 @@ Welcome to the Car Sharing Backend documentation.
 - **[Tasks & Backlog](product/tasks.md)**: Development tasks for current phases
 - **[Presentations](uni/)**: University-level reports and presentations
 
+### University Reports
+- **[Backend Technical Report (Markdown)](uni/reports/Backend_Technical_Report_Carsharing.md)**: Backend-focused technical report (D1-D6, E1-E2)
+
 ---
 
 ## Domain Reference
