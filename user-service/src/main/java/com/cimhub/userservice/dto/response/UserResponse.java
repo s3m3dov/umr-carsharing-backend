@@ -1,7 +1,10 @@
 package com.cimhub.userservice.dto.response;
 
 import com.cimhub.common.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.time.Instant;
 
 @Schema(name = "UserResponse", description = "User profile information")
 public record UserResponse(
@@ -27,5 +30,13 @@ public record UserResponse(
         int age,
 
         @Schema(description = "Driver's license number", example = "LD-123456789")
-        String licenseNumber) {
+        String licenseNumber,
+
+        @Schema(description = "Record creation timestamp (UTC)", example = "2026-03-30T16:48:24.233Z")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant createdAt,
+
+        @Schema(description = "Record last update timestamp (UTC)", example = "2026-03-30T16:48:24.233Z")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant updatedAt) {
 }

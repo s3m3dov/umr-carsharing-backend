@@ -1,22 +1,28 @@
 package com.cimhub.userservice.model;
 
-import com.cimhub.common.enums.UserType;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
+
+import java.time.Instant;
 
 /**
- * Passenger model extending User.
- * Passengers do not have vehicle information.
- * Uses MongoDB for persistence.
+ * Passenger profile model that stores passenger-specific information.
+ * Linked to base user by userId.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Document(collection = "users")
-public class Passenger extends User {
+@Document(collection = "passengers")
+public class Passenger {
+    @Id
+    private String id;
 
-    public Passenger() {
-        super();
-        this.setUserType(UserType.PASSENGER);
-    }
+    @Indexed(unique = true)
+    private String userId;
+
+    private Instant createdAt = Instant.now();
+
+    private Instant updatedAt = Instant.now();
+
+    private String createdBy;
 }

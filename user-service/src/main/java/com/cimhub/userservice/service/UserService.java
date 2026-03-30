@@ -15,12 +15,14 @@ import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.model.User;
+import com.cimhub.userservice.repository.DriverRepository;
+import com.cimhub.userservice.repository.PassengerRepository;
 import com.cimhub.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -28,6 +30,8 @@ import java.util.Date;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final DriverRepository driverRepository;
+    private final PassengerRepository passengerRepository;
     private final AuditService auditService;
 
     public UserResponse createProfile(CreateProfileRequest request) {
@@ -38,37 +42,49 @@ public class UserService {
             throw new UserAlreadyExistsException("User profile already exists for " + request.userId());
         }
 
-        // Create appropriate user type based on userType enum
-        User newUser = createUserByType(request.userType());
+        User newUser = new User();
 
         newUser.setUserId(request.userId());
         newUser.setEmail(request.email());
+        newUser.setUserType(request.userType());
         newUser.setFirstName(request.firstName());
         newUser.setLastName(request.lastName());
         newUser.setPhoneNumber(request.phoneNumber());
         newUser.setAge(request.age());
 
-        // Set the driver's license number if this is a driver
-        if (newUser instanceof Driver driver) {
-            driver.setLicenseNumber(request.licenseNumber());
-        }
-
         newUser.setCreatedBy(request.email());
-        newUser.setCreatedDate(new Date());
+        Instant now = Instant.now();
+        newUser.setCreatedAt(now);
+        newUser.setUpdatedAt(now);
 
         userRepository.save(newUser);
+        createTypeProfile(newUser, request);
         auditService.logCreate(toEntityType(request.userType()), request.userId(), request.email(), "User profile created");
         log.info("User profile created successfully for userId: {} as {}", request.userId(), request.userType());
 
         return mapUserToResponse(newUser);
     }
 
-    private User createUserByType(UserType userType) {
-        return switch (userType) {
-            case DRIVER -> new Driver();
-            case PASSENGER -> new Passenger();
-            default -> new Passenger();
-        };
+    private void createTypeProfile(User user, CreateProfileRequest request) {
+        if (request.userType() == UserType.DRIVER) {
+            Driver driver = new Driver();
+            driver.setUserId(user.getUserId());
+            driver.setLicenseNumber(request.licenseNumber());
+            driver.setCreatedBy(user.getCreatedBy());
+            driver.setCreatedAt(user.getCreatedAt());
+            driver.setUpdatedAt(user.getUpdatedAt());
+            driverRepository.save(driver);
+            return;
+        }
+
+        if (request.userType() == UserType.PASSENGER) {
+            Passenger passenger = new Passenger();
+            passenger.setUserId(user.getUserId());
+            passenger.setCreatedBy(user.getCreatedBy());
+            passenger.setCreatedAt(user.getCreatedAt());
+            passenger.setUpdatedAt(user.getUpdatedAt());
+            passengerRepository.save(passenger);
+        }
     }
 
     private EntityType toEntityType(UserType userType) {
@@ -82,8 +98,10 @@ public class UserService {
     private UserResponse mapUserToResponse(User user) {
         String licenseNumber = null;
 
-        if (user instanceof Driver driver) {
-            licenseNumber = driver.getLicenseNumber();
+        if (user.getUserType() == UserType.DRIVER) {
+            licenseNumber = driverRepository.findByUserId(user.getUserId())
+                    .map(Driver::getLicenseNumber)
+                    .orElse(null);
         }
 
         return new UserResponse(
@@ -94,7 +112,9 @@ public class UserService {
                 user.getUserType(),
                 user.getPhoneNumber(),
                 user.getAge(),
-                licenseNumber);
+                licenseNumber,
+                user.getCreatedAt(),
+                user.getUpdatedAt());
     }
 
     public UserResponse getUserInfo(String userId) {

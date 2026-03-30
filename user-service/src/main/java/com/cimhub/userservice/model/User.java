@@ -9,7 +9,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * User model for the carsharing platform.
@@ -40,14 +40,17 @@ public class User {
     @Positive
     private int age;
 
-    private Date dob;
+    private Instant dob;
 
-    private Date createdDate = new Date();
+    private Instant createdAt = Instant.now();
+
+    private Instant updatedAt = Instant.now();
 
     private String createdBy;
 
     public User() {
-        this.createdDate = new Date();
+        this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
     }
 
     public void initializeCreatedBy() {

@@ -1,27 +1,33 @@
 package com.cimhub.userservice.model;
 
 import com.cimhub.common.enums.DriverStatus;
-import com.cimhub.common.enums.UserType;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
+
+import java.time.Instant;
 
 /**
- * Driver model extending User with vehicle-specific information.
- * Only drivers have vehicle details.
- * Uses MongoDB for persistence.
+ * Driver profile model that stores driver-specific information.
+ * Linked to base user by userId.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Document(collection = "users")
-public class Driver extends User {
-    private String licenseNumber;
-    private DriverStatus driverStatus;
+@Document(collection = "drivers")
+public class Driver {
+    @Id
+    private String id;
 
-    public Driver() {
-        super();
-        this.setUserType(UserType.DRIVER);
-        this.driverStatus = DriverStatus.PENDING;
-    }
+    @Indexed(unique = true)
+    private String userId;
+
+    private String licenseNumber;
+    private DriverStatus driverStatus = DriverStatus.PENDING;
+
+    private Instant createdAt = Instant.now();
+
+    private Instant updatedAt = Instant.now();
+
+    private String createdBy;
+
 }
