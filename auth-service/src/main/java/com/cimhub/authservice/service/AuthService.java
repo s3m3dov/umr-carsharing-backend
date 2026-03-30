@@ -13,9 +13,11 @@ import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.authservice.security.JwtService;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
+import com.cimhub.common.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +38,7 @@ public class AuthService {
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserServiceClient userServiceClient;
+    private final AuditService auditService;
 
     public SignUpResponse registerUser(RegisterUserRequest request) {
         String normalizedEmail = request.email().toLowerCase();
@@ -59,6 +62,7 @@ public class AuthService {
         newAuthUser.setUserType(request.userType());
         newAuthUser.setCreatedDate(new Date());
         authUserRepository.save(newAuthUser);
+        auditService.logCreate(EntityType.USER, normalizedEmail, normalizedEmail, "Auth account registered");
 
         try {
             CreateProfileRequest profileRequest = CreateProfileRequest.builder()
@@ -76,6 +80,8 @@ public class AuthService {
         } catch (Exception e) {
             log.error("Failed to create profile in user-service, rolling back auth user: {}", normalizedEmail, e);
             authUserRepository.deleteById(normalizedEmail);
+            auditService.logDelete(EntityType.USER, normalizedEmail, normalizedEmail,
+                    "Auth account rollback after profile creation failure");
             throw new RuntimeException("Registration failed: unable to create user profile", e);
         }
 
@@ -105,6 +111,8 @@ public class AuthService {
                             request.password()));
         } catch (Exception e) {
             log.warn("Login failed for user: {}", normalizedEmail);
+            auditService.logLogin(EntityType.USER, normalizedEmail, normalizedEmail,
+                    "User login failed");
             throw new UnauthorizedException("Invalid credentials");
         }
 
@@ -118,6 +126,8 @@ public class AuthService {
                 .build();
 
         String token = jwtService.generateToken(userDetails, authUserData.getUserType().name());
+        auditService.logLogin(EntityType.USER, authUserData.getUserId(), normalizedEmail,
+                "User login successful");
 
         return new LoginResponse(token, authUserData.getEmail(), authUserData.getUserType().name());
     }
@@ -147,6 +157,8 @@ public class AuthService {
                     user.setResetToken(resetToken);
                     user.setResetTokenExpiry(expiryDate);
                     authUserRepository.save(user);
+                    auditService.logUpdate(EntityType.USER, user.getUserId(), normalizedEmail,
+                            "Password reset token generated");
 
                     log.info("Reset token generated for user: {}", normalizedEmail);
                 },
@@ -170,6 +182,8 @@ public class AuthService {
             user.setResetToken(null);
             user.setResetTokenExpiry(null);
             authUserRepository.save(user);
+            auditService.logUpdate(EntityType.USER, user.getUserId(), user.getEmail(),
+                    "Expired reset token cleared");
             throw new UnauthorizedException("Invalid or expired reset token");
         }
 
@@ -177,6 +191,8 @@ public class AuthService {
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         authUserRepository.save(user);
+        auditService.logUpdate(EntityType.USER, user.getUserId(), user.getEmail(),
+                "Password reset completed");
 
         log.info("Password successfully reset for user: {}", user.getEmail());
 
@@ -193,6 +209,8 @@ public class AuthService {
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         authUserRepository.save(user);
+        auditService.logUpdate(EntityType.USER, user.getUserId(), userEmail,
+                "Password changed by user");
 
         log.info("Password changed for user: {}", userEmail);
 
