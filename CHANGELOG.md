@@ -11,17 +11,90 @@ and this project adheres to **Semantic Versioning**
 
 ## [Unreleased]
 
+**Author:** s3m3dov
+
 ### Added
 
-- (no entries)
+- Kubernetes Monitoring
+- Admin Endpoints
+
+---
+
+## [v0.8.0] – Service Enhancements & Documentation (2026-03-30)
+
+**Author:** s3m3dov
+
+### Added
+
+- **Trip-service features:**
+  - `RideController` for passenger ride management with per-seat pricing model
+  - Passenger ride history endpoint (completed and cancelled rides)
+  - Driver trip history endpoint (completed and cancelled trips)
+  - `carType` attribute on trips with search filtering (`carType`, `minPrice`, `maxPrice`, `minAvailableSeats`)
+  - `@Min` validation for `totalSeats` in `OfferRideRequest`
+- `spring-boot-starter-validation` dependency across services
+- OpenAPI documentation improvements:
+  - Annotations and example payloads across all DTOs and controllers
+  - JWT `Bearer Authentication` security scheme in all service OpenAPI configs
+  - Standardized error response documentation across services
+  - Springdoc OpenAPI dependency added to common module
+- Documentation:
+  - Comprehensive API reference and documentation approach
+  - Domain glossary with trip vs ride terminology table
+  - BlaBlaCar system architecture overview
+  - Phased microservice organization strategy (consolidation → scalability → maturity)
+  - GCP Initial Setup Guide with revised cluster and project configurations
+  - Phase 1 TODO document for core logic improvements
+  - GitOps script documentation with context-aware `local`/`gcp` command structure
 
 ### Changed
 
-- (no entries)
+- Renamed `ApiResponse` → `ApiResponseWrapper` for clarity
+- Renamed `licensePlate` → `licenseNumber` across all services and documentation
+- Renamed `OFFERED` trip status → `CREATED` across trip-service
+- Renamed `driverId` → `subjectId` in review-service assertions for model consistency
+- Migrated entity annotations to JPA (`jakarta.persistence-api 3.1.0`) for database-agnostic design, then reverted review-service and trip-service back to MongoDB
+- Reordered GCP workflow steps; enhanced deployment script with pod cleanup logic
+- Unified `gitops.sh` command structure across local and GCP scripts with automatic context switching
+- Updated JWT validation logic with `AuthServiceResponse` mapping
+- Consolidated documentation structure and reorganized technical docs
+- Consolidated vehicle-service and ride-service details into user-service and trip-service docs
+- Updated review-service error types in `ReviewErrorCode` for improved categorization
+- Updated review-service Dockerfile: base images, runtime port to 8084, CA certificates for MongoDB Atlas
+
+### Removed
+
+- `ride-service` and `vehicle-service` modules (consolidated into existing services)
+- Unused security item from OpenAPI config in auth-service
+- Outdated `ReviewServiceTest`
+- Detailed database-agnostic setup documentation (superseded)
 
 ### Fixed
 
-- (no entries)
+- Trailing whitespace in `ApiError` JavaDoc
+
+---
+
+## [v0.7.0] – Review Service & Identity Enhancements (2026-03-30)
+
+**Author:** s3m3dov
+
+### Added
+
+- **review-service** microservice with MongoDB support, mutual driver-passenger reviews, 7 endpoints, unit tests, gateway routing, and Kubernetes manifests
+- **Password management** in auth-service:
+  - Password reset functionality with new endpoints, DTOs, and service logic
+  - Change password endpoint with enhanced password validation
+  - `AuthExceptionHandler` for `BadCredentialsException` with improved error handling in `SecurityConfig`
+- **Role-based user model** in user-service:
+  - `Driver` / `Passenger` subclasses replacing flat `User` model
+  - `firstName` / `lastName` split from `fullName`
+  - Driver-specific fields (`vehicleModel`, `licenseNumber`) isolated to subclass
+- **Auth-service identity enhancements:**
+  - `userType` persisted on auth `User` entity and embedded as JWT role claim
+  - Signup now calls user-service to create profile in a single request (via `RestClient`)
+  - Conflict prevention for existing user profiles during signup
+- **API Gateway** re-enabled JWT enforcement with `X-User-Role` header propagation to downstream services
 
 ---
 
