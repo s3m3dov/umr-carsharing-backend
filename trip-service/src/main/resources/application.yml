@@ -53,3 +53,7 @@ google:
     api-key: ${GOOGLE_API_KEY:your-google-maps-api-key}
 
 minDistanceInMetersBetween2PickupPoints: 500
+
+services:
+  notification:
+    base-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8080}

@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: notification-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:mongodb}
   main:
     cloud-platform: kubernetes
   cloud:
@@ -12,6 +14,9 @@ spring:
     loadbalancer:
       retry:
         enabled: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/carsharing}
 
 management:
   endpoints:
@@ -44,9 +49,3 @@ springdoc:
     path: /swagger-ui.html
   server:
     url: /notification-service
-
-firebase:
-  config:
-    path: ${FIREBASE_CONFIG_PATH:/etc/secrets/firebase.json}
-  database:
-    url: ${FIREBASE_DATABASE_URL:https://your-project.firebaseio.com}
