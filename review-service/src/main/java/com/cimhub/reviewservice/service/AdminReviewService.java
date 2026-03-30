@@ -1,8 +1,8 @@
 package com.cimhub.reviewservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class AdminReviewService {
 
     private final MongoReviewDataRepository reviewDataRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<ReviewResponse> listReviews(ReviewStatus status, Pageable pageable) {
         Page<Review> reviews;
@@ -42,7 +42,7 @@ public class AdminReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.FLAGGED);
         reviewDataRepository.save(review);
-        audit("FLAG", "REVIEW", reviewId, adminEmail, "Review flagged by admin");
+        auditService.logFlag(EntityType.REVIEW, reviewId, adminEmail, "Review flagged by admin");
         log.info("Review {} flagged by admin {}", reviewId, adminEmail);
         return mapToResponse(review);
     }
@@ -52,7 +52,7 @@ public class AdminReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.REMOVED);
         reviewDataRepository.save(review);
-        audit("REMOVE", "REVIEW", reviewId, adminEmail, "Review removed by admin");
+        auditService.logDelete(EntityType.REVIEW, reviewId, adminEmail, "Review removed by admin");
         log.info("Review {} removed by admin {}", reviewId, adminEmail);
     }
 
@@ -61,7 +61,7 @@ public class AdminReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.PUBLISHED);
         reviewDataRepository.save(review);
-        audit("PUBLISH", "REVIEW", reviewId, adminEmail, "Review published by admin");
+        auditService.logPublish(EntityType.REVIEW, reviewId, adminEmail, "Review published by admin");
         log.info("Review {} published by admin {}", reviewId, adminEmail);
         return mapToResponse(review);
     }
@@ -82,13 +82,4 @@ public class AdminReviewService {
                 .build();
     }
 
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
-    }
 }
