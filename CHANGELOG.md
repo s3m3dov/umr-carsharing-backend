@@ -11,18 +11,45 @@ and this project adheres to **Semantic Versioning**
 
 ## [Unreleased]
 
-**Author:** s3m3dov
+---
+
+## [v0.9.0] – Monitoring, Admin Panel & Audit Logging (2026-03-30)
+
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
-- Kubernetes Monitoring
-- Admin Endpoints
+- **Kubernetes monitoring stack** with Prometheus, Grafana, Loki, and Fluent Bit
+- **Observability instrumentation** across services:
+  - Prometheus metrics support
+  - OTLP tracing support
+  - JSON-structured Logback logging
+- **Admin panel features** across microservices:
+  - User and vehicle management endpoints in user-service
+  - Trip, booking, and reporting endpoints in trip-service
+  - Review management endpoints in review-service
+  - Shared admin repositories/models and common admin components
+  - Centralized admin authorization at API gateway level
+  - Configurable pagination settings for admin APIs
+- **Audit logging platform**:
+  - Typed audit infrastructure in common module
+  - Audit logging integrated into auth-service, user-service, trip-service, and review-service
+  - Audit log report endpoint in trip-service
+- Logout functionality in auth-service with token blacklisting
+- Documentation:
+  - Admin panel architecture documentation
+  - Comprehensive audit logging documentation
+  - Kubernetes monitoring guide and docs index updates
+
+### Fixed
+
+- Corrected admin path patterns in API gateway authorization routing
 
 ---
 
 ## [v0.8.0] – Service Enhancements & Documentation (2026-03-30)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -77,7 +104,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.7.0] – Review Service & Identity Enhancements (2026-03-30)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -100,7 +127,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.6.0] – Trip Lifecycle & Identity Fields (2026-01-11)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -130,7 +157,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.5.1] – GCP Deployment & Request Tracing (2026-01-05 to 2026-01-07)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -171,7 +198,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.5.0] – Kubernetes Migration (2026-01-03 to 2026-01-04)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -202,7 +229,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.3] – Documentation & Roadmap (2026-01-02)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -220,7 +247,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.2] – Local Development Workflow (2026-01-01)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -238,7 +265,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.1] – API Standardization (2025-12-31)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -261,7 +288,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.0] – OpenAPI Integration & Configuration (2025-12-30)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
