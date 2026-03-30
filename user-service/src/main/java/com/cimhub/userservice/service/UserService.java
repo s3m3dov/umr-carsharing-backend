@@ -1,9 +1,11 @@
 package com.cimhub.userservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.request.LoginRequest;
 import com.cimhub.userservice.dto.request.RegisterUserRequest;
@@ -26,6 +28,7 @@ import java.util.Date;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     public UserResponse createProfile(CreateProfileRequest request) {
         log.info("Creating user profile for userId: {}", request.userId());
@@ -54,6 +57,7 @@ public class UserService {
         newUser.setCreatedDate(new Date());
 
         userRepository.save(newUser);
+        auditService.logCreate(toEntityType(request.userType()), request.userId(), request.email(), "User profile created");
         log.info("User profile created successfully for userId: {} as {}", request.userId(), request.userType());
 
         return mapUserToResponse(newUser);
@@ -64,6 +68,14 @@ public class UserService {
             case DRIVER -> new Driver();
             case PASSENGER -> new Passenger();
             default -> new Passenger();
+        };
+    }
+
+    private EntityType toEntityType(UserType userType) {
+        return switch (userType) {
+            case DRIVER -> EntityType.DRIVER;
+            case PASSENGER -> EntityType.PASSENGER;
+            default -> EntityType.USER;
         };
     }
 

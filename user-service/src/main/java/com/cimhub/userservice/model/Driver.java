@@ -1,5 +1,6 @@
 package com.cimhub.userservice.model;
 
+import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,9 +17,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "users")
 public class Driver extends User {
     private String licenseNumber;
+    private DriverStatus driverStatus;
 
     public Driver() {
         super();
         this.setUserType(UserType.DRIVER);
+        this.driverStatus = DriverStatus.PENDING;
     }
 }
