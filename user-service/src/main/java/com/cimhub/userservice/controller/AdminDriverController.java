@@ -27,7 +27,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/drivers")
+@RequestMapping("/api/admin/drivers")
 @RequiredArgsConstructor
 @Tag(name = "Admin - Driver Management", description = "Admin endpoints for managing drivers")
 @ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
