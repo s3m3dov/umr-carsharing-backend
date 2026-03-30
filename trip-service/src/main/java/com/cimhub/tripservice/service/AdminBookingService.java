@@ -1,8 +1,8 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.model.Booking;
@@ -22,7 +22,7 @@ import java.time.Instant;
 public class AdminBookingService {
 
     private final BookingRepository bookingRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<BookingResponse> listBookings(Pageable pageable) {
         return bookingRepository.findAll(pageable).map(this::mapToResponse);
@@ -43,7 +43,7 @@ public class AdminBookingService {
         booking.setUpdatedAt(Instant.now());
 
         bookingRepository.save(booking);
-        audit("UPDATE", "BOOKING", bookingId, adminEmail, "Booking updated by admin");
+        auditService.logUpdate(EntityType.BOOKING, bookingId, adminEmail, "Booking updated by admin");
         log.info("Booking {} updated by admin {}", bookingId, adminEmail);
         return mapToResponse(booking);
     }
@@ -54,7 +54,7 @@ public class AdminBookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
-        audit("CANCEL", "BOOKING", bookingId, adminEmail, "Booking cancelled by admin");
+        auditService.logCancel(EntityType.BOOKING, bookingId, adminEmail, "Booking cancelled by admin");
         log.info("Booking {} cancelled by admin {}", bookingId, adminEmail);
     }
 
@@ -80,15 +80,5 @@ public class AdminBookingService {
                 .createdAt(b.getCreatedAt())
                 .updatedAt(b.getUpdatedAt())
                 .build();
-    }
-
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
     }
 }
