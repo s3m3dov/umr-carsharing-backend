@@ -16,7 +16,7 @@ public class SecurityProperties {
     private List<String> publicPaths = List.of();
     private List<String> docsPaths = List.of();
     private List<String> adminPaths = List.of(
-            "/**/admin/**",
-            "/**/api/**/admin/**"
+            "/api/admin/**",
+            "/**/api/admin/**"
     );
 }
