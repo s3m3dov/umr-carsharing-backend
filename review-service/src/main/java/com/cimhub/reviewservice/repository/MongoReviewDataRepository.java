@@ -2,6 +2,9 @@ package com.cimhub.reviewservice.repository;
 
 import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.model.Review;
+import com.cimhub.reviewservice.model.ReviewStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,4 +27,9 @@ public interface MongoReviewDataRepository extends MongoRepository<Review, Strin
     Optional<Review> findByReviewerIdAndTripIdAndBookingId(String reviewerId, String tripId, String bookingId);
 
     long countByRevieweeId(String revieweeId);
+
+    // Admin queries
+    Page<Review> findByStatus(ReviewStatus status, Pageable pageable);
+
+    long countByStatus(ReviewStatus status);
 }
