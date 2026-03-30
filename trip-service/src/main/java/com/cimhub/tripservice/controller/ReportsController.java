@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,7 +76,7 @@ public class ReportsController {
             @Parameter(description = "Filter by actor") @RequestParam(required = false) String performedBy,
             @Parameter(description = "Filter start timestamp (ISO-8601)") @RequestParam(required = false) Instant from,
             @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(
                 reportsService.getAuditLogs(action, entityType, performedBy, from, to, pageable)

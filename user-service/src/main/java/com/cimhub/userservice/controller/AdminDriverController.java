@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +42,7 @@ public class AdminDriverController {
     public ResponseEntity<ApiResponseWrapper<Page<DriverResponse>>> listDrivers(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @RequestParam(required = false) DriverStatus status,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         Page<DriverResponse> drivers = adminDriverService.listDrivers(status, pageable);
         return ResponseEntity.ok(ApiResponseWrapper.success(drivers));

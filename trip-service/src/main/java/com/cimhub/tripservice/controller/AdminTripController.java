@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +32,7 @@ public class AdminTripController {
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> listTrips(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.listTrips(pageable)));
     }
@@ -51,7 +50,7 @@ public class AdminTripController {
     @GetMapping("/upcoming")
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getUpcomingTrips(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getUpcomingTrips(pageable)));
     }
@@ -60,7 +59,7 @@ public class AdminTripController {
     @GetMapping("/history")
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getTripHistory(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @PageableDefault(size = 20) Pageable pageable) {
+            Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getTripHistory(pageable)));
     }
