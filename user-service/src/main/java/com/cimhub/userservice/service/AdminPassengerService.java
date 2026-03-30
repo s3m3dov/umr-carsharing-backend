@@ -1,10 +1,10 @@
 package com.cimhub.userservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.CreatePassengerRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -25,7 +25,7 @@ import java.util.Date;
 public class AdminPassengerService {
 
     private final UserRepository userRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<PassengerResponse> listPassengers(Pageable pageable) {
         Page<User> passengers = userRepository.findByUserType(UserType.PASSENGER, pageable);
@@ -53,7 +53,7 @@ public class AdminPassengerService {
         passenger.setCreatedBy(adminEmail);
 
         userRepository.save(passenger);
-        audit("CREATE", "PASSENGER", passenger.getUserId(), adminEmail, "Passenger created by admin");
+        auditService.logCreate(EntityType.PASSENGER, passenger.getUserId(), adminEmail, "Passenger created by admin");
         log.info("Passenger {} created by admin {}", passenger.getUserId(), adminEmail);
         return mapToResponse(passenger);
     }
@@ -65,7 +65,7 @@ public class AdminPassengerService {
         if (request.phoneNumber() != null) user.setPhoneNumber(request.phoneNumber());
         if (request.age() != null) user.setAge(request.age());
         userRepository.save(user);
-        audit("UPDATE", "PASSENGER", passengerId, adminEmail, "Passenger info updated");
+        auditService.logUpdate(EntityType.PASSENGER, passengerId, adminEmail, "Passenger info updated");
         log.info("Passenger {} updated by {}", passengerId, adminEmail);
         return mapToResponse(user);
     }
@@ -73,7 +73,7 @@ public class AdminPassengerService {
     public void deletePassenger(String passengerId, String adminEmail) {
         User user = findPassengerOrThrow(passengerId);
         userRepository.delete(user);
-        audit("DELETE", "PASSENGER", passengerId, adminEmail, "Passenger deleted");
+        auditService.logDelete(EntityType.PASSENGER, passengerId, adminEmail, "Passenger deleted");
         log.info("Passenger {} deleted by {}", passengerId, adminEmail);
     }
 
@@ -96,15 +96,5 @@ public class AdminPassengerService {
                 .age(user.getAge())
                 .createdDate(user.getCreatedDate())
                 .build();
-    }
-
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
     }
 }

@@ -1,8 +1,8 @@
 package com.cimhub.userservice.vehicle.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
 import com.cimhub.userservice.dto.response.AdminVehicleResponse;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 public class AdminVehicleService {
 
     private final VehicleRepository vehicleRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<AdminVehicleResponse> listVehicles(Pageable pageable) {
         return vehicleRepository.findAll(pageable).map(this::mapToResponse);
@@ -42,7 +42,7 @@ public class AdminVehicleService {
         vehicle.setSeatingCapacity(request.seatingCapacity());
 
         Vehicle saved = vehicleRepository.save(vehicle);
-        audit("CREATE", "VEHICLE", saved.getId(), adminEmail, "Vehicle created by admin");
+        auditService.logCreate(EntityType.VEHICLE, saved.getId(), adminEmail, "Vehicle created by admin");
         log.info("Vehicle {} created by admin {}", saved.getId(), adminEmail);
         return mapToResponse(saved);
     }
@@ -57,7 +57,7 @@ public class AdminVehicleService {
         if (request.seatingCapacity() != null) vehicle.setSeatingCapacity(request.seatingCapacity());
 
         vehicleRepository.save(vehicle);
-        audit("UPDATE", "VEHICLE", vehicleId, adminEmail, "Vehicle updated");
+        auditService.logUpdate(EntityType.VEHICLE, vehicleId, adminEmail, "Vehicle updated");
         log.info("Vehicle {} updated by {}", vehicleId, adminEmail);
         return mapToResponse(vehicle);
     }
@@ -66,7 +66,7 @@ public class AdminVehicleService {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + vehicleId));
         vehicleRepository.delete(vehicle);
-        audit("DELETE", "VEHICLE", vehicleId, adminEmail, "Vehicle deleted");
+        auditService.logDelete(EntityType.VEHICLE, vehicleId, adminEmail, "Vehicle deleted");
         log.info("Vehicle {} deleted by {}", vehicleId, adminEmail);
     }
 
@@ -80,15 +80,5 @@ public class AdminVehicleService {
                 .vehicleColor(v.getVehicleColor())
                 .seatingCapacity(v.getSeatingCapacity())
                 .build();
-    }
-
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
     }
 }

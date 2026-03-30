@@ -1,10 +1,10 @@
 package com.cimhub.userservice.service;
 
 import com.cimhub.common.enums.DriverStatus;
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.BulkDriverActionRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverDocumentResponse;
@@ -29,7 +29,7 @@ public class AdminDriverService {
 
     private final UserRepository userRepository;
     private final DriverDocumentRepository driverDocumentRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public Page<DriverResponse> listDrivers(DriverStatus status, Pageable pageable) {
         Page<User> drivers;
@@ -50,7 +50,7 @@ public class AdminDriverService {
         Driver driver = findDriverEntityOrThrow(driverId);
         driver.setDriverStatus(DriverStatus.ACTIVE);
         userRepository.save(driver);
-        audit("APPROVE", "DRIVER", driverId, adminEmail, "Driver approved");
+        auditService.logApprove(EntityType.DRIVER, driverId, adminEmail, "Driver approved");
         log.info("Driver {} approved by {}", driverId, adminEmail);
         return mapToDriverResponse(driver);
     }
@@ -59,7 +59,7 @@ public class AdminDriverService {
         Driver driver = findDriverEntityOrThrow(driverId);
         driver.setDriverStatus(DriverStatus.REJECTED);
         userRepository.save(driver);
-        audit("REJECT", "DRIVER", driverId, adminEmail, "Driver rejected");
+        auditService.logReject(EntityType.DRIVER, driverId, adminEmail, "Driver rejected");
         log.info("Driver {} rejected by {}", driverId, adminEmail);
         return mapToDriverResponse(driver);
     }
@@ -98,7 +98,7 @@ public class AdminDriverService {
         if (request.age() != null) driver.setAge(request.age());
         if (request.licenseNumber() != null) driver.setLicenseNumber(request.licenseNumber());
         userRepository.save(driver);
-        audit("UPDATE", "DRIVER", driverId, adminEmail, "Driver info updated");
+        auditService.logUpdate(EntityType.DRIVER, driverId, adminEmail, "Driver info updated");
         log.info("Driver {} updated by {}", driverId, adminEmail);
         return mapToDriverResponse(driver);
     }
@@ -106,7 +106,7 @@ public class AdminDriverService {
     public void deleteDriver(String driverId, String adminEmail) {
         User user = findDriverOrThrow(driverId);
         userRepository.delete(user);
-        audit("DELETE", "DRIVER", driverId, adminEmail, "Driver deleted");
+        auditService.logDelete(EntityType.DRIVER, driverId, adminEmail, "Driver deleted");
         log.info("Driver {} deleted by {}", driverId, adminEmail);
     }
 
@@ -164,15 +164,5 @@ public class AdminDriverService {
                 .fileSize(doc.getFileSize())
                 .uploadedAt(doc.getUploadedAt())
                 .build();
-    }
-
-    private void audit(String action, String entityType, String entityId, String performedBy, String details) {
-        auditLogRepository.save(AuditLog.builder()
-                .action(action)
-                .entityType(entityType)
-                .entityId(entityId)
-                .performedBy(performedBy)
-                .details(details)
-                .build());
     }
 }
