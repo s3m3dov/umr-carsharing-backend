@@ -35,7 +35,7 @@ Welcome to the Car Sharing Backend documentation.
 - **[Product Roadmap](product/roadmap.md)**: Current state and planned enhancements
 - **[User Flows](product/user-flows.md)**: Detailed journeys for passengers and drivers
 - **[Tasks & Backlog](product/tasks.md)**: Development tasks for current phases
-- **[Presentations](product/presentations/)**: Project slides and implementation details
+- **[Presentations](uni/)**: University-level reports and presentations
 
 ---
 

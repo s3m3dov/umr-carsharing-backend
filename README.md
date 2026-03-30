@@ -38,13 +38,6 @@ For detailed information, please refer to the following documents:
 6. **[User Flows](.docs/product/user-flows.md)**  
    Detailed user journeys for passengers and drivers.
 
-## 📊 Presentations
-
-Project presentations demonstrating the car sharing platform:
-
-- [Car Sharing Presentation](.docs/product/presentations/SS_2025/CarSharing.pptx)
-- [Backend Implementation Details](.docs/product/presentations/SS_2025/CarSharing_Backend.pptx)
-
 ## Contributors
 
 - Hikmat Samadov (<Samadov@students.uni-marburg.de>)
