@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.model.Booking;
@@ -26,6 +28,7 @@ public class CancellationService {
         private final BookingRepository bookingRepository;
         private final TripsRepository tripsRepository;
         private final TripService tripService;
+        private final AuditService auditService;
 
         @Transactional
         public String cancelRide(CancelTripRequest request) {
@@ -50,6 +53,7 @@ public class CancellationService {
                 booking.setStatus(BookingStatus.CANCELLED);
                 booking.setUpdatedAt(Instant.now());
                 bookingRepository.save(booking);
+                auditService.logCancel(EntityType.BOOKING, bookingId, passengerId, "Booking cancelled by passenger");
 
                 Trip trip = tripsRepository.findById(booking.getTripId())
                                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -87,10 +91,13 @@ public class CancellationService {
                                 booking.setStatus(BookingStatus.CANCELLED);
                                 booking.setUpdatedAt(Instant.now());
                                 bookingRepository.save(booking);
+                                auditService.logCancel(EntityType.BOOKING, booking.getBookingId(), driverId,
+                                                "Booking cancelled due to trip cancellation by driver");
                         }
                 }
 
                 tripService.updateStatus(tripId, TripStatus.CANCELLED);
+                auditService.logCancel(EntityType.TRIP, tripId, driverId, "Trip cancelled by driver");
 
                 log.info("Trip {} cancelled successfully by driver {}. {} bookings cancelled",
                                 tripId, driverId, bookings.size());

@@ -1,5 +1,7 @@
 package com.cimhub.userservice.vehicle.service;
 
+import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.model.Vehicle;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final AuditService auditService;
 
     public List<VehicleResponse> findUserVehicles(String userId) {
         log.info("Fetching vehicles for userId: {}", userId);
@@ -44,7 +47,8 @@ public class VehicleService {
         newVehicle.setVehicleColor(request.vehicleColor());
         newVehicle.setSeatingCapacity(request.seatingCapacity());
 
-        vehicleRepository.save(newVehicle);
+        Vehicle savedVehicle = vehicleRepository.save(newVehicle);
+        auditService.logCreate(EntityType.VEHICLE, savedVehicle.getId(), request.userId(), "Vehicle registered by user");
         log.info("Vehicle registered successfully: {}", request.vehicleNumber());
         return true;
     }
