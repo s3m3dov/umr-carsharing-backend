@@ -96,8 +96,8 @@ gateway:
       - /actuator/health/**
       - /actuator/info/**
     admin-paths:
-      - /**/admin/**
-      - /**/api/**/admin/**
+      - /api/admin/**
+      - /**/api/admin/**
   services:
     auth:
       base-url: http://auth-service:8080
