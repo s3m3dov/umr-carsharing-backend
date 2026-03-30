@@ -28,16 +28,6 @@ spec:
                 secretKeyRef:
                   name: carsharing-secrets
                   key: MONGODB_URI
-            - name: FIREBASE_CONFIG_PATH
-              valueFrom:
-                secretKeyRef:
-                  name: carsharing-secrets
-                  key: FIREBASE_CONFIG_PATH
-            - name: FIREBASE_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: carsharing-secrets
-                  key: FIREBASE_DATABASE_URL
           resources:
             requests:
               memory: "256Mi"

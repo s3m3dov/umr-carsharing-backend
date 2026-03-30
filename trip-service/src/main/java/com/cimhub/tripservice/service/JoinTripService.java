@@ -30,6 +30,7 @@ public class JoinTripService {
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
     private final AuditService auditService;
+    private final DriverNotificationService driverNotificationService;
 
     @Transactional
     public String joinTrip(JoinTripRequest request) {
@@ -89,6 +90,8 @@ public class JoinTripService {
 
         bookingRepository.save(booking);
         auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(), "Booking request submitted by passenger");
+
+        driverNotificationService.notifyBookingRequested(trip, booking);
 
         trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
         trip.setUpdatedAt(Instant.now());

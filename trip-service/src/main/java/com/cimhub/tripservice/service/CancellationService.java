@@ -29,6 +29,7 @@ public class CancellationService {
         private final TripsRepository tripsRepository;
         private final TripService tripService;
         private final AuditService auditService;
+        private final DriverNotificationService driverNotificationService;
 
         @Transactional
         public String cancelRide(CancelTripRequest request) {
@@ -62,6 +63,8 @@ public class CancellationService {
                 trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
                 trip.setUpdatedAt(Instant.now());
                 tripsRepository.save(trip);
+
+                driverNotificationService.notifyBookingCancelledByPassenger(trip, booking);
 
                 log.info("Booking {} cancelled successfully by passenger {}", bookingId, passengerId);
                 return "Booking cancelled successfully";
