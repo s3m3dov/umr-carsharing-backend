@@ -356,6 +356,108 @@ Source: `ApiExamples.ACTIVE_TRIPS_RESPONSE` → imported in `TripController` ann
 
 ---
 
+## Review Service Payloads
+
+### Submit Driver Review
+**REQUEST** - What to send:
+```json
+{
+  "userId": "user_456",
+  "userRole": "PASSENGER",
+  "tripId": "trip_001",
+  "bookingId": "booking_001",
+  "rating": 5,
+  "comment": "Great driver, very comfortable ride!"
+}
+```
+Source: `ReviewApiExamples.SUBMIT_REVIEW_REQUEST` → imported in `SubmitReviewRequest.java` DTO
+
+**RESPONSE** - What you get back:
+```json
+{
+  "success": true,
+  "data": {
+    "reviewId": "review_001",
+    "tripId": "trip_001",
+    "bookingId": "booking_001",
+    "reviewerId": "user_456",
+    "reviewerType": "PASSENGER",
+    "revieweeId": "user_123",
+    "revieweeType": "DRIVER",
+    "rating": 5,
+    "comment": "Great driver, very comfortable ride!",
+    "status": "PUBLISHED",
+    "createdAt": "2026-03-25T10:00:00.000Z",
+    "updatedAt": "2026-03-25T10:00:00.000Z"
+  },
+  "message": "Review submitted successfully"
+}
+```
+Source: `ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE` → imported in `ReviewController` annotation
+
+---
+
+### Get Driver Reviews
+**REQUEST** - Path parameter:
+```
+GET /api/reviews/driver/user_123
+```
+
+**RESPONSE** - What you get back:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "reviewId": "review_001",
+      "tripId": "trip_001",
+      "bookingId": "booking_001",
+      "reviewerId": "user_456",
+      "reviewerType": "PASSENGER",
+      "revieweeId": "user_123",
+      "revieweeType": "DRIVER",
+      "rating": 5,
+      "comment": "Great driver!",
+      "status": "PUBLISHED",
+      "createdAt": "2026-03-25T10:00:00.000Z",
+      "updatedAt": "2026-03-25T10:00:00.000Z"
+    }
+  ],
+  "message": "Reviews retrieved successfully"
+}
+```
+Source: `ReviewApiExamples.GET_DRIVER_REVIEWS_RESPONSE` → imported in `ReviewController` annotation
+
+---
+
+### Admin Trip Detail
+**REQUEST** - Path parameter:
+```
+GET /api/admin/trips/{tripId}
+```
+
+**RESPONSE schema note:** `AdminTripResponse` includes audit timestamps in UTC datetime format:
+- `createdAt` (e.g., `2026-03-30T12:00:00.000Z`)
+- `updatedAt` (e.g., `2026-03-30T12:10:30.123Z`)
+
+Source: `trip-service/.../dto/response/AdminTripResponse.java`
+
+---
+
+### Admin Vehicle Detail
+**REQUEST** - Path parameter:
+```
+GET /api/admin/vehicles/{vehicleId}
+```
+
+**RESPONSE schema note:** `AdminVehicleResponse` includes audit timestamps in UTC datetime format:
+- `createdAt` (e.g., `2026-03-30T12:00:00.000Z`)
+- `updatedAt` (e.g., `2026-03-30T12:05:45.456Z`)
+
+Source: `user-service/.../dto/response/AdminVehicleResponse.java`
+
+---
+
 ## Where Everything Is
 
 ### REQUEST Payloads
@@ -367,6 +469,7 @@ Located in each service's `ApiExamples.java`:
 - ✅ `ApiExamples.REGISTER_VEHICLE_REQUEST`
 - ✅ `ApiExamples.OFFER_TRIP_REQUEST`
 - ✅ `ApiExamples.CANCEL_TRIP_REQUEST`
+- ✅ `ReviewApiExamples.SUBMIT_REVIEW_REQUEST`
 
 **Imported in:** Corresponding request DTOs with `@Schema(example = ApiExamples.YOUR_REQUEST)`
 
@@ -383,6 +486,15 @@ Located in each service's `ApiExamples.java`:
 - ✅ `ApiExamples.SEARCH_TRIPS_RESPONSE`
 - ✅ `ApiExamples.ACTIVE_TRIPS_RESPONSE`
 - ✅ `ApiExamples.CANCEL_TRIP_RESPONSE`
+- ✅ `ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE`
+- ✅ `ReviewApiExamples.SUBMIT_PASSENGER_REVIEW_RESPONSE`
+- ✅ `ReviewApiExamples.GET_DRIVER_REVIEWS_RESPONSE`
+- ✅ `ReviewApiExamples.GET_PASSENGER_REVIEWS_RESPONSE`
+
+Also documented directly via response DTO schemas:
+- ✅ `AdminTripResponse` (`createdAt`, `updatedAt`)
+- ✅ `AdminVehicleResponse` (`createdAt`, `updatedAt`)
+- ✅ `ReviewResponse` (`createdAt`, `updatedAt`)
 
 **Imported in:** Controller endpoints with `@ExampleObject(value = ApiExamples.YOUR_RESPONSE)`
 

@@ -8,15 +8,17 @@ Complete OpenAPI/Swagger documentation with examples is now available across all
 - **Auth Service** (login, signup, token validation)
 - **User Service** (profiles, vehicle management)
 - **Trip Service** (creation, search, booking, cancellation)
+- **Review Service** (submit/list reviews, average rating)
 
 ### ✅ Payload Examples Imported from Files
 
-All response payload examples are **imported from centralized `ApiExamples.java` files** instead of being embedded in code:
+All response payload examples are **imported from centralized `*ApiExamples.java` files** instead of being embedded in code:
 
 ```
-auth-service/src/main/java/.../config/ApiExamples.java
-user-service/src/main/java/.../config/ApiExamples.java
-trip-service/src/main/java/.../config/ApiExamples.java
+auth-service/src/main/java/.../controller/AuthApiExamples.java
+user-service/src/main/java/.../controller/UserApiExamples.java
+trip-service/src/main/java/.../controller/TripApiExamples.java
+review-service/src/main/java/.../controller/ReviewApiExamples.java
 ```
 
 **Benefits:**
@@ -126,7 +128,7 @@ public record LoginRequest(
 
 Each service has centralized example constants:
 
-**auth-service/config/ApiExamples.java:**
+**auth-service/controller/AuthApiExamples.java:**
 - LOGIN_RESPONSE
 - SIGNUP_RESPONSE
 - VALIDATE_TOKEN_RESPONSE
@@ -135,19 +137,34 @@ Each service has centralized example constants:
 - ERROR_VALIDATION
 - ERROR_INVALID_TOKEN
 
-**user-service/config/ApiExamples.java:**
+**user-service/controller/UserApiExamples.java:**
 - GET_USER_RESPONSE
 - CREATE_PROFILE_RESPONSE
 - ERROR_USER_NOT_FOUND
 - ERROR_INVALID_DATA
 
-**trip-service/config/ApiExamples.java:**
+**trip-service/controller/TripApiExamples.java:**
 - OFFER_TRIP_RESPONSE
 - SEARCH_TRIPS_RESPONSE
 - ACTIVE_TRIPS_RESPONSE
 - CANCEL_TRIP_RESPONSE
 - ERROR_TRIP_NOT_FOUND
 - ERROR_TRIP_IN_PROGRESS
+
+**review-service/controller/ReviewApiExamples.java:**
+- SUBMIT_DRIVER_REVIEW_RESPONSE
+- SUBMIT_PASSENGER_REVIEW_RESPONSE
+- GET_DRIVER_REVIEWS_RESPONSE
+- GET_PASSENGER_REVIEWS_RESPONSE
+- GET_AVERAGE_RATING_RESPONSE
+
+### Response Schema Updates (createdAt/updatedAt)
+
+The following response schemas were updated to include UTC datetime audit fields:
+
+- `ReviewResponse` now includes both `createdAt` and `updatedAt`
+- `AdminTripResponse` now includes both `createdAt` and `updatedAt`
+- `AdminVehicleResponse` now includes both `createdAt` and `updatedAt`
 
 ## How to Use
 

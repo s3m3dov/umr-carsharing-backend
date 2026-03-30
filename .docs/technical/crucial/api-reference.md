@@ -706,7 +706,8 @@ Passenger submits a review for a driver after completing a trip.
     "rating": 5,
     "comment": "Great driver, very comfortable ride!",
     "status": "PUBLISHED",
-    "createdAt": "2026-03-25T10:00:00Z"
+    "createdAt": "2026-03-25T10:00:00.000Z",
+    "updatedAt": "2026-03-25T10:00:00.000Z"
   },
   "message": "Review submitted successfully"
 }
@@ -755,7 +756,8 @@ Driver submits a review for a passenger after completing a trip.
     "rating": 4,
     "comment": "Good passenger, on time and polite",
     "status": "PUBLISHED",
-    "createdAt": "2026-03-25T10:30:00Z"
+    "createdAt": "2026-03-25T10:30:00.000Z",
+    "updatedAt": "2026-03-25T10:30:00.000Z"
   },
   "message": "Review submitted successfully"
 }
@@ -796,7 +798,8 @@ Retrieves all reviews about a specific driver.
       "rating": 5,
       "comment": "Great driver!",
       "status": "PUBLISHED",
-      "createdAt": "2026-03-25T10:00:00Z"
+      "createdAt": "2026-03-25T10:00:00.000Z",
+      "updatedAt": "2026-03-25T10:00:00.000Z"
     }
   ],
   "message": "Reviews retrieved successfully"

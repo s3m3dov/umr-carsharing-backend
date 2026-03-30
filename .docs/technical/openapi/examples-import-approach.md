@@ -88,8 +88,11 @@ public final class AuthApiExamples {
 | Vehicle | `VehicleApiExamples.java` | `VehicleController.java` |
 | Trip | `TripApiExamples.java` | `TripController.java` |
 | Booking | `BookingApiExamples.java` | `BookingController.java` |
+| Review | `ReviewApiExamples.java` | `ReviewController.java` |
 
 All files live in each service's `controller/` package. No cross-package imports needed since both controller and examples are co-located.
+
+For response schemas that include audit timestamps, DTOs document both `createdAt` and `updatedAt` as UTC datetimes (for example, `2026-03-30T12:10:30.123Z`).
 
 ## DTO Response Wrapper
 
