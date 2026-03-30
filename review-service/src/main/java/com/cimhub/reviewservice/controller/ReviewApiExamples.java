@@ -32,7 +32,8 @@ public final class ReviewApiExamples {
                 "rating": 5,
                 "comment": "Great driver, very comfortable ride!",
                 "status": "PUBLISHED",
-                "createdAt": "2026-03-25T10:00:00Z"
+                "createdAt": "2026-03-25T10:00:00.000Z",
+                "updatedAt": "2026-03-25T10:00:00.000Z"
               },
               "message": "Review submitted successfully"
             }""";
@@ -51,7 +52,8 @@ public final class ReviewApiExamples {
                 "rating": 4,
                 "comment": "Good passenger, on time and polite",
                 "status": "PUBLISHED",
-                "createdAt": "2026-03-25T10:30:00Z"
+                "createdAt": "2026-03-25T10:30:00.000Z",
+                "updatedAt": "2026-03-25T10:30:00.000Z"
               },
               "message": "Review submitted successfully"
             }""";
@@ -71,7 +73,8 @@ public final class ReviewApiExamples {
                   "rating": 5,
                   "comment": "Great driver!",
                   "status": "PUBLISHED",
-                  "createdAt": "2026-03-25T10:00:00Z"
+                  "createdAt": "2026-03-25T10:00:00.000Z",
+                  "updatedAt": "2026-03-25T10:00:00.000Z"
                 }
               ],
               "message": "Reviews retrieved successfully"
@@ -92,7 +95,8 @@ public final class ReviewApiExamples {
                   "rating": 4,
                   "comment": "Good passenger!",
                   "status": "PUBLISHED",
-                  "createdAt": "2026-03-25T10:30:00Z"
+                  "createdAt": "2026-03-25T10:30:00.000Z",
+                  "updatedAt": "2026-03-25T10:30:00.000Z"
                 }
               ],
               "message": "Reviews retrieved successfully"

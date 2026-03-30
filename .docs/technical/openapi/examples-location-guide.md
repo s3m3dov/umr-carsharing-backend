@@ -70,6 +70,18 @@ All example files are in the `controller/` package alongside their controller.
 | `ACTIVE_BOOKINGS_RESPONSE` | Active bookings list |
 | `ERROR_TRIP_FULL` | No available seats |
 
+### Review Service
+**File:** `review-service/.../controller/ReviewApiExamples.java`
+
+| Constant | Description |
+|----------|-------------|
+| `SUBMIT_REVIEW_REQUEST` | Submit review payload |
+| `SUBMIT_DRIVER_REVIEW_RESPONSE` | Driver review created |
+| `SUBMIT_PASSENGER_REVIEW_RESPONSE` | Passenger review created |
+| `GET_DRIVER_REVIEWS_RESPONSE` | Driver reviews list |
+| `GET_PASSENGER_REVIEWS_RESPONSE` | Passenger reviews list |
+| `GET_AVERAGE_RATING_RESPONSE` | Average rating result |
+
 ---
 
 ## DTO-Level Examples
@@ -90,6 +102,11 @@ auth-service/.../dto/response/
 
 Same pattern for user-service and trip-service DTOs.
 
+Audit timestamp fields for changed response schemas:
+- `trip-service/.../dto/response/AdminTripResponse.java` (`createdAt`, `updatedAt` in UTC)
+- `user-service/.../dto/response/AdminVehicleResponse.java` (`createdAt`, `updatedAt` in UTC)
+- `review-service/.../dto/response/ReviewResponse.java` (`createdAt`, `updatedAt` in UTC)
+
 ---
 
 ## Swagger UI
@@ -99,6 +116,7 @@ Same pattern for user-service and trip-service DTOs.
 | Auth Service | http://localhost:8081/auth-service/swagger-ui.html |
 | User Service | http://localhost:8082/user-service/swagger-ui.html |
 | Trip Service | http://localhost:8084/trip-service/swagger-ui.html |
+| Review Service | http://localhost:8085/review-service/swagger-ui.html |
 
 ---
 

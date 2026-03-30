@@ -9,8 +9,10 @@ This document provides detailed information about all data models and schemas us
 3. [Vehicle Schemas](#vehicle-schemas)
 4. [Trip Schemas](#trip-schemas)
 5. [Booking Schemas](#booking-schemas)
-6. [Common Schemas](#common-schemas)
-7. [Enum Definitions](#enum-definitions)
+6. [Review Schemas](#review-schemas)
+7. [Admin Schemas](#admin-schemas)
+8. [Common Schemas](#common-schemas)
+9. [Enum Definitions](#enum-definitions)
 
 ---
 
@@ -627,6 +629,12 @@ Complete trip information.
       "format": "date-time",
       "description": "Trip creation time",
       "example": "2024-03-24T20:00:00Z"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Trip last update time",
+      "example": "2024-03-25T07:45:12.345Z"
     }
   },
   "required": [
@@ -826,6 +834,168 @@ Booking information from passenger's perspective.
 
 ---
 
+## Review Schemas
+
+### ReviewResponse
+
+Review details returned by review endpoints.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "reviewId": {
+      "type": "string",
+      "description": "Unique review ID",
+      "example": "review_001"
+    },
+    "tripId": {
+      "type": "string",
+      "description": "Trip ID",
+      "example": "trip_001"
+    },
+    "bookingId": {
+      "type": "string",
+      "description": "Booking ID",
+      "example": "booking_001"
+    },
+    "reviewerId": {
+      "type": "string",
+      "description": "Reviewer user ID",
+      "example": "user_456"
+    },
+    "reviewerType": {
+      "type": "string",
+      "enum": ["DRIVER", "PASSENGER"],
+      "description": "Reviewer type",
+      "example": "PASSENGER"
+    },
+    "revieweeId": {
+      "type": "string",
+      "description": "Reviewee user ID",
+      "example": "user_123"
+    },
+    "revieweeType": {
+      "type": "string",
+      "enum": ["DRIVER", "PASSENGER"],
+      "description": "Reviewee type",
+      "example": "DRIVER"
+    },
+    "rating": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating score",
+      "example": 5
+    },
+    "comment": {
+      "type": "string",
+      "description": "Review comment",
+      "example": "Great driver, very comfortable ride!"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "PUBLISHED", "FLAGGED", "REMOVED"],
+      "description": "Review status",
+      "example": "PUBLISHED"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review creation time in UTC",
+      "example": "2026-03-25T10:00:00.000Z"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review last update time in UTC",
+      "example": "2026-03-25T10:00:00.000Z"
+    }
+  },
+  "required": ["reviewId", "tripId", "reviewerId", "revieweeId", "rating", "status", "createdAt", "updatedAt"]
+}
+```
+
+---
+
+## Admin Schemas
+
+### AdminTripResponse
+
+Trip details returned by admin trip management endpoints.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tripId": {"type": "string", "example": "trip_001"},
+    "driverId": {"type": "string", "example": "user_123"},
+    "vehicleNumber": {"type": "string", "example": "HE-XX-1234"},
+    "carType": {"type": "string", "example": "SEDAN"},
+    "tripStatus": {"type": "string", "example": "SCHEDULED"},
+    "totalSeats": {"type": "integer", "example": 4},
+    "bookedSeats": {"type": "integer", "example": 1},
+    "availableSeats": {"type": "integer", "example": 3},
+    "pricePerSeat": {"type": "number", "example": 14.5},
+    "routeDistance": {"type": "number", "example": 82.7},
+    "routeDuration": {"type": "number", "example": 73.2},
+    "tripStartDateTimeUTC": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-04-01T07:00:00Z"
+    },
+    "tripTimezone": {"type": "string", "example": "Europe/Berlin"},
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Trip creation time in UTC",
+      "example": "2026-03-30T12:00:00.000Z"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Trip last update time in UTC",
+      "example": "2026-03-30T12:10:30.123Z"
+    }
+  },
+  "required": ["tripId", "driverId", "tripStatus", "createdAt", "updatedAt"]
+}
+```
+
+### AdminVehicleResponse
+
+Vehicle details returned by admin vehicle management endpoints.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {"type": "string", "example": "vehicle_001"},
+    "userId": {"type": "string", "example": "user_123"},
+    "vehicleNumber": {"type": "string", "example": "HE-XX-1234"},
+    "vehicleName": {"type": "string", "example": "Tesla Model 3"},
+    "vehicleType": {"type": "string", "example": "sedan"},
+    "vehicleColor": {"type": "string", "example": "white"},
+    "seatingCapacity": {"type": "string", "example": "5"},
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Vehicle creation time in UTC",
+      "example": "2026-03-30T12:00:00.000Z"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Vehicle last update time in UTC",
+      "example": "2026-03-30T12:05:45.456Z"
+    }
+  },
+  "required": ["id", "userId", "vehicleNumber", "vehicleName", "createdAt", "updatedAt"]
+}
+```
+
+---
+
 ## Common Schemas
 
 ### Location
@@ -1008,7 +1178,8 @@ enum VehicleType {
 
 ### Timestamps
 - All timestamps use ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`
-- All times in UTC
+- All times are returned in UTC
+- Some admin/review responses use millisecond precision (example: `2026-03-30T12:10:30.123Z`)
 
 ---
 
