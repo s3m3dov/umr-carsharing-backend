@@ -1,6 +1,8 @@
 package com.cimhub.reviewservice.service;
 
+import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -30,6 +32,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final TripServiceClient tripServiceClient;
+    private final AuditService auditService;
 
     @Transactional
     public ReviewResponse submitDriverReview(SubmitReviewRequest request) {
@@ -71,6 +74,7 @@ public class ReviewService {
                 .build();
 
         Review savedReview = reviewRepository.save(review);
+        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), "Driver review submitted");
         log.info("Driver review saved with ID: {}", savedReview.getReviewId());
 
         return mapToResponse(savedReview);
@@ -116,6 +120,7 @@ public class ReviewService {
                 .build();
 
         Review savedReview = reviewRepository.save(review);
+        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), "Passenger review submitted");
         log.info("Passenger review saved with ID: {}", savedReview.getReviewId());
 
         return mapToResponse(savedReview);
