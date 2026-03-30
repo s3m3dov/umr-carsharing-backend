@@ -104,6 +104,7 @@ gateway:
     actuator-paths:
       - /actuator/health/**
       - /actuator/info/**
+      - /actuator/prometheus
     admin-paths:
       - /api/admin/**
       - /**/api/admin/**
