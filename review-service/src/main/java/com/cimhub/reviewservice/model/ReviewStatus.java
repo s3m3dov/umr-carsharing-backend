@@ -5,5 +5,7 @@ package com.cimhub.reviewservice.model;
  */
 public enum ReviewStatus {
     PENDING,
-    PUBLISHED
+    PUBLISHED,
+    FLAGGED,
+    REMOVED
 }
