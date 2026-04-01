@@ -1,7 +1,6 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
-import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
@@ -23,9 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -93,6 +92,51 @@ class CancellationServiceTest {
                 .build();
 
         assertThrows(AlreadyCancelledException.class, () -> cancellationService.cancelRide(request));
+    }
+
+    @Test
+    void cancelRide_shouldCancelBookingUpdateTripAndNotifyDriver() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .tripId("trip-1")
+                .passengerId("passenger-1")
+                .driverId("driver-1")
+                .requestedSeats(2)
+                .status(BookingStatus.CONFIRMED)
+                .build();
+
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setBookedSeats(5);
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("passenger-1")
+                .rideId("booking-1")
+                .build();
+
+        String result = cancellationService.cancelRide(request);
+
+        assertEquals("Booking cancelled successfully", result);
+
+        ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
+        verify(bookingRepository).save(bookingCaptor.capture());
+        assertEquals(BookingStatus.CANCELLED, bookingCaptor.getValue().getStatus());
+        assertNotNull(bookingCaptor.getValue().getUpdatedAt());
+
+        ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
+        verify(tripsRepository).save(tripCaptor.capture());
+        assertEquals(3, tripCaptor.getValue().getBookedSeats());
+        assertNotNull(tripCaptor.getValue().getUpdatedAt());
+
+        verify(auditService).logCancel(EntityType.BOOKING, "booking-1", "passenger-1", "Booking cancelled by passenger");
+        verify(driverNotificationService).notifyBookingCancelledByPassenger(any(Trip.class), any(Booking.class));
     }
 
     @Test

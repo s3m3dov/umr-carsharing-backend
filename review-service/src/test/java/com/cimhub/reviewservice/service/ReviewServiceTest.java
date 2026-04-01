@@ -6,6 +6,7 @@ import com.cimhub.common.service.AuditService;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
+import com.cimhub.reviewservice.exception.TripNotCompletedException;
 import com.cimhub.reviewservice.exception.UnauthorizedReviewerException;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.repository.ReviewRepository;
@@ -99,6 +100,57 @@ class ReviewServiceTest {
         when(tripServiceClient.getBookingPassengerId("booking-1")).thenReturn("another-passenger");
 
         assertThrows(UnauthorizedReviewerException.class, () -> reviewService.submitDriverReview(request));
+    }
+
+    @Test
+    void submitPassengerReview_withValidData_shouldPersistAndAudit() {
+        SubmitReviewRequest request = SubmitReviewRequest.builder()
+                .userId("driver-1")
+                .userRole(UserType.DRIVER)
+                .tripId("trip-1")
+                .bookingId("booking-1")
+                .rating(5)
+                .comment("Great passenger")
+                .build();
+
+        when(userRepository.existsByUserId("driver-1")).thenReturn(true);
+        when(tripServiceClient.isTripCompleted("trip-1")).thenReturn(true);
+        when(tripServiceClient.isBookingCompleted("booking-1")).thenReturn(true);
+        when(reviewRepository.existsByReviewerIdAndTripIdAndBookingId("driver-1", "trip-1", "booking-1")).thenReturn(false);
+        when(tripServiceClient.getTripDriverId("trip-1")).thenReturn("driver-1");
+        when(tripServiceClient.getBookingPassengerId("booking-1")).thenReturn("passenger-1");
+        when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
+            Review review = invocation.getArgument(0);
+            review.setReviewId("review-2");
+            return review;
+        });
+
+        ReviewResponse response = reviewService.submitPassengerReview(request);
+
+        assertEquals("review-2", response.reviewId());
+        assertEquals("driver-1", response.reviewerId());
+        assertEquals("passenger-1", response.revieweeId());
+        assertEquals(UserType.DRIVER, response.reviewerType());
+        assertEquals(UserType.PASSENGER, response.revieweeType());
+
+        verify(auditService).logCreate(EntityType.REVIEW, "review-2", "driver-1", "Passenger review submitted");
+    }
+
+    @Test
+    void submitPassengerReview_whenTripOrBookingNotCompleted_shouldThrow() {
+        SubmitReviewRequest request = SubmitReviewRequest.builder()
+                .userId("driver-1")
+                .userRole(UserType.DRIVER)
+                .tripId("trip-1")
+                .bookingId("booking-1")
+                .rating(4)
+                .comment("Ok")
+                .build();
+
+        when(userRepository.existsByUserId("driver-1")).thenReturn(true);
+        when(tripServiceClient.isTripCompleted("trip-1")).thenReturn(false);
+
+        assertThrows(TripNotCompletedException.class, () -> reviewService.submitPassengerReview(request));
     }
 
     @Test
