@@ -1,0 +1,135 @@
+package com.cimhub.tripservice.service;
+
+import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.service.AuditService;
+import com.cimhub.tripservice.dto.request.CancelTripRequest;
+import com.cimhub.tripservice.exception.AlreadyCancelledException;
+import com.cimhub.tripservice.model.Booking;
+import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.tripservice.repository.BookingRepository;
+import com.cimhub.tripservice.repository.TripsRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class CancellationServiceTest {
+
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
+    private TripsRepository tripsRepository;
+
+    @Mock
+    private TripService tripService;
+
+    @Mock
+    private AuditService auditService;
+
+    @Mock
+    private DriverNotificationService driverNotificationService;
+
+    private CancellationService cancellationService;
+
+    @BeforeEach
+    void setUp() {
+        cancellationService = new CancellationService(
+                bookingRepository,
+                tripsRepository,
+                tripService,
+                auditService,
+                driverNotificationService);
+    }
+
+    @Test
+    void cancelRide_whenPassengerNotOwner_shouldThrowUnauthorized() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .passengerId("owner")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("intruder")
+                .rideId("booking-1")
+                .build();
+
+        assertThrows(UnauthorizedException.class, () -> cancellationService.cancelRide(request));
+    }
+
+    @Test
+    void cancelRide_whenAlreadyCancelled_shouldThrowDomainException() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .passengerId("passenger-1")
+                .status(BookingStatus.CANCELLED)
+                .build();
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("passenger-1")
+                .rideId("booking-1")
+                .build();
+
+        assertThrows(AlreadyCancelledException.class, () -> cancellationService.cancelRide(request));
+    }
+
+    @Test
+    void cancelTrip_shouldCancelTripAndActiveBookings() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        Booking activeBooking = Booking.builder()
+                .bookingId("b-1")
+                .tripId("trip-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+
+        Booking alreadyCancelled = Booking.builder()
+                .bookingId("b-2")
+                .tripId("trip-1")
+                .status(BookingStatus.CANCELLED)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(activeBooking, alreadyCancelled));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("driver-1")
+                .tripId("trip-1")
+                .build();
+
+        String result = cancellationService.cancelTrip(request);
+
+        assertEquals("Trip cancelled successfully. 2 passenger bookings have been cancelled", result);
+        ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
+        verify(bookingRepository).save(bookingCaptor.capture());
+        assertEquals(BookingStatus.CANCELLED, bookingCaptor.getValue().getStatus());
+
+        verify(tripService).updateStatus("trip-1", TripStatus.CANCELLED);
+        verify(auditService).logCancel(EntityType.TRIP, "trip-1", "driver-1", "Trip cancelled by driver");
+    }
+}
