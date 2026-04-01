@@ -4,7 +4,6 @@ import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
 import com.cimhub.tripservice.dto.response.AuditLogResponse;
 import com.cimhub.tripservice.dto.response.BookingSummaryReport;
 import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,7 +37,6 @@ public class ReportsService {
 
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
-    private final AuditLogRepository auditLogRepository;
     private final MongoTemplate mongoTemplate;
 
     public DriverPerformanceReport getDriverPerformanceReport() {
@@ -157,7 +156,7 @@ public class ReportsService {
     }
 
     public AuditLogResponse getAuditLog(String id) {
-        AuditLog auditLog = auditLogRepository.findById(id)
+        AuditLog auditLog = Optional.ofNullable(mongoTemplate.findById(id, AuditLog.class))
                 .orElseThrow(() -> new ResourceNotFoundException("Audit log not found: " + id));
         return toResponse(auditLog);
     }

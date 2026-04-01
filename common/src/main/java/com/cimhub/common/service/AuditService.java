@@ -3,10 +3,10 @@ package com.cimhub.common.service;
 import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.model.AuditLog;
-import com.cimhub.common.repository.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuditService {
 
-    private final AuditLogRepository auditLogRepository;
-    
+    private final MongoTemplate mongoTemplate;
+
     @Value("${spring.application.name:unknown-service}")
     private String serviceName;
 
@@ -42,9 +42,9 @@ public class AuditService {
                     .details(details)
                     .serviceName(serviceName)
                     .build();
-            
-            auditLogRepository.save(auditLog);
-            log.info("Audit: {} {} by {} on {}:{} - {}", 
+
+            mongoTemplate.save(auditLog);
+            log.info("Audit: {} {} by {} on {}:{} - {}",
                     action, entityType, performedBy, entityType, entityId, details);
         } catch (Exception e) {
             // Don't fail the operation if audit logging fails
