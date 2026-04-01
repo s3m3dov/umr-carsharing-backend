@@ -1,0 +1,68 @@
+# 04-review-cancel-negative.http
+# Run after 03-trip-booking.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Submit review before trip completion (negative: expect 400 TRIP_NOT_COMPLETED)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{tripId}}",
+  "bookingId": "{{rideId}}",
+  "rating": 5,
+  "comment": "Attempting review before completion"
+}
+
+### 2) Unauthorized trip cancellation by passenger (negative: expect 401/403)
+POST {{baseUrl}}/trip-service/api/trips/cancel
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "tripId": "{{tripId}}",
+  "cancellationReason": "Passenger should not cancel whole trip"
+}
+
+### 3) Passenger cancels own ride (happy path)
+POST {{baseUrl}}/trip-service/api/rides/cancel
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "tripId": "{{tripId}}",
+  "rideId": "{{rideId}}",
+  "cancellationReason": "Manual test cancellation"
+}
+
+### 4) Cancel same ride again (negative: expect 409 ALREADY_CANCELLED)
+POST {{baseUrl}}/trip-service/api/rides/cancel
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "tripId": "{{tripId}}",
+  "rideId": "{{rideId}}",
+  "cancellationReason": "Second cancellation attempt"
+}
+
+### 5) Driver cancels trip (happy path)
+POST {{baseUrl}}/trip-service/api/trips/cancel
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{driverEmail}}",
+  "tripId": "{{tripId}}",
+  "cancellationReason": "Manual test wrap-up"
+}
+
+### 6) Access protected endpoint without token (negative: expect 401)
+GET {{baseUrl}}/trip-service/api/trips/active/driver/{{driverEmail}}
+Accept: application/json

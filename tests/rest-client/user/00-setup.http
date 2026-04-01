@@ -1,0 +1,22 @@
+# 00-setup.http
+# Run this once before other files to set shared globals.
+
+@baseUrl = http://localhost:8888
+
+### Setup shared globals
+GET {{baseUrl}}/user-service/api/users/health
+Accept: application/json
+
+> {%
+client.global.set("runId", "20260401T124300");
+client.global.set("driverEmail", "driver+" + client.global.get("runId") + "@example.com");
+client.global.set("passengerEmail", "passenger+" + client.global.get("runId") + "@example.com");
+client.global.set("driverPassword", "SecurePassword123!");
+client.global.set("passengerPassword", "SecurePassword123!");
+client.global.set("vehicleNumber", "MR-" + client.global.get("runId"));
+client.global.set("tripStartDateTime", "2030-01-15T08:00:00Z");
+client.global.set("driverToken", "");
+client.global.set("passengerToken", "");
+client.global.set("tripId", "");
+client.global.set("rideId", "");
+%}

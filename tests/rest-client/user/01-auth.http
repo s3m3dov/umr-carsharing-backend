@@ -1,0 +1,122 @@
+# 01-auth.http
+# Run this file first (user/driver/passenger scope only).
+
+@baseUrl = http://localhost:8888
+
+### 0) Health check
+GET {{baseUrl}}/user-service/api/users/health
+Accept: application/json
+
+### 1) Signup driver (happy path)
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Manual",
+  "lastName": "Driver",
+  "email": "{{driverEmail}}",
+  "password": "{{driverPassword}}",
+  "userType": "DRIVER",
+  "phoneNumber": "+49 123 456789",
+  "age": 30,
+  "licenseNumber": "D-{{runId}}"
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.token) {
+  client.global.set("driverToken", response.body.data.token);
+}
+%}
+
+### 2) Signup passenger (happy path)
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Manual",
+  "lastName": "Passenger",
+  "email": "{{passengerEmail}}",
+  "password": "{{passengerPassword}}",
+  "userType": "PASSENGER",
+  "phoneNumber": "+49 111 222333",
+  "age": 24,
+  "licenseNumber": ""
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.token) {
+  client.global.set("passengerToken", response.body.data.token);
+}
+%}
+
+### 3) Duplicate signup (negative: expect 409 USER_ALREADY_EXISTS)
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Manual",
+  "lastName": "Driver",
+  "email": "{{driverEmail}}",
+  "password": "{{driverPassword}}",
+  "userType": "DRIVER",
+  "phoneNumber": "+49 123 456789",
+  "age": 30,
+  "licenseNumber": "D-{{runId}}"
+}
+
+### 4) Login driver (fallback + token refresh)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{driverEmail}}",
+  "password": "{{driverPassword}}"
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("driverToken", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("driverEmail", response.body.data.email);
+  }
+}
+%}
+
+### 5) Login passenger (fallback + token refresh)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{passengerEmail}}",
+  "password": "{{passengerPassword}}"
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("passengerToken", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("passengerEmail", response.body.data.email);
+  }
+}
+%}
+
+### 6) Login with wrong password (negative: expect 401)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{driverEmail}}",
+  "password": "WrongPassword123!"
+}
+
+### 7) Validate driver token
+POST {{baseUrl}}/auth-service/api/auth/validate
+Content-Type: application/json
+
+{
+  "token": "{{driverToken}}"
+}

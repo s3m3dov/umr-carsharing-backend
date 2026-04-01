@@ -1,0 +1,119 @@
+# 03-trip-booking.http
+# Run after 01-auth.http and 02-user-vehicle.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Offer trip (driver happy path)
+POST {{baseUrl}}/trip-service/api/trips/offer
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "driverId": "{{driverEmail}}",
+  "vehicleNumber": "{{vehicleNumber}}",
+  "carType": "SEDAN",
+  "sourceAddress": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeId": "",
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationAddress": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeId": "",
+    "placeAddress": "Bonn Hbf"
+  },
+  "tripStartDateTime": "{{tripStartDateTime}}",
+  "totalSeats": 3
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.tripId) {
+  client.global.set("tripId", response.body.data.tripId);
+}
+%}
+
+### 2) Search matching route (passenger)
+GET {{baseUrl}}/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=1&effectiveUserId={{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+### 3) Book ride (passenger happy path)
+POST {{baseUrl}}/trip-service/api/rides/book
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "tripId": "{{tripId}}",
+  "passengerId": "{{passengerEmail}}",
+  "driverId": "{{driverEmail}}",
+  "pickupPoint": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeAddress": "Bonn Hbf"
+  },
+  "rideStartTime": "{{tripStartDateTime}}",
+  "requestedSeats": 1
+}
+
+### 4) Book same trip again (negative: expect 409 ALREADY_BOOKED)
+POST {{baseUrl}}/trip-service/api/rides/book
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "tripId": "{{tripId}}",
+  "passengerId": "{{passengerEmail}}",
+  "driverId": "{{driverEmail}}",
+  "pickupPoint": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeAddress": "Bonn Hbf"
+  },
+  "rideStartTime": "{{tripStartDateTime}}",
+  "requestedSeats": 1
+}
+
+### 5) Passenger active rides (captures rideId from this trip)
+GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+if (response.body && response.body.data && Array.isArray(response.body.data)) {
+  var rides = response.body.data;
+  var selected = null;
+  for (var i = 0; i < rides.length; i++) {
+    if (rides[i] && rides[i].tripId === client.global.get("tripId")) {
+      selected = rides[i];
+      break;
+    }
+  }
+  if (!selected && rides.length > 0) {
+    selected = rides[0];
+  }
+  if (selected && selected.rideId) {
+    client.global.set("rideId", selected.rideId);
+  }
+}
+%}
+
+### 6) Driver accepts booking (bookingId = rideId)
+POST {{baseUrl}}/trip-service/api/bookings/accept?bookingId={{rideId}}
+Authorization: Bearer {{driverToken}}
+
+### 7) Passenger active rides after acceptance (expect rideStatus CONFIRMED)
+GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json

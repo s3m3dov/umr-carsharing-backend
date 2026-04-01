@@ -1,0 +1,34 @@
+# admin/00-admin-setup.http
+# Run this once before other admin files to set isolated admin globals.
+
+@baseUrl = http://localhost:8888
+
+### Setup isolated admin globals
+GET {{baseUrl}}/user-service/api/users/health
+Accept: application/json
+
+> {%
+client.global.set("admin_runId", "20260401T131525");
+client.global.set("admin_email", "admin+" + client.global.get("admin_runId") + "@example.com");
+client.global.set("admin_password", "SecurePassword123!");
+
+client.global.set("admin_driver_email", "admin-driver+" + client.global.get("admin_runId") + "@example.com");
+client.global.set("admin_passenger_email", "admin-passenger+" + client.global.get("admin_runId") + "@example.com");
+client.global.set("admin_driver_password", "SecurePassword123!");
+client.global.set("admin_passenger_password", "SecurePassword123!");
+
+client.global.set("admin_driver_vehicle_number", "ADM-DRV-" + client.global.get("admin_runId"));
+client.global.set("admin_vehicle_number", "ADM-VEH-" + client.global.get("admin_runId"));
+client.global.set("admin_trip_start", "2030-02-01T09:30:00Z");
+
+client.global.set("admin_token", "");
+client.global.set("admin_driver_token", "");
+client.global.set("admin_passenger_token", "");
+
+client.global.set("admin_driver_id", "");
+client.global.set("admin_passenger_id", "");
+client.global.set("admin_vehicle_id", "");
+client.global.set("admin_trip_id", "");
+client.global.set("admin_booking_id", "");
+client.global.set("admin_review_id", "");
+%}

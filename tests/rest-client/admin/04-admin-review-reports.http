@@ -1,0 +1,97 @@
+# admin/04-admin-review-reports.http
+# Run after admin/03-admin-trip-booking-management.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Driver submits review for passenger (create admin-manageable review)
+POST {{baseUrl}}/review-service/api/reviews/passenger
+Authorization: Bearer {{admin_driver_token}}
+Content-Type: application/json
+
+{
+  "userId": "{{admin_driver_id}}",
+  "userRole": "DRIVER",
+  "tripId": "{{admin_trip_id}}",
+  "bookingId": "{{admin_booking_id}}",
+  "rating": 4,
+  "comment": "Admin fixture review"
+}
+
+### 2) Admin list reviews
+GET {{baseUrl}}/review-service/api/admin/reviews?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+if (response.body && response.body.data && response.body.data.content) {
+  var content = response.body.data.content;
+  for (var i = 0; i < content.length; i++) {
+    if (content[i] && content[i].tripId === client.global.get("admin_trip_id")) {
+      client.global.set("admin_review_id", content[i].reviewId);
+      break;
+    }
+  }
+}
+%}
+
+### 3) Admin get review detail
+GET {{baseUrl}}/review-service/api/admin/reviews/{{admin_review_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 4) Admin flag review
+POST {{baseUrl}}/review-service/api/admin/reviews/{{admin_review_id}}/flag
+Authorization: Bearer {{admin_token}}
+
+### 5) Admin publish review
+POST {{baseUrl}}/review-service/api/admin/reviews/{{admin_review_id}}/publish
+Authorization: Bearer {{admin_token}}
+
+### 6) Admin reports - drivers
+GET {{baseUrl}}/trip-service/api/admin/reports/drivers
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 7) Admin reports - bookings
+GET {{baseUrl}}/trip-service/api/admin/reports/bookings
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 8) Admin reports - revenue
+GET {{baseUrl}}/trip-service/api/admin/reports/revenue
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 9) Admin reports - passengers
+GET {{baseUrl}}/trip-service/api/admin/reports/passengers
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 10) Admin reports - audit logs
+GET {{baseUrl}}/trip-service/api/admin/reports/audit-logs?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 11) Cleanup - admin cancels booking
+DELETE {{baseUrl}}/trip-service/api/admin/bookings/{{admin_booking_id}}
+Authorization: Bearer {{admin_token}}
+
+### 12) Cleanup - admin cancels trip
+DELETE {{baseUrl}}/trip-service/api/admin/trips/{{admin_trip_id}}
+Authorization: Bearer {{admin_token}}
+
+### 13) Cleanup - admin removes review
+DELETE {{baseUrl}}/review-service/api/admin/reviews/{{admin_review_id}}
+Authorization: Bearer {{admin_token}}
+
+### 14) Cleanup - admin deletes managed vehicle
+DELETE {{baseUrl}}/user-service/api/admin/vehicles/{{admin_vehicle_id}}
+Authorization: Bearer {{admin_token}}
+
+### 15) Cleanup - admin deletes passenger
+DELETE {{baseUrl}}/user-service/api/admin/passengers/{{admin_passenger_id}}
+Authorization: Bearer {{admin_token}}
+
+### 16) Cleanup - admin deletes driver
+DELETE {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}
+Authorization: Bearer {{admin_token}}
