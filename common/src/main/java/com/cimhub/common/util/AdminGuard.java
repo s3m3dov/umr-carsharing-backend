@@ -1,5 +1,6 @@
 package com.cimhub.common.util;
 
+import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
 
 /**
@@ -12,7 +13,7 @@ public final class AdminGuard {
     }
 
     public static void requireAdmin(String userRole) {
-        if (!"ADMIN".equalsIgnoreCase(userRole)) {
+        if (!UserType.ADMIN.name().equalsIgnoreCase(userRole)) {
             throw new ForbiddenException("Admin access required");
         }
     }

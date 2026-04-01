@@ -38,7 +38,7 @@ public class ReviewService {
     public ReviewResponse submitDriverReview(SubmitReviewRequest request) {
         log.info("Submitting driver review from user: {} for trip: {}", request.userId(), request.tripId());
 
-        validateUserRole(request.userRole(), "PASSENGER", "Only passengers can review drivers");
+        validateUserRole(request.userRole(), UserType.PASSENGER, "Only passengers can review drivers");
 
         if (!userRepository.existsByUserId(request.userId())) {
             throw new PassengerNotFoundException("Reviewer user not found: " + request.userId());
@@ -85,7 +85,7 @@ public class ReviewService {
     public ReviewResponse submitPassengerReview(SubmitReviewRequest request) {
         log.info("Submitting passenger review from user: {} for trip: {}", request.userId(), request.tripId());
 
-        validateUserRole(request.userRole(), "DRIVER", "Only drivers can review passengers");
+        validateUserRole(request.userRole(), UserType.DRIVER, "Only drivers can review passengers");
 
         if (!userRepository.existsByUserId(request.userId())) {
             throw new DriverNotFoundException("Reviewer user not found: " + request.userId());
@@ -222,8 +222,8 @@ public class ReviewService {
                 .build();
     }
 
-    private void validateUserRole(String userRole, String expectedRole, String errorMessage) {
-        if (!expectedRole.equalsIgnoreCase(userRole)) {
+    private void validateUserRole(UserType userRole, UserType expectedRole, String errorMessage) {
+        if (userRole != expectedRole) {
             throw new IllegalArgumentException(errorMessage);
         }
     }
