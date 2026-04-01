@@ -1,0 +1,126 @@
+# admin/02-admin-user-management.http
+# Run after admin/01-admin-auth.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Admin list drivers
+GET {{baseUrl}}/user-service/api/admin/drivers?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 2) Admin get driver detail
+GET {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 3) Admin approve driver
+POST {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}/approve
+Authorization: Bearer {{admin_token}}
+
+### 4) Admin update driver
+PUT {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "firstName": "AdminDriverUpdated",
+  "phoneNumber": "+49 703 200300"
+}
+
+### 5) Admin list passengers
+GET {{baseUrl}}/user-service/api/admin/passengers?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 6) Admin get passenger detail
+GET {{baseUrl}}/user-service/api/admin/passengers/{{admin_passenger_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 7) Admin update passenger
+PUT {{baseUrl}}/user-service/api/admin/passengers/{{admin_passenger_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "firstName": "AdminPassengerUpdated",
+  "phoneNumber": "+49 704 200301"
+}
+
+### 8) Admin create passenger
+POST {{baseUrl}}/user-service/api/admin/passengers
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "email": "admin-extra-passenger-{{admin_runId}}@example.com",
+  "firstName": "Extra",
+  "lastName": "Passenger",
+  "phoneNumber": "+49 705 200302",
+  "age": 27
+}
+
+### 9) Admin list vehicles
+GET {{baseUrl}}/user-service/api/admin/vehicles?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 10) Admin create vehicle
+POST {{baseUrl}}/user-service/api/admin/vehicles
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "userId": "{{admin_driver_id}}",
+  "vehicleName": "Admin Managed Car",
+  "vehicleNumber": "{{admin_vehicle_number}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "black",
+  "seatingCapacity": "4"
+}
+
+### 11) Driver creates own vehicle fixture for trip flow
+POST {{baseUrl}}/user-service/api/vehicles/register
+Authorization: Bearer {{admin_driver_token}}
+Content-Type: application/json
+
+{
+  "userId": "{{admin_driver_id}}",
+  "vehicleName": "Admin Driver Car",
+  "vehicleNumber": "{{admin_driver_vehicle_number}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "white",
+  "seatingCapacity": "4"
+}
+
+### 12) Resolve created vehicleId by vehicle number
+GET {{baseUrl}}/user-service/api/admin/vehicles?page=0&size=50
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+if (response.body && response.body.data && response.body.data.content) {
+  var items = response.body.data.content;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i] && items[i].vehicleNumber === client.global.get("admin_vehicle_number")) {
+      client.global.set("admin_vehicle_id", items[i].id);
+      break;
+    }
+  }
+}
+%}
+
+### 13) Admin get vehicle detail
+GET {{baseUrl}}/user-service/api/admin/vehicles/{{admin_vehicle_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 14) Admin update vehicle
+PUT {{baseUrl}}/user-service/api/admin/vehicles/{{admin_vehicle_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "vehicleColor": "silver",
+  "seatingCapacity": "5"
+}

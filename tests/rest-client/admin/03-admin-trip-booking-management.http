@@ -1,0 +1,114 @@
+# admin/03-admin-trip-booking-management.http
+# Run after admin/02-admin-user-management.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Driver offers trip fixture for admin trip/booking endpoints
+POST {{baseUrl}}/trip-service/api/trips/offer
+Authorization: Bearer {{admin_driver_token}}
+Content-Type: application/json
+
+{
+  "driverId": "{{admin_driver_id}}",
+  "vehicleNumber": "{{admin_driver_vehicle_number}}",
+  "carType": "SEDAN",
+  "sourceAddress": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeId": "",
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationAddress": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeId": "",
+    "placeAddress": "Bonn Hbf"
+  },
+  "tripStartDateTime": "{{admin_trip_start}}",
+  "totalSeats": 3
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.tripId) {
+  client.global.set("admin_trip_id", response.body.data.tripId);
+}
+%}
+
+### 2) Passenger books trip fixture for admin booking endpoints
+POST {{baseUrl}}/trip-service/api/rides/book
+Authorization: Bearer {{admin_passenger_token}}
+Content-Type: application/json
+
+{
+  "tripId": "{{admin_trip_id}}",
+  "passengerId": "{{admin_passenger_id}}",
+  "driverId": "{{admin_driver_id}}",
+  "pickupPoint": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeAddress": "Bonn Hbf"
+  },
+  "rideStartTime": "{{admin_trip_start}}",
+  "requestedSeats": 1
+}
+
+### 3) Resolve bookingId from passenger active rides
+GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{admin_passenger_id}}
+Authorization: Bearer {{admin_passenger_token}}
+Accept: application/json
+
+> {%
+if (response.body && response.body.data && Array.isArray(response.body.data)) {
+  var rides = response.body.data;
+  for (var i = 0; i < rides.length; i++) {
+    if (rides[i] && rides[i].tripId === client.global.get("admin_trip_id")) {
+      client.global.set("admin_booking_id", rides[i].rideId);
+      break;
+    }
+  }
+}
+%}
+
+### 4) Admin list trips
+GET {{baseUrl}}/trip-service/api/admin/trips?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 5) Admin get trip detail
+GET {{baseUrl}}/trip-service/api/admin/trips/{{admin_trip_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 6) Admin get upcoming trips
+GET {{baseUrl}}/trip-service/api/admin/trips/upcoming?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 7) Admin list bookings
+GET {{baseUrl}}/trip-service/api/admin/bookings?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 8) Admin get booking detail
+GET {{baseUrl}}/trip-service/api/admin/bookings/{{admin_booking_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+### 9) Admin update booking status to CONFIRMED
+PUT {{baseUrl}}/trip-service/api/admin/bookings/{{admin_booking_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "status": "CONFIRMED"
+}
+
+### 10) Admin get passenger bookings
+GET {{baseUrl}}/trip-service/api/admin/bookings/passenger/{{admin_passenger_id}}?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json

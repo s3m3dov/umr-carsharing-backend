@@ -1,0 +1,28 @@
+# 02-user-vehicle.http
+# Run after 01-auth.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Get driver profile
+GET {{baseUrl}}/user-service/api/users/{{driverEmail}}
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+### 2) Register vehicle for driver
+POST {{baseUrl}}/user-service/api/vehicles/register
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{driverEmail}}",
+  "vehicleName": "Manual Test Car",
+  "vehicleNumber": "{{vehicleNumber}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "white",
+  "seatingCapacity": "4"
+}
+
+### 3) List driver vehicles
+GET {{baseUrl}}/user-service/api/vehicles/{{driverEmail}}
+Authorization: Bearer {{driverToken}}
+Accept: application/json
