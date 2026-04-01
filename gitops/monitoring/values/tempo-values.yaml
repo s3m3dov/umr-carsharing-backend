@@ -18,9 +18,17 @@ tempo:
 
 persistence:
   enabled: true
-  size: 10Gi
+  size: 500Mi
 
 replicas: 1
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "25m"
+  limits:
+    memory: "128Mi"
+    cpu: "100m"
 
 service:
   type: ClusterIP

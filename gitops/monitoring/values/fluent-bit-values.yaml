@@ -1,6 +1,14 @@
 # Fluent Bit: lightweight log shipper → Loki
 # Runs as DaemonSet, ~1 MB binary, ~10 MB RAM per node
 
+resources:
+  requests:
+    memory: "16Mi"
+    cpu: "10m"
+  limits:
+    memory: "32Mi"
+    cpu: "50m"
+
 config:
   inputs: |
     [INPUT]
