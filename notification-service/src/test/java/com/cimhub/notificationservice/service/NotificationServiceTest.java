@@ -5,6 +5,7 @@ import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
 import com.cimhub.notificationservice.dto.response.NotificationStatsResponse;
 import com.cimhub.notificationservice.exception.InvalidNotificationSenderException;
+import com.cimhub.notificationservice.exception.NotificationNotFoundException;
 import com.cimhub.notificationservice.exception.UnauthorizedNotificationAccessException;
 import com.cimhub.notificationservice.model.Notification;
 import com.cimhub.notificationservice.repository.NotificationRepository;
@@ -21,11 +22,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -115,6 +120,52 @@ class NotificationServiceTest {
     }
 
     @Test
+    void markAsRead_whenNotificationNotFound_shouldThrow() {
+        when(notificationRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(NotificationNotFoundException.class, () -> notificationService.markAsRead("missing", "user-1"));
+    }
+
+    @Test
+    void markAsRead_whenUnread_shouldSetReadAndPublishUnreadCount() {
+        Notification unread = Notification.builder()
+                .notificationId("n-1")
+                .recipientId("user-1")
+                .read(false)
+                .build();
+
+        when(notificationRepository.findById("n-1")).thenReturn(Optional.of(unread));
+        when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(notificationRepository.countByRecipientIdAndReadFalse("user-1")).thenReturn(4L);
+
+        NotificationResponse response = notificationService.markAsRead("n-1", "user-1");
+
+        assertTrue(response.read());
+        assertNotNull(response.readAt());
+        verify(notificationRepository).save(any(Notification.class));
+        verify(realtimePublisher).publishUnreadCount("user-1", 4L);
+    }
+
+    @Test
+    void markAsRead_whenAlreadyRead_shouldReturnWithoutSavingAgain() {
+        Notification alreadyRead = Notification.builder()
+                .notificationId("n-2")
+                .recipientId("user-1")
+                .read(true)
+                .readAt(Instant.parse("2030-01-01T00:00:00Z"))
+                .build();
+
+        when(notificationRepository.findById("n-2")).thenReturn(Optional.of(alreadyRead));
+
+        NotificationResponse response = notificationService.markAsRead("n-2", "user-1");
+
+        assertTrue(response.read());
+        assertEquals(Instant.parse("2030-01-01T00:00:00Z"), response.readAt());
+        verify(notificationRepository, never()).save(any(Notification.class));
+        verify(realtimePublisher, never()).publishUnreadCount(any(String.class), anyLong());
+    }
+
+    @Test
     void markAllAsRead_shouldUpdateUnreadNotificationsAndReturnZeroStats() {
         Notification first = Notification.builder()
                 .notificationId("n-1")
@@ -136,5 +187,27 @@ class NotificationServiceTest {
         assertEquals(0L, response.unreadCount());
         verify(notificationRepository).saveAll(any(List.class));
         verify(realtimePublisher).publishUnreadCount("user-1", 0L);
+    }
+
+    @Test
+    void markAllAsRead_whenNothingUnread_shouldNotPersistButStillPublishZero() {
+        when(notificationRepository.findByRecipientIdAndReadFalse("user-2")).thenReturn(List.of());
+
+        NotificationStatsResponse response = notificationService.markAllAsRead("user-2");
+
+        assertEquals("user-2", response.recipientId());
+        assertEquals(0L, response.unreadCount());
+        verify(notificationRepository, never()).saveAll(any(List.class));
+        verify(realtimePublisher, times(1)).publishUnreadCount("user-2", 0L);
+    }
+
+    @Test
+    void getStats_shouldReturnUnreadCountFromRepository() {
+        when(notificationRepository.countByRecipientIdAndReadFalse("user-3")).thenReturn(7L);
+
+        NotificationStatsResponse response = notificationService.getStats("user-3");
+
+        assertEquals("user-3", response.recipientId());
+        assertEquals(7L, response.unreadCount());
     }
 }

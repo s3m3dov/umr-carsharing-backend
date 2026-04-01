@@ -8,6 +8,7 @@ import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.Driver;
+import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.DriverRepository;
 import com.cimhub.userservice.repository.PassengerRepository;
 import com.cimhub.userservice.repository.UserRepository;
@@ -92,6 +93,32 @@ class UserServiceTest {
         assertEquals("LIC-123", driverCaptor.getValue().getLicenseNumber());
 
         verify(auditService).logCreate(EntityType.DRIVER, "driver-1", "driver@example.com", "User profile created");
+    }
+
+    @Test
+    void createProfile_forPassenger_shouldCreatePassengerProfileAndAudit() {
+        CreateProfileRequest request = new CreateProfileRequest(
+                "passenger-1",
+                "passenger@example.com",
+                UserType.PASSENGER,
+                "Alex",
+                "Passenger",
+                "+100",
+                26,
+                null);
+
+        when(userRepository.findByUserId("passenger-1")).thenReturn(null);
+
+        UserResponse response = userService.createProfile(request);
+
+        assertEquals("passenger-1", response.userId());
+        assertEquals(UserType.PASSENGER, response.userType());
+
+        ArgumentCaptor<Passenger> passengerCaptor = ArgumentCaptor.forClass(Passenger.class);
+        verify(passengerRepository).save(passengerCaptor.capture());
+        assertEquals("passenger-1", passengerCaptor.getValue().getUserId());
+
+        verify(auditService).logCreate(EntityType.PASSENGER, "passenger-1", "passenger@example.com", "User profile created");
     }
 
     @Test
