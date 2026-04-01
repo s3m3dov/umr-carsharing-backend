@@ -33,6 +33,8 @@ spec:
             secretKeyRef:
               name: carsharing-secrets
               key: JWT_SECRET_KEY
+        - name: SPRING_PROFILES_ACTIVE
+          value: "kubernetes"
         resources:
           requests:
             memory: "256Mi"

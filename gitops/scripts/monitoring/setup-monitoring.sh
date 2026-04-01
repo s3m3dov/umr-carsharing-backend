@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# Monitoring: kube-prometheus-stack + Loki + Fluent Bit
+# Monitoring: kube-prometheus-stack + Loki + Fluent Bit + Tempo
 ################################################################################
 
 set -e
@@ -46,9 +46,15 @@ run helm upgrade --install fluent-bit fluent/fluent-bit \
     --values "$VALUES_DIR/fluent-bit-values.yaml" \
     --wait --timeout 2m
 
+echo ""; echo "Installing Tempo..."
+run helm upgrade --install tempo grafana/tempo \
+    --namespace monitoring \
+    --values "$VALUES_DIR/tempo-values.yaml" \
+    --wait --timeout 3m
+
 echo ""; echo "Applying ServiceMonitor..."
 run kubectl apply -f "$MONITORING_DIR/servicemonitor.yaml"
 
 echo ""
-echo "Done. Grafana: kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80"
-echo "         http://localhost:3000  (admin / admin)"
+echo "Done. Grafana: http://grafana.monitoring.local  (add to /etc/hosts if local)"
+echo "       Or:    kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80"
