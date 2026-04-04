@@ -1,9 +1,6 @@
 # kube-prometheus-stack: Prometheus + Grafana + AlertManager
 grafana:
-  enabled: true
   adminPassword: admin
-  service:
-    type: ClusterIP
   resources:
     requests:
       memory: "64Mi"
@@ -11,21 +8,6 @@ grafana:
     limits:
       memory: "128Mi"
       cpu: "100m"
-
-  # Configure Grafana to serve from /grafana subpath
-  grafana.ini:
-    server:
-      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
-      serve_from_sub_path: true
-    security:
-      cookie_samesite: lax
-      disable_login_form: false
-      cookie_secure: false
-    users:
-      allow_sign_up: false
-    auth:
-      disable_login_form: false
-
   additionalDataSources:
     - name: Loki
       type: loki
@@ -42,13 +24,9 @@ grafana:
           datasourceUid: loki
         lokiSearch:
           datasourceUid: loki
-
   sidecar:
     dashboards:
-      enabled: true
       searchNamespace: ALL
-    datasources:
-      enabled: true
 
 prometheus:
   prometheusSpec:
@@ -66,9 +44,3 @@ prometheus:
 
 alertmanager:
   enabled: false
-
-nodeExporter:
-  enabled: true
-
-kubeStateMetrics:
-  enabled: true
