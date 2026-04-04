@@ -25,7 +25,13 @@ This project follows a "Manual GitOps" pattern. Git is the single source of trut
 | Ingress | `./gitops.sh local ingress` (port 8888) | N/A (uses external LB) |
 | Monitoring | `./gitops.sh local monitoring <sub>` | `./gitops.sh gcp monitoring <sub>` |
 
-Monitoring subcommands: `install`, `uninstall`, `status` (grafana now via http://localhost:8888/grafana)
+Monitoring subcommands: `install`, `uninstall`, `status`
+
+After installing monitoring:
+- **Grafana** — http://localhost:8888/grafana (local) · http://35.186.208.67/grafana (GCP)
+- **Swagger** — http://localhost:8888/swagger-ui.html (local) · http://35.186.208.67/swagger-ui.html (GCP)
+
+Both are served through the API Gateway on the same domain — no separate ingress or port-forward needed.
 
 ---
 

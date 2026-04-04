@@ -13,6 +13,10 @@ spring:
         locator:
           enabled: false
       routes:
+        - id: grafana
+          uri: http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80
+          predicates:
+            - Path=/grafana/**
         - id: user-service
           uri: http://user-service:8080
           predicates:
@@ -100,6 +104,7 @@ gateway:
       - /auth-service/api/auth/reset-password
       - /auth-service/api/auth/reset-password/confirm
       - /webjars/**
+      - /grafana/**
     docs-paths:
       - /v3/api-docs/**
       - /swagger-ui/**

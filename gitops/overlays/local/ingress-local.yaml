@@ -23,10 +23,3 @@ spec:
             name: api-gateway
             port:
               number: 8080
-      - path: /grafana
-        pathType: Prefix
-        backend:
-          service:
-            name: kube-prometheus-stack-grafana
-            port:
-              number: 80

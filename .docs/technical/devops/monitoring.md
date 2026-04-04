@@ -26,16 +26,34 @@ All deployed into the `monitoring` namespace via Helm.
 ./gitops.sh local monitoring install
 ./gitops.sh gcp   monitoring install
 
-# Grafana at http://grafana.monitoring.local  (admin / admin)
-# Or via port-forward:
-kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
-
 # Status
 ./gitops.sh local monitoring status
 
 # Uninstall
 ./gitops.sh local monitoring uninstall
 ```
+
+## Accessing Grafana
+
+Grafana is routed through the API Gateway at the `/grafana` subpath — no separate ingress or port-forward needed.
+
+| Environment | URL | Credentials |
+|-------------|-----|-------------|
+| Local | http://localhost:8888/grafana | admin / admin |
+| GCP | http://35.186.208.67/grafana | admin / admin |
+
+Swagger UI is available on the same domain:
+
+| Environment | URL |
+|-------------|-----|
+| Local | http://localhost:8888/swagger-ui.html |
+| GCP | http://35.186.208.67/swagger-ui.html |
+
+### How it works
+
+The API Gateway (Spring Cloud Gateway) proxies `/grafana/**` to `kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80`. Grafana is configured with `serve_from_sub_path: true` and `root_url` set to the `/grafana/` prefix, so all assets and redirects resolve correctly.
+
+The `/grafana/**` path is on the public path list in the gateway — no JWT token required to access it.
 
 The setup script installs:
 1. `kube-prometheus-stack` — Prometheus + Grafana + node-exporter + kube-state-metrics
@@ -181,13 +199,13 @@ spec:
 |------|---------|
 | `gitops/monitoring/namespace.yaml` | `monitoring` namespace |
 | `gitops/monitoring/servicemonitor.yaml` | Prometheus scrape config for carsharing services |
-| `gitops/monitoring/ingress-grafana.yaml` | Grafana Ingress (`grafana.monitoring.local`) |
-| `gitops/monitoring/values/prometheus-stack-values.yaml` | Prometheus + Grafana |
+| `gitops/monitoring/values/prometheus-stack-values.yaml` | Prometheus + Grafana (subpath config) |
 | `gitops/monitoring/values/loki-values.yaml` | Loki single binary |
 | `gitops/monitoring/values/tempo-values.yaml` | Tempo single binary |
 | `gitops/monitoring/values/fluent-bit-values.yaml` | Fluent Bit DaemonSet (log shipper) |
 | `gitops/scripts/monitoring/setup-monitoring.sh` | Install script |
 | `gitops/scripts/monitoring/teardown-monitoring.sh` | Uninstall script |
+| `api-gateway/src/main/resources/application.yml` | Gateway route for `/grafana/**` + public path entry |
 
 ---
 
