@@ -14,6 +14,7 @@ resources:
   - deployments/trip-service.yaml
   - deployments/review-service.yaml
   - deployments/notification-service.yaml
+  - dashboards/carsharing-services.yaml
 
 # Common labels applied to all resources
 labels:

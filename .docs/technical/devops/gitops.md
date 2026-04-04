@@ -22,10 +22,10 @@ This project follows a "Manual GitOps" pattern. Git is the single source of trut
 | Diff | `./gitops.sh local diff` | `./gitops.sh gcp diff` |
 | Restart | `./gitops.sh local restart [service]` | `./gitops.sh gcp restart [service]` |
 | Dashboard | `./gitops.sh local dashboard` | `./gitops.sh gcp dashboard` |
-| Ingress | `./gitops.sh local ingress` | N/A (uses external LB) |
+| Ingress | `./gitops.sh local ingress` (port 8888) | N/A (uses external LB) |
 | Monitoring | `./gitops.sh local monitoring <sub>` | `./gitops.sh gcp monitoring <sub>` |
 
-Monitoring subcommands: `install`, `uninstall`, `status`, `grafana`
+Monitoring subcommands: `install`, `uninstall`, `status` (grafana now via http://localhost:8888/grafana)
 
 ---
 
@@ -89,13 +89,15 @@ Lists all deployments in the `carsharing` namespace.
 ./gitops.sh local restart trip-service
 ```
 
-### Access Application
+### Access Application & Grafana
 
 ```bash
 ./gitops.sh local ingress
 ```
 
-Starts port-forwarding to ingress controller. Access at: http://localhost:8888/swagger-ui.html
+Starts port-forwarding to ingress controller (localhost:8888). Access:
+- **Swagger UI:** http://localhost:8888/swagger-ui.html
+- **Grafana:** http://localhost:8888/grafana (requires monitoring stack installed)
 
 ### Dashboard
 
@@ -111,11 +113,8 @@ Deploys Kubernetes Dashboard. Access via:
 ### Monitoring
 
 ```bash
-# Install Prometheus + Grafana + Loki + Fluent Bit
+# Install Prometheus + Grafana + Loki + Fluent Bit + Tempo
 ./gitops.sh local monitoring install
-
-# Open Grafana at http://localhost:3000
-./gitops.sh local monitoring grafana
 
 # Check stack status
 ./gitops.sh local monitoring status
@@ -124,7 +123,16 @@ Deploys Kubernetes Dashboard. Access via:
 ./gitops.sh local monitoring uninstall
 ```
 
-See [Monitoring & Observability Guide](monitoring.md) for full details.
+Once installed, access Grafana at **http://localhost:8888/grafana** (via the main ingress, same port as Swagger).
+
+Stack includes:
+- **Prometheus** — metrics collection (7-day retention, 128Mi/256Mi resources)
+- **Grafana** — dashboards with pre-loaded CarSharing Services dashboard (64Mi/128Mi resources)
+- **Loki** — log aggregation (500Mi storage, 64Mi/128Mi resources)
+- **Fluent Bit** — DaemonSet log shipper (16Mi/32Mi per node)
+- **Tempo** — distributed tracing OTLP backend (500Mi storage, 64Mi/128Mi resources)
+
+See [Monitoring & Observability Guide](monitoring.md) for resource budgets, PromQL/LogQL queries, and configuration details.
 
 ---
 
