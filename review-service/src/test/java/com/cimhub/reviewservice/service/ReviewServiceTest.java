@@ -9,7 +9,7 @@ import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.exception.TripNotCompletedException;
 import com.cimhub.reviewservice.exception.UnauthorizedReviewerException;
 import com.cimhub.reviewservice.model.Review;
-import com.cimhub.reviewservice.repository.ReviewRepository;
+import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
 import com.cimhub.reviewservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 class ReviewServiceTest {
 
     @Mock
-    private ReviewRepository reviewRepository;
+    private MongoReviewDataRepository reviewRepository;
 
     @Mock
     private UserRepository userRepository;

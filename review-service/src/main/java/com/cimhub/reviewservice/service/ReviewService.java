@@ -14,7 +14,7 @@ import com.cimhub.reviewservice.exception.TripNotCompletedException;
 import com.cimhub.reviewservice.exception.UnauthorizedReviewerException;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
-import com.cimhub.reviewservice.repository.ReviewRepository;
+import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
 import com.cimhub.reviewservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private final MongoReviewDataRepository reviewRepository;
     private final UserRepository userRepository;
     private final TripServiceClient tripServiceClient;
     private final AuditService auditService;
