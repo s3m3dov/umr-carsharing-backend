@@ -12,6 +12,12 @@ grafana:
       memory: "128Mi"
       cpu: "100m"
 
+  # Configure Grafana to serve from /grafana subpath
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      serve_from_sub_path: true
+
   additionalDataSources:
     - name: Loki
       type: loki
