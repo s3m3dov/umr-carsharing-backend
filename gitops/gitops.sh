@@ -521,7 +521,7 @@ if [ "$TARGET" == "local" ]; then
             case $SUBCOMMAND in
                 install)
                     echo "Installing monitoring stack..."
-                    ./gitops/scripts/monitoring/setup-monitoring.sh
+                    ./gitops/scripts/monitoring/setup-monitoring.sh local
                     ;;
                 uninstall)
                     echo "Removing monitoring stack..."
@@ -655,7 +655,7 @@ elif [ "$TARGET" == "gcp" ]; then
             case $SUBCOMMAND in
                 install)
                     echo "Installing monitoring stack on GKE..."
-                    ./gitops/scripts/monitoring/setup-monitoring.sh
+                    ./gitops/scripts/monitoring/setup-monitoring.sh gcp
                     ;;
                 uninstall)
                     echo "Removing monitoring stack from GKE..."
