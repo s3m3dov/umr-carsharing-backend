@@ -50,6 +50,6 @@ config:
         Port                 3100
         Labels               job=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name'], service=$service, level=$level
         line_format          json
-        label_keys           level,service
+        label_keys           $level,$service
         remove_keys          kubernetes,stream
         Auto_Kubernetes_Labels Off
