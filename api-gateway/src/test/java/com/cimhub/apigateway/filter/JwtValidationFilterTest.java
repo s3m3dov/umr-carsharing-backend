@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -100,13 +101,13 @@ class JwtValidationFilterTest {
     void filter_whenAuthServiceFails_shouldMapToUnauthorized() {
         WebClient webClient = mock(WebClient.class);
         WebClient.RequestBodyUriSpec bodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
-        WebClient.RequestHeadersSpec<?> headersSpec = mock(WebClient.RequestHeadersSpec.class);
+        WebClient.RequestHeadersSpec headersSpec = mock(WebClient.RequestHeadersSpec.class);
         WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
 
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.post()).thenReturn(bodyUriSpec);
         when(bodyUriSpec.uri(anyString())).thenReturn(bodyUriSpec);
-        when(bodyUriSpec.bodyValue(any())).thenReturn(headersSpec);
+        doReturn(headersSpec).when(bodyUriSpec).bodyValue(any());
         when(headersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(any(Class.class))).thenReturn(Mono.error(new RuntimeException("auth unavailable")));
 
