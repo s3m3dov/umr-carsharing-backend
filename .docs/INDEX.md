@@ -12,6 +12,10 @@ Welcome to the Car Sharing Backend documentation.
 - **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
 
+### Testing
+- **[Testing Guide](technical/testing/testing.md)**: Comprehensive testing documentation — running tests, code coverage, test types
+- **[Testing Quick Reference](technical/testing/testing_quick_reference.md)**: Quick commands for running tests and viewing coverage
+
 ### Architecture & Infrastructure
 - **[Architecture & Tech Stack](technical/crucial/architecture.md)**: System design, microservices, and technical capabilities
 - **[API Development Guide](technical/crucial/api-guide.md)**: Authentication, response formats, and implementation details
