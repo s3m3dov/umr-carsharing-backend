@@ -13,6 +13,23 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.9.2] – Trip Start, Retrieval & Test Coverage (2026-04-06)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- Trip start workflow support with invalid transition handling
+- Booking and trip retrieval endpoints in trip-service
+- Additional unit and integration tests for booking and trip retrieval flows
+
+### Changed
+
+- Refactored completion workflows with detailed response DTOs
+- Consolidated booking, completion, and cancellation tests into a single trip test script
+
+---
+
 ## [v0.9.1] – Testing & Enhancements (2026-04-05)
 
 **Author:** s3m3dov (Hikmat Samadov)
