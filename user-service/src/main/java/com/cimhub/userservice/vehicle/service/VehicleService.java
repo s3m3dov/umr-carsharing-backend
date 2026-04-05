@@ -33,6 +33,11 @@ public class VehicleService {
     public VehicleResponse registerVehicle(RegisterVehicleRequest request) {
         log.info("Registering new vehicle: {} for userId: {}", request.vehicleNumber(), request.userId());
 
+        if (vehicleRepository.existsByUserId(request.userId())) {
+            log.warn("Driver {} already has a vehicle registered", request.userId());
+            return null;
+        }
+
         String normalizedVehicleNumber = request.vehicleNumber().toUpperCase(Locale.ROOT);
 
         if (vehicleRepository.existsByVehicleNumber(normalizedVehicleNumber)) {

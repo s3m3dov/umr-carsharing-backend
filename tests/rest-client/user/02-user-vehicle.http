@@ -69,25 +69,25 @@ client.test("Register vehicle: success result", function() {
 });
 %}
 
-### 5) Register duplicate vehicle (negative: expect 409)
+### 5) Register a second vehicle for the same driver (negative: expect 409 — one vehicle per driver)
 POST {{baseUrl}}/user-service/api/vehicles/register
 Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
   "userId": "{{driverEmail}}",
-  "vehicleName": "Duplicate Car",
-  "vehicleNumber": "{{vehicleNumber}}",
+  "vehicleName": "Second Car",
+  "vehicleNumber": "SECOND-{{runId}}",
   "vehicleType": "suv",
   "vehicleColor": "black",
   "seatingCapacity": "5"
 }
 
 > {%
-client.test("Duplicate vehicle: status 409", function() {
-  client.assert(response.status === 409, "Expected 409 VEHICLE_ALREADY_EXISTS, got " + response.status);
+client.test("Second vehicle registration: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 — driver already has a vehicle, got " + response.status);
 });
-client.test("Duplicate vehicle: error field set", function() {
+client.test("Second vehicle registration: error field set", function() {
   client.assert(response.body.error != null, "Expected error field in response");
 });
 %}

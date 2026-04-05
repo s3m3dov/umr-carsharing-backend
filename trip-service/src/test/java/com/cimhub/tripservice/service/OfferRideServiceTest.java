@@ -10,7 +10,9 @@ import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.routes.OSMRoute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,6 +44,9 @@ class OfferRideServiceTest {
     private TripsRepository tripsRepository;
 
     @Mock
+    private VehicleDocumentRepository vehicleDocumentRepository;
+
+    @Mock
     private OSMRoute osmRoute;
 
     @Mock
@@ -53,7 +59,7 @@ class OfferRideServiceTest {
 
     @BeforeEach
     void setUp() {
-        offerRideService = new OfferRideService(tripsRepository, osmRoute, tripGeospatialService, auditService);
+        offerRideService = new OfferRideService(tripsRepository, vehicleDocumentRepository, osmRoute, tripGeospatialService, auditService);
     }
 
     @Test
@@ -67,8 +73,14 @@ class OfferRideServiceTest {
                 "routability",
                 1.0);
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(route), List.of());
+        VehicleDocument vehicleDoc = new VehicleDocument();
+        vehicleDoc.setUserId("driver-1");
+        vehicleDoc.setVehicleNumber("HE-XX-1234");
+        vehicleDoc.setVehicleType("SEDAN");
 
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
+                .thenReturn(Optional.of(vehicleDoc));
         when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> {
             Trip saved = invocation.getArgument(0);
             saved.setTripId("trip-42");
@@ -84,6 +96,7 @@ class OfferRideServiceTest {
         assertEquals(1800.0, response.routeDurationInSeconds());
         assertEquals(30.0, response.routeDurationInMinutes());
         assertEquals("UTC", response.tripTimezone());
+        assertEquals(5.0, response.pricePerSeat());
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripsRepository).save(tripCaptor.capture());
@@ -91,6 +104,8 @@ class OfferRideServiceTest {
 
         assertEquals("driver-1", savedTrip.getDriverId());
         assertEquals("HE-XX-1234", savedTrip.getVehicleNumber());
+        assertEquals("SEDAN", savedTrip.getCarType());
+        assertEquals(5.0, savedTrip.getPricePerSeat());
         assertEquals(TripStatus.AVAILABLE, savedTrip.getTripStatus());
         assertEquals(0, savedTrip.getBookedSeats());
         assertEquals(Instant.parse("2026-05-01T10:15:30Z"), savedTrip.getTripStartDateTimeUTC());
@@ -126,6 +141,53 @@ class OfferRideServiceTest {
         verifyNoInteractions(tripGeospatialService, auditService);
     }
 
+    @Test
+    void offerRide_whenVehicleNotFound_shouldReturnFailureResponse() {
+        OfferRideRequest request = buildRequest();
+        OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(
+                new Route(new Geometry("LineString", List.of()), List.of(), 1000.0, 60.0, "routability", 1.0)),
+                List.of());
+
+        when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
+                .thenReturn(Optional.empty());
+
+        OfferRideResponse response = offerRideService.offerRide(request);
+
+        assertFalse(response.tripCreated());
+        assertEquals("Vehicle not found or does not belong to driver", response.errorMessage());
+        verify(tripsRepository, never()).save(any(Trip.class));
+        verifyNoInteractions(tripGeospatialService, auditService);
+    }
+
+    @Test
+    void offerRide_withZeroPricePerSeat_shouldCreateFreeRide() {
+        OfferRideRequest request = OfferRideRequest.builder()
+                .driverId("driver-1")
+                .sourceAddress(buildRequest().sourceAddress())
+                .destinationAddress(buildRequest().destinationAddress())
+                .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
+                .totalSeats(3)
+                .pricePerSeat(0.0)
+                .build();
+        Route route = new Route(
+                new Geometry("LineString", List.of()),
+                List.of(), 1000.0, 60.0, "routability", 1.0);
+        OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(route), List.of());
+        VehicleDocument vehicleDoc = new VehicleDocument();
+        vehicleDoc.setVehicleType("SEDAN");
+
+        when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
+                .thenReturn(Optional.of(vehicleDoc));
+        when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        OfferRideResponse response = offerRideService.offerRide(request);
+
+        assertTrue(response.tripCreated());
+        assertEquals(0.0, response.pricePerSeat());
+    }
+
     private OfferRideRequest buildRequest() {
         Points source = new Points();
         source.setLatitude(52.5);
@@ -137,12 +199,11 @@ class OfferRideServiceTest {
 
         return OfferRideRequest.builder()
                 .driverId("driver-1")
-                .vehicleNumber("HE-XX-1234")
-                .carType("SEDAN")
-                .sourceAddress(source)
+.sourceAddress(source)
                 .destinationAddress(destination)
                 .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
                 .totalSeats(3)
+                .pricePerSeat(5.0)
                 .build();
     }
 }

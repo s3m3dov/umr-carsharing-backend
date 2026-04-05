@@ -641,39 +641,105 @@ Retrieves completed and cancelled trips for a driver.
 
 ---
 
-## 5. Ride Management — Passenger (`/api/rides`)
+#### 4.8 Complete a Trip
 
-The `RideController` handles the passenger side of trip participation.
+**POST** `/api/trips/{tripId}/complete?driverId={driverId}`
 
-### Endpoints
+Driver ends the full trip at the final destination. All remaining active bookings (`CONFIRMED` / `IN_PROGRESS`) that passengers haven't individually completed yet are auto-completed.
+Trip moves from `IN_PROGRESS` → `COMPLETED`.
 
-#### 5.1 Book a Ride (Passenger)
+**Parameters:**
+- `tripId` (path, required): Trip ID
+- `driverId` (query, required): Driver's user ID
 
-**POST** `/api/rides/book`
-
-Passenger books a seat on an existing trip. Creates a pending booking waiting for driver acceptance.
-
-**Request:**
+**Response (200 OK):**
 ```json
 {
-  "passengerId": "jane.passenger@example.com",
-  "tripId": "trip_001",
-  "numberOfSeats": 2
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "data": "Ride booked successfully",
-  "message": "Operation successful",
+  "data": "Trip completed successfully. 2 remaining ride(s) were auto-completed",
+  "message": "Trip completed successfully. 2 remaining ride(s) were auto-completed",
   "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
 
 **Error Responses:**
 - 404: Trip not found
-- 409: No available seats
+- 401: Caller is not the driver of this trip (`UNAUTHORIZED`)
+- 409: Trip is not in `IN_PROGRESS` state (`TRIP_NOT_IN_PROGRESS`)
+
+**Authentication:** Required (DRIVER role)
+
+> **Note:** A "start trip" endpoint (`AVAILABLE → IN_PROGRESS`) is not yet implemented. This endpoint requires the trip to already be in `IN_PROGRESS` state.
+
+---
+
+## 5. Ride Management — Passenger (`/api/rides`)
+
+The `RideController` handles the passenger side of trip participation.
+
+### Endpoints
+
+#### 5.1 Book a Ride — Auto-Confirm (Passenger)
+
+**POST** `/api/rides/book`
+
+Passenger books a seat. Booking is immediately `CONFIRMED` — no driver action required.
+
+**Request:**
+```json
+{
+  "tripId": "trip_001",
+  "passengerId": "jane.passenger@example.com",
+  "driverId": "john.driver@example.com",
+  "pickupPoint": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeAddress": "Bonn Hbf"
+  },
+  "requestedSeats": 1
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "data": "Ride booked successfully.",
+  "message": "Ride booked successfully.",
+  "timestamp": "2026-04-05T10:00:00Z"
+}
+```
+
+**Error Responses:**
+- 404: Trip not found
+- 409: No available seats (`INSUFFICIENT_SEATS`)
+- 409: Passenger already booked this trip (`ALREADY_BOOKED`)
+
+**Authentication:** Required
+
+---
+
+#### 5.1b Book a Ride — Driver-Accept (Passenger)
+
+**POST** `/api/rides/book/new`
+
+Passenger requests a seat. Booking starts as `REQUESTED` and the driver must explicitly accept or reject it.
+
+**Request:** Same body as 5.1.
+
+**Response (201 Created):**
+```json
+{
+  "data": "Booking request submitted. Waiting for driver confirmation.",
+  "message": "Booking request submitted. Waiting for driver confirmation.",
+  "timestamp": "2026-04-05T10:00:00Z"
+}
+```
+
+**Error Responses:** Same as 5.1.
 
 **Authentication:** Required
 
@@ -723,7 +789,7 @@ Retrieves completed and cancelled rides for a passenger.
 
 ## 5b. Booking Management — Driver (`/api/bookings`)
 
-The `BookingController` lets drivers accept or reject incoming booking requests.
+The `BookingController` lets drivers accept, reject, or complete passenger rides.
 
 ### Endpoints
 
@@ -731,19 +797,20 @@ The `BookingController` lets drivers accept or reject incoming booking requests.
 
 **POST** `/api/bookings/accept?bookingId={bookingId}`
 
-Driver accepts a passenger's booking request, confirming the ride.
+Driver accepts a passenger's booking request. Booking moves from `REQUESTED` → `CONFIRMED`.
 
 **Response (200 OK):**
 ```json
 {
-  "data": "Booking accepted",
-  "message": "Operation successful",
+  "data": "Booking accepted successfully",
+  "message": "Booking accepted successfully",
   "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
 
 **Error Responses:**
 - 404: Booking not found
+- 409: Booking is not in `REQUESTED` state (`BOOKING_ALREADY_PROCESSED`)
 
 **Authentication:** Required (DRIVER role)
 
@@ -753,7 +820,36 @@ Driver accepts a passenger's booking request, confirming the ride.
 
 **POST** `/api/bookings/reject?bookingId={bookingId}`
 
-Driver rejects a passenger's booking request.
+Driver rejects a passenger's booking request. Booking moves from `REQUESTED` → `REJECTED`. Seat is freed.
+
+**Error Responses:**
+- 404: Booking not found
+- 409: Booking is not in `REQUESTED` state (`BOOKING_ALREADY_PROCESSED`)
+
+**Authentication:** Required (DRIVER role)
+
+---
+
+#### 5b.3 Complete a Passenger's Ride
+
+**POST** `/api/bookings/{bookingId}/complete?driverId={driverId}`
+
+Driver confirms a passenger's drop-off at their stop. The trip continues for remaining passengers.
+Booking moves from `CONFIRMED` or `IN_PROGRESS` → `COMPLETED`.
+
+**Response (200 OK):**
+```json
+{
+  "data": "Ride completed successfully",
+  "message": "Ride completed successfully",
+  "timestamp": "2026-04-05T10:00:00Z"
+}
+```
+
+**Error Responses:**
+- 404: Booking not found
+- 401: Caller is not the driver of this booking (`UNAUTHORIZED`)
+- 409: Ride is not in a completable state (`RIDE_NOT_COMPLETABLE`)
 
 **Authentication:** Required (DRIVER role)
 
@@ -1002,7 +1098,7 @@ Creates a notification and publishes it over WebSocket.
   "senderId": "john.driver@example.com",
   "title": "Booking Accepted",
   "message": "Your booking for trip_001 has been accepted.",
-  "type": "BOOKING_ACCEPTED",
+  "type": "BOOKING_CONFIRMED",
   "relatedEntityId": "trip_001"
 }
 ```
@@ -1196,13 +1292,19 @@ curl -X POST http://localhost:8080/trip-service/api/rides/book \
 | `VALIDATION_ERROR` | Input validation failed | 400 |
 | `INVALID_CREDENTIALS` | Invalid email or password | 401 |
 | `INVALID_TOKEN` | JWT token is invalid or expired | 401 |
+| `UNAUTHORIZED` | User lacks permission for operation | 401 |
 | `USER_NOT_FOUND` | User does not exist | 404 |
 | `USER_ALREADY_EXISTS` | User with email already registered | 409 |
 | `VEHICLE_NOT_FOUND` | Vehicle does not exist | 404 |
 | `VEHICLE_ALREADY_EXISTS` | Vehicle already registered | 409 |
-| `TRIP_NOT_FOUND` | Trip does not exist | 404 |
-| `TRIP_FULL` | Trip has no available seats | 409 |
-| `UNAUTHORIZED` | User lacks permission for operation | 403 |
+| `RESOURCE_NOT_FOUND` | Requested resource does not exist | 404 |
+| `TRIP_NOT_AVAILABLE` | Trip not found or not available for booking | 404 |
+| `INSUFFICIENT_SEATS` | Trip has no available seats | 409 |
+| `ALREADY_BOOKED` | Passenger already has a booking on this trip | 409 |
+| `ALREADY_CANCELLED` | Trip or booking is already cancelled | 409 |
+| `BOOKING_ALREADY_PROCESSED` | Booking is no longer in REQUESTED state | 409 |
+| `TRIP_NOT_IN_PROGRESS` | Trip completion attempted but trip is not IN_PROGRESS | 409 |
+| `RIDE_NOT_COMPLETABLE` | Ride completion attempted but ride is not in CONFIRMED or IN_PROGRESS state | 409 |
 
 ---
 

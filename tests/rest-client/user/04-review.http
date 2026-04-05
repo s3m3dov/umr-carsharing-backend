@@ -1,0 +1,291 @@
+# 04-review.http
+# Run after 01-auth.http and 02-user-vehicle.http
+# Creates its own trip and tests review scenarios
+
+@baseUrl = http://localhost:8888
+
+### 1) Offer a new trip (for review testing)
+POST {{baseUrl}}/trip-service/api/trips/offer
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "driverId": "{{driverEmail}}",
+  "sourceAddress": {
+    "latitude": 50.9154,
+    "longitude": 8.7747,
+    "placeId": "",
+    "placeAddress": "Frankfurt Hauptbahnhof"
+  },
+  "destinationAddress": {
+    "latitude": 50.8265,
+    "longitude": 7.1895,
+    "placeId": "",
+    "placeAddress": "Köln Hbf"
+  },
+  "tripStartDateTime": "{{tripStartDateTime}}",
+  "totalSeats": 3,
+  "pricePerSeat": 8.0
+}
+
+> {%
+client.test("Offer trip for review: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+if (response.body && response.body.data && response.body.data.tripId) {
+  client.global.set("reviewTripId", response.body.data.tripId);
+}
+%}
+
+### 2) Book ride (auto-confirm)
+POST {{baseUrl}}/trip-service/api/rides/book
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "tripId": "{{reviewTripId}}",
+  "passengerId": "{{passengerEmail}}",
+  "driverId": "{{driverEmail}}",
+  "pickupPoint": {
+    "latitude": 50.9154,
+    "longitude": 8.7747,
+    "placeAddress": "Frankfurt Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.8265,
+    "longitude": 7.1895,
+    "placeAddress": "Köln Hbf"
+  },
+  "rideStartTime": "{{tripStartDateTime}}",
+  "requestedSeats": 1
+}
+
+> {%
+client.test("Book ride for review: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+%}
+
+### 3) Get active rides to find the rideId
+GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Get active rides: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+if (response.body && response.body.data && Array.isArray(response.body.data)) {
+  var rides = response.body.data;
+  for (var i = 0; i < rides.length; i++) {
+    if (rides[i] && rides[i].tripId === client.global.get("reviewTripId")) {
+      client.global.set("reviewRideId", rides[i].rideId);
+      break;
+    }
+  }
+}
+%}
+
+### 4) Submit review before trip completion (negative: expect 400 TRIP_NOT_COMPLETED)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{reviewTripId}}",
+  "bookingId": "{{reviewRideId}}",
+  "rating": 5,
+  "comment": "Great driver, very comfortable ride!"
+}
+
+> {%
+client.test("Review before completion: status 400", function() {
+  client.assert(response.status === 400, "Expected 400 TRIP_NOT_COMPLETED, got " + response.status);
+});
+client.test("Review before completion: error field set", function() {
+  client.assert(response.body.error != null, "Expected error field in response");
+});
+%}
+
+### 5) Submit review for non-existent booking (negative: expect 404)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{reviewTripId}}",
+  "bookingId": "non-existent-booking-id",
+  "rating": 4,
+  "comment": "Good passenger, on time and polite"
+}
+
+> {%
+client.test("Review non-existent booking: status 400 or 404", function() {
+  client.assert(response.status === 400 || response.status === 404,
+    "Expected 400/404, got " + response.status);
+});
+%}
+
+### 6) Start the trip (sets tripStatus to IN_PROGRESS)
+POST {{baseUrl}}/trip-service/api/trips/{{reviewTripId}}/start?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Start trip: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 7) Complete the ride (sets booking status to COMPLETED)
+POST {{baseUrl}}/trip-service/api/bookings/{{reviewRideId}}/complete?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Complete ride: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 8) Complete the trip (sets tripStatus to COMPLETED)
+POST {{baseUrl}}/trip-service/api/trips/{{reviewTripId}}/complete?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Complete trip: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 9) Submit review for driver (happy path - after trip completion)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{reviewTripId}}",
+  "bookingId": "{{reviewRideId}}",
+  "rating": 5,
+  "comment": "Great driver, very comfortable ride!"
+}
+
+> {%
+client.test("Submit driver review: status 201", function() {
+  client.assert(response.status === 201, "Expected 201, got " + response.status);
+});
+client.test("Submit driver review: review data returned", function() {
+  client.assert(response.body.data != null, "Expected review data in response");
+  client.assert(response.body.data.reviewId != null, "Expected reviewId");
+});
+%}
+
+### 10) Submit review for passenger (happy path - driver reviews passenger)
+POST {{baseUrl}}/review-service/api/reviews/passenger
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{driverEmail}}",
+  "userRole": "DRIVER",
+  "tripId": "{{reviewTripId}}",
+  "bookingId": "{{reviewRideId}}",
+  "rating": 4,
+  "comment": "Pleasant passenger, on time and polite"
+}
+
+> {%
+client.test("Submit passenger review: status 201", function() {
+  client.assert(response.status === 201, "Expected 201, got " + response.status);
+});
+client.test("Submit passenger review: review data returned", function() {
+  client.assert(response.body.data != null, "Expected review data in response");
+  client.assert(response.body.data.reviewId != null, "Expected reviewId");
+});
+%}
+
+### 11) Submit review again (negative: expect 409 REVIEW_ALREADY_EXISTS)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{reviewTripId}}",
+  "bookingId": "{{reviewRideId}}",
+  "rating": 3,
+  "comment": "Trying to submit again"
+}
+
+> {%
+client.test("Submit duplicate review: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 REVIEW_ALREADY_EXISTS, got " + response.status);
+});
+%}
+
+### 12) Get driver reviews (happy path)
+GET {{baseUrl}}/review-service/api/reviews/driver/{{driverEmail}}
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+> {%
+client.test("Get driver reviews: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Get driver reviews: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+  client.assert(response.body.data.length > 0, "Expected at least one review");
+});
+%}
+
+### 13) Get passenger reviews (happy path)
+GET {{baseUrl}}/review-service/api/reviews/passenger/{{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Get passenger reviews: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Get passenger reviews: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+  client.assert(response.body.data.length > 0, "Expected at least one review");
+});
+%}
+
+### 14) Get driver average rating (happy path)
+GET {{baseUrl}}/review-service/api/reviews/driver/{{driverEmail}}/average-rating
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+> {%
+client.test("Get driver average rating: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Get driver average rating: returns rating data", function() {
+  client.assert(response.body.data != null, "Expected rating data in response");
+  client.assert(response.body.data.averageRating != null, "Expected averageRating field");
+});
+%}
+
+### 15) Get passenger average rating (happy path)
+GET {{baseUrl}}/review-service/api/reviews/passenger/{{passengerEmail}}/average-rating
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Get passenger average rating: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Get passenger average rating: returns rating data", function() {
+  client.assert(response.body.data != null, "Expected rating data in response");
+  client.assert(response.body.data.averageRating != null, "Expected averageRating field");
+});
+%}

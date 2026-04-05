@@ -3,12 +3,18 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
+import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
+import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
+import com.cimhub.tripservice.service.TripService;
 import com.cimhub.tripservice.service.ActiveRidesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,8 +41,10 @@ public class TripController {
 
     private final OfferRideService offerRideService;
     private final CancellationService cancellationService;
+    private final CompletionService completionService;
     private final TripGeospatialService geoService;
     private final ActiveRidesService activeRidesService;
+    private final TripService tripService;
 
     @Operation(
             summary = "Offer a new trip (driver creates a ride)",
@@ -95,6 +103,30 @@ public class TripController {
             @Valid @RequestBody CancelTripRequest request) {
         log.info("Cancelling trip: {} for user: {}", request.tripId(), request.userId());
         String response = cancellationService.cancelTrip(request);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Get trip details",
+            description = "Retrieve detailed information about a specific trip by ID. Used for review validation and other purposes."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip details retrieved successfully",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+            )
+    })
+    @GetMapping("/{tripId}")
+    public ResponseEntity<ApiResponseWrapper<TripResponse>> getTrip(
+            @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String tripId) {
+        log.info("Fetching trip details for tripId: {}", tripId);
+        TripResponse response = tripService.getTrip(tripId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -258,5 +290,65 @@ public class TripController {
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
+    }
+
+    @Operation(
+            summary = "Start a trip",
+            description = "Driver starts the trip. Trip status changes from AVAILABLE to IN_PROGRESS."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip started successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Trip already in progress or completed"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Only the driver can start their own trip"
+            )
+    })
+    @PostMapping("/{tripId}/start")
+    public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
+            @Parameter(description = "Trip ID") @PathVariable String tripId,
+            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
+        log.info("Driver {} starting trip: {}", driverId, tripId);
+        StartTripResponse response = tripService.startTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
+    }
+
+    @Operation(
+            summary = "Complete a trip",
+            description = "Driver ends the trip at the final destination. All remaining active rides are auto-completed."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip completed successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Trip is not in progress"
+            )
+    })
+    @PostMapping("/{tripId}/complete")
+    public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
+            @Parameter(description = "Trip ID") @PathVariable String tripId,
+            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
+        log.info("Driver {} completing trip: {}", driverId, tripId);
+        CompleteTripResponse response = completionService.completeTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(
+                response,
+                OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
     }
 }

@@ -13,8 +13,6 @@ public final class TripApiExamples {
     public static final String OFFER_TRIP_REQUEST = """
             {
               "driverId": "john.driver@example.com",
-              "vehicleNumber": "HE-XX-1234",
-              "carType": "SEDAN",
               "sourceAddress": {
                 "latitude": 50.8154,
                 "longitude": 8.6747
@@ -24,7 +22,8 @@ public final class TripApiExamples {
                 "longitude": 7.0895
               },
               "tripStartDateTime": "2024-03-25T08:00:00Z",
-              "totalSeats": 3
+              "totalSeats": 3,
+              "pricePerSeat": 5.0
             }""";
 
     public static final String CANCEL_TRIP_REQUEST = """

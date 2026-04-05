@@ -116,6 +116,13 @@ public class AuditService {
     }
 
     /**
+     * Log a COMPLETE action (for trip/ride completions)
+     */
+    public void logComplete(EntityType entityType, String entityId, String performedBy, String details) {
+        logAction(AuditAction.COMPLETE, entityType, entityId, performedBy, details);
+    }
+
+    /**
      * Log a PUBLISH action (for reviews, etc.)
      */
     public void logPublish(EntityType entityType, String entityId, String performedBy, String details) {
