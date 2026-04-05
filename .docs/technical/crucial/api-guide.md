@@ -41,6 +41,30 @@ All API responses follow a standard envelope:
 
 > `data` and `error` are mutually exclusive — only one is present per response.
 
+## 📖 Terminology: Ride vs Booking
+
+This API uses two parallel terms for the passenger's reservation:
+
+| Term | Usage | Example |
+|------|-------|---------|
+| **Ride** | User-facing endpoints | `/api/rides/book`, `PassengerRideResponse`, `rideId` |
+| **Booking** | Internal entity | `BookingStatus` enum, database entity, admin endpoints |
+
+### Why Two Terms?
+
+- **Ride** feels natural to end users ("my ride starts at 3pm")
+- **Booking** accurately represents the internal entity and state machine
+
+### API vs Internal Mapping
+
+| API (Ride) | Internal (Booking) |
+|------------|-------------------|
+| `/api/rides/*` | Booking entity |
+| `rideId` field | `bookingId` in database |
+| `rideStatus` field | `BookingStatus` enum |
+
+> **Note:** For admin endpoints, "Booking" terminology is used directly (e.g., `/api/admin/bookings`).
+
 ## 🛠️ Technical Implementation Details
 
 ### Timezone Handling

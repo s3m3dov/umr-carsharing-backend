@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface VehicleRepository extends MongoRepository<Vehicle, String> {
     List<Vehicle> findByUserId(@Param("userId") String userId);
+    boolean existsByUserId(@Param("userId") String userId);
     boolean existsByVehicleNumber(@Param("vehicleNumber") String vehicleNumber);
 }

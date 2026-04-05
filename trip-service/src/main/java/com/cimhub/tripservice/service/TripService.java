@@ -1,6 +1,10 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
+import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -10,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +50,74 @@ public class TripService {
         tripsRepository.save(trip);
     }
 
+    /**
+     * Get trip details by ID.
+     * Returns public trip information for review validation and other purposes.
+     *
+     * @param tripId the trip ID
+     * @return TripResponse with trip details
+     * @throws ResourceNotFoundException if trip is not found
+     */
+    public TripResponse getTrip(String tripId) {
+        Trip trip = tripsRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+        return mapToTripResponse(trip);
+    }
+
+    @Transactional
+    public StartTripResponse startTrip(String tripId, String driverId) {
+        Trip trip = tripsRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+
+        if (!trip.getDriverId().equals(driverId)) {
+            throw new UnauthorizedException("You are not authorized to start this trip");
+        }
+
+        if (trip.getTripStatus() != TripStatus.AVAILABLE) {
+            throw new InvalidTripStateException(
+                    String.format("Cannot start trip - current status: %s", trip.getTripStatus()));
+        }
+
+        trip.setTripStatus(TripStatus.IN_PROGRESS);
+        trip.setUpdatedAt(Instant.now());
+        tripsRepository.save(trip);
+
+        log.info("Driver {} started trip {}", driverId, tripId);
+        return StartTripResponse.builder()
+                .tripId(trip.getTripId())
+                .driverId(trip.getDriverId())
+                .tripStatus(trip.getTripStatus())
+                .updatedAt(trip.getUpdatedAt())
+                .build();
+    }
+
+    private TripResponse mapToTripResponse(Trip trip) {
+        String timezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
+                ? "UTC"
+                : trip.getTripTimezone();
+
+        ZonedDateTime tripStartDateTime = trip.getTripStartDateTimeUTC() != null
+                ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), java.time.ZoneId.of(timezone))
+                : null;
+
+        return TripResponse.builder()
+                .tripId(trip.getTripId())
+                .driverId(trip.getDriverId())
+                .vehicleNumber(trip.getVehicleNumber())
+                .carType(trip.getCarType())
+                .sourceAddress(trip.getSourceAddress())
+                .destinationAddress(trip.getDestinationAddress())
+                .tripStartDateTime(tripStartDateTime)
+                .tripTimezone(timezone)
+                .tripStartDateTimeInUserTimezone(tripStartDateTime)
+                .userTimezone(timezone)
+                .totalSeats(trip.getTotalSeats())
+                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
+                .tripStatus(trip.getTripStatus())
+                .pricePerSeat(trip.getPricePerSeat())
+                .build();
+    }
+
     private void validateTransition(TripStatus currentStatus, TripStatus newStatus) {
         if (currentStatus == newStatus) {
             return;
@@ -52,7 +125,7 @@ public class TripService {
 
         Set<TripStatus> allowed = VALID_TRANSITIONS.get(currentStatus);
         if (allowed == null || !allowed.contains(newStatus)) {
-            throw new IllegalStateException(
+            throw new InvalidTripStateException(
                     String.format("Cannot transition trip from %s to %s", currentStatus, newStatus));
         }
     }

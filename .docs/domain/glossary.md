@@ -123,6 +123,69 @@ A passenger's actual journey segment within a trip. While a trip is the driver's
 
 ---
 
+## Terminology Note: Ride vs Booking
+
+This codebase uses **two parallel terms** for the passenger's reservation:
+
+| Term | Context | Example |
+|------|---------|---------|
+| **Ride** | User-facing / API layer | "I booked a ride", `/api/rides/*` endpoints |
+| **Booking** | Internal / Entity layer | `Booking.java` entity, `BookingStatus` enum |
+
+### Why Two Terms?
+
+- **Ride** feels natural to end users ("my ride starts at 3pm")
+- **Booking** accurately represents the internal entity and state machine
+
+### Usage in Code
+
+| Layer | Preferred Term |
+|-------|----------------|
+| API Endpoints | `Ride` (e.g., `/api/rides/book`, `/api/rides/cancel`) |
+| Controllers | `RideController` |
+| DTOs (response) | `PassengerRideResponse`, `OfferRideResponse` |
+| Entities | `Booking.java` (internal) |
+| Status enums | `BookingStatus` (REQUESTED, CONFIRMED, etc.) |
+| Services | Methods use "ride" for user-facing operations |
+
+### Field Mapping
+
+When converting between layers:
+- API `rideId` maps to entity `bookingId`
+- API `rideStatus` maps to entity field of type `BookingStatus`
+
+---
+
+## DTO Naming Conventions
+
+All DTOs follow consistent naming patterns:
+
+### Request DTOs
+```
+{Action}{Entity}Request
+```
+Examples: `OfferRideRequest`, `JoinTripRequest`, `FindRideRequest`, `CancelTripRequest`
+
+### Response DTOs
+```
+{Entity}Response
+{Role}{Entity}Response
+```
+Examples: `TripResponse`, `BookingResponse`, `DriverTripResponse`, `PassengerRideResponse`
+
+### Special Cases
+- Reports: `{ReportType}Report` (e.g., `RevenueReport`, `BookingSummaryReport`)
+- Audit: `AuditLogResponse`
+
+### Location Fields
+
+| Level | Fields | Example DTO |
+|-------|--------|-------------|
+| Trip (driver's full journey) | `sourceAddress` / `destinationAddress` | `TripResponse`, `DriverTripResponse` |
+| Booking (passenger's segment) | `pickupLocation` / `dropoffLocation` | `PassengerRideResponse`, `BookingResponse` |
+
+---
+
 ## Related Documents
 
 - [User Flows](../product/user-flows.md) - Detailed user journeys
