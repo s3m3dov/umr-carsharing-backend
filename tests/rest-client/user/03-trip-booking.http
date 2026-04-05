@@ -29,17 +29,80 @@ Content-Type: application/json
 }
 
 > {%
+client.test("Offer trip: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+client.test("Offer trip: tripId returned", function() {
+  client.assert(response.body.data != null, "Expected data");
+  client.assert(response.body.data.tripId != null, "Expected tripId in data");
+});
 if (response.body && response.body.data && response.body.data.tripId) {
   client.global.set("tripId", response.body.data.tripId);
 }
 %}
 
-### 2) Search matching route (passenger)
+### 2) Offer trip without auth (negative: expect 401 or 403)
+POST {{baseUrl}}/trip-service/api/trips/offer
+Content-Type: application/json
+
+{
+  "driverId": "{{driverEmail}}",
+  "vehicleNumber": "{{vehicleNumber}}",
+  "carType": "SEDAN",
+  "sourceAddress": { "latitude": 50.8154, "longitude": 8.6747, "placeId": "", "placeAddress": "Marburg Hauptbahnhof" },
+  "destinationAddress": { "latitude": 50.7265, "longitude": 7.0895, "placeId": "", "placeAddress": "Bonn Hbf" },
+  "tripStartDateTime": "{{tripStartDateTime}}",
+  "totalSeats": 3
+}
+
+> {%
+client.test("Offer trip no auth: status 401 or 403", function() {
+  client.assert(response.status === 401 || response.status === 403,
+    "Expected 401/403, got " + response.status);
+});
+%}
+
+### 3) Search matching route (passenger)
 GET {{baseUrl}}/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=1&effectiveUserId={{passengerEmail}}
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 
-### 3) Book ride (passenger happy path)
+> {%
+client.test("Search matching route: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Search matching route: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
+%}
+
+### 4) Search near source (passenger)
+GET {{baseUrl}}/trip-service/api/trips/search/near-source?latitude=50.8154&longitude=8.6747&requestedSeats=1
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Search near source: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Search near source: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
+%}
+
+### 5) Search near destination (passenger)
+GET {{baseUrl}}/trip-service/api/trips/search/near-destination?latitude=50.7265&longitude=7.0895&requestedSeats=1
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Search near destination: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 6) Book ride (passenger happy path)
 POST {{baseUrl}}/trip-service/api/rides/book
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -62,7 +125,17 @@ Content-Type: application/json
   "requestedSeats": 1
 }
 
-### 4) Book same trip again (negative: expect 409 ALREADY_BOOKED)
+> {%
+client.test("Book ride: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+client.test("Book ride: booking data returned", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+%}
+
+### 7) Book same trip again (negative: expect 409 ALREADY_BOOKED)
 POST {{baseUrl}}/trip-service/api/rides/book
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -85,12 +158,54 @@ Content-Type: application/json
   "requestedSeats": 1
 }
 
-### 5) Passenger active rides (captures rideId from this trip)
+> {%
+client.test("Duplicate booking: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 for duplicate booking, got " + response.status);
+});
+%}
+
+### 8) Book ride requesting too many seats (negative: expect 400 or 409)
+POST {{baseUrl}}/trip-service/api/rides/book
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "tripId": "{{tripId}}",
+  "passengerId": "{{passengerEmail}}",
+  "driverId": "{{driverEmail}}",
+  "pickupPoint": {
+    "latitude": 50.8154,
+    "longitude": 8.6747,
+    "placeAddress": "Marburg Hauptbahnhof"
+  },
+  "destinationPoint": {
+    "latitude": 50.7265,
+    "longitude": 7.0895,
+    "placeAddress": "Bonn Hbf"
+  },
+  "rideStartTime": "{{tripStartDateTime}}",
+  "requestedSeats": 999
+}
+
+> {%
+client.test("Too many seats: status 400 or 409", function() {
+  client.assert(response.status === 400 || response.status === 409,
+    "Expected 400/409 for insufficient seats, got " + response.status);
+});
+%}
+
+### 9) Passenger active rides (captures rideId from this trip)
 GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{passengerEmail}}
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 
 > {%
+client.test("Passenger active rides: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Passenger active rides: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
 if (response.body && response.body.data && Array.isArray(response.body.data)) {
   var rides = response.body.data;
   var selected = null;
@@ -109,11 +224,80 @@ if (response.body && response.body.data && Array.isArray(response.body.data)) {
 }
 %}
 
-### 6) Driver accepts booking (bookingId = rideId)
+### 10) Driver active trips
+GET {{baseUrl}}/trip-service/api/trips/active/driver/{{driverEmail}}
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+> {%
+client.test("Driver active trips: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Driver active trips: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
+%}
+
+### 11) Driver accepts booking
 POST {{baseUrl}}/trip-service/api/bookings/accept?bookingId={{rideId}}
 Authorization: Bearer {{driverToken}}
 
-### 7) Passenger active rides after acceptance (expect rideStatus CONFIRMED)
+> {%
+client.test("Accept booking: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 12) Accept already-confirmed booking (negative: expect 400 or 409)
+POST {{baseUrl}}/trip-service/api/bookings/accept?bookingId={{rideId}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Accept confirmed booking again: status 400 or 409", function() {
+  client.assert(response.status === 400 || response.status === 409,
+    "Expected 400/409 for already-confirmed booking, got " + response.status);
+});
+%}
+
+### 13) Passenger active rides after acceptance (expect rideStatus CONFIRMED)
 GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{passengerEmail}}
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
+
+> {%
+client.test("Active rides after accept: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Active rides after accept: booking is CONFIRMED", function() {
+  var rides = response.body.data;
+  var found = false;
+  for (var i = 0; i < rides.length; i++) {
+    if (rides[i] && rides[i].rideId === client.global.get("rideId")) {
+      found = true;
+      client.assert(rides[i].status === "CONFIRMED",
+        "Expected status CONFIRMED, got " + rides[i].status);
+      break;
+    }
+  }
+  client.assert(found, "Expected to find the accepted booking in active rides");
+});
+%}
+
+### 14) Passenger ride history (completed rides)
+GET {{baseUrl}}/trip-service/api/rides/history/passenger/{{passengerEmail}}
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Passenger ride history: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Passenger ride history: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
+%}
+
+### 15) Driver reject a booking (offer second trip then book it for reject test)
+# Note: This requires a fresh booking — use admin_booking_id if available, or skip manually.
+# Rejection is tested via: POST /api/bookings/reject?bookingId=<id>
+# See admin/03-admin-trip-booking-management.http for the reject flow in admin context.

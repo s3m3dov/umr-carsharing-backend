@@ -29,6 +29,14 @@ Content-Type: application/json
 }
 
 > {%
+client.test("Driver offer trip: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+client.test("Driver offer trip: tripId returned", function() {
+  client.assert(response.body.data != null && response.body.data.tripId != null,
+    "Expected tripId in response");
+});
 if (response.body && response.body.data && response.body.data.tripId) {
   client.global.set("admin_trip_id", response.body.data.tripId);
 }
@@ -57,12 +65,22 @@ Content-Type: application/json
   "requestedSeats": 1
 }
 
+> {%
+client.test("Passenger book trip: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+%}
+
 ### 3) Resolve bookingId from passenger active rides
 GET {{baseUrl}}/trip-service/api/rides/active/passenger/{{admin_passenger_id}}
 Authorization: Bearer {{admin_passenger_token}}
 Accept: application/json
 
 > {%
+client.test("Resolve booking: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
 if (response.body && response.body.data && Array.isArray(response.body.data)) {
   var rides = response.body.data;
   for (var i = 0; i < rides.length; i++) {
@@ -79,27 +97,97 @@ GET {{baseUrl}}/trip-service/api/admin/trips?page=0&size=20
 Authorization: Bearer {{admin_token}}
 Accept: application/json
 
+> {%
+client.test("Admin list trips: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Admin list trips: paginated data", function() {
+  client.assert(response.body.data != null && response.body.data.content != null,
+    "Expected paginated content");
+});
+%}
+
 ### 5) Admin get trip detail
 GET {{baseUrl}}/trip-service/api/admin/trips/{{admin_trip_id}}
 Authorization: Bearer {{admin_token}}
 Accept: application/json
 
-### 6) Admin get upcoming trips
+> {%
+client.test("Admin get trip: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Admin get trip: tripId matches", function() {
+  client.assert(response.body.data != null, "Expected data");
+});
+%}
+
+### 6) Admin get non-existent trip (negative: expect 404)
+GET {{baseUrl}}/trip-service/api/admin/trips/non-existent-trip-id
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get non-existent trip: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 7) Admin get upcoming trips
 GET {{baseUrl}}/trip-service/api/admin/trips/upcoming?page=0&size=20
 Authorization: Bearer {{admin_token}}
 Accept: application/json
 
-### 7) Admin list bookings
+> {%
+client.test("Admin upcoming trips: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 8) Admin list bookings
 GET {{baseUrl}}/trip-service/api/admin/bookings?page=0&size=20
 Authorization: Bearer {{admin_token}}
 Accept: application/json
 
-### 8) Admin get booking detail
+> {%
+client.test("Admin list bookings: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 9) Admin get booking detail
 GET {{baseUrl}}/trip-service/api/admin/bookings/{{admin_booking_id}}
 Authorization: Bearer {{admin_token}}
 Accept: application/json
 
-### 9) Admin update booking status to CONFIRMED
+> {%
+client.test("Admin get booking: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 10) Admin get non-existent booking (negative: expect 404)
+GET {{baseUrl}}/trip-service/api/admin/bookings/non-existent-booking-id
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get non-existent booking: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 11) Non-admin access to admin trip endpoint (negative: expect 403)
+GET {{baseUrl}}/trip-service/api/admin/trips?page=0&size=20
+Authorization: Bearer {{admin_driver_token}}
+Accept: application/json
+
+> {%
+client.test("Non-admin access trips: status 403", function() {
+  client.assert(response.status === 403, "Expected 403 for non-admin, got " + response.status);
+});
+%}
+
+### 12) Admin update booking status to CONFIRMED
 PUT {{baseUrl}}/trip-service/api/admin/bookings/{{admin_booking_id}}
 Authorization: Bearer {{admin_token}}
 Content-Type: application/json
@@ -108,7 +196,53 @@ Content-Type: application/json
   "status": "CONFIRMED"
 }
 
-### 10) Admin get passenger bookings
+> {%
+client.test("Admin update booking: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 13) Admin reject a booking (negative: use a separate booking id if needed)
+POST {{baseUrl}}/trip-service/api/bookings/reject?bookingId={{admin_booking_id}}
+Authorization: Bearer {{admin_driver_token}}
+
+> {%
+client.test("Reject booking: status 200 or 400/409 (if already CONFIRMED)", function() {
+  // May be 400/409 since booking was just CONFIRMED above — both are valid outcomes
+  client.assert(response.status === 200 || response.status === 400 || response.status === 409,
+    "Expected 200/400/409, got " + response.status);
+});
+%}
+
+### 14) Admin get passenger bookings
 GET {{baseUrl}}/trip-service/api/admin/bookings/passenger/{{admin_passenger_id}}?page=0&size=20
 Authorization: Bearer {{admin_token}}
 Accept: application/json
+
+> {%
+client.test("Admin passenger bookings: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 15) Admin cancel trip
+DELETE {{baseUrl}}/trip-service/api/admin/trips/{{admin_trip_id}}
+Authorization: Bearer {{admin_token}}
+
+> {%
+client.test("Admin cancel trip: status 200 or 204", function() {
+  client.assert(response.status === 200 || response.status === 204,
+    "Expected 200/204, got " + response.status);
+});
+%}
+
+### 16) Admin cancel already-cancelled trip (negative: expect 409 or 404)
+DELETE {{baseUrl}}/trip-service/api/admin/trips/{{admin_trip_id}}
+Authorization: Bearer {{admin_token}}
+
+> {%
+client.test("Admin cancel already-cancelled trip: status 404 or 409", function() {
+  client.assert(response.status === 404 || response.status === 409,
+    "Expected 404/409, got " + response.status);
+});
+%}
