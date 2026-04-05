@@ -4,15 +4,18 @@ import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.Instant;
 
+/**
+ * User model for the carsharing platform.
+ * Uses MongoDB for persistence.
+ * Stored in "users" collection.
+ */
 @Data
 @Document(collection = "users")
 public class User {
@@ -20,18 +23,16 @@ public class User {
     private String userId;
 
     @NotBlank
-    private String fullName;
+    private String firstName;
+
+    @NotBlank
+    private String lastName;
 
     @NotBlank
     @Email
-    @Indexed(unique = true)
     private String email;
 
-    @NotBlank
     private String phoneNumber;
-
-    @NotBlank
-    private String password;
 
     @NotNull
     private UserType userType;
@@ -39,21 +40,17 @@ public class User {
     @Positive
     private int age;
 
-    @Past
-    private Date dob;
+    private Instant dob;
 
-    private String empId;
+    private Instant createdAt = Instant.now();
 
-    private String organisationName;
-
-    private String profilePicUrl;
-
-    private Date createdDate = new Date();
+    private Instant updatedAt = Instant.now();
 
     private String createdBy;
 
     public User() {
-        this.createdDate = new Date();
+        this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
     }
 
     public void initializeCreatedBy() {

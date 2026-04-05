@@ -4,6 +4,7 @@ import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
 import com.cimhub.apigateway.constant.GatewayConstants;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -35,19 +36,26 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
+        // Strip any incoming X-User-* headers to prevent identity spoofing
+        ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
+                .headers(headers -> {
+                    headers.remove(GatewayConstants.USER_ID_HEADER);
+                    headers.remove(GatewayConstants.USER_EMAIL_HEADER);
+                    headers.remove(GatewayConstants.USER_ROLE_HEADER);
+                })
+                .build();
+        ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
+
         // Skip JWT validation for public endpoints
         if (isPublicPath(path)) {
             log.debug("Public path accessed: {}", path);
-            return chain.filter(exchange);
+            return chain.filter(sanitizedExchange);
         }
 
-        // TEMPORARILY DISABLED AUTH ENFORCEMENT
-        // return extractToken(exchange.getRequest(), path)
-        // .flatMap(this::validateTokenWithAuthService)
-        // .flatMap(response -> authorize(exchange, chain, response))
-        // .onErrorMap(this::mapToUnauthorizedIfNeeded);
-
-        return chain.filter(exchange);
+        return extractToken(sanitizedExchange.getRequest(), path)
+                .flatMap(this::validateTokenWithAuthService)
+                .flatMap(response -> authorize(sanitizedExchange, chain, response))
+                .onErrorMap(this::mapToUnauthorizedIfNeeded);
     }
 
     /**
@@ -65,6 +73,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .mutate()
                 .header(GatewayConstants.USER_EMAIL_HEADER, response.email())
                 .header(GatewayConstants.USER_ID_HEADER, response.email().toLowerCase())
+                .header(GatewayConstants.USER_ROLE_HEADER, response.role())
                 .build();
 
         return chain.filter(
@@ -103,7 +112,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .uri(serviceProperties.getAuth().getValidateUrl())
                 .bodyValue(new TokenValidationRequest(token))
                 .retrieve()
-                .bodyToMono(TokenValidationResponse.class);
+                .bodyToMono(AuthServiceResponse.class)
+                .map(AuthServiceResponse::data);
     }
 
     /**
@@ -144,6 +154,16 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private record TokenValidationRequest(String token) {
     }
 
-    private record TokenValidationResponse(String email, boolean valid) {
+    private record AuthServiceResponse(TokenValidationResponse data) {
+    }
+
+    private record TokenValidationResponse(
+            @JsonProperty("isValid") boolean isValid,
+            String email,
+            String role) {
+
+        public boolean valid() {
+            return isValid;
+        }
     }
 }

@@ -1,12 +1,16 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.common.dto.ApiResponse;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
-import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.JoinTripService;
-import com.cimhub.tripservice.service.ActiveRidesService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,41 +18,61 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/bookings")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Booking Management", description = "APIs for drivers to manage booking requests (accept/reject) and confirm passenger bookings for their trips.")
 public class BookingController {
 
     private final JoinTripService joinTripService;
     private final CancellationService cancellationService;
-    private final ActiveRidesService activeRidesService;
 
-    @PostMapping("/join")
-    public ResponseEntity<ApiResponse<String>> joinTrip(
-            @Valid @RequestBody JoinTripRequest request) {
-        log.info("Passenger joining trip: {}", request.tripId());
-        String response = joinTripService.joinTrip(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
+    @Operation(
+            summary = "Accept a booking request",
+            description = "Driver accepts a passenger's booking request, confirming the ride."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Booking accepted",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Booking not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            )
+    })
+    @PostMapping("/accept")
+    public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
+            @RequestParam String bookingId) {
+        log.info("Driver accepting booking: {}", bookingId);
+        String response = joinTripService.acceptBooking(bookingId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
-    @PostMapping("/cancel")
-    public ResponseEntity<ApiResponse<String>> cancelBooking(
-            @Valid @RequestBody CancelTripRequest request) {
-        log.info("Passenger cancelling booking: {}", request.rideId());
-        String response = cancellationService.cancelRide(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    @GetMapping("/active/passenger/{passengerId}")
-    public ResponseEntity<ApiResponse<List<PassengerRideResponse>>> getPassengerActiveBookings(
-            @PathVariable String passengerId) {
-        log.info("Fetching active bookings for passenger: {}", passengerId);
-        List<PassengerRideResponse> activeBookings = activeRidesService.findPassengerActiveRides(passengerId);
-        return ResponseEntity.ok(ApiResponse.success(activeBookings));
+    @Operation(
+            summary = "Reject a booking request",
+            description = "Driver rejects a passenger's booking request."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Booking rejected",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.CANCEL_BOOKING_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Booking not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            )
+    })
+    @PostMapping("/reject")
+    public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
+            @RequestParam String bookingId) {
+        log.info("Driver rejecting booking: {}", bookingId);
+        String response = joinTripService.rejectBooking(bookingId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }

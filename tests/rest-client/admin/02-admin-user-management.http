@@ -1,0 +1,260 @@
+# admin/02-admin-user-management.http
+# Run after admin/01-admin-auth.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Admin list drivers
+GET {{baseUrl}}/user-service/api/admin/drivers?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin list drivers: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Admin list drivers: paginated", function() {
+  client.assert(response.body.data != null, "Expected data");
+  client.assert(response.body.data.content != null, "Expected paginated content");
+});
+%}
+
+### 2) Admin get driver detail
+GET {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get driver: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Admin get driver: userId matches", function() {
+  client.assert(response.body.data != null, "Expected data");
+});
+%}
+
+### 3) Admin get non-existent driver (negative: expect 404)
+GET {{baseUrl}}/user-service/api/admin/drivers/nobody-does-not-exist@example.com
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get non-existent driver: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 4) Non-admin access to admin endpoint (negative: expect 403)
+GET {{baseUrl}}/user-service/api/admin/drivers?page=0&size=20
+Authorization: Bearer {{admin_driver_token}}
+Accept: application/json
+
+> {%
+client.test("Non-admin list drivers: status 403", function() {
+  client.assert(response.status === 403, "Expected 403 for non-admin access, got " + response.status);
+});
+%}
+
+### 5) Admin approve driver
+POST {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}/approve
+Authorization: Bearer {{admin_token}}
+
+> {%
+client.test("Admin approve driver: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 6) Admin update driver
+PUT {{baseUrl}}/user-service/api/admin/drivers/{{admin_driver_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "firstName": "AdminDriverUpdated",
+  "phoneNumber": "+49 703 200300"
+}
+
+> {%
+client.test("Admin update driver: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 7) Admin list passengers
+GET {{baseUrl}}/user-service/api/admin/passengers?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin list passengers: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 8) Admin get passenger detail
+GET {{baseUrl}}/user-service/api/admin/passengers/{{admin_passenger_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get passenger: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 9) Admin get non-existent passenger (negative: expect 404)
+GET {{baseUrl}}/user-service/api/admin/passengers/nobody-does-not-exist@example.com
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get non-existent passenger: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 10) Admin update passenger
+PUT {{baseUrl}}/user-service/api/admin/passengers/{{admin_passenger_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "firstName": "AdminPassengerUpdated",
+  "phoneNumber": "+49 704 200301"
+}
+
+> {%
+client.test("Admin update passenger: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 11) Admin create passenger
+POST {{baseUrl}}/user-service/api/admin/passengers
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "email": "admin-extra-passenger-{{admin_runId}}@example.com",
+  "firstName": "Extra",
+  "lastName": "Passenger",
+  "phoneNumber": "+49 705 200302",
+  "age": 27
+}
+
+> {%
+client.test("Admin create passenger: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+%}
+
+### 12) Admin list vehicles
+GET {{baseUrl}}/user-service/api/admin/vehicles?page=0&size=20
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin list vehicles: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 13) Admin create vehicle
+POST {{baseUrl}}/user-service/api/admin/vehicles
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "userId": "{{admin_driver_id}}",
+  "vehicleName": "Admin Managed Car",
+  "vehicleNumber": "{{admin_vehicle_number}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "black",
+  "seatingCapacity": "4"
+}
+
+> {%
+client.test("Admin create vehicle: status 200 or 201", function() {
+  client.assert(response.status === 200 || response.status === 201,
+    "Expected 200/201, got " + response.status);
+});
+%}
+
+### 14) Driver creates own vehicle fixture for trip flow
+POST {{baseUrl}}/user-service/api/vehicles/register
+Authorization: Bearer {{admin_driver_token}}
+Content-Type: application/json
+
+{
+  "userId": "{{admin_driver_id}}",
+  "vehicleName": "Admin Driver Car",
+  "vehicleNumber": "{{admin_driver_vehicle_number}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "white",
+  "seatingCapacity": "4"
+}
+
+> {%
+client.test("Driver register vehicle: status 201", function() {
+  client.assert(response.status === 201, "Expected 201, got " + response.status);
+});
+%}
+
+### 15) Resolve created vehicleId by vehicle number
+GET {{baseUrl}}/user-service/api/admin/vehicles?page=0&size=50
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Resolve vehicleId: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+if (response.body && response.body.data && response.body.data.content) {
+  var items = response.body.data.content;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i] && items[i].vehicleNumber === client.global.get("admin_vehicle_number")) {
+      client.global.set("admin_vehicle_id", items[i].id);
+      break;
+    }
+  }
+}
+%}
+
+### 16) Admin get vehicle detail
+GET {{baseUrl}}/user-service/api/admin/vehicles/{{admin_vehicle_id}}
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get vehicle: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}
+
+### 17) Admin get non-existent vehicle (negative: expect 404)
+GET {{baseUrl}}/user-service/api/admin/vehicles/non-existent-vehicle-id
+Authorization: Bearer {{admin_token}}
+Accept: application/json
+
+> {%
+client.test("Admin get non-existent vehicle: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 18) Admin update vehicle
+PUT {{baseUrl}}/user-service/api/admin/vehicles/{{admin_vehicle_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "vehicleColor": "silver",
+  "seatingCapacity": "5"
+}
+
+> {%
+client.test("Admin update vehicle: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+%}

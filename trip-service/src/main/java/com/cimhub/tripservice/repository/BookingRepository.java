@@ -38,4 +38,11 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
 
     // Find bookings by passenger and status
     List<Booking> findByPassengerIdAndStatus(String passengerId, BookingStatus status);
+
+    // Admin paginated queries
+    org.springframework.data.domain.Page<Booking> findAll(org.springframework.data.domain.Pageable pageable);
+
+    org.springframework.data.domain.Page<Booking> findByPassengerId(String passengerId, org.springframework.data.domain.Pageable pageable);
+
+    long countByStatus(BookingStatus status);
 }

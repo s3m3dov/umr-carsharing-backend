@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class TripService {
     private static final Map<TripStatus, Set<TripStatus>> VALID_TRANSITIONS = new HashMap<>();
 
     static {
-        VALID_TRANSITIONS.put(TripStatus.OFFERED, EnumSet.of(TripStatus.AVAILABLE, TripStatus.CANCELLED));
+        VALID_TRANSITIONS.put(TripStatus.CREATED, EnumSet.of(TripStatus.AVAILABLE, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.AVAILABLE, EnumSet.of(TripStatus.IN_PROGRESS, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.IN_PROGRESS, EnumSet.of(TripStatus.COMPLETED, TripStatus.CANCELLED));
         VALID_TRANSITIONS.put(TripStatus.COMPLETED, EnumSet.noneOf(TripStatus.class));
@@ -40,6 +41,7 @@ public class TripService {
 
         log.info("Transitioning trip {} from {} to {}", tripId, trip.getTripStatus(), newStatus);
         trip.setTripStatus(newStatus);
+        trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);
     }
 

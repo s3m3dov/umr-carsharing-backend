@@ -19,6 +19,11 @@ import org.springframework.data.geo.Point;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Trip model - stores trip information for the carsharing platform.
+ * Uses MongoDB for persistence.
+ * Stored in "trips" collection.
+ */
 @Document(collection = "trips")
 @Builder
 @AllArgsConstructor
@@ -27,13 +32,16 @@ import java.util.List;
 public class Trip {
 
     @Id
-    private String tripId; // Remove @NotBlank - MongoDB auto-generates this
+    private String tripId;
 
     @NotBlank
     private TripStatus tripStatus;
 
     @NotBlank
     private String vehicleNumber;
+
+    @NotBlank
+    private String carType;
 
     @NotBlank
     private String driverId;
@@ -44,7 +52,6 @@ public class Trip {
     @NotBlank
     private Points destinationAddress;
 
-    // GeoJSON fields for geospatial queries
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private Point sourceLocation;
 
@@ -57,22 +64,21 @@ public class Trip {
     @Min(0L)
     private int bookedSeats;
 
-    // Store in UTC for consistency across timezones
     private Instant tripStartDateTimeUTC;
 
-    // Store the timezone of the trip's source location (e.g., "Asia/Kolkata",
-    // "Europe/Berlin")
     private String tripTimezone;
 
-    // Route information from OSRM
-    private Geometry routeGeometry; // Full route path as GeoJSON LineString
-    private double routeDistance; // Distance in meters
-    private double routeDuration; // Duration in seconds
+    private Geometry routeGeometry;
+    private double routeDistance;
+    private double routeDuration;
 
     @PositiveOrZero
-    private double pricePerKm;
+    private double pricePerSeat;
 
-    private List<ObjectId> joinedRidersId;
+    private List<ObjectId> joinedBookingIds;
     @Builder.Default
-    private Instant createdDate = Instant.now();
+    private Instant createdAt = Instant.now();
+
+    @Builder.Default
+    private Instant updatedAt = Instant.now();
 }

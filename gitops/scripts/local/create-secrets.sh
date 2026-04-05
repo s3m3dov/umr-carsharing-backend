@@ -40,7 +40,6 @@ type: Opaque
 data:
   MONGODB_URI: $(b64encode "$MONGODB_URI")
   JWT_SECRET_KEY: $(b64encode "$JWT_SECRET_KEY")
-  GOOGLE_API_KEY: $(b64encode "$GOOGLE_API_KEY")
   FIREBASE_CONFIG_PATH: $(b64encode "${FIREBASE_CONFIG_PATH:-}")
   FIREBASE_DATABASE_URL: $(b64encode "${FIREBASE_DATABASE_URL:-}")
 EOF
@@ -52,4 +51,4 @@ echo "   - Do NOT commit this file to git"
 echo "   - It's already added to .gitignore"
 echo ""
 echo "To apply secrets to your cluster:"
-echo "   ./gitops/gitops.sh apply local"
+echo "   ./gitops.sh local deploy"

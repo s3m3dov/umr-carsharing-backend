@@ -25,28 +25,22 @@ spring:
             - Path=/auth-service/**
           filters:
             - StripPrefix=1
-        - id: vehicle-service
-          uri: http://vehicle-service:8080
-          predicates:
-            - Path=/vehicle-service/**
-          filters:
-            - StripPrefix=1
         - id: trip-service
           uri: http://trip-service:8080
           predicates:
             - Path=/trip-service/**
           filters:
             - StripPrefix=1
-        - id: ride-service
-          uri: http://ride-service:8080
-          predicates:
-            - Path=/ride-service/**
-          filters:
-            - StripPrefix=1
         - id: notification-service
           uri: http://notification-service:8080
           predicates:
             - Path=/notification-service/**
+          filters:
+            - StripPrefix=1
+        - id: review-service
+          uri: http://review-service:8080
+          predicates:
+            - Path=/review-service/**
           filters:
             - StripPrefix=1
     loadbalancer:
@@ -60,11 +54,25 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${TEMPO_ENDPOINT:http://tempo.monitoring.svc.cluster.local:4318/v1/traces}
+
+pagination:
+  default-page-size: 20
+  max-page-size: 100
+  min-page-size: 1
 
 springdoc:
   swagger-ui:
@@ -74,24 +82,26 @@ springdoc:
         url: /user-service/v3/api-docs
       - name: auth
         url: /auth-service/v3/api-docs
-      - name: vehicle
-        url: /vehicle-service/v3/api-docs
       - name: trip
         url: /trip-service/v3/api-docs
-      - name: ride
-        url: /ride-service/v3/api-docs
       - name: notification
         url: /notification-service/v3/api-docs
+      - name: review
+        url: /review-service/v3/api-docs
   api-docs:
     enabled: true
 
 gateway:
   security:
     public-paths:
+      - /**/health
+      - /webjars/**
+      - /favicon.ico
       - /auth-service/api/auth/login
       - /auth-service/api/auth/signup
       - /auth-service/api/auth/validate
-      - /webjars/**
+      - /auth-service/api/auth/reset-password
+      - /auth-service/api/auth/reset-password/confirm
     docs-paths:
       - /v3/api-docs/**
       - /swagger-ui/**
@@ -101,6 +111,10 @@ gateway:
     actuator-paths:
       - /actuator/health/**
       - /actuator/info/**
+      - /actuator/prometheus
+    admin-paths:
+      - /api/admin/**
+      - /**/api/admin/**
   services:
     auth:
       base-url: http://auth-service:8080

@@ -120,5 +120,5 @@ for service in "${SERVICES_TO_BUILD[@]}"; do
 done
 echo ""
 echo "Next steps:"
-echo "  1. Deploy to GKE: ./gitops.sh deploy-gcp"
+echo "  1. Deploy to GKE: ./gitops.sh gcp deploy"
 echo "  2. Check status: kubectl get pods -n carsharing"
