@@ -6,6 +6,7 @@ import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.exception.AlreadyCancelledException;
+import com.cimhub.tripservice.exception.AlreadyCompletedException;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
@@ -48,9 +49,13 @@ public class CancellationService {
                 }
 
                 if (booking.getStatus() == BookingStatus.CANCELLED
-                                || booking.getStatus() == BookingStatus.COMPLETED
                                 || booking.getStatus() == BookingStatus.REJECTED) {
                         throw new AlreadyCancelledException("This booking cannot be cancelled (current status: "
+                                        + booking.getStatus() + ")");
+                }
+
+                if (booking.getStatus() == BookingStatus.COMPLETED) {
+                        throw new AlreadyCompletedException("This booking cannot be cancelled (current status: "
                                         + booking.getStatus() + ")");
                 }
 

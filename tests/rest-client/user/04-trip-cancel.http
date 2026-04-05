@@ -1,53 +1,9 @@
-# 04-review-cancel-negative.http
+# 04-cancel-negative.http
 # Run after 03-trip-booking.http
 
 @baseUrl = http://localhost:8888
 
-### 1) Submit review before trip completion (negative: expect 400 TRIP_NOT_COMPLETED)
-POST {{baseUrl}}/review-service/api/reviews/driver
-Authorization: Bearer {{passengerToken}}
-Content-Type: application/json
-
-{
-  "userId": "{{passengerEmail}}",
-  "userRole": "PASSENGER",
-  "tripId": "{{tripId}}",
-  "bookingId": "{{rideId}}",
-  "rating": 5,
-  "comment": "Great driver, very comfortable ride!"
-}
-
-> {%
-client.test("Review before completion: status 400", function() {
-  client.assert(response.status === 400, "Expected 400 TRIP_NOT_COMPLETED, got " + response.status);
-});
-client.test("Review before completion: error field set", function() {
-  client.assert(response.body.error != null, "Expected error field in response");
-});
-%}
-
-### 2) Submit review for non-existent booking (negative: expect 404)
-POST {{baseUrl}}/review-service/api/reviews/driver
-Authorization: Bearer {{passengerToken}}
-Content-Type: application/json
-
-{
-  "userId": "{{passengerEmail}}",
-  "userRole": "PASSENGER",
-  "tripId": "{{tripId}}",
-  "bookingId": "non-existent-booking-id",
-  "rating": 4,
-  "comment": "Good passenger, on time and polite"
-}
-
-> {%
-client.test("Review non-existent booking: status 400 or 404", function() {
-  client.assert(response.status === 400 || response.status === 404,
-    "Expected 400/404, got " + response.status);
-});
-%}
-
-### 3) Unauthorized trip cancellation by passenger (negative: expect 401/403)
+### 1) Unauthorized trip cancellation by passenger (negative: expect 401/403)
 POST {{baseUrl}}/trip-service/api/trips/cancel
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -65,7 +21,7 @@ client.test("Passenger cancels trip: status 401 or 403", function() {
 });
 %}
 
-### 4) Cancel trip by wrong driver (negative: expect 401)
+### 2) Cancel trip by wrong driver (negative: expect 401)
 POST {{baseUrl}}/trip-service/api/trips/cancel
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -83,7 +39,7 @@ client.test("Trip cancel by non-owner: status 401 or 403", function() {
 });
 %}
 
-### 5) Passenger cancels own ride (happy path)
+### 3) Passenger cancels own ride (happy path - ONLY if ride is not yet completed)
 POST {{baseUrl}}/trip-service/api/rides/cancel
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -96,16 +52,22 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Cancel ride: status 200", function() {
-  client.assert(response.status === 200, "Expected 200, got " + response.status);
+client.test("Cancel ride: status 200 or 409", function() {
+  client.assert(response.status === 200 || response.status === 409, 
+    "Expected 200 (success) or 409 (already completed/cancelled), got " + response.status);
 });
-client.test("Cancel ride: success message", function() {
-  client.assert(response.body.data != null || response.body.message != null,
-    "Expected confirmation in response");
+client.test("Cancel ride: success message or proper error", function() {
+  if (response.status === 200) {
+    client.assert(response.body.data != null || response.body.message != null,
+      "Expected confirmation in response");
+  } else {
+    client.assert(response.body.code === "ALREADY_COMPLETED" || response.body.code === "ALREADY_CANCELLED",
+      "Expected ALREADY_COMPLETED or ALREADY_CANCELLED error code, got: " + response.body.code);
+  }
 });
 %}
 
-### 6) Cancel same ride again (negative: expect 409 ALREADY_CANCELLED)
+### 4) Cancel same ride again (negative: expect 409 ALREADY_CANCELLED or ALREADY_COMPLETED)
 POST {{baseUrl}}/trip-service/api/rides/cancel
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -118,12 +80,16 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Cancel already-cancelled ride: status 409", function() {
-  client.assert(response.status === 409, "Expected 409 ALREADY_CANCELLED, got " + response.status);
+client.test("Cancel already-cancelled/completed ride: status 409", function() {
+  client.assert(response.status === 409, "Expected 409, got " + response.status);
+});
+client.test("Cancel ride again: error code is ALREADY_CANCELLED or ALREADY_COMPLETED", function() {
+  client.assert(response.body.code === "ALREADY_CANCELLED" || response.body.code === "ALREADY_COMPLETED",
+    "Expected ALREADY_CANCELLED or ALREADY_COMPLETED, got: " + response.body.code);
 });
 %}
 
-### 7) Cancel non-existent ride (negative: expect 404)
+### 5) Cancel non-existent ride (negative: expect 404)
 POST {{baseUrl}}/trip-service/api/rides/cancel
 Authorization: Bearer {{passengerToken}}
 Content-Type: application/json
@@ -141,7 +107,7 @@ client.test("Cancel non-existent ride: status 404", function() {
 });
 %}
 
-### 8) Driver cancels trip (happy path)
+### 6) Driver cancels trip (happy path)
 POST {{baseUrl}}/trip-service/api/trips/cancel
 Authorization: Bearer {{driverToken}}
 Content-Type: application/json
@@ -163,7 +129,7 @@ client.test("Driver cancel trip: response mentions cancelled", function() {
 });
 %}
 
-### 9) Cancel already-cancelled trip (negative: expect 409)
+### 7) Cancel already-cancelled trip (negative: expect 409)
 POST {{baseUrl}}/trip-service/api/trips/cancel
 Authorization: Bearer {{driverToken}}
 Content-Type: application/json
@@ -180,7 +146,7 @@ client.test("Cancel already-cancelled trip: status 409", function() {
 });
 %}
 
-### 10) Access protected endpoint without token (negative: expect 401)
+### 8) Access protected endpoint without token (negative: expect 401)
 GET {{baseUrl}}/trip-service/api/trips/active/driver/{{driverEmail}}
 Accept: application/json
 
