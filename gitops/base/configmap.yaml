@@ -7,13 +7,13 @@ data:
   ALLOWED_ORIGINS: "*"
 
   # GCP Configuration
-  GCP_PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
+  GCP_PROJECT_ID: "groovy-vector-482912-b0"
   GCP_REGION: "europe-north1"
   GKE_CLUSTER_NAME: "autopilot-cluster-1"
-  EXTERNAL_IP: "34.160.91.182"
+  EXTERNAL_IP: "35.186.208.67"
   
   # Legacy field (deprecated, use GCP_PROJECT_ID instead)
-  PROJECT_ID: "project-b05bd45b-70e8-4b7f-a65"
+  PROJECT_ID: "groovy-vector-482912-b0"
 
   # Service ports
   AUTH_SERVICE_PORT: "8089"

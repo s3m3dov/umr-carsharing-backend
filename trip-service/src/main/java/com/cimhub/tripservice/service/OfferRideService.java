@@ -1,5 +1,7 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
@@ -22,6 +24,7 @@ public class OfferRideService {
         private final TripsRepository tripsRepository;
         private final OSMRoute osmRoute;
         private final TripGeospatialService tripGeospatialService;
+        private final AuditService auditService;
 
         public OfferRideResponse offerRide(OfferRideRequest request) {
                 log.info("Offering ride for driver: {} with vehicle: {}", request.driverId(), request.vehicleNumber());
@@ -48,6 +51,7 @@ public class OfferRideService {
                 Trip newTrip = new Trip();
                 newTrip.setDriverId(request.driverId());
                 newTrip.setVehicleNumber(request.vehicleNumber());
+                newTrip.setCarType(request.carType());
                 newTrip.setSourceAddress(request.sourceAddress());
                 newTrip.setDestinationAddress(request.destinationAddress());
 
@@ -63,6 +67,7 @@ public class OfferRideService {
                 tripGeospatialService.enrichTripWithGeospatialData(newTrip, mainRoute);
 
                 tripsRepository.save(newTrip);
+                auditService.logCreate(EntityType.TRIP, newTrip.getTripId(), request.driverId(), "Trip created by driver");
                 log.info("Trip created successfully with ID: {}", newTrip.getTripId());
 
                 return OfferRideResponse.builder()
@@ -72,7 +77,7 @@ public class OfferRideService {
                                 .destinationAddress(newTrip.getDestinationAddress())
                                 .tripStartDateTime(truncatedStartTime)
                                 .tripTimezone(timezone)
-                                .routeGeometry(mainRoute.geometry())
+                                .routeGeometry(newTrip.getRouteGeometry())
                                 .routeDistanceInMeters(mainRoute.distance())
                                 .routeDistanceInKm(mainRoute.distance() / 1000.0)
                                 .routeDurationInSeconds(mainRoute.duration())

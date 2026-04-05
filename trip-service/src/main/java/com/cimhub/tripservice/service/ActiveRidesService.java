@@ -30,13 +30,27 @@ public class ActiveRidesService {
                 log.info("Fetching active trips for driver: {}", driverId);
 
                 List<TripStatus> activeStatuses = List.of(
-                                TripStatus.OFFERED,
+                                TripStatus.CREATED,
                                 TripStatus.AVAILABLE,
                                 TripStatus.IN_PROGRESS);
 
                 List<Trip> activeTrips = tripsRepository.findByDriverIdAndTripStatusIn(driverId, activeStatuses);
 
                 return activeTrips.stream()
+                                .map(this::convertToDriverTripResponse)
+                                .collect(Collectors.toList());
+        }
+
+        public List<DriverTripResponse> findDriverTripHistory(String driverId) {
+                log.info("Fetching trip history for driver: {}", driverId);
+
+                List<TripStatus> historyStatuses = List.of(
+                                TripStatus.COMPLETED,
+                                TripStatus.CANCELLED);
+
+                List<Trip> pastTrips = tripsRepository.findByDriverIdAndTripStatusIn(driverId, historyStatuses);
+
+                return pastTrips.stream()
                                 .map(this::convertToDriverTripResponse)
                                 .collect(Collectors.toList());
         }
@@ -57,21 +71,43 @@ public class ActiveRidesService {
                                 .collect(Collectors.toList());
         }
 
+        public List<PassengerRideResponse> findPassengerRideHistory(String passengerId) {
+                log.info("Fetching ride history for passenger: {}", passengerId);
+
+                List<BookingStatus> historyStatuses = List.of(
+                                BookingStatus.COMPLETED,
+                                BookingStatus.CANCELLED);
+
+                List<Booking> pastBookings = bookingRepository.findByPassengerIdAndStatusIn(passengerId,
+                                historyStatuses);
+
+                return pastBookings.stream()
+                                .map(this::convertToPassengerRideResponse)
+                                .collect(Collectors.toList());
+        }
+
         private PassengerRideResponse convertToPassengerRideResponse(Booking booking) {
                 ZonedDateTime bookingTimeInOriginalZone = timezoneService.convertToTimezone(
                                 booking.getRideStartTimeUTC(),
                                 booking.getRideTimezone());
 
+                Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
+                String carType = trip != null ? trip.getCarType() : null;
+
                 return PassengerRideResponse.builder()
                                 .rideId(booking.getBookingId())
                                 .tripId(booking.getTripId())
                                 .driverId(booking.getDriverId())
+                                .vehicleNumber(booking.getVehicleNumber())
+                                .carType(carType)
                                 .rideStatus(booking.getStatus())
                                 .pickupLocation(booking.getPickupLocation())
                                 .dropoffLocation(booking.getDropoffLocation())
                                 .tripStartDateTime(bookingTimeInOriginalZone)
                                 .tripTimezone(booking.getRideTimezone())
                                 .bookedSeats(booking.getRequestedSeats())
+                                .pricePerSeat(booking.getPricePerSeat())
+                                .estimatedFare(booking.getEstimatedPrice())
                                 .build();
         }
 
@@ -82,12 +118,13 @@ public class ActiveRidesService {
 
                 int bookedSeats = trip.getBookedSeats();
                 int availableSeats = trip.getTotalSeats() - bookedSeats;
-                double estimatedEarnings = (trip.getRouteDistance() / 1000.0) * trip.getPricePerKm();
+                double estimatedEarnings = bookedSeats * trip.getPricePerSeat();
 
                 return DriverTripResponse.builder()
                                 .tripId(trip.getTripId())
                                 .driverId(trip.getDriverId())
                                 .vehicleNumber(trip.getVehicleNumber())
+                                .carType(trip.getCarType())
                                 .tripStatus(trip.getTripStatus())
                                 .sourceAddress(trip.getSourceAddress())
                                 .destinationAddress(trip.getDestinationAddress())
@@ -99,7 +136,7 @@ public class ActiveRidesService {
                                 .passengers(new ArrayList<>())
                                 .routeDistanceInKm(trip.getRouteDistance() / 1000.0)
                                 .routeDurationInMinutes(trip.getRouteDuration() / 60.0)
-                                .pricePerKm(trip.getPricePerKm())
+                                .pricePerSeat(trip.getPricePerSeat())
                                 .estimatedEarnings(estimatedEarnings)
                                 .build();
         }

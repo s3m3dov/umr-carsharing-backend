@@ -1,0 +1,137 @@
+# admin/01-admin-auth.http
+# Run after admin/00-admin-setup.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Signup admin
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Isolated",
+  "lastName": "Admin",
+  "email": "{{admin_email}}",
+  "password": "{{admin_password}}",
+  "userType": "ADMIN",
+  "phoneNumber": "+49 700 100200",
+  "age": 35,
+  "licenseNumber": ""
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.token) {
+  client.global.set("admin_token", response.body.data.token);
+}
+%}
+
+### 2) Login admin (fallback + token refresh)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_email}}",
+  "password": "{{admin_password}}"
+}
+
+> {%
+if (response.body && response.body.data && response.body.data.token) {
+  client.global.set("admin_token", response.body.data.token);
+}
+%}
+
+### 3) Signup admin-scope driver (fixture)
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "Driver",
+  "email": "{{admin_driver_email}}",
+  "password": "{{admin_driver_password}}",
+  "userType": "DRIVER",
+  "phoneNumber": "+49 701 100201",
+  "age": 31,
+  "licenseNumber": "ADM-DRV-LIC-{{admin_runId}}"
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("admin_driver_token", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("admin_driver_id", response.body.data.email);
+  }
+}
+%}
+
+### 4) Login admin-scope driver (fallback)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_driver_email}}",
+  "password": "{{admin_driver_password}}"
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("admin_driver_token", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("admin_driver_id", response.body.data.email);
+  }
+}
+%}
+
+### 5) Signup admin-scope passenger (fixture)
+POST {{baseUrl}}/auth-service/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "Passenger",
+  "email": "{{admin_passenger_email}}",
+  "password": "{{admin_passenger_password}}",
+  "userType": "PASSENGER",
+  "phoneNumber": "+49 702 100202",
+  "age": 26,
+  "licenseNumber": ""
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("admin_passenger_token", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("admin_passenger_id", response.body.data.email);
+  }
+}
+%}
+
+### 6) Login admin-scope passenger (fallback)
+POST {{baseUrl}}/auth-service/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_passenger_email}}",
+  "password": "{{admin_passenger_password}}"
+}
+
+> {%
+if (response.body && response.body.data) {
+  if (response.body.data.token) {
+    client.global.set("admin_passenger_token", response.body.data.token);
+  }
+  if (response.body.data.email) {
+    client.global.set("admin_passenger_id", response.body.data.email);
+  }
+}
+%}
+
+### 7) Non-admin access to admin endpoint (negative: expect 403)
+GET {{baseUrl}}/user-service/api/admin/drivers?page=0&size=5
+Authorization: Bearer {{admin_driver_token}}
+Accept: application/json

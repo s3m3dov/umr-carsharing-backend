@@ -7,9 +7,8 @@
 ALL_SERVICES=(
     "auth-service"
     "user-service"
-    "vehicle-service"
     "trip-service"
-    "ride-service"
+    "review-service"
     "notification-service"
     "api-gateway"
 )

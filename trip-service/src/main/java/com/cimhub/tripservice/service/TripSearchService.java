@@ -22,7 +22,7 @@ public class TripSearchService {
                 List<Trip> allTrips = tripsRepository.findAll();
 
                 return allTrips.stream()
-                                .filter(trip -> trip.getTripStatus() == TripStatus.OFFERED
+                                .filter(trip -> trip.getTripStatus() == TripStatus.CREATED
                                                 || trip.getTripStatus() == TripStatus.AVAILABLE)
                                 .map(trip -> convertToResponse(trip, userTimezone))
                                 .collect(Collectors.toList());
@@ -41,6 +41,7 @@ public class TripSearchService {
                                 .tripId(trip.getTripId())
                                 .driverId(trip.getDriverId())
                                 .vehicleNumber(trip.getVehicleNumber())
+                                .carType(trip.getCarType())
                                 .sourceAddress(trip.getSourceAddress())
                                 .destinationAddress(trip.getDestinationAddress())
                                 .tripStartDateTime(tripTimeInOriginalZone)
@@ -50,7 +51,7 @@ public class TripSearchService {
                                 .totalSeats(trip.getTotalSeats())
                                 .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
                                 .tripStatus(trip.getTripStatus())
-                                .pricePerKm(trip.getPricePerKm())
+                                .pricePerSeat(trip.getPricePerSeat())
                                 .build();
         }
 }

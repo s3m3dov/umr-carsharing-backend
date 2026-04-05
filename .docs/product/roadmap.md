@@ -31,35 +31,46 @@
 
 *Refining state consistency and enhancing developer experience.*
 
-### 1. Robust State Machines
+### 1. Robust State Machines (Completed ✅)
 
 - **Goal:** Prevent inconsistent states (e.g., joining a cancelled trip).
-- **Trip States:** `CREATED` → `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` → `CANCELLED`
-- **Booking States:** `REQUESTED` → `ACCEPTED` → `REJECTED` → `CANCELLED`
+- **Trip States:** `CREATED` → `AVAILABLE` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
+- **Booking States:** `REQUESTED` → `REJECTED` | `CONFIRMED` → `IN_PROGRESS` → `COMPLETED` | `CANCELLED`
 - **Logic:** Guarded transitions and atomic seat count updates using MongoDB transactions.
+- **Changes:** Bookings now start as REQUESTED; driver must accept/reject. Trips created directly as AVAILABLE (CREATED state available but not used).
 
-### 2. Fare & Cost Calculation (Pending)
+### 2. Trip Routing & Stops (Pending)
+
+- **Goal:** Allow drivers to create flexible routes with intermediate stops.
+- **Features:**
+  - **Waypoints:** Driver can add pickup/dropoff stops along the route.
+  - **Stop Management:** Add, update, or remove stops before trip starts.
+  - **Route Calculation:** OSRM calculates optimal route with waypoints.
+  - **Seat Constraints:** Stop-specific seat availability tracking.
+
+### 3. Fare & Cost Calculation (Completed ✅)
 
 - **Goal:** Keep pricing simple and driver-controlled in the initial version.
-- **Features:**
-  - **Driver-defined price:** Driver sets the total price per seat when creating a trip.
-  - **Single currency:** All prices handled in TZS.
-  - **No automated pricing (for now):** Recommendations deferred to Phase 6.
+- **Changes:**
+  - Renamed `pricePerKm` → `pricePerSeat` throughout codebase
+  - Driver sets price per seat when creating a trip
 
-### 3. API Quality & DX (Mostly Completed ✅)
+
+### 4. API Quality & DX (In Progress ⚠️)
 
 - [ ] **Pagination & Sorting:** Standardize across all GET endpoints (Trips, Bookings, Users). [Pending]
 - [ ] **Filtering:** Search by price range, car type, and seat availability. [Pending]
 - [x] **Error Handling:** Standardized `ApiResponse` and `ApiError` with business-specific codes.
 - [x] **OpenAPI/Swagger:** Dynamic configuration with CORS support and Gateway aggregation.
+- [x] **API Restructuring:** Created RideController for passengers, updated BookingController for drivers. [Completed]
 - [ ] **Input Validation:** Strict JSR-303 constraints on all Request DTOs. [Pending]
 
-### 4. Enterprise Logging & Context
+### 5. Enterprise Logging & Context
 
-- [ ] **Correlation IDs:** API Gateway propagation through all services.
-- [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness.
-- [ ] **MDC Tracing:** Request and user context in logs.
-- [ ] **Audit Trail:** Event persistence for critical domain actions (Phase 3 readiness).
+- [x] **Correlation IDs:** API Gateway propagation through all services. [Completed]
+- [ ] **JSON Logging:** Transition to LogstashEncoder for ELK/Loki readiness. [Pending]
+- [x] **MDC Tracing:** Request and user context in logs. [Completed]
+- [ ] **Audit Trail:** Event persistence for critical domain actions. [Pending]
 
 ---
 
@@ -67,13 +78,13 @@
 
 *Relatively straightforward backend logic to build community trust.*
 
-### 5. Review & Rating Service
+### 6. Review & Rating Service
 
 - **New Service:** `review-service` for handling 1-5 star ratings and text reviews.
 - **Validation:** Only allow reviews for `COMPLETED` trips where the user was a participant.
 - **Aggregation:** Precompute and cache average ratings for User profiles.
 
-### 6. User Statistics
+### 7. User Statistics
 
 - **Trip History:** Count of successful trips as driver vs. passenger.
 - **Member Stats:** "Member since" tracking and "Response rate" metrics.
@@ -84,7 +95,7 @@
 
 *Enhancing reliability and side-effect management.*
 
-### 7. Domain Events (Event-Driven Microservices)
+### 8. Domain Events (Event-Driven Microservices)
 
 - **Goal:** Move from synchronous calls to async event processing for side effects.
 - **Implementation:** Transition from stored events (Phase 1) to active async processing using Spring Application Events (initial) or RabbitMQ for decoupling Notification and Audit services.
@@ -95,16 +106,16 @@
 
 *Preparing the system for production loads and debugging.*
 
-### 8. Monitoring & Health
+### 9. Monitoring & Health
 
 - **Metrics:** Actuator integration for Prometheus.
 - **Health Checks:**
   - Deep health checks for MongoDB, OSRM, and Firebase connectivity.
-  - **Custom Health Indicators:** Build indicators for Google Maps API quota usage and OSRM response times.
+  - **Custom Health Indicators:** Build indicators for OSRM response times and external dependency health.
 - **Business Metric Indicators:** Custom Actuator endpoints to expose anonymous stats like "Total active trips" or "Successful matches today" for internal monitoring.
 - **Distributed Tracing:** Micrometer Tracing to follow requests across microservices.
 
-### 9. Resilience Patterns
+### 10. Resilience Patterns
 
 - **Retries:** Configurable retries for OSRM route fetching and notification delivery.
 - **Timeouts:** Strict timeouts on all inter-service (Feign) and external calls.
@@ -116,7 +127,7 @@
 
 *Original Phase 6.3 - Ensuring the system handles growth.*
 
-### 10. Caching & Optimization
+### 11. Caching & Optimization
 
 - **Redis Integration:** Cache frequent search results (e.g., popular routes).
 - **DB Optimization:**

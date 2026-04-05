@@ -1,0 +1,70 @@
+# Loki: single binary, no caches, no gateway
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: filesystem
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  limits_config:
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+    retention_period: 720h
+    volume_enabled: true
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+singleBinary:
+  replicas: 1
+  persistence:
+    size: 500Mi
+  resources:
+    requests:
+      memory: "192Mi"
+      cpu: "75m"
+    limits:
+      memory: "384Mi"
+      cpu: "300m"
+
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
+gateway:
+  enabled: false
+grafana:
+  enabled: false
+test:
+  enabled: false
+lokiCanary:
+  enabled: false

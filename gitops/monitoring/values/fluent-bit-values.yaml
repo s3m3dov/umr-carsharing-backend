@@ -1,0 +1,71 @@
+# Fluent Bit: lightweight log shipper → Loki
+# Runs as DaemonSet, ~1 MB binary, ~10 MB RAM per node
+
+resources:
+  requests:
+    memory: "24Mi"
+    cpu: "15m"
+  limits:
+    memory: "48Mi"
+    cpu: "75m"
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 5
+
+readinessProbe:
+  httpGet:
+    path: /api/v2/health
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+config:
+  inputs: |
+    [INPUT]
+        Name              tail
+        Tag               kube.*
+        Path              /var/log/containers/*.log
+        Parser            cri
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+
+  filters: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Merge_Log           On
+        Keep_Log            Off
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude On
+
+    [FILTER]
+        Name                nest
+        Match               kube.*
+        Operation           lift
+        Nested_under        log
+        Add_prefix          log_
+
+    [FILTER]
+        Name                modify
+        Match               kube.*
+        Rename              log_level level
+        Rename              log_service service
+
+  outputs: |
+    [OUTPUT]
+        Name                 loki
+        Match                kube.*
+        Host                 loki.monitoring.svc.cluster.local
+        Port                 3100
+        Labels               job=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name'], service=$service, level=$level
+        line_format          json
+        label_keys           $level,$service
+        remove_keys          kubernetes,stream
+        Auto_Kubernetes_Labels Off

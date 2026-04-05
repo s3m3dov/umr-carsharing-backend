@@ -11,23 +11,161 @@ and this project adheres to **Semantic Versioning**
 
 ## [Unreleased]
 
+---
+
+## [v0.9.1] – Testing & Enhancements (2026-04-05)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
 ### Added
 
-- (no entries)
+- Comprehensive unit tests for service layers (bookings, trips, cancellations)
+- Unit tests for `AuthService`, `JoinTripService`, and `VehicleService`
+- Comprehensive HTTP tests for notifications, admin actions, and trip operations
+- Unit tests for `GatewayExceptionHandler` with enhanced coverage
+- Logback test configuration and aggregate code coverage report
+- `BookingAlreadyProcessedException` for enhanced booking status validations
+- Driver-accept flow for booking requests with enhanced auto-confirm logic
+- Enhanced vehicle registration response with detailed vehicle data
+- Health and static asset paths to public paths in gateway security config
+- Consolidated `minPrice` and `maxPrice` filters in trip query
 
 ### Changed
 
-- (no entries)
+- Updated route geometry to use `Geometry` object instead of string
+- Enhanced HTTP test coverage with additional validations for notifications and trips
+- Updated token validation tests to reflect 401 responses for invalid tokens
+- Updated duplicate vehicle response to HTTP 409 with enhanced tests
+- Updated API reference with gateway routing, new endpoints, and response formats
+- Expanded README documentation with repository structure and setup guide
+- Updated resource limits, enabled Grafana subpath access, and added ingress configuration for monitoring
+- Enhanced exception handling and logging in `GatewayExceptionHandler`
+
+### Removed
+
+- Unused security tests and outdated test configurations
 
 ### Fixed
 
-- (no entries)
+- Enhanced JWT error handling in security configuration
+
+---
+
+## [v0.9.0] – Monitoring, Admin Panel & Audit Logging (2026-03-30)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Kubernetes monitoring stack** with Prometheus, Grafana, Loki, and Fluent Bit
+- **Observability instrumentation** across services:
+  - Prometheus metrics support
+  - OTLP tracing support
+  - JSON-structured Logback logging
+- **Admin panel features** across microservices:
+  - User and vehicle management endpoints in user-service
+  - Trip, booking, and reporting endpoints in trip-service
+  - Review management endpoints in review-service
+  - Shared admin repositories/models and common admin components
+  - Centralized admin authorization at API gateway level
+  - Configurable pagination settings for admin APIs
+- **Audit logging platform**:
+  - Typed audit infrastructure in common module
+  - Audit logging integrated into auth-service, user-service, trip-service, and review-service
+  - Audit log report endpoint in trip-service
+- Logout functionality in auth-service with token blacklisting
+- Documentation:
+  - Admin panel architecture documentation
+  - Comprehensive audit logging documentation
+  - Kubernetes monitoring guide and docs index updates
+
+### Fixed
+
+- Corrected admin path patterns in API gateway authorization routing
+
+---
+
+## [v0.8.0] – Service Enhancements & Documentation (2026-03-30)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Trip-service features:**
+  - `RideController` for passenger ride management with per-seat pricing model
+  - Passenger ride history endpoint (completed and cancelled rides)
+  - Driver trip history endpoint (completed and cancelled trips)
+  - `carType` attribute on trips with search filtering (`carType`, `minPrice`, `maxPrice`, `minAvailableSeats`)
+  - `@Min` validation for `totalSeats` in `OfferRideRequest`
+- `spring-boot-starter-validation` dependency across services
+- OpenAPI documentation improvements:
+  - Annotations and example payloads across all DTOs and controllers
+  - JWT `Bearer Authentication` security scheme in all service OpenAPI configs
+  - Standardized error response documentation across services
+  - Springdoc OpenAPI dependency added to common module
+- Documentation:
+  - Comprehensive API reference and documentation approach
+  - Domain glossary with trip vs ride terminology table
+  - BlaBlaCar system architecture overview
+  - Phased microservice organization strategy (consolidation → scalability → maturity)
+  - GCP Initial Setup Guide with revised cluster and project configurations
+  - Phase 1 TODO document for core logic improvements
+  - GitOps script documentation with context-aware `local`/`gcp` command structure
+
+### Changed
+
+- Renamed `ApiResponse` → `ApiResponseWrapper` for clarity
+- Renamed `licensePlate` → `licenseNumber` across all services and documentation
+- Renamed `OFFERED` trip status → `CREATED` across trip-service
+- Renamed `driverId` → `subjectId` in review-service assertions for model consistency
+- Migrated entity annotations to JPA (`jakarta.persistence-api 3.1.0`) for database-agnostic design, then reverted review-service and trip-service back to MongoDB
+- Reordered GCP workflow steps; enhanced deployment script with pod cleanup logic
+- Unified `gitops.sh` command structure across local and GCP scripts with automatic context switching
+- Updated JWT validation logic with `AuthServiceResponse` mapping
+- Consolidated documentation structure and reorganized technical docs
+- Consolidated vehicle-service and ride-service details into user-service and trip-service docs
+- Updated review-service error types in `ReviewErrorCode` for improved categorization
+- Updated review-service Dockerfile: base images, runtime port to 8084, CA certificates for MongoDB Atlas
+
+### Removed
+
+- `ride-service` and `vehicle-service` modules (consolidated into existing services)
+- Unused security item from OpenAPI config in auth-service
+- Outdated `ReviewServiceTest`
+- Detailed database-agnostic setup documentation (superseded)
+
+### Fixed
+
+- Trailing whitespace in `ApiError` JavaDoc
+
+---
+
+## [v0.7.0] – Review Service & Identity Enhancements (2026-03-30)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **review-service** microservice with MongoDB support, mutual driver-passenger reviews, 7 endpoints, unit tests, gateway routing, and Kubernetes manifests
+- **Password management** in auth-service:
+  - Password reset functionality with new endpoints, DTOs, and service logic
+  - Change password endpoint with enhanced password validation
+  - `AuthExceptionHandler` for `BadCredentialsException` with improved error handling in `SecurityConfig`
+- **Role-based user model** in user-service:
+  - `Driver` / `Passenger` subclasses replacing flat `User` model
+  - `firstName` / `lastName` split from `fullName`
+  - Driver-specific fields (`vehicleModel`, `licenseNumber`) isolated to subclass
+- **Auth-service identity enhancements:**
+  - `userType` persisted on auth `User` entity and embedded as JWT role claim
+  - Signup now calls user-service to create profile in a single request (via `RestClient`)
+  - Conflict prevention for existing user profiles during signup
+- **API Gateway** re-enabled JWT enforcement with `X-User-Role` header propagation to downstream services
 
 ---
 
 ## [v0.6.0] – Trip Lifecycle & Identity Fields (2026-01-11)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -57,7 +195,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.5.1] – GCP Deployment & Request Tracing (2026-01-05 to 2026-01-07)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -98,7 +236,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.5.0] – Kubernetes Migration (2026-01-03 to 2026-01-04)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -129,7 +267,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.3] – Documentation & Roadmap (2026-01-02)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -147,7 +285,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.2] – Local Development Workflow (2026-01-01)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -165,7 +303,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.1] – API Standardization (2025-12-31)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 
@@ -188,7 +326,7 @@ and this project adheres to **Semantic Versioning**
 
 ## [v0.4.0] – OpenAPI Integration & Configuration (2025-12-30)
 
-**Author:** s3m3dov
+**Author:** s3m3dov (Hikmat Samadov)
 
 ### Added
 

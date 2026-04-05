@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender with pattern that suppresses stack traces (nopex) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -- %msg%nopex%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger at WARN level to reduce noise during tests -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Set your application loggers to INFO to see important test logs -->
+    <logger name="com.cimhub" level="INFO" />
+</configuration>

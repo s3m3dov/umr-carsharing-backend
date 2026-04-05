@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.service;
 
+import com.cimhub.tripservice.dto.OSRM.Geometry;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,10 @@ public class TripGeospatialService {
         if (trip == null || route == null)
             return;
 
-        trip.setRouteGeometry(route.geometry());
+        Geometry geometry = route.geometry();
+        if (geometry != null) {
+            trip.setRouteGeometry(geometry);
+        }
         trip.setRouteDistance(route.distance());
         trip.setRouteDuration(route.duration());
 
@@ -69,7 +73,7 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
@@ -96,7 +100,7 @@ public class TripGeospatialService {
                 .nearSphere(location)
                 .maxDistance(distance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);
@@ -132,7 +136,11 @@ public class TripGeospatialService {
             String earliestDepartureTime,
             String latestDepartureTime,
             Integer requestedSeats,
-            String effectiveUserId) {
+            String effectiveUserId,
+            Double minPrice,
+            Double maxPrice,
+            String carType,
+            Integer minAvailableSeats) {
 
         // Step 0: Parse time parameters and calculate the search range
         Instant searchWindowStart = null;
@@ -184,7 +192,7 @@ public class TripGeospatialService {
                 .nearSphere(sourceLocation)
                 .maxDistance(sourceDistance.getNormalizedValue()));
         query.addCriteria(new Criteria().orOperator(
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         // Add time range filter
@@ -224,6 +232,20 @@ public class TripGeospatialService {
         // own trips)
         if (effectiveUserId != null && !effectiveUserId.isEmpty()) {
             query.addCriteria(Criteria.where("driverId").ne(effectiveUserId));
+        }
+
+        // Add price range filter
+        if (minPrice != null && maxPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").gte(minPrice).lte(maxPrice));
+        } else if (minPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").gte(minPrice));
+        } else if (maxPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").lte(maxPrice));
+        }
+
+        // Add car type filter
+        if (carType != null && !carType.isEmpty()) {
+            query.addCriteria(Criteria.where("carType").is(carType));
         }
 
         List<Trip> tripsNearSource = mongoTemplate.find(query, Trip.class);
@@ -268,7 +290,17 @@ public class TripGeospatialService {
                     // availableSeats = totalSeats - bookedSeats
                     if (requestedSeats != null && requestedSeats > 0) {
                         int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
-                        return availableSeats >= requestedSeats;
+                        if (availableSeats < requestedSeats) {
+                            return false;
+                        }
+                    }
+
+                    // Check minAvailableSeats filter
+                    if (minAvailableSeats != null && minAvailableSeats > 0) {
+                        int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
+                        if (availableSeats < minAvailableSeats) {
+                            return false;
+                        }
                     }
 
                     return true;
@@ -305,7 +337,7 @@ public class TripGeospatialService {
                         new Point(minLongitude, minLatitude))));
         query.addCriteria(new Criteria().orOperator(
                 // TODO: Make this like Trip.status (no raw string)
-                Criteria.where("tripStatus").is(TripStatus.OFFERED),
+                Criteria.where("tripStatus").is(TripStatus.CREATED),
                 Criteria.where("tripStatus").is(TripStatus.AVAILABLE)));
 
         List<Trip> trips = mongoTemplate.find(query, Trip.class);

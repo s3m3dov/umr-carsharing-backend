@@ -20,17 +20,34 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${TEMPO_ENDPOINT:http://tempo.monitoring.svc.cluster.local:4318/v1/traces}
+
+pagination:
+  default-page-size: 20
+  max-page-size: 100
+  min-page-size: 1
+
 auth:
   security:
     public-paths:
       - /api/auth/login
       - /api/auth/signup
       - /api/auth/validate
+      - /api/auth/reset-password
+      - /api/auth/reset-password/confirm
     docs-paths:
       - /v3/api-docs/**
       - /swagger-ui/**
@@ -39,6 +56,7 @@ auth:
     actuator-paths:
       - /actuator/health/**
       - /actuator/info/**
+      - /actuator/prometheus
 
 springdoc:
   api-docs:
@@ -50,3 +68,8 @@ springdoc:
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+services:
+  user:
+    base-url: http://user-service:8080

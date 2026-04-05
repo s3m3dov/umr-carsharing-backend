@@ -9,26 +9,23 @@ resources:
 
 # Use local image tags
 images:
+  - name: eu.gcr.io/project-id/api-gateway
+    newName: api-gateway
+    newTag: local
   - name: eu.gcr.io/project-id/auth-service
     newName: auth-service
     newTag: local
   - name: eu.gcr.io/project-id/user-service
     newName: user-service
     newTag: local
-  - name: eu.gcr.io/project-id/vehicle-service
-    newName: vehicle-service
-    newTag: local
   - name: eu.gcr.io/project-id/trip-service
     newName: trip-service
     newTag: local
-  - name: eu.gcr.io/project-id/ride-service
-    newName: ride-service
+  - name: eu.gcr.io/project-id/review-service
+    newName: review-service
     newTag: local
   - name: eu.gcr.io/project-id/notification-service
     newName: notification-service
-    newTag: local
-  - name: eu.gcr.io/project-id/api-gateway
-    newName: api-gateway
     newTag: local
 
 # Disable image pull and use Recreate strategy for local development
