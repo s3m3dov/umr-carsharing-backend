@@ -5,6 +5,7 @@ import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.common.LocationPoint;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
+import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
 import com.cimhub.tripservice.exception.InsufficientSeatsException;
 import com.cimhub.tripservice.exception.TripNotAvailableException;
 import com.cimhub.tripservice.model.Booking;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -287,6 +289,39 @@ class JoinTripServiceTest {
         verify(bookingRepository, never()).save(any());
     }
 
+    @Test
+    void joinTripWithDriverAccept_whenPassengerHasOnlyCancelledBooking_shouldAllowRebook() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 0);
+        Booking cancelled = Booking.builder()
+                .bookingId("b-old")
+                .tripId("trip-1")
+                .passengerId("passenger-1")
+                .status(BookingStatus.CANCELLED)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        String result = joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1));
+
+        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+    }
+
+    @Test
+    void joinTripWithDriverAccept_whenExactlyEnoughSeats_shouldSucceed() {
+        // totalSeats=3, bookedSeats=1 → exactly 2 available, requesting 2
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 1);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        String result = joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 2));
+
+        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+    }
+
     // ── acceptBooking ─────────────────────────────────────────────────────────
 
     @Test
@@ -309,6 +344,7 @@ class JoinTripServiceTest {
         ArgumentCaptor<Booking> captor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(captor.capture());
         assertEquals(BookingStatus.CONFIRMED, captor.getValue().getStatus());
+        assertNotNull(captor.getValue().getUpdatedAt());
     }
 
     @Test
@@ -319,7 +355,7 @@ class JoinTripServiceTest {
     }
 
     @Test
-    void acceptBooking_whenAlreadyConfirmed_shouldThrowIllegalState() {
+    void acceptBooking_whenAlreadyConfirmed_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
                 .status(BookingStatus.CONFIRMED)
@@ -327,12 +363,12 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(IllegalStateException.class, () -> joinTripService.acceptBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1"));
         verify(bookingRepository, never()).save(any());
     }
 
     @Test
-    void acceptBooking_whenAlreadyCancelled_shouldThrowIllegalState() {
+    void acceptBooking_whenAlreadyCancelled_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
                 .status(BookingStatus.CANCELLED)
@@ -340,7 +376,8 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(IllegalStateException.class, () -> joinTripService.acceptBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1"));
+        verify(bookingRepository, never()).save(any());
     }
 
     // ── rejectBooking ─────────────────────────────────────────────────────────
@@ -404,7 +441,7 @@ class JoinTripServiceTest {
     }
 
     @Test
-    void rejectBooking_whenNotInRequestedState_shouldThrowIllegalState() {
+    void rejectBooking_whenNotInRequestedState_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
                 .status(BookingStatus.CONFIRMED)
@@ -412,7 +449,8 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(IllegalStateException.class, () -> joinTripService.rejectBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.rejectBooking("booking-1"));
+        verify(bookingRepository, never()).save(any());
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

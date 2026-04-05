@@ -84,4 +84,59 @@ class AdminBookingServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> adminBookingService.getBooking("missing-booking"));
     }
+
+    @Test
+    void getBooking_shouldReturnMappedResponse() {
+        Booking booking = new Booking();
+        booking.setBookingId("booking-1");
+        booking.setPassengerId("passenger-1");
+        booking.setTripId("trip-1");
+        booking.setDriverId("driver-1");
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setRequestedSeats(2);
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+
+        BookingResponse response = adminBookingService.getBooking("booking-1");
+
+        assertEquals("booking-1", response.bookingId());
+        assertEquals("passenger-1", response.passengerId());
+        assertEquals("trip-1", response.tripId());
+        assertEquals(BookingStatus.CONFIRMED, response.status());
+        assertEquals(2, response.requestedSeats());
+    }
+
+    @Test
+    void updateBooking_whenNotFound_shouldThrowResourceNotFound() {
+        when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                adminBookingService.updateBooking("missing",
+                        new UpdateBookingRequest(BookingStatus.CONFIRMED, 1), "admin@example.com"));
+    }
+
+    @Test
+    void updateBooking_withOnlyStatusSet_shouldPreserveExistingSeats() {
+        Booking booking = new Booking();
+        booking.setBookingId("booking-1");
+        booking.setStatus(BookingStatus.REQUESTED);
+        booking.setRequestedSeats(3);
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BookingResponse response = adminBookingService.updateBooking(
+                "booking-1", new UpdateBookingRequest(BookingStatus.CONFIRMED, null), "admin@example.com");
+
+        assertEquals(BookingStatus.CONFIRMED, response.status());
+        assertEquals(3, response.requestedSeats());
+    }
+
+    @Test
+    void cancelBooking_whenNotFound_shouldThrowResourceNotFound() {
+        when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                adminBookingService.cancelBooking("missing", "admin@example.com"));
+    }
 }
