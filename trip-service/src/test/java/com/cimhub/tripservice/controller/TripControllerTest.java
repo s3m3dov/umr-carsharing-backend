@@ -12,6 +12,7 @@ import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
+import com.cimhub.tripservice.service.TripService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,11 +46,14 @@ class TripControllerTest {
     @Mock
     private ActiveRidesService activeRidesService;
 
+    @Mock
+    private TripService tripService;
+
     private TripController tripController;
 
     @BeforeEach
     void setUp() {
-        tripController = new TripController(offerRideService, cancellationService, completionService, geoService, activeRidesService);
+        tripController = new TripController(offerRideService, cancellationService, completionService, geoService, activeRidesService, tripService);
     }
 
     @Test
@@ -170,5 +174,16 @@ class TripControllerTest {
 
         verify(activeRidesService).findDriverActiveTrips("driver-77");
         verify(activeRidesService).findDriverTripHistory("driver-77");
+    }
+
+    @Test
+    void startTrip_shouldReturnOkWithServiceResult() {
+        when(tripService.startTrip("trip-1", "driver-1")).thenReturn("Trip started successfully");
+
+        ResponseEntity<ApiResponseWrapper<String>> response = tripController.startTrip("trip-1", "driver-1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Trip started successfully", response.getBody().getMessage());
+        verify(tripService).startTrip("trip-1", "driver-1");
     }
 }

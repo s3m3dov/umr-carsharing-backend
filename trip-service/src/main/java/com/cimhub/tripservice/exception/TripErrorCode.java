@@ -15,6 +15,7 @@ public enum TripErrorCode implements ServiceErrorCode {
     ALREADY_COMPLETED(HttpStatus.CONFLICT, "Trip is already completed", ErrorType.BUSINESS_RULE_VIOLATION),
     BOOKING_ALREADY_PROCESSED(HttpStatus.CONFLICT, "Booking has already been processed", ErrorType.BUSINESS_RULE_VIOLATION),
     INSUFFICIENT_SEATS(HttpStatus.CONFLICT, "Not enough seats available", ErrorType.RESOURCE_EXHAUSTED),
+    INVALID_TRIP_STATE(HttpStatus.CONFLICT, "Trip cannot be modified in its current state", ErrorType.BUSINESS_RULE_VIOLATION),
     TRIP_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "Trip not found or not available", ErrorType.NOT_FOUND),
     TRIP_NOT_IN_PROGRESS(HttpStatus.CONFLICT, "Trip is not in progress", ErrorType.BUSINESS_RULE_VIOLATION),
     RIDE_NOT_COMPLETABLE(HttpStatus.CONFLICT, "Ride cannot be completed in its current state", ErrorType.BUSINESS_RULE_VIOLATION);

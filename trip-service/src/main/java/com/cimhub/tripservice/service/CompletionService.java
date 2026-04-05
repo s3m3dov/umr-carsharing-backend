@@ -88,9 +88,13 @@ public class CompletionService {
             throw new UnauthorizedException("You are not authorized to complete this trip");
         }
 
-        if (trip.getTripStatus() != TripStatus.IN_PROGRESS) {
+        if (trip.getTripStatus() != TripStatus.IN_PROGRESS && trip.getTripStatus() != TripStatus.AVAILABLE) {
             throw new TripNotInProgressException(
                     String.format("Trip %s cannot be completed — current status: %s", tripId, trip.getTripStatus()));
+        }
+
+        if (trip.getTripStatus() == TripStatus.AVAILABLE) {
+            tripService.updateStatus(tripId, TripStatus.IN_PROGRESS);
         }
 
         List<Booking> activeBookings = bookingRepository.findByTripId(tripId).stream()
