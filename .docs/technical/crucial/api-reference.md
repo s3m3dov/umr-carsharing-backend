@@ -14,12 +14,17 @@ All APIs return standardized JSON responses and support OpenAPI 3.0 documentatio
 
 ## API Base URLs
 
-| Service | URL | OpenAPI Spec |
-|---------|-----|--------------|
-| Auth Service | `http://localhost:8081/auth-service` | `http://localhost:8081/auth-service/v3/api-docs` |
-| User Service | `http://localhost:8082/user-service` | `http://localhost:8082/user-service/v3/api-docs` |
-| Trip Service | `http://localhost:8084/trip-service` | `http://localhost:8084/trip-service/v3/api-docs` |
-| Review Service | `http://localhost:8085/review-service` | `http://localhost:8085/review-service/v3/api-docs` |
+All requests go through the API Gateway on **port 8080**. The path prefix routes to the correct service and is stripped before forwarding.
+
+| Service | Gateway Path Prefix | OpenAPI Spec |
+|---------|---------------------|--------------|
+| Auth Service | `http://localhost:8080/auth-service` | `http://localhost:8080/auth-service/v3/api-docs` |
+| User Service | `http://localhost:8080/user-service` | `http://localhost:8080/user-service/v3/api-docs` |
+| Trip Service | `http://localhost:8080/trip-service` | `http://localhost:8080/trip-service/v3/api-docs` |
+| Review Service | `http://localhost:8080/review-service` | `http://localhost:8080/review-service/v3/api-docs` |
+| Notification Service | `http://localhost:8080/notification-service` | `http://localhost:8080/notification-service/v3/api-docs` |
+
+Aggregated Swagger UI: `http://localhost:8080/swagger-ui.html`
 
 ## Authentication
 
@@ -200,6 +205,65 @@ Validates a JWT token and returns user information.
 **Notes:**
 - Used internally by API Gateway for request validation
 - Can be called without Authorization header
+
+---
+
+#### 1.4 Initiate Password Reset
+
+**POST** `/api/auth/reset-password`
+
+Sends a reset token to the user's email.
+
+**Request:**
+```json
+{ "email": "john.driver@example.com" }
+```
+
+**Response (200 OK):** Returns reset token info.
+
+---
+
+#### 1.5 Confirm Password Reset
+
+**POST** `/api/auth/reset-password/confirm`
+
+Resets password using the token received by email.
+
+**Request:**
+```json
+{
+  "email": "john.driver@example.com",
+  "resetToken": "abc123",
+  "newPassword": "NewSecurePassword123!"
+}
+```
+
+**Error Responses:**
+- 401: Invalid or expired reset token
+
+---
+
+#### 1.6 Change Password
+
+**PUT** `/api/auth/change-password`
+
+Changes the password for the currently authenticated user. Requires the current password.
+
+**Request:**
+```json
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewSecurePassword123!"
+}
+```
+
+**Response (200 OK):** Confirmation message.
+
+**Error Responses:**
+- 401: Current password is incorrect or user not authenticated
+- 400: Missing fields or password too short
+
+**Authentication:** Required
 
 ---
 
@@ -577,78 +641,71 @@ Retrieves completed and cancelled trips for a driver.
 
 ---
 
-## 5. Booking API (Trip Service)
+## 5. Ride Management — Passenger (`/api/rides`)
 
-The Trip Service (accessible via `/api/bookings`) manages passenger bookings on trips.
+The `RideController` handles the passenger side of trip participation.
 
 ### Endpoints
 
-#### 5.1 Join a Trip (Passenger books)
+#### 5.1 Book a Ride (Passenger)
 
-**POST** `/api/bookings/join`
+**POST** `/api/rides/book`
 
-Passenger joins a trip as a rider.
+Passenger books a seat on an existing trip. Creates a pending booking waiting for driver acceptance.
 
 **Request:**
 ```json
 {
   "passengerId": "user_456",
   "tripId": "trip_001",
-  "numberOfSeats": 2,
-  "specialRequests": "I have a large suitcase"
+  "numberOfSeats": 2
 }
 ```
 
 **Response (201 Created):**
 ```json
 {
-  "success": true,
-  "data": "Booking confirmed for 2 passengers",
-  "message": "Trip booking successful"
+  "data": "Ride booked successfully",
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
 
-**Authentication:** Required (PASSENGER role)
-
----
-
-#### 5.2 Cancel Booking
-
-**POST** `/api/bookings/cancel`
-
-Passenger cancels their booking on a trip.
-
-**Request:**
-```json
-{
-  "tripId": "trip_001",
-  "rideId": "ride_001",
-  "userId": "user_456",
-  "reason": "Change of plans"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": "Booking cancelled successfully",
-  "message": "Refund processed"
-}
-```
+**Error Responses:**
+- 404: Trip not found
+- 409: No available seats
 
 **Authentication:** Required
 
 ---
 
-#### 5.3 Get Passenger's Active Bookings
+#### 5.2 Cancel a Ride (Passenger)
 
-**GET** `/api/bookings/active/passenger/{passengerId}`
+**POST** `/api/rides/cancel`
 
-Retrieves all active bookings for a passenger.
+Passenger cancels their booked ride.
 
-**Parameters:**
-- `passengerId` (path, required): Passenger's user ID
+**Request:**
+```json
+{
+  "rideId": "ride_001",
+  "userId": "user_456"
+}
+```
+
+**Error Responses:**
+- 404: Ride not found
+- 409: Trip already in progress
+
+**Authentication:** Required
+
+---
+
+#### 5.3 Get Passenger's Active Rides
+
+**GET** `/api/rides/active/passenger/{passengerId}`
+
+Retrieves confirmed and upcoming rides for a passenger.
 
 **Authentication:** Required
 
@@ -656,14 +713,49 @@ Retrieves all active bookings for a passenger.
 
 #### 5.4 Get Passenger's Ride History
 
-**GET** `/api/bookings/history/passenger/{passengerId}`
+**GET** `/api/rides/history/passenger/{passengerId}`
 
-Retrieves completed and cancelled bookings for a passenger.
-
-**Parameters:**
-- `passengerId` (path, required): Passenger's user ID
+Retrieves completed and cancelled rides for a passenger.
 
 **Authentication:** Required
+
+---
+
+## 5b. Booking Management — Driver (`/api/bookings`)
+
+The `BookingController` lets drivers accept or reject incoming booking requests.
+
+### Endpoints
+
+#### 5b.1 Accept a Booking
+
+**POST** `/api/bookings/accept?bookingId={bookingId}`
+
+Driver accepts a passenger's booking request, confirming the ride.
+
+**Response (200 OK):**
+```json
+{
+  "data": "Booking accepted",
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T10:00:00Z"
+}
+```
+
+**Error Responses:**
+- 404: Booking not found
+
+**Authentication:** Required (DRIVER role)
+
+---
+
+#### 5b.2 Reject a Booking
+
+**POST** `/api/bookings/reject?bookingId={bookingId}`
+
+Driver rejects a passenger's booking request.
+
+**Authentication:** Required (DRIVER role)
 
 ---
 
@@ -841,18 +933,34 @@ Calculates and returns the average rating for a driver.
 **Response (200 OK):**
 ```json
 {
-  "success": true,
   "data": {
     "subjectId": "user_123",
     "averageRating": 4.75,
     "totalReviews": 4
   },
-  "message": "Average rating retrieved successfully"
+  "message": "Average rating retrieved successfully",
+  "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
 
 **Error Responses:**
 - 404: Driver not found
+
+**Authentication:** Required
+
+---
+
+#### 6.6 Get Passenger's Average Rating
+
+**GET** `/api/reviews/passenger/{passengerId}/average-rating`
+
+Calculates and returns the average rating for a passenger.
+
+**Parameters:**
+- `passengerId` (path, required): Passenger's unique identifier
+
+**Error Responses:**
+- 404: Passenger not found
 
 **Authentication:** Required
 
@@ -871,13 +979,127 @@ Calculates and returns the average rating for a driver.
 
 ---
 
+## 7. Notification Service API
+
+The Notification Service manages user notifications with WebSocket delivery and MongoDB persistence.
+
+### Endpoints
+
+#### 7.1 Create a Notification
+
+**POST** `/api/notifications`
+
+Creates a notification and publishes it over WebSocket.
+
+**Headers:**
+- `X-User-Id` (optional): Authenticated user ID (provided by gateway)
+- `X-User-Role` (optional): Authenticated user role
+
+**Request:**
+```json
+{
+  "recipientId": "user_456",
+  "senderId": "user_123",
+  "title": "Booking Accepted",
+  "message": "Your booking for trip_001 has been accepted.",
+  "type": "BOOKING_ACCEPTED",
+  "relatedEntityId": "trip_001"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "data": {
+    "notificationId": "notif_001",
+    "recipientId": "user_456",
+    "title": "Booking Accepted",
+    "message": "Your booking for trip_001 has been accepted.",
+    "read": false,
+    "createdAt": "2026-04-05T10:00:00Z"
+  },
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T10:00:00Z"
+}
+```
+
+**Error Responses:**
+- 400: Invalid sender or request payload
+- 403: Cannot create notifications on behalf of another user
+
+**Authentication:** Required
+
+---
+
+#### 7.2 List Notifications for a Recipient
+
+**GET** `/api/notifications/{recipientId}?page=0&size=20`
+
+Returns paginated notifications ordered by latest first. Users can only access their own; admins can access any.
+
+**Parameters:**
+- `recipientId` (path, required): Recipient's user ID
+- Standard Spring `Pageable` query params: `page`, `size`, `sort`
+
+**Headers:**
+- `X-User-Id` (required)
+
+**Authentication:** Required
+
+---
+
+#### 7.3 Mark a Notification as Read
+
+**PATCH** `/api/notifications/{notificationId}/read`
+
+**Headers:**
+- `X-User-Id` (required)
+
+**Request:**
+```json
+{ "recipientId": "user_456" }
+```
+
+**Error Responses:**
+- 404: Notification not found
+
+**Authentication:** Required
+
+---
+
+#### 7.4 Mark All Notifications as Read
+
+**PATCH** `/api/notifications/{recipientId}/read-all`
+
+Marks all unread notifications for a recipient as read.
+
+**Headers:**
+- `X-User-Id` (required)
+
+**Authentication:** Required
+
+---
+
+#### 7.5 Get Notification Stats
+
+**GET** `/api/notifications/{recipientId}/stats`
+
+Returns aggregated notification counters (total, unread).
+
+**Headers:**
+- `X-User-Id` (required)
+
+**Authentication:** Required
+
+---
+
 # Advanced Examples
 
 ## Example 1: Complete User Journey (Driver)
 
 ### Step 1: Register as Driver
 ```bash
-curl -X POST http://localhost:8081/auth-service/api/auth/signup \
+curl -X POST http://localhost:8080/auth-service/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "firstName": "John",
@@ -895,7 +1117,7 @@ Response includes JWT token: `eyJhbGc...`
 
 ### Step 2: Register Vehicle
 ```bash
-curl -X POST http://localhost:8082/user-service/api/vehicles/register \
+curl -X POST http://localhost:8080/user-service/api/vehicles/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
@@ -910,7 +1132,7 @@ curl -X POST http://localhost:8082/user-service/api/vehicles/register \
 
 ### Step 3: Offer a Trip
 ```bash
-curl -X POST http://localhost:8084/trip-service/api/trips/offer \
+curl -X POST http://localhost:8080/trip-service/api/trips/offer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
@@ -932,7 +1154,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/offer \
 
 ### Step 1: Register as Passenger
 ```bash
-curl -X POST http://localhost:8081/auth-service/api/auth/signup \
+curl -X POST http://localhost:8080/auth-service/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "firstName": "Jane",
@@ -947,20 +1169,19 @@ curl -X POST http://localhost:8081/auth-service/api/auth/signup \
 
 ### Step 2: Search for Matching Trips
 ```bash
-curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2&effectiveUserId=user_456" \
+curl -X GET "http://localhost:8080/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2&effectiveUserId=user_456" \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
-### Step 3: Join a Trip
+### Step 3: Book a Ride
 ```bash
-curl -X POST http://localhost:8084/trip-service/api/bookings/join \
+curl -X POST http://localhost:8080/trip-service/api/rides/book \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
     "passengerId": "user_456",
     "tripId": "trip_001",
-    "numberOfSeats": 2,
-    "specialRequests": "I have a large suitcase"
+    "numberOfSeats": 2
   }'
 ```
 
@@ -1037,5 +1258,5 @@ For issues, feature requests, or feedback on the API:
 
 ## Last Updated
 
-- March 24, 2024
-- Includes all microservices and endpoints
+- April 2026
+- Includes all microservices and endpoints: auth, user, vehicle, trip, ride, booking, review, notification

@@ -12,15 +12,17 @@ This application provides a robust backend for a carpooling service, allowing us
 
 ### Services
 
-| Module | Port | Path | Swagger UI |
-|--------|------|------|------------|
-| `api-gateway` | 8080 | `api-gateway/` | — |
-| `auth-service` | 8081 | `auth-service/` | `/auth-service/swagger-ui.html` |
-| `user-service` | 8082 | `user-service/` | `/user-service/swagger-ui.html` |
-| `trip-service` | 8084 | `trip-service/` | `/trip-service/swagger-ui.html` |
-| `review-service` | — | `review-service/` | `/review-service/swagger-ui.html` |
-| `notification-service` | — | `notification-service/` | `/notification-service/swagger-ui.html` |
-| `common` | — | `common/` | Shared library (no runtime) |
+All services run on port **8080** inside the container (Spring Boot default). They are routed by service name in Kubernetes, not by port.
+
+| Module | Path | Swagger UI |
+|--------|------|------------|
+| `api-gateway` | `api-gateway/` | — |
+| `auth-service` | `auth-service/` | `/auth-service/swagger-ui.html` |
+| `user-service` | `user-service/` | `/user-service/swagger-ui.html` |
+| `trip-service` | `trip-service/` | `/trip-service/swagger-ui.html` |
+| `review-service` | `review-service/` | `/review-service/swagger-ui.html` |
+| `notification-service` | `notification-service/` | `/notification-service/swagger-ui.html` |
+| `common` | `common/` | Shared library (no runtime) |
 
 Each service follows the same internal layout:
 

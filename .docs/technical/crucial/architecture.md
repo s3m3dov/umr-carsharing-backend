@@ -26,14 +26,14 @@ The system is built using a microservices architecture, leveraging Spring Boot a
 
 ### Core Services
 
-1. **Kubernetes Services** - Service Discovery and Load Balancing
-2. **API Gateway** (Port 8080) - Single entry point for all client requests with native K8s discovery
-3. **User Service** (Port 8080) - User management and authentication
-4. **Vehicle Service** (Port 8080) - Vehicle registration and management
-5. **Trip Service** (Port 8080) - Trip creation and management
-6. **Ride Service** (Port 8080) - Ride finding and joining
-7. **Review Service** (Port 8080) - Mutual reviews and ratings between drivers and passengers
-8. **Notification Service** (Port 8080) - Real-time notifications and WebSocket
+All services run on **port 8080** inside their containers and are routed through the API Gateway by path prefix.
+
+1. **API Gateway** (`/`) - Single entry point for all client requests; validates JWT, propagates `X-User-Id`/`X-User-Role` headers
+2. **Auth Service** (`/auth-service`) - User registration, login, JWT issuance and validation, password reset/change
+3. **User Service** (`/user-service`) - User profiles and vehicle registration/management
+4. **Trip Service** (`/trip-service`) - Trip creation (driver), trip search, ride booking and cancellation (passenger), booking accept/reject (driver)
+5. **Review Service** (`/review-service`) - Mutual reviews and ratings after completed trips
+6. **Notification Service** (`/notification-service`) - Real-time notifications via WebSocket and MongoDB persistence
 
 ### Development Notes
 
@@ -52,45 +52,54 @@ The system uses a decentralized security model managed at the API Gateway level:
 
 ## Service Responsibilities
 
+### Auth Service
+
+- User registration and JWT issuance (`POST /api/auth/signup`)
+- Login (`POST /api/auth/login`)
+- Token validation (`POST /api/auth/validate`) — called internally by API Gateway
+- Password reset and change (`POST /api/auth/reset-password`, `PUT /api/auth/change-password`)
+
 ### User Service
 
-- User registration and authentication
-- User profile management
-- User data persistence
-
-### Vehicle Service
-
-- Vehicle registration
-- Vehicle information management
-- User vehicle associations
+- User profile creation and retrieval (`/api/users`)
+- Vehicle registration and lookup (`/api/vehicles`) — max 5 vehicles per driver
+- Admin endpoints for drivers and passengers (`/api/admin`)
 
 ### Trip Service
 
-- Trip creation (offer rides)
-- Trip management
-- My rides functionality (upcoming/history)
-- Trip cancellation
+**Driver (trips):**
+- Create trip offer (`POST /api/trips/offer`)
+- Cancel trip (`POST /api/trips/cancel`)
+- Active trips and history (`GET /api/trips/active/driver/{driverId}`, `/history/driver/{driverId}`)
 
-### Ride Service
+**Passenger (rides):**
+- Book a ride (`POST /api/rides/book`)
+- Cancel a ride (`POST /api/rides/cancel`)
+- Active rides and history (`GET /api/rides/active/passenger/{passengerId}`, `/history/passenger/{passengerId}`)
 
-- Find available rides
-- Join trip requests
-- Ride matching algorithms
-- Integration with OSRM
+**Driver booking management:**
+- Accept/reject booking requests (`POST /api/bookings/accept`, `/api/bookings/reject`)
+
+**Trip search (all users):**
+- Near source (`GET /api/trips/search/near-source`)
+- Near destination (`GET /api/trips/search/near-destination`)
+- Matching route with filters (`GET /api/trips/search/matching-route`)
+- Route geometry and distances via OSRM integration
 
 ### Review Service
 
-- Submission of reviews and ratings (1-5 stars) after completed trips
-- Validation that only trip participants can leave reviews
-- Retrieval of reviews by driver, passenger, or trip
-- Aggregation and caching of average ratings for user profiles
-- Inter-service communication with Trip Service to validate trip completion status
+- Submit review for driver (by passenger) — `POST /api/reviews/driver`
+- Submit review for passenger (by driver) — `POST /api/reviews/passenger`
+- Retrieve reviews and average ratings for drivers and passengers
+- Validates trip/booking completion status via Trip Service before allowing submission
 
 ### Notification Service
 
-- WebSocket connections for real-time updates
-- Firebase integration for push notifications
-- Event-driven notifications between services
+- Create and persist notifications (`POST /api/notifications`)
+- Paginated list per recipient (`GET /api/notifications/{recipientId}`)
+- Mark as read — single or all (`PATCH /api/notifications/{notificationId}/read`, `/read-all`)
+- Notification stats (`GET /api/notifications/{recipientId}/stats`)
+- Real-time delivery via WebSocket
 
 ## ⚙️ Technical Capabilities
 
@@ -116,15 +125,12 @@ The Trip Service integrates with the **OpenStreetMap Routing Machine (OSRM)**. F
 
 ## Database Strategy
 
-The application uses **MongoDB Atlas** for persistent storage with a shared database approach. All services connect to the same MongoDB instance (`carsharingDB`) using the `MONGODB_URI` environment variable. Collections are organized by domain:
+The application uses **MongoDB Atlas** for persistent storage. All services connect via the `MONGODB_URI` environment variable. Collections are organized by domain:
 
-- User-related collections (User Service)
-- Vehicle-related collections (Vehicle Service)
-- Trip-related collections (Trip Service)
-- Ride-related collections (Ride Service)
-- Review-related collections (Review Service)
-
-**Firebase Realtime Database** is used for real-time notifications and live updates.
+- User and vehicle collections (User Service)
+- Trip, ride, and booking collections (Trip Service)
+- Review collections (Review Service)
+- Notification collections (Notification Service)
 
 > [!NOTE]
 > While the current implementation uses a shared database, the microservices architecture allows for future migration to separate databases per service if needed for better isolation and scalability.
