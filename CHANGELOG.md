@@ -13,6 +13,44 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.9.1] – Testing & Enhancements (2026-04-05)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- Comprehensive unit tests for service layers (bookings, trips, cancellations)
+- Unit tests for `AuthService`, `JoinTripService`, and `VehicleService`
+- Comprehensive HTTP tests for notifications, admin actions, and trip operations
+- Unit tests for `GatewayExceptionHandler` with enhanced coverage
+- Logback test configuration and aggregate code coverage report
+- `BookingAlreadyProcessedException` for enhanced booking status validations
+- Driver-accept flow for booking requests with enhanced auto-confirm logic
+- Enhanced vehicle registration response with detailed vehicle data
+- Health and static asset paths to public paths in gateway security config
+- Consolidated `minPrice` and `maxPrice` filters in trip query
+
+### Changed
+
+- Updated route geometry to use `Geometry` object instead of string
+- Enhanced HTTP test coverage with additional validations for notifications and trips
+- Updated token validation tests to reflect 401 responses for invalid tokens
+- Updated duplicate vehicle response to HTTP 409 with enhanced tests
+- Updated API reference with gateway routing, new endpoints, and response formats
+- Expanded README documentation with repository structure and setup guide
+- Updated resource limits, enabled Grafana subpath access, and added ingress configuration for monitoring
+- Enhanced exception handling and logging in `GatewayExceptionHandler`
+
+### Removed
+
+- Unused security tests and outdated test configurations
+
+### Fixed
+
+- Enhanced JWT error handling in security configuration
+
+---
+
 ## [v0.9.0] – Monitoring, Admin Panel & Audit Logging (2026-03-30)
 
 **Author:** s3m3dov (Hikmat Samadov)
