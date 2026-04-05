@@ -1,0 +1,48 @@
+# 05-review.http
+# Run after 01-auth.http and 03-trip-booking.http
+
+@baseUrl = http://localhost:8888
+
+### 1) Submit review before trip completion (negative: expect 400 TRIP_NOT_COMPLETED)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{tripId}}",
+  "bookingId": "{{rideId}}",
+  "rating": 5,
+  "comment": "Great driver, very comfortable ride!"
+}
+
+> {%
+client.test("Review before completion: status 400", function() {
+  client.assert(response.status === 400, "Expected 400 TRIP_NOT_COMPLETED, got " + response.status);
+});
+client.test("Review before completion: error field set", function() {
+  client.assert(response.body.error != null, "Expected error field in response");
+});
+%}
+
+### 2) Submit review for non-existent booking (negative: expect 404)
+POST {{baseUrl}}/review-service/api/reviews/driver
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{passengerEmail}}",
+  "userRole": "PASSENGER",
+  "tripId": "{{tripId}}",
+  "bookingId": "non-existent-booking-id",
+  "rating": 4,
+  "comment": "Good passenger, on time and polite"
+}
+
+> {%
+client.test("Review non-existent booking: status 400 or 404", function() {
+  client.assert(response.status === 400 || response.status === 404,
+    "Expected 400/404, got " + response.status);
+});
+%}
