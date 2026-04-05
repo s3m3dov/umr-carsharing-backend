@@ -56,16 +56,20 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Register vehicle: status 200", function() {
-  client.assert(response.status === 200, "Expected 200, got " + response.status);
+client.test("Register vehicle: status 201", function() {
+  client.assert(response.status === 201, "Expected 201, got " + response.status);
 });
 client.test("Register vehicle: success result", function() {
-  client.assert(response.body.data === true || response.body.data != null,
-    "Expected truthy data indicating vehicle was registered");
+  client.assert(response.body.data != null,
+    "Expected registered vehicle object in data");
+  client.assert(response.body.data.value != null,
+    "Expected value (vehicleNumber) in returned vehicle object");
+  client.assert(response.body.data.text != null,
+    "Expected text (name | color) in returned vehicle object");
 });
 %}
 
-### 5) Register duplicate vehicle (negative: expect 409 or data=false)
+### 5) Register duplicate vehicle (negative: expect 409)
 POST {{baseUrl}}/user-service/api/vehicles/register
 Authorization: Bearer {{driverToken}}
 Content-Type: application/json

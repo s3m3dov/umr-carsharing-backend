@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -41,7 +41,7 @@ class VehicleServiceTest {
     // ── registerVehicle ───────────────────────────────────────────────────────
 
     @Test
-    void registerVehicle_withNewPlate_shouldUppercasePersistAndReturnTrue() {
+    void registerVehicle_withNewPlate_shouldUppercasePersistAndReturnVehicleResponse() {
         RegisterVehicleRequest request = new RegisterVehicleRequest(
                 "driver@example.com",
                 "Tesla Model 3",
@@ -57,9 +57,11 @@ class VehicleServiceTest {
             return v;
         });
 
-        boolean result = vehicleService.registerVehicle(request);
+        VehicleResponse result = vehicleService.registerVehicle(request);
 
-        assertTrue(result);
+        assertEquals("HE-XX-1234", result.value());
+        assertEquals("Tesla Model 3 | white", result.text());
+        assertEquals("5", result.seatingCapacity());
 
         ArgumentCaptor<Vehicle> captor = ArgumentCaptor.forClass(Vehicle.class);
         verify(vehicleRepository).save(captor.capture());
@@ -73,7 +75,7 @@ class VehicleServiceTest {
     }
 
     @Test
-    void registerVehicle_withDuplicatePlate_shouldReturnFalseWithoutPersisting() {
+    void registerVehicle_withDuplicatePlate_shouldReturnNullWithoutPersisting() {
         RegisterVehicleRequest request = new RegisterVehicleRequest(
                 "driver@example.com",
                 "BMW X5",
@@ -84,9 +86,9 @@ class VehicleServiceTest {
 
         when(vehicleRepository.existsByVehicleNumber("HE-XX-9999")).thenReturn(true);
 
-        boolean result = vehicleService.registerVehicle(request);
+        VehicleResponse result = vehicleService.registerVehicle(request);
 
-        assertFalse(result);
+        assertNull(result);
         verify(vehicleRepository, never()).save(any());
         verify(auditService, never()).logCreate(any(), any(), any(), any());
     }
@@ -104,9 +106,9 @@ class VehicleServiceTest {
 
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(true);
 
-        boolean result = vehicleService.registerVehicle(request);
+        VehicleResponse result = vehicleService.registerVehicle(request);
 
-        assertFalse(result);
+        assertNull(result);
         verify(vehicleRepository).existsByVehicleNumber("HE-XX-1234");
         verify(vehicleRepository, never()).save(any());
     }

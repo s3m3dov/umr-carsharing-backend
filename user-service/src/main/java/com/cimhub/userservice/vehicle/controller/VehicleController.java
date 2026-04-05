@@ -72,24 +72,24 @@ public class VehicleController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid input or vehicle already exists",
+                    description = "Invalid input",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_INVALID_VEHICLE_DATA))
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "License plate in use or limit exceeded",
+                    description = "Vehicle already exists or limit exceeded",
                     content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_VEHICLE_LIMIT))
             )
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<Void>> registerVehicle(
+    public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
             @Valid @RequestBody RegisterVehicleRequest request) {
         log.info("Registering vehicle for userId: {}", request.userId());
-        boolean success = vehicleService.registerVehicle(request);
-        if (success) {
+        VehicleResponse registeredVehicle = vehicleService.registerVehicle(request);
+        if (registeredVehicle != null) {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(ApiResponseWrapper.success(null));
+                    .body(ApiResponseWrapper.success(registeredVehicle));
         } else {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
