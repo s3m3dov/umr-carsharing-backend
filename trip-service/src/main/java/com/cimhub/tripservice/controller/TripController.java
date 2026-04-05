@@ -7,6 +7,7 @@ import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
@@ -102,6 +103,30 @@ public class TripController {
             @Valid @RequestBody CancelTripRequest request) {
         log.info("Cancelling trip: {} for user: {}", request.tripId(), request.userId());
         String response = cancellationService.cancelTrip(request);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Get trip details",
+            description = "Retrieve detailed information about a specific trip by ID. Used for review validation and other purposes."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip details retrieved successfully",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+            )
+    })
+    @GetMapping("/{tripId}")
+    public ResponseEntity<ApiResponseWrapper<TripResponse>> getTrip(
+            @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String tripId) {
+        log.info("Fetching trip details for tripId: {}", tripId);
+        TripResponse response = tripService.getTrip(tripId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 

@@ -1,10 +1,10 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.tripservice.dto.request.CancelTripRequest;
-import com.cimhub.tripservice.dto.request.JoinTripRequest;
+import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.model.OperationMessage;
+import com.cimhub.tripservice.service.BookingService;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
@@ -14,10 +14,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +27,33 @@ import org.springframework.web.bind.annotation.*;
 public class BookingController {
 
     private final JoinTripService joinTripService;
+    private final BookingService bookingService;
     private final CancellationService cancellationService;
     private final CompletionService completionService;
+
+    @Operation(
+            summary = "Get booking details",
+            description = "Retrieve detailed information about a specific booking by ID. Used for review validation and other purposes."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Booking details retrieved successfully",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Booking not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+            )
+    })
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(
+            @PathVariable String bookingId) {
+        log.info("Fetching booking details for bookingId: {}", bookingId);
+        BookingResponse response = bookingService.getBooking(bookingId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
 
     @Operation(
             summary = "Accept a booking request",
