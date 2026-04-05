@@ -9,6 +9,7 @@ import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.ActiveRidesService;
 import com.cimhub.tripservice.service.CancellationService;
+import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,9 @@ class TripControllerTest {
     private CancellationService cancellationService;
 
     @Mock
+    private CompletionService completionService;
+
+    @Mock
     private TripGeospatialService geoService;
 
     @Mock
@@ -45,7 +49,7 @@ class TripControllerTest {
 
     @BeforeEach
     void setUp() {
-        tripController = new TripController(offerRideService, cancellationService, geoService, activeRidesService);
+        tripController = new TripController(offerRideService, cancellationService, completionService, geoService, activeRidesService);
     }
 
     @Test
@@ -53,11 +57,11 @@ class TripControllerTest {
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("driver-1")
                 .vehicleNumber("HE-XX-1234")
-                .carType("SEDAN")
                 .sourceAddress(new Points())
                 .destinationAddress(new Points())
                 .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))
                 .totalSeats(3)
+                .pricePerSeat(5.0)
                 .build();
 
         OfferRideResponse offerResponse = OfferRideResponse.builder().tripId("trip-1").tripCreated(true).build();
@@ -132,6 +136,19 @@ class TripControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("trip-no-time", response.getBody().getData().getFirst().getTripId());
+    }
+
+    @Test
+    void completeTrip_shouldReturnOkWithServiceResult() {
+        when(completionService.completeTrip("trip-1", "driver-1"))
+                .thenReturn("Trip completed successfully. 2 remaining ride(s) were auto-completed");
+
+        ResponseEntity<ApiResponseWrapper<String>> response = tripController.completeTrip("trip-1", "driver-1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Trip completed successfully. 2 remaining ride(s) were auto-completed",
+                response.getBody().getMessage());
+        verify(completionService).completeTrip("trip-1", "driver-1");
     }
 
     @Test

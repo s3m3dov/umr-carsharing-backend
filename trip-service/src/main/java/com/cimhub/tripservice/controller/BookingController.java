@@ -4,6 +4,7 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.service.CancellationService;
+import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,6 +28,7 @@ public class BookingController {
 
     private final JoinTripService joinTripService;
     private final CancellationService cancellationService;
+    private final CompletionService completionService;
 
     @Operation(
             summary = "Accept a booking request",
@@ -73,6 +75,33 @@ public class BookingController {
             @RequestParam String bookingId) {
         log.info("Driver rejecting booking: {}", bookingId);
         String response = joinTripService.rejectBooking(bookingId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
+            summary = "Complete a passenger's ride",
+            description = "Driver confirms a passenger's drop-off at their stop. The trip continues for remaining passengers."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Ride completed"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Booking not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Ride is not in a completable state"
+            )
+    })
+    @PostMapping("/{bookingId}/complete")
+    public ResponseEntity<ApiResponseWrapper<String>> completeRide(
+            @PathVariable String bookingId,
+            @RequestParam String driverId) {
+        log.info("Driver {} completing ride: {}", driverId, bookingId);
+        String response = completionService.completeRide(bookingId, driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }

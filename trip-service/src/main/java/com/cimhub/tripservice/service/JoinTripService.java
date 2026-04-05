@@ -192,6 +192,8 @@ public class JoinTripService {
                 .status(status)
                 .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
                 .rideTimezone(trip.getTripTimezone())
+                .pricePerSeat(trip.getPricePerSeat())
+                .estimatedPrice((double) request.requestedSeats() * trip.getPricePerSeat())
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

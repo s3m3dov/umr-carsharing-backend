@@ -6,7 +6,9 @@ import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.routes.OSMRoute;
 import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 public class OfferRideService {
 
         private final TripsRepository tripsRepository;
+        private final VehicleDocumentRepository vehicleDocumentRepository;
         private final OSMRoute osmRoute;
         private final TripGeospatialService tripGeospatialService;
         private final AuditService auditService;
@@ -43,6 +46,16 @@ public class OfferRideService {
                                         .build();
                 }
 
+                VehicleDocument vehicle = vehicleDocumentRepository
+                                .findByUserIdAndVehicleNumber(request.driverId(), request.vehicleNumber().toUpperCase())
+                                .orElse(null);
+                if (vehicle == null) {
+                        return OfferRideResponse.builder()
+                                        .tripCreated(false)
+                                        .errorMessage("Vehicle not found or does not belong to driver")
+                                        .build();
+                }
+
                 var mainRoute = routeDetails.routes().get(0);
                 String timezone = TimezoneConversionService.getTimeZoneId(
                                 request.sourceAddress().getLatitude(),
@@ -51,7 +64,7 @@ public class OfferRideService {
                 Trip newTrip = new Trip();
                 newTrip.setDriverId(request.driverId());
                 newTrip.setVehicleNumber(request.vehicleNumber());
-                newTrip.setCarType(request.carType());
+                newTrip.setCarType(vehicle.getVehicleType());
                 newTrip.setSourceAddress(request.sourceAddress());
                 newTrip.setDestinationAddress(request.destinationAddress());
 
@@ -62,6 +75,7 @@ public class OfferRideService {
                 newTrip.setTripTimezone(timezone);
                 newTrip.setTotalSeats(request.totalSeats());
                 newTrip.setBookedSeats(0);
+                newTrip.setPricePerSeat(request.pricePerSeat());
                 newTrip.setTripStatus(TripStatus.AVAILABLE);
 
                 tripGeospatialService.enrichTripWithGeospatialData(newTrip, mainRoute);
@@ -82,6 +96,7 @@ public class OfferRideService {
                                 .routeDistanceInKm(mainRoute.distance() / 1000.0)
                                 .routeDurationInSeconds(mainRoute.duration())
                                 .routeDurationInMinutes(mainRoute.duration() / 60.0)
+                                .pricePerSeat(newTrip.getPricePerSeat())
                                 .tripCreated(true)
                                 .build();
         }
