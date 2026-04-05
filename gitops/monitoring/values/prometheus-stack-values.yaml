@@ -1,6 +1,10 @@
 # kube-prometheus-stack: Prometheus + Grafana + AlertManager
 grafana:
   adminPassword: admin
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s/grafana"
+      serve_from_sub_path: true
   resources:
     requests:
       memory: "128Mi"
@@ -32,7 +36,7 @@ grafana:
     - name: Tempo
       type: tempo
       uid: tempo
-      url: http://tempo.monitoring.svc.cluster.local:3100
+      url: http://tempo.monitoring.svc.cluster.local:3200
       access: proxy
       jsonData:
         tracesToLogsV2:
@@ -49,6 +53,7 @@ prometheus:
     serviceMonitorSelector: {}
     serviceMonitorNamespaceSelector: {}
     retention: 7d
+    enableRemoteWriteReceiver: true
     resources:
       requests:
         memory: "128Mi"
