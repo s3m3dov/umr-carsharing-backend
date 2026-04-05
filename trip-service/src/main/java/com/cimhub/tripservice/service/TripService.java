@@ -1,6 +1,8 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -45,6 +47,28 @@ public class TripService {
         tripsRepository.save(trip);
     }
 
+    @Transactional
+    public String startTrip(String tripId, String driverId) {
+        Trip trip = tripsRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+
+        if (!trip.getDriverId().equals(driverId)) {
+            throw new UnauthorizedException("You are not authorized to start this trip");
+        }
+
+        if (trip.getTripStatus() != TripStatus.AVAILABLE) {
+            throw new InvalidTripStateException(
+                    String.format("Cannot start trip - current status: %s", trip.getTripStatus()));
+        }
+
+        trip.setTripStatus(TripStatus.IN_PROGRESS);
+        trip.setUpdatedAt(Instant.now());
+        tripsRepository.save(trip);
+
+        log.info("Driver {} started trip {}", driverId, tripId);
+        return "Trip started successfully";
+    }
+
     private void validateTransition(TripStatus currentStatus, TripStatus newStatus) {
         if (currentStatus == newStatus) {
             return;
@@ -52,7 +76,7 @@ public class TripService {
 
         Set<TripStatus> allowed = VALID_TRANSITIONS.get(currentStatus);
         if (allowed == null || !allowed.contains(newStatus)) {
-            throw new IllegalStateException(
+            throw new InvalidTripStateException(
                     String.format("Cannot transition trip from %s to %s", currentStatus, newStatus));
         }
     }

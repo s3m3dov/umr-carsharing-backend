@@ -10,6 +10,7 @@ import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
+import com.cimhub.tripservice.service.TripService;
 import com.cimhub.tripservice.service.ActiveRidesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +40,7 @@ public class TripController {
     private final CompletionService completionService;
     private final TripGeospatialService geoService;
     private final ActiveRidesService activeRidesService;
+    private final TripService tripService;
 
     @Operation(
             summary = "Offer a new trip (driver creates a ride)",
@@ -260,6 +262,37 @@ public class TripController {
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
+    }
+
+    @Operation(
+            summary = "Start a trip",
+            description = "Driver starts the trip. Trip status changes from AVAILABLE to IN_PROGRESS."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip started successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Trip already in progress or completed"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Only the driver can start their own trip"
+            )
+    })
+    @PostMapping("/{tripId}/start")
+    public ResponseEntity<ApiResponseWrapper<String>> startTrip(
+            @Parameter(description = "Trip ID") @PathVariable String tripId,
+            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
+        log.info("Driver {} starting trip: {}", driverId, tripId);
+        String response = tripService.startTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
     @Operation(

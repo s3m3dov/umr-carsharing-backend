@@ -1,6 +1,8 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -68,14 +70,14 @@ class TripServiceTest {
     }
 
     @Test
-    void updateStatus_whenInvalidTransition_shouldThrowIllegalState() {
+    void updateStatus_whenInvalidTransition_shouldThrowInvalidTripState() {
         Trip trip = new Trip();
         trip.setTripId("trip-3");
         trip.setTripStatus(TripStatus.COMPLETED);
 
         when(tripsRepository.findById("trip-3")).thenReturn(Optional.of(trip));
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(InvalidTripStateException.class,
                 () -> tripService.updateStatus("trip-3", TripStatus.CANCELLED));
 
         verify(tripsRepository, never()).save(any());
@@ -90,17 +92,75 @@ class TripServiceTest {
     }
 
     @Test
-    void updateStatus_whenTransitionBackwards_shouldThrowIllegalState() {
+    void updateStatus_whenTransitionBackwards_shouldThrowInvalidTripState() {
         Trip trip = new Trip();
         trip.setTripId("trip-4");
         trip.setTripStatus(TripStatus.AVAILABLE);
 
         when(tripsRepository.findById("trip-4")).thenReturn(Optional.of(trip));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
+        InvalidTripStateException ex = assertThrows(InvalidTripStateException.class,
                 () -> tripService.updateStatus("trip-4", TripStatus.CREATED));
 
         assertTrue(ex.getMessage().contains("Cannot transition trip"));
         verify(tripsRepository, never()).save(any());
+    }
+
+    @Test
+    void startTrip_whenAvailable_shouldStartSuccessfully() {
+        Trip trip = Trip.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.AVAILABLE)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        String result = tripService.startTrip("trip-1", "driver-1");
+
+        assertEquals("Trip started successfully", result);
+        assertEquals(TripStatus.IN_PROGRESS, trip.getTripStatus());
+        verify(tripsRepository).save(trip);
+    }
+
+    @Test
+    void startTrip_whenNotOwner_shouldThrowUnauthorized() {
+        Trip trip = Trip.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.AVAILABLE)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        assertThrows(UnauthorizedException.class,
+                () -> tripService.startTrip("trip-1", "other-driver"));
+
+        verify(tripsRepository, never()).save(any());
+    }
+
+    @Test
+    void startTrip_whenNotAvailable_shouldThrowInvalidTripState() {
+        Trip trip = Trip.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.IN_PROGRESS)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        assertThrows(InvalidTripStateException.class,
+                () -> tripService.startTrip("trip-1", "driver-1"));
+
+        verify(tripsRepository, never()).save(any());
+    }
+
+    @Test
+    void startTrip_whenTripMissing_shouldThrowResourceNotFound() {
+        when(tripsRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> tripService.startTrip("missing", "driver-1"));
     }
 }
