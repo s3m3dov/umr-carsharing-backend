@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.model;
 
 import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.dto.OSRM.Geometry;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -67,7 +68,7 @@ public class Trip {
 
     private String tripTimezone;
 
-    private String routeGeometry;
+    private Geometry routeGeometry;
     private double routeDistance;
     private double routeDuration;
 

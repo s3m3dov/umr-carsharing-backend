@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.dto.OSRM.Geometry;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -29,8 +30,8 @@ public record OfferRideResponse(
         @Schema(description = "Timezone of the trip departure", example = "Europe/Berlin")
         String tripTimezone,
 
-        @Schema(description = "Route geometry as GeoJSON string")
-        String routeGeometry,
+        @Schema(description = "Route geometry as GeoJSON object")
+        Geometry routeGeometry,
 
         @Schema(description = "Total route distance in meters", example = "125430.5")
         Double routeDistanceInMeters,
