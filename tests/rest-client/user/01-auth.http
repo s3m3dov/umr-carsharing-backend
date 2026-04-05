@@ -185,6 +185,7 @@ client.test("Non-existent email login: status 401", function() {
 
 ### 8) Validate driver token (happy path)
 POST {{baseUrl}}/auth-service/api/auth/validate
+Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
@@ -201,8 +202,9 @@ client.test("Validate token: isValid true", function() {
 });
 %}
 
-### 9) Validate malformed token (negative: expect isValid=false or 200 with isValid=false)
+### 9) Validate malformed token (negative: expect 401)
 POST {{baseUrl}}/auth-service/api/auth/validate
+Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
@@ -210,17 +212,17 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Malformed token: status 200", function() {
-  client.assert(response.status === 200, "Expected 200, got " + response.status);
+client.test("Malformed token: status 401", function() {
+  client.assert(response.status === 401, "Expected 401, got " + response.status);
 });
-client.test("Malformed token: isValid false", function() {
-  client.assert(response.body.data != null, "Expected data");
-  client.assert(response.body.data.isValid === false, "Expected isValid=false for malformed token");
+client.test("Malformed token: UNAUTHORIZED code", function() {
+  client.assert(response.body.code === "UNAUTHORIZED", "Expected UNAUTHORIZED code");
 });
 %}
 
-### 10) Validate empty token string (negative: expect isValid=false)
+### 10) Validate empty token string (negative: expect 401)
 POST {{baseUrl}}/auth-service/api/auth/validate
+Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
@@ -228,9 +230,9 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Empty token: isValid false", function() {
-  client.assert(response.body.data == null || response.body.data.isValid === false,
-    "Expected isValid=false for empty token");
+client.test("Empty token: status 401 or 422", function() {
+  client.assert(response.status === 401 || response.status === 422,
+    "Expected 401 (invalid token) or 422 (blank token rejected by validation), got " + response.status);
 });
 %}
 
