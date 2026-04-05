@@ -192,6 +192,96 @@ class CancellationServiceTest {
     }
 
     @Test
+    void cancelRide_withRequestedBooking_shouldCancelSuccessfully() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .tripId("trip-1")
+                .passengerId("passenger-1")
+                .driverId("driver-1")
+                .requestedSeats(1)
+                .status(BookingStatus.REQUESTED)
+                .build();
+
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setBookedSeats(2);
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(tripsRepository.save(any(Trip.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        String result = cancellationService.cancelRide(
+                CancelTripRequest.builder().userId("passenger-1").rideId("booking-1").build());
+
+        assertEquals("Booking cancelled successfully", result);
+
+        ArgumentCaptor<Booking> captor = ArgumentCaptor.forClass(Booking.class);
+        verify(bookingRepository).save(captor.capture());
+        assertEquals(BookingStatus.CANCELLED, captor.getValue().getStatus());
+        assertNotNull(captor.getValue().getUpdatedAt());
+    }
+
+    @Test
+    void cancelRide_whenTripNotFound_shouldThrowResourceNotFound() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .tripId("ghost-trip")
+                .passengerId("passenger-1")
+                .requestedSeats(1)
+                .status(BookingStatus.CONFIRMED)
+                .build();
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(tripsRepository.findById("ghost-trip")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cancellationService.cancelRide(
+                CancelTripRequest.builder().userId("passenger-1").rideId("booking-1").build()));
+    }
+
+    @Test
+    void cancelTrip_withNoBookings_shouldSucceedAndReturnZeroCount() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
+
+        String result = cancellationService.cancelTrip(
+                CancelTripRequest.builder().userId("driver-1").tripId("trip-1").build());
+
+        assertEquals("Trip cancelled successfully. 0 passenger bookings have been cancelled", result);
+        verify(bookingRepository, never()).save(any());
+        verify(tripService).updateStatus("trip-1", TripStatus.CANCELLED);
+    }
+
+    @Test
+    void cancelTrip_shouldAuditEachCancelledBooking() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        Booking b1 = Booking.builder().bookingId("b-1").tripId("trip-1").status(BookingStatus.CONFIRMED).build();
+        Booking b2 = Booking.builder().bookingId("b-2").tripId("trip-1").status(BookingStatus.REQUESTED).build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(b1, b2));
+
+        cancellationService.cancelTrip(
+                CancelTripRequest.builder().userId("driver-1").tripId("trip-1").build());
+
+        verify(auditService).logCancel(EntityType.BOOKING, "b-1", "driver-1",
+                "Booking cancelled due to trip cancellation by driver");
+        verify(auditService).logCancel(EntityType.BOOKING, "b-2", "driver-1",
+                "Booking cancelled due to trip cancellation by driver");
+        verify(auditService).logCancel(EntityType.TRIP, "trip-1", "driver-1", "Trip cancelled by driver");
+    }
+
+    @Test
     void cancelTrip_whenTripNotFound_shouldThrowResourceNotFound() {
         when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
 
