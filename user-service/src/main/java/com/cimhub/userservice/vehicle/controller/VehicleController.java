@@ -92,7 +92,7 @@ public class VehicleController {
                     .body(ApiResponseWrapper.success(null));
         } else {
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.CONFLICT)
                     .body(ApiResponseWrapper.error("VEHICLE_ALREADY_EXISTS", "Vehicle already registered"));
         }
     }

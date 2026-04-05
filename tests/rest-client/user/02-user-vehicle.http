@@ -80,14 +80,11 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Duplicate vehicle: status 200 with false, or 409", function() {
-  // Service returns false (not 409) for duplicates — both are acceptable
-  client.assert(response.status === 409 || response.status === 200,
-    "Expected 409 or 200, got " + response.status);
-  if (response.status === 200) {
-    client.assert(response.body.data === false,
-      "Expected data=false for duplicate vehicle registration");
-  }
+client.test("Duplicate vehicle: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 VEHICLE_ALREADY_EXISTS, got " + response.status);
+});
+client.test("Duplicate vehicle: error field set", function() {
+  client.assert(response.body.error != null, "Expected error field in response");
 });
 %}
 
