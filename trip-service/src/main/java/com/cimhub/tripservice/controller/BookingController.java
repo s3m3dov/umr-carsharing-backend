@@ -3,6 +3,8 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
+import com.cimhub.tripservice.dto.response.CompleteRideResponse;
+import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
@@ -97,11 +99,11 @@ public class BookingController {
             )
     })
     @PostMapping("/{bookingId}/complete")
-    public ResponseEntity<ApiResponseWrapper<String>> completeRide(
+    public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
             @RequestParam String driverId) {
         log.info("Driver {} completing ride: {}", driverId, bookingId);
-        String response = completionService.completeRide(bookingId, driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        CompleteRideResponse response = completionService.completeRide(bookingId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.RIDE_COMPLETED_SUCCESS.text()));
     }
 }

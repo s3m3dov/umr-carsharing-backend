@@ -4,6 +4,8 @@ import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
+import com.cimhub.tripservice.dto.response.CompleteRideResponse;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
 import com.cimhub.tripservice.model.Booking;
@@ -62,9 +64,15 @@ class CompletionServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = completionService.completeRide("b-1", "driver-1");
+        CompleteRideResponse result = completionService.completeRide("b-1", "driver-1");
 
-        assertEquals("Ride completed successfully", result);
+        assertEquals("b-1", result.bookingId());
+        assertEquals("trip-1", result.tripId());
+        assertEquals("driver-1", result.driverId());
+        assertEquals("passenger-1", result.passengerId());
+        assertEquals(BookingStatus.COMPLETED, result.bookingStatus());
+        assertEquals(TripStatus.IN_PROGRESS, result.tripStatus());
+        assertNotNull(result.updatedAt());
 
         ArgumentCaptor<Booking> captor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(captor.capture());
@@ -90,9 +98,12 @@ class CompletionServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = completionService.completeRide("b-2", "driver-1");
+        CompleteRideResponse result = completionService.completeRide("b-2", "driver-1");
 
-        assertEquals("Ride completed successfully", result);
+        assertEquals("b-2", result.bookingId());
+        assertEquals(BookingStatus.COMPLETED, result.bookingStatus());
+        assertEquals(TripStatus.IN_PROGRESS, result.tripStatus());
+        assertNotNull(result.updatedAt());
     }
 
     @Test
@@ -208,9 +219,16 @@ class CompletionServiceTest {
                 .thenReturn(List.of(confirmed, inProgress, alreadyDone, cancelled));
         when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = completionService.completeTrip("trip-1", "driver-1");
+        Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip), Optional.of(completedTrip));
 
-        assertEquals("Trip completed successfully. 2 remaining ride(s) were auto-completed", result);
+        CompleteTripResponse result = completionService.completeTrip("trip-1", "driver-1");
+
+        assertEquals("trip-1", result.tripId());
+        assertEquals("driver-1", result.driverId());
+        assertEquals(TripStatus.COMPLETED, result.tripStatus());
+        assertEquals(2, result.autoCompletedRides());
+        assertNotNull(result.updatedAt());
 
         ArgumentCaptor<Booking> captor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository, times(2)).save(captor.capture());
@@ -229,12 +247,16 @@ class CompletionServiceTest {
 
         Booking done = Booking.builder().bookingId("b-1").status(BookingStatus.COMPLETED).build();
 
-        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip), Optional.of(completedTrip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(done));
 
-        String result = completionService.completeTrip("trip-1", "driver-1");
+        CompleteTripResponse result = completionService.completeTrip("trip-1", "driver-1");
 
-        assertEquals("Trip completed successfully. 0 remaining ride(s) were auto-completed", result);
+        assertEquals("trip-1", result.tripId());
+        assertEquals(TripStatus.COMPLETED, result.tripStatus());
+        assertEquals(0, result.autoCompletedRides());
+        assertNotNull(result.updatedAt());
         verify(bookingRepository, never()).save(any());
         verify(tripService).updateStatus("trip-1", TripStatus.COMPLETED);
     }
@@ -271,13 +293,17 @@ class CompletionServiceTest {
     @Test
     void completeTrip_withEmptyBookingList_shouldCompleteTrip() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
+        Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
 
-        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip), Optional.of(completedTrip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
 
-        String result = completionService.completeTrip("trip-1", "driver-1");
+        CompleteTripResponse result = completionService.completeTrip("trip-1", "driver-1");
 
-        assertEquals("Trip completed successfully. 0 remaining ride(s) were auto-completed", result);
+        assertEquals("trip-1", result.tripId());
+        assertEquals(TripStatus.COMPLETED, result.tripStatus());
+        assertEquals(0, result.autoCompletedRides());
+        assertNotNull(result.updatedAt());
         verify(bookingRepository, never()).save(any());
         verify(driverNotificationService, never()).notifyTripCompleted(any(), any());
         verify(tripService).updateStatus("trip-1", TripStatus.COMPLETED);

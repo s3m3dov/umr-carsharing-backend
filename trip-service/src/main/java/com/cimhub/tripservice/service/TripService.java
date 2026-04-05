@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -48,7 +49,7 @@ public class TripService {
     }
 
     @Transactional
-    public String startTrip(String tripId, String driverId) {
+    public StartTripResponse startTrip(String tripId, String driverId) {
         Trip trip = tripsRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
 
@@ -66,7 +67,12 @@ public class TripService {
         tripsRepository.save(trip);
 
         log.info("Driver {} started trip {}", driverId, tripId);
-        return "Trip started successfully";
+        return StartTripResponse.builder()
+                .tripId(trip.getTripId())
+                .driverId(trip.getDriverId())
+                .tripStatus(trip.getTripStatus())
+                .updatedAt(trip.getUpdatedAt())
+                .build();
     }
 
     private void validateTransition(TripStatus currentStatus, TripStatus newStatus) {

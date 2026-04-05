@@ -3,8 +3,11 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
@@ -287,12 +290,12 @@ public class TripController {
             )
     })
     @PostMapping("/{tripId}/start")
-    public ResponseEntity<ApiResponseWrapper<String>> startTrip(
+    public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
         log.info("Driver {} starting trip: {}", driverId, tripId);
-        String response = tripService.startTrip(tripId, driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        StartTripResponse response = tripService.startTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
     }
 
     @Operation(
@@ -314,11 +317,13 @@ public class TripController {
             )
     })
     @PostMapping("/{tripId}/complete")
-    public ResponseEntity<ApiResponseWrapper<String>> completeTrip(
+    public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
         log.info("Driver {} completing trip: {}", driverId, tripId);
-        String response = completionService.completeTrip(tripId, driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        CompleteTripResponse response = completionService.completeTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(
+                response,
+                OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
     }
 }

@@ -2,6 +2,7 @@ package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.OSRM.Geometry;
+import com.cimhub.tripservice.model.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -47,6 +48,9 @@ public record OfferRideResponse(
 
         @Schema(description = "Price per seat in EUR", example = "5.0")
         Double pricePerSeat,
+
+        @Schema(description = "Current trip status", example = "AVAILABLE")
+        TripStatus tripStatus,
 
         @Schema(description = "Whether the trip was successfully created", example = "true")
         Boolean tripCreated,

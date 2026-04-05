@@ -97,6 +97,7 @@ public class OfferRideService {
                                 .routeDurationInSeconds(mainRoute.duration())
                                 .routeDurationInMinutes(mainRoute.duration() / 60.0)
                                 .pricePerSeat(newTrip.getPricePerSeat())
+                                .tripStatus(newTrip.getTripStatus())
                                 .tripCreated(true)
                                 .build();
         }
