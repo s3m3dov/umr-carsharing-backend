@@ -111,7 +111,14 @@ tests/
   rest-client/
     admin/                           # IntelliJ HTTP client files for admin flows
     user/                            # IntelliJ HTTP client files for user flows
+
+<module>/src/test/java/               # Unit tests (JUnit 5 + Mockito)
+  service/                           # Service layer tests
+  controller/                        # Controller tests (future)
+  repository/                        # Repository tests (future)
 ```
+
+See **[`.docs/technical/testing/TESTING.md`](.docs/technical/testing/testing.md)** for comprehensive testing guide.
 
 ### Root-level Files
 
