@@ -6,6 +6,7 @@ import com.cimhub.common.models.Points;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
+import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
 import com.cimhub.tripservice.exception.InsufficientSeatsException;
 import com.cimhub.tripservice.exception.TripNotAvailableException;
 import com.cimhub.tripservice.model.Booking;
@@ -97,7 +98,8 @@ public class JoinTripService {
                         "Booking not found with id: " + bookingId));
 
         if (booking.getStatus() != BookingStatus.REQUESTED) {
-            throw new IllegalStateException("Booking is not in REQUESTED state");
+            throw new BookingAlreadyProcessedException(
+                    "Booking " + bookingId + " is not in REQUESTED state (current: " + booking.getStatus() + ")");
         }
 
         booking.setStatus(BookingStatus.CONFIRMED);
@@ -118,7 +120,8 @@ public class JoinTripService {
                         "Booking not found with id: " + bookingId));
 
         if (booking.getStatus() != BookingStatus.REQUESTED) {
-            throw new IllegalStateException("Booking is not in REQUESTED state");
+            throw new BookingAlreadyProcessedException(
+                    "Booking " + bookingId + " is not in REQUESTED state (current: " + booking.getStatus() + ")");
         }
 
         booking.setStatus(BookingStatus.REJECTED);
