@@ -14,7 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,5 +144,56 @@ class AdminBookingServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () ->
                 adminBookingService.cancelBooking("missing", "admin@example.com"));
+    }
+
+    @Test
+    void updateBooking_withOnlyRequestedSeatsSet_shouldPreserveExistingStatus() {
+        Booking booking = new Booking();
+        booking.setBookingId("booking-3");
+        booking.setStatus(BookingStatus.REQUESTED);
+        booking.setRequestedSeats(1);
+
+        when(bookingRepository.findById("booking-3")).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BookingResponse response = adminBookingService.updateBooking(
+                "booking-3", new UpdateBookingRequest(null, 4), "admin@example.com");
+
+        assertEquals(BookingStatus.REQUESTED, response.status());
+        assertEquals(4, response.requestedSeats());
+    }
+
+    @Test
+    void listBookings_and_getPassengerBookings_shouldReturnMappedPages() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Booking booking = new Booking();
+        booking.setBookingId("booking-9");
+        booking.setPassengerId("passenger-9");
+        booking.setTripId("trip-9");
+        booking.setDriverId("driver-9");
+        booking.setVehicleNumber("HE-XX-9999");
+        booking.setRequestedSeats(2);
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setEstimatedPrice(25.0);
+        booking.setPricePerSeat(12.5);
+        booking.setRideStartTimeUTC(Instant.parse("2026-09-01T10:00:00Z"));
+        booking.setRideTimezone("UTC");
+        booking.setCreatedAt(Instant.parse("2026-09-01T09:00:00Z"));
+        booking.setUpdatedAt(Instant.parse("2026-09-01T09:30:00Z"));
+
+        Page<Booking> page = new PageImpl<>(List.of(booking), pageable, 1);
+        when(bookingRepository.findAll(pageable)).thenReturn(page);
+        when(bookingRepository.findByPassengerId("passenger-9", pageable)).thenReturn(page);
+
+        Page<BookingResponse> listed = adminBookingService.listBookings(pageable);
+        Page<BookingResponse> byPassenger = adminBookingService.getPassengerBookings("passenger-9", pageable);
+
+        assertEquals(1, listed.getTotalElements());
+        assertEquals("booking-9", listed.getContent().getFirst().bookingId());
+        assertEquals("driver-9", listed.getContent().getFirst().driverId());
+        assertEquals(25.0, listed.getContent().getFirst().estimatedPrice());
+
+        assertEquals(1, byPassenger.getTotalElements());
+        assertEquals("passenger-9", byPassenger.getContent().getFirst().passengerId());
     }
 }
