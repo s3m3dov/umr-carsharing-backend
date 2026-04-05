@@ -3,6 +3,7 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.TripStatus;
@@ -11,6 +12,7 @@ import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
+import com.cimhub.tripservice.service.TripService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,6 +46,23 @@ class TripControllerIntegrationTest {
 
     @MockBean
     private ActiveRidesService activeRidesService;
+
+    @MockBean
+    private TripService tripService;
+
+    @Test
+    void getTrip_shouldReturn200WithData() throws Exception {
+        TripResponse response = TripResponse.builder()
+                .tripId("trip-1")
+                .tripStatus(TripStatus.COMPLETED)
+                .build();
+        when(tripService.getTrip("trip-1")).thenReturn(response);
+
+        mockMvc.perform(get("/api/trips/trip-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.tripId").value("trip-1"))
+                .andExpect(jsonPath("$.data.tripStatus").value("COMPLETED"));
+    }
 
     @Test
     void completeTrip_shouldReturn200WithMessage() throws Exception {

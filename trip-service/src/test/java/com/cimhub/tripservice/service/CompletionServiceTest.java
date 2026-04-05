@@ -280,14 +280,32 @@ class CompletionServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = TripStatus.class, names = {"CREATED", "AVAILABLE", "COMPLETED", "CANCELLED"})
-    void completeTrip_whenStatusNotInProgress_shouldThrowTripNotInProgress(TripStatus status) {
+    @EnumSource(value = TripStatus.class, names = {"CREATED", "COMPLETED", "CANCELLED"})
+    void completeTrip_whenStatusNotCompletable_shouldThrowTripNotInProgress(TripStatus status) {
         Trip trip = tripWithStatus("trip-1", "driver-1", status);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
         assertThrows(TripNotInProgressException.class,
                 () -> completionService.completeTrip("trip-1", "driver-1"));
         verify(tripService, never()).updateStatus(any(), any());
+    }
+
+    @Test
+    void completeTrip_whenAvailable_shouldTransitionAndComplete() {
+        Trip availableTrip = tripWithStatus("trip-1", "driver-1", TripStatus.AVAILABLE);
+        Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
+        Booking confirmed = Booking.builder().bookingId("b-1").status(BookingStatus.CONFIRMED).build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(availableTrip), Optional.of(completedTrip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(confirmed));
+        when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        CompleteTripResponse result = completionService.completeTrip("trip-1", "driver-1");
+
+        assertEquals(TripStatus.COMPLETED, result.tripStatus());
+        assertEquals(1, result.autoCompletedRides());
+        verify(tripService).updateStatus("trip-1", TripStatus.IN_PROGRESS);
+        verify(tripService).updateStatus("trip-1", TripStatus.COMPLETED);
     }
 
     @Test
