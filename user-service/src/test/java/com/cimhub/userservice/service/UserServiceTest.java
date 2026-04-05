@@ -127,4 +127,42 @@ class UserServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserInfo("missing-user"));
     }
+
+    @Test
+    void getUserInfo_whenUserExists_shouldReturnMappedResponse() {
+        com.cimhub.userservice.model.User user = new com.cimhub.userservice.model.User();
+        user.setUserId("user-1");
+        user.setEmail("user@example.com");
+        user.setFirstName("Alice");
+        user.setLastName("Smith");
+        user.setUserType(UserType.PASSENGER);
+
+        when(userRepository.findByUserId("user-1")).thenReturn(user);
+
+        UserResponse response = userService.getUserInfo("user-1");
+
+        assertEquals("user-1", response.userId());
+        assertEquals("user@example.com", response.email());
+        assertEquals(UserType.PASSENGER, response.userType());
+    }
+
+    @Test
+    void createProfile_forDriver_shouldNotCreatePassengerRecord() {
+        CreateProfileRequest request = new CreateProfileRequest(
+                "driver-2",
+                "driver2@example.com",
+                UserType.DRIVER,
+                "Bob",
+                "Driver",
+                "+1",
+                35,
+                "LIC-999");
+
+        when(userRepository.findByUserId("driver-2")).thenReturn(null);
+        when(driverRepository.findByUserId("driver-2")).thenReturn(Optional.of(new com.cimhub.userservice.model.Driver()));
+
+        userService.createProfile(request);
+
+        verify(passengerRepository, never()).save(any());
+    }
 }

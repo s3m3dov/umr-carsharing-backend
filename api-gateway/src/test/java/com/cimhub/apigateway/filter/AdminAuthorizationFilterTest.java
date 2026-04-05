@@ -78,4 +78,29 @@ class AdminAuthorizationFilterTest {
         assertEquals(HttpStatus.FORBIDDEN, exchange.getResponse().getStatusCode());
         verify(chain, never()).filter(any(ServerWebExchange.class));
     }
+
+    @Test
+    void filter_withAdminPathAndMissingRoleHeader_shouldReturnForbidden() {
+        // No X-User-Role header — treated as non-admin
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/admin/users").build());
+
+        filter.filter(exchange, chain).block();
+
+        assertEquals(HttpStatus.FORBIDDEN, exchange.getResponse().getStatusCode());
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
+    void filter_withAdminPathAndPassengerRole_shouldReturnForbidden() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/admin/trips")
+                        .header(GatewayConstants.USER_ROLE_HEADER, UserType.PASSENGER.name())
+                        .build());
+
+        filter.filter(exchange, chain).block();
+
+        assertEquals(HttpStatus.FORBIDDEN, exchange.getResponse().getStatusCode());
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
 }

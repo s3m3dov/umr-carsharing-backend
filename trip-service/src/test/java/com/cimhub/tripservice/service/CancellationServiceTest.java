@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
@@ -175,5 +176,65 @@ class CancellationServiceTest {
 
         verify(tripService).updateStatus("trip-1", TripStatus.CANCELLED);
         verify(auditService).logCancel(EntityType.TRIP, "trip-1", "driver-1", "Trip cancelled by driver");
+    }
+
+    @Test
+    void cancelRide_whenBookingNotFound_shouldThrowResourceNotFound() {
+        when(bookingRepository.findById("missing-booking")).thenReturn(Optional.empty());
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("passenger-1")
+                .rideId("missing-booking")
+                .build();
+
+        assertThrows(ResourceNotFoundException.class, () -> cancellationService.cancelRide(request));
+    }
+
+    @Test
+    void cancelTrip_whenTripNotFound_shouldThrowResourceNotFound() {
+        when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("driver-1")
+                .tripId("missing-trip")
+                .build();
+
+        assertThrows(ResourceNotFoundException.class, () -> cancellationService.cancelTrip(request));
+    }
+
+    @Test
+    void cancelTrip_whenUserIsNotDriver_shouldThrowUnauthorized() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("intruder")
+                .tripId("trip-1")
+                .build();
+
+        assertThrows(UnauthorizedException.class, () -> cancellationService.cancelTrip(request));
+        verify(tripService, never()).updateStatus(any(), any());
+    }
+
+    @Test
+    void cancelTrip_whenTripAlreadyCancelled_shouldThrowAlreadyCancelled() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setDriverId("driver-1");
+        trip.setTripStatus(TripStatus.CANCELLED);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        CancelTripRequest request = CancelTripRequest.builder()
+                .userId("driver-1")
+                .tripId("trip-1")
+                .build();
+
+        assertThrows(AlreadyCancelledException.class, () -> cancellationService.cancelTrip(request));
+        verify(tripService, never()).updateStatus(any(), any());
     }
 }

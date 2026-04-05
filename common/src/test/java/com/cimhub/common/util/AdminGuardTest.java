@@ -25,4 +25,26 @@ class AdminGuardTest {
 
         assertEquals("Admin access required", ex.getMessage());
     }
+
+    @Test
+    void requireAdmin_withPassengerRole_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> AdminGuard.requireAdmin(UserType.PASSENGER.name()));
+    }
+
+    @Test
+    void requireAdmin_withNullRole_shouldThrowForbidden() {
+        // null does not equal "ADMIN" — must be treated as unauthorized
+        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin(null));
+    }
+
+    @Test
+    void requireAdmin_withEmptyRole_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin(""));
+    }
+
+    @Test
+    void requireAdmin_withArbitraryString_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin("SUPERUSER"));
+    }
 }
