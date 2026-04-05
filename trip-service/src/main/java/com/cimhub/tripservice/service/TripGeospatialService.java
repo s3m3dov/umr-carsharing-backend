@@ -242,10 +242,11 @@ public class TripGeospatialService {
         }
 
         // Add price range filter
-        if (minPrice != null) {
+        if (minPrice != null && maxPrice != null) {
+            query.addCriteria(Criteria.where("pricePerSeat").gte(minPrice).lte(maxPrice));
+        } else if (minPrice != null) {
             query.addCriteria(Criteria.where("pricePerSeat").gte(minPrice));
-        }
-        if (maxPrice != null) {
+        } else if (maxPrice != null) {
             query.addCriteria(Criteria.where("pricePerSeat").lte(maxPrice));
         }
 
