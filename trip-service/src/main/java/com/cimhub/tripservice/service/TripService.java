@@ -3,6 +3,7 @@ package com.cimhub.tripservice.service;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,20 @@ public class TripService {
         tripsRepository.save(trip);
     }
 
+    /**
+     * Get trip details by ID.
+     * Returns public trip information for review validation and other purposes.
+     *
+     * @param tripId the trip ID
+     * @return TripResponse with trip details
+     * @throws ResourceNotFoundException if trip is not found
+     */
+    public TripResponse getTrip(String tripId) {
+        Trip trip = tripsRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
+        return mapToTripResponse(trip);
+    }
+
     @Transactional
     public StartTripResponse startTrip(String tripId, String driverId) {
         Trip trip = tripsRepository.findById(tripId)
@@ -72,6 +88,31 @@ public class TripService {
                 .driverId(trip.getDriverId())
                 .tripStatus(trip.getTripStatus())
                 .updatedAt(trip.getUpdatedAt())
+                .build();
+    }
+
+    private TripResponse mapToTripResponse(Trip trip) {
+        // Convert UTC Instant to ZonedDateTime with trip timezone
+        ZonedDateTime tripStartDateTime = trip.getTripStartDateTimeUTC() != null
+                ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), 
+                    java.time.ZoneId.of(trip.getTripTimezone() != null ? trip.getTripTimezone() : "UTC"))
+                : null;
+
+        return TripResponse.builder()
+                .tripId(trip.getTripId())
+                .driverId(trip.getDriverId())
+                .vehicleNumber(trip.getVehicleNumber())
+                .carType(trip.getCarType())
+                .sourceAddress(trip.getSourceAddress())
+                .destinationAddress(trip.getDestinationAddress())
+                .tripStartDateTime(tripStartDateTime)
+                .tripTimezone(trip.getTripTimezone())
+                .tripStartDateTimeInUserTimezone(tripStartDateTime) // Same as trip timezone for now
+                .userTimezone(trip.getTripTimezone())
+                .totalSeats(trip.getTotalSeats())
+                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
+                .tripStatus(trip.getTripStatus())
+                .pricePerSeat(trip.getPricePerSeat())
                 .build();
     }
 
