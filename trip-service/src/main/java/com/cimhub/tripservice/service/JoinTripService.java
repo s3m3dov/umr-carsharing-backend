@@ -32,73 +32,58 @@ public class JoinTripService {
     private final AuditService auditService;
     private final DriverNotificationService driverNotificationService;
 
+    /**
+     * Books a ride with automatic confirmation — the passenger's seat is reserved
+     * immediately without requiring driver approval.
+     */
     @Transactional
     public String joinTrip(JoinTripRequest request) {
-        log.info("Processing join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
+        log.info("Processing auto-confirm join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
                 request.passengerId(), request.tripId(), request.requestedSeats());
 
-        Trip trip = tripsRepository.findById(request.tripId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trip not found with id: " + request.tripId()));
-
-        if (trip.getTripStatus() != TripStatus.CREATED && trip.getTripStatus() != TripStatus.AVAILABLE) {
-            throw new TripNotAvailableException("Trip is not available for booking");
-        }
-
-        List<Booking> existingBookings = bookingRepository.findByTripId(request.tripId());
-        boolean alreadyBooked = existingBookings.stream()
-                .anyMatch(b -> b.getPassengerId().equals(request.passengerId()) &&
-                        b.getStatus() != BookingStatus.CANCELLED);
-
-        if (alreadyBooked) {
-            throw new AlreadyBookedException("You have already booked this trip");
-        }
-
-        int requestedSeats = request.requestedSeats();
-        int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
-
-        if (availableSeats < requestedSeats) {
-            throw new InsufficientSeatsException(
-                    String.format("Only %d seats available, but %d requested", availableSeats,
-                            requestedSeats));
-        }
-
-        Points pickupPoints = new Points();
-        pickupPoints.setLatitude(request.pickupPoint().latitude());
-        pickupPoints.setLongitude(request.pickupPoint().longitude());
-        pickupPoints.setPlaceAddress(request.pickupPoint().placeAddress());
-
-        Points dropoffPoints = new Points();
-        dropoffPoints.setLatitude(request.destinationPoint().latitude());
-        dropoffPoints.setLongitude(request.destinationPoint().longitude());
-        dropoffPoints.setPlaceAddress(request.destinationPoint().placeAddress());
-
-        Booking booking = Booking.builder()
-                .tripId(request.tripId())
-                .passengerId(request.passengerId())
-                .driverId(trip.getDriverId())
-                .vehicleNumber(trip.getVehicleNumber())
-                .pickupLocation(pickupPoints)
-                .dropoffLocation(dropoffPoints)
-                .requestedSeats(requestedSeats)
-                .status(BookingStatus.REQUESTED)
-                .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
-                .rideTimezone(trip.getTripTimezone())
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        Trip trip = validateAndFetchTrip(request);
+        Booking booking = buildBooking(request, trip, BookingStatus.CONFIRMED);
 
         bookingRepository.save(booking);
-        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(), "Booking request submitted by passenger");
+        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                "Booking auto-confirmed for passenger");
 
-        driverNotificationService.notifyBookingRequested(trip, booking);
+        driverNotificationService.notifyBookingConfirmed(trip, booking);
 
-        trip.setBookedSeats(trip.getBookedSeats() + requestedSeats);
+        trip.setBookedSeats(trip.getBookedSeats() + request.requestedSeats());
         trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);
 
-        log.info("Passenger {} requested to join trip {}. Seats requested: {}",
-                request.passengerId(), request.tripId(), requestedSeats);
+        log.info("Passenger {} joined trip {} (auto-confirmed). Seats: {}",
+                request.passengerId(), request.tripId(), request.requestedSeats());
+
+        return "Ride booked successfully.";
+    }
+
+    /**
+     * Books a ride using the driver-accept mechanism — the booking is created in
+     * REQUESTED state and the driver must explicitly accept or reject it.
+     */
+    @Transactional
+    public String joinTripWithDriverAccept(JoinTripRequest request) {
+        log.info("Processing driver-accept join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
+                request.passengerId(), request.tripId(), request.requestedSeats());
+
+        Trip trip = validateAndFetchTrip(request);
+        Booking booking = buildBooking(request, trip, BookingStatus.REQUESTED);
+
+        bookingRepository.save(booking);
+        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                "Booking request submitted by passenger");
+
+        driverNotificationService.notifyBookingRequested(trip, booking);
+
+        trip.setBookedSeats(trip.getBookedSeats() + request.requestedSeats());
+        trip.setUpdatedAt(Instant.now());
+        tripsRepository.save(trip);
+
+        log.info("Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
+                request.passengerId(), request.tripId(), request.requestedSeats());
 
         return "Booking request submitted. Waiting for driver confirmation.";
     }
@@ -150,5 +135,62 @@ public class JoinTripService {
 
         log.info("Booking {} rejected", bookingId);
         return "Booking rejected";
+    }
+
+    // ── private helpers ───────────────────────────────────────────────────────
+
+    private Trip validateAndFetchTrip(JoinTripRequest request) {
+        Trip trip = tripsRepository.findById(request.tripId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Trip not found with id: " + request.tripId()));
+
+        if (trip.getTripStatus() != TripStatus.CREATED && trip.getTripStatus() != TripStatus.AVAILABLE) {
+            throw new TripNotAvailableException("Trip is not available for booking");
+        }
+
+        List<Booking> existingBookings = bookingRepository.findByTripId(request.tripId());
+        boolean alreadyBooked = existingBookings.stream()
+                .anyMatch(b -> b.getPassengerId().equals(request.passengerId()) &&
+                        b.getStatus() != BookingStatus.CANCELLED);
+
+        if (alreadyBooked) {
+            throw new AlreadyBookedException("You have already booked this trip");
+        }
+
+        int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
+        if (availableSeats < request.requestedSeats()) {
+            throw new InsufficientSeatsException(
+                    String.format("Only %d seats available, but %d requested", availableSeats,
+                            request.requestedSeats()));
+        }
+
+        return trip;
+    }
+
+    private Booking buildBooking(JoinTripRequest request, Trip trip, BookingStatus status) {
+        Points pickupPoints = new Points();
+        pickupPoints.setLatitude(request.pickupPoint().latitude());
+        pickupPoints.setLongitude(request.pickupPoint().longitude());
+        pickupPoints.setPlaceAddress(request.pickupPoint().placeAddress());
+
+        Points dropoffPoints = new Points();
+        dropoffPoints.setLatitude(request.destinationPoint().latitude());
+        dropoffPoints.setLongitude(request.destinationPoint().longitude());
+        dropoffPoints.setPlaceAddress(request.destinationPoint().placeAddress());
+
+        return Booking.builder()
+                .tripId(request.tripId())
+                .passengerId(request.passengerId())
+                .driverId(trip.getDriverId())
+                .vehicleNumber(trip.getVehicleNumber())
+                .pickupLocation(pickupPoints)
+                .dropoffLocation(dropoffPoints)
+                .requestedSeats(request.requestedSeats())
+                .status(status)
+                .rideStartTimeUTC(trip.getTripStartDateTimeUTC())
+                .rideTimezone(trip.getTripTimezone())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
     }
 }

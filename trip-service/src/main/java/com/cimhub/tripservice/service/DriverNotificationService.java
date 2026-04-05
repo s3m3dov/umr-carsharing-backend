@@ -41,6 +41,23 @@ public class DriverNotificationService {
                 metadata(trip, booking)));
     }
 
+    public void notifyBookingConfirmed(Trip trip, Booking booking) {
+        String message = String.format(
+                "Passenger %s confirmed %d seat(s) on your trip %s.",
+                booking.getPassengerId(),
+                booking.getRequestedSeats(),
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getDriverId(),
+                booking.getPassengerId(),
+                "New booking confirmed",
+                message,
+                NotificationType.BOOKING_CONFIRMED,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
     public void notifyBookingCancelledByPassenger(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s cancelled booking %s for trip %s.",
