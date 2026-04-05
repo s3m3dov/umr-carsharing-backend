@@ -147,6 +147,10 @@ Content-Type: application/json
 }
 
 > {%
+client.test("Mark other user notification as read: response received", function() {
+  client.assert(response != null && response.status != null,
+    "No response received for scenario 9 (mark other user notification as read)");
+});
 client.test("Mark other user notification as read: status 403", function() {
   client.assert(response.status === 403, "Expected 403, got " + response.status);
 });
@@ -157,11 +161,36 @@ PATCH {{baseUrl}}/notification-service/api/notifications/{{passengerEmail}}/read
 Authorization: Bearer {{passengerToken}}
 
 > {%
+client.test("Mark all as read: response received", function() {
+  client.assert(response != null && response.status != null,
+    "No response received for scenario 10 (mark all notifications as read)");
+});
 client.test("Mark all as read: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
 client.test("Mark all as read: stats returned", function() {
+  client.assert(response.body != null, "Expected response body, got empty response");
   client.assert(response.body.data != null, "Expected stats data in response");
+});
+client.test("Mark all as read: affected list is not empty", function() {
+  var data = response.body && response.body.data;
+  if (Array.isArray(data)) {
+    client.assert(data.length > 0, "Expected non-empty list after mark-all-read");
+    return;
+  }
+  if (data && Array.isArray(data.notifications)) {
+    client.assert(data.notifications.length > 0, "Expected non-empty notifications list after mark-all-read");
+    return;
+  }
+  if (data && Array.isArray(data.updatedNotifications)) {
+    client.assert(data.updatedNotifications.length > 0, "Expected non-empty updatedNotifications after mark-all-read");
+    return;
+  }
+  if (data && typeof data.updatedCount === "number") {
+    client.assert(data.updatedCount > 0, "Expected updatedCount > 0 after mark-all-read");
+    return;
+  }
+  client.assert(false, "Expected response to include a non-empty affected notifications collection or positive updated count");
 });
 %}
 

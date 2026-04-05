@@ -206,6 +206,10 @@ client.test("Passenger active rides: status 200", function() {
 client.test("Passenger active rides: returns array", function() {
   client.assert(Array.isArray(response.body.data), "Expected data to be an array");
 });
+client.test("Passenger active rides: list is not empty", function() {
+  client.assert(Array.isArray(response.body.data) && response.body.data.length > 0,
+    "Expected at least one active ride, got empty list");
+});
 if (response.body && response.body.data && Array.isArray(response.body.data)) {
   var rides = response.body.data;
   var selected = null;
@@ -235,6 +239,10 @@ client.test("Driver active trips: status 200", function() {
 });
 client.test("Driver active trips: returns array", function() {
   client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+});
+client.test("Driver active trips: list is not empty", function() {
+  client.assert(Array.isArray(response.body.data) && response.body.data.length > 0,
+    "Expected at least one active trip, got empty list");
 });
 %}
 
