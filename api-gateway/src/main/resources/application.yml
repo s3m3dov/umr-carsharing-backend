@@ -94,13 +94,14 @@ springdoc:
 gateway:
   security:
     public-paths:
+      - /**/health
+      - /webjars/**
+      - /favicon.ico
       - /auth-service/api/auth/login
       - /auth-service/api/auth/signup
       - /auth-service/api/auth/validate
       - /auth-service/api/auth/reset-password
       - /auth-service/api/auth/reset-password/confirm
-      - /webjars/**
-      - /favicon.ico
     docs-paths:
       - /v3/api-docs/**
       - /swagger-ui/**
