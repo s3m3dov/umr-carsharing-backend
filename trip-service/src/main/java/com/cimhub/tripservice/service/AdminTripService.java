@@ -3,6 +3,7 @@ package com.cimhub.tripservice.service;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
+import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -49,6 +50,11 @@ public class AdminTripService {
     public void cancelTrip(String tripId, String adminEmail) {
         Trip trip = tripsRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found: " + tripId));
+
+        if (trip.getTripStatus() == TripStatus.CANCELLED) {
+            throw new AlreadyCancelledException("This trip has already been cancelled");
+        }
+
         trip.setTripStatus(TripStatus.CANCELLED);
         trip.setUpdatedAt(Instant.now());
         tripsRepository.save(trip);

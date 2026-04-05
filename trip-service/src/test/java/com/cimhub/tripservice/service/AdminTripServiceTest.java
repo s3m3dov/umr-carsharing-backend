@@ -4,6 +4,7 @@ import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
+import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +103,21 @@ class AdminTripServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () ->
                 adminTripService.cancelTrip("missing-trip", "admin@example.com"));
+    }
+
+    @Test
+    void cancelTrip_whenAlreadyCancelled_shouldThrowAlreadyCancelled() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-1");
+        trip.setTripStatus(TripStatus.CANCELLED);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        assertThrows(AlreadyCancelledException.class, () ->
+                adminTripService.cancelTrip("trip-1", "admin@example.com"));
+
+        verify(tripsRepository, never()).save(any(Trip.class));
+        verify(auditService, never()).logCancel(any(), any(), any(), any());
     }
 
     @Test
