@@ -79,7 +79,7 @@ class OfferRideServiceTest {
         vehicleDoc.setVehicleType("SEDAN");
 
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
-        when(vehicleDocumentRepository.findByUserIdAndVehicleNumber("driver-1", "HE-XX-1234"))
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
                 .thenReturn(Optional.of(vehicleDoc));
         when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> {
             Trip saved = invocation.getArgument(0);
@@ -149,7 +149,7 @@ class OfferRideServiceTest {
                 List.of());
 
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
-        when(vehicleDocumentRepository.findByUserIdAndVehicleNumber("driver-1", "HE-XX-1234"))
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
                 .thenReturn(Optional.empty());
 
         OfferRideResponse response = offerRideService.offerRide(request);
@@ -164,7 +164,6 @@ class OfferRideServiceTest {
     void offerRide_withZeroPricePerSeat_shouldCreateFreeRide() {
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("driver-1")
-                .vehicleNumber("HE-XX-1234")
                 .sourceAddress(buildRequest().sourceAddress())
                 .destinationAddress(buildRequest().destinationAddress())
                 .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
@@ -179,7 +178,7 @@ class OfferRideServiceTest {
         vehicleDoc.setVehicleType("SEDAN");
 
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
-        when(vehicleDocumentRepository.findByUserIdAndVehicleNumber("driver-1", "HE-XX-1234"))
+        when(vehicleDocumentRepository.findByUserId("driver-1"))
                 .thenReturn(Optional.of(vehicleDoc));
         when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -200,8 +199,7 @@ class OfferRideServiceTest {
 
         return OfferRideRequest.builder()
                 .driverId("driver-1")
-                .vehicleNumber("HE-XX-1234")
-                .sourceAddress(source)
+.sourceAddress(source)
                 .destinationAddress(destination)
                 .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
                 .totalSeats(3)

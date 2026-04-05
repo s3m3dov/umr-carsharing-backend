@@ -81,6 +81,8 @@ class JoinTripServiceTest {
         assertEquals("driver-1", saved.getDriverId());
         assertEquals(2, saved.getRequestedSeats());
         assertEquals(BookingStatus.CONFIRMED, saved.getStatus());
+        assertEquals(10.0, saved.getPricePerSeat());
+        assertEquals(20.0, saved.getEstimatedPrice()); // 2 seats × 10.0
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripsRepository).save(tripCaptor.capture());
@@ -217,6 +219,8 @@ class JoinTripServiceTest {
         assertEquals("driver-1", saved.getDriverId());
         assertEquals(2, saved.getRequestedSeats());
         assertEquals(BookingStatus.REQUESTED, saved.getStatus());
+        assertEquals(10.0, saved.getPricePerSeat());
+        assertEquals(20.0, saved.getEstimatedPrice()); // 2 seats × 10.0
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripsRepository).save(tripCaptor.capture());
@@ -462,6 +466,7 @@ class JoinTripServiceTest {
         trip.setTripStatus(status);
         trip.setTotalSeats(totalSeats);
         trip.setBookedSeats(bookedSeats);
+        trip.setPricePerSeat(10.0);
         return trip;
     }
 

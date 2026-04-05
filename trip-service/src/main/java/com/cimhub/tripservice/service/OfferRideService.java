@@ -30,7 +30,7 @@ public class OfferRideService {
         private final AuditService auditService;
 
         public OfferRideResponse offerRide(OfferRideRequest request) {
-                log.info("Offering ride for driver: {} with vehicle: {}", request.driverId(), request.vehicleNumber());
+                log.info("Offering ride for driver: {}", request.driverId());
 
                 OsrmResponseDTO routeDetails = osmRoute.getRoute(
                                 request.sourceAddress().getLatitude(),
@@ -47,7 +47,7 @@ public class OfferRideService {
                 }
 
                 VehicleDocument vehicle = vehicleDocumentRepository
-                                .findByUserIdAndVehicleNumber(request.driverId(), request.vehicleNumber().toUpperCase())
+                                .findByUserId(request.driverId())
                                 .orElse(null);
                 if (vehicle == null) {
                         return OfferRideResponse.builder()
@@ -63,7 +63,7 @@ public class OfferRideService {
 
                 Trip newTrip = new Trip();
                 newTrip.setDriverId(request.driverId());
-                newTrip.setVehicleNumber(request.vehicleNumber());
+                newTrip.setVehicleNumber(vehicle.getVehicleNumber());
                 newTrip.setCarType(vehicle.getVehicleType());
                 newTrip.setSourceAddress(request.sourceAddress());
                 newTrip.setDestinationAddress(request.destinationAddress());
