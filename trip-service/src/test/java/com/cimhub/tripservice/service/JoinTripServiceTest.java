@@ -2,7 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
-import com.cimhub.tripservice.dto.common.LocationPoint;
+import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
 import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
@@ -471,8 +471,14 @@ class JoinTripServiceTest {
     }
 
     private JoinTripRequest buildRequest(String tripId, String passengerId, int seats) {
-        LocationPoint pickup = new LocationPoint(50.8154, 8.6747, "Marburg");
-        LocationPoint dropoff = new LocationPoint(50.7265, 7.0895, "Frankfurt");
+        Points pickup = new Points();
+        pickup.setLatitude(50.8154);
+        pickup.setLongitude(8.6747);
+        pickup.setPlaceAddress("Marburg");
+        Points dropoff = new Points();
+        dropoff.setLatitude(50.7265);
+        dropoff.setLongitude(7.0895);
+        dropoff.setPlaceAddress("Frankfurt");
         return JoinTripRequest.builder()
                 .tripId(tripId)
                 .passengerId(passengerId)
