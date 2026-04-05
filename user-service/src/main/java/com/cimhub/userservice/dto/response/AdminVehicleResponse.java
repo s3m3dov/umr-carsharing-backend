@@ -13,7 +13,7 @@ import java.time.Instant;
         example = """
                 {
                   "id": "vehicle_001",
-                  "userId": "user_123",
+                  "userId": "john.driver@example.com",
                   "vehicleNumber": "HE-XX-1234",
                   "vehicleName": "Tesla Model 3",
                   "vehicleType": "sedan",

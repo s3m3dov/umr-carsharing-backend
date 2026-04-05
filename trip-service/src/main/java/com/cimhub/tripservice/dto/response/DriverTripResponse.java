@@ -15,7 +15,7 @@ public record DriverTripResponse(
         @Schema(description = "Unique trip identifier", example = "trip_001")
         String tripId,
 
-        @Schema(description = "Driver's user ID", example = "user_123")
+        @Schema(description = "Driver's user ID", example = "john.driver@example.com")
         String driverId,
 
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
@@ -67,7 +67,7 @@ public record DriverTripResponse(
     @Builder
     @Schema(name = "PassengerInfo", description = "Information about a passenger booking on this trip")
     public record PassengerInfo(
-            @Schema(description = "Passenger's user ID", example = "user_456")
+            @Schema(description = "Passenger's user ID", example = "jane.passenger@example.com")
             String userId,
 
             @Schema(description = "Number of seats booked by this passenger", example = "1")

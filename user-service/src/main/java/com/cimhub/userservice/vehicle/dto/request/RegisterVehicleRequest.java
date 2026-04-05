@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
         example = VehicleApiExamples.REGISTER_VEHICLE_REQUEST
 )
 public record RegisterVehicleRequest(
-        @Schema(description = "Driver's user ID who owns the vehicle", example = "user_123")
+        @Schema(description = "Driver's user ID who owns the vehicle", example = "john.driver@example.com")
         @NotBlank(message = "User ID is required") String userId,
 
         @Schema(description = "Vehicle make and model name", example = "Tesla Model 3")

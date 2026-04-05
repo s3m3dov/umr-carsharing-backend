@@ -70,7 +70,7 @@ curl -X POST http://localhost:8081/auth-service/api/auth/validate \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8082/user-service/api/users/user_123 \
+curl -X GET http://localhost:8082/user-service/api/users/john.driver@example.com \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -82,7 +82,7 @@ curl -X POST http://localhost:8082/user-service/api/users/profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
     "age": 32,
@@ -100,7 +100,7 @@ curl -X POST http://localhost:8082/user-service/api/vehicles/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "vehicleName": "Tesla Model 3",
     "vehicleNumber": "HE-XX-1234",
     "vehicleType": "sedan",
@@ -113,7 +113,7 @@ curl -X POST http://localhost:8082/user-service/api/vehicles/register \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8082/user-service/api/vehicles/user_123 \
+curl -X GET http://localhost:8082/user-service/api/vehicles/john.driver@example.com \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -127,7 +127,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/offer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "driverId": "user_123",
+    "driverId": "john.driver@example.com",
     "vehicleId": "vehicle_001",
     "sourceLatitude": 50.8154,
     "sourceLongitude": 8.6747,
@@ -144,7 +144,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/offer \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=user_456" \
+curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=jane.passenger@example.com" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -152,7 +152,7 @@ curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8084/trip-service/api/trips/active/driver/user_123 \
+curl -X GET http://localhost:8084/trip-service/api/trips/active/driver/john.driver@example.com \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -165,7 +165,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/cancel \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "tripId": "trip_001",
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "reason": "Change of plans"
   }'
 ```
@@ -180,7 +180,7 @@ curl -X POST http://localhost:8084/trip-service/api/bookings/join \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "passengerId": "user_456",
+    "passengerId": "jane.passenger@example.com",
     "tripId": "trip_001",
     "numberOfSeats": 2,
     "specialRequests": "I have a large suitcase"
@@ -191,7 +191,7 @@ curl -X POST http://localhost:8084/trip-service/api/bookings/join \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8084/trip-service/api/bookings/active/passenger/user_456 \
+curl -X GET http://localhost:8084/trip-service/api/bookings/active/passenger/jane.passenger@example.com \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -356,12 +356,12 @@ const api = new CarSharingAPI('http://localhost');
 const token = await api.login('john.driver@example.com', 'SecurePassword123!');
 
 // Get user profile
-const profile = await api.getUserProfile('user_123');
+const profile = await api.getUserProfile('john.driver@example.com');
 console.log(profile);
 
 // Offer a trip
 const trip = await api.offerTrip({
-  driverId: 'user_123',
+  driverId: 'john.driver@example.com',
   vehicleId: 'vehicle_001',
   sourceLatitude: 50.8154,
   sourceLongitude: 8.6747,
@@ -548,12 +548,12 @@ api = CarSharingAPI('http://localhost')
 api.login('john.driver@example.com', 'SecurePassword123!')
 
 # Get profile
-profile = api.get_user_profile('user_123')
+profile = api.get_user_profile('john.driver@example.com')
 print(f"User: {profile['firstName']} {profile['lastName']}")
 
 # Offer a trip
 trip = api.offer_trip({
-    'driverId': 'user_123',
+    'driverId': 'john.driver@example.com',
     'vehicleId': 'vehicle_001',
     'sourceLatitude': 50.8154,
     'sourceLongitude': 8.6747,
@@ -667,7 +667,7 @@ public class CarSharingAPIClient {
 CarSharingAPIClient client = new CarSharingAPIClient("http://localhost");
 client.login("john.driver@example.com", "SecurePassword123!");
 
-Map<String, Object> profile = client.getUserProfile("user_123");
+Map<String, Object> profile = client.getUserProfile("john.driver@example.com");
 System.out.println("User: " + profile.get("firstName"));
 ```
 
@@ -836,7 +836,7 @@ describe('Car Sharing API', () => {
 
   test('Get user profile should return user data', async () => {
     await api.login('test@example.com', 'password');
-    const profile = await api.getUserProfile('user_123');
+    const profile = await api.getUserProfile('john.driver@example.com');
 
     expect(profile).toHaveProperty('userId');
     expect(profile).toHaveProperty('firstName');
@@ -847,7 +847,7 @@ describe('Car Sharing API', () => {
     await api.login('driver@example.com', 'password');
 
     const trip = await api.offerTrip({
-      driverId: 'user_123',
+      driverId: 'john.driver@example.com',
       vehicleId: 'vehicle_001',
       sourceLatitude: 50.8154,
       sourceLongitude: 8.6747,

@@ -106,7 +106,7 @@ Source: `ApiExamples.VALIDATE_TOKEN_RESPONSE` → imported in `AuthController` a
 ### Get User Profile
 **REQUEST** - Path parameter:
 ```
-GET /api/users/user_123
+GET /api/users/john.driver@example.com
 ```
 
 **RESPONSE** - What you get back:
@@ -114,7 +114,7 @@ GET /api/users/user_123
 {
   "success": true,
   "data": {
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
@@ -134,7 +134,7 @@ Source: `ApiExamples.GET_USER_RESPONSE` → imported in `UserController` annotat
 **REQUEST** - What to send:
 ```json
 {
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "firstName": "John",
   "lastName": "Driver",
   "phoneNumber": "+49 123 456789",
@@ -148,7 +148,7 @@ Source: `ApiExamples.CREATE_PROFILE_REQUEST` → imported in `CreateProfileReque
 {
   "success": true,
   "data": {
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
@@ -170,7 +170,7 @@ Source: `ApiExamples.CREATE_PROFILE_RESPONSE` → imported in `UserController` a
 **REQUEST** - What to send:
 ```json
 {
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "vehicleName": "Tesla Model 3",
   "vehicleNumber": "HE-XX-1234",
   "vehicleType": "sedan",
@@ -195,7 +195,7 @@ Source: `ApiExamples.REGISTER_VEHICLE_RESPONSE` → imported in `VehicleControll
 ### Get User Vehicles
 **REQUEST** - Path parameter:
 ```
-GET /api/vehicles/user_123
+GET /api/vehicles/john.driver@example.com
 ```
 
 **RESPONSE** - What you get back:
@@ -227,7 +227,7 @@ Source: `ApiExamples.GET_VEHICLES_RESPONSE` → imported in `VehicleController` 
 **REQUEST** - What to send:
 ```json
 {
-  "driverId": "user_123",
+  "driverId": "john.driver@example.com",
   "vehicleNumber": "HE-XX-1234",
   "sourceAddress": {
     "latitude": 50.8154,
@@ -249,7 +249,7 @@ Source: `ApiExamples.OFFER_TRIP_REQUEST` → imported in `OfferRideRequest.java`
   "success": true,
   "data": {
     "tripId": "trip_001",
-    "driverId": "user_123",
+    "driverId": "john.driver@example.com",
     "departureTime": "2024-03-25T08:00:00Z",
     "availableSeats": 3,
     "status": "SCHEDULED"
@@ -266,7 +266,7 @@ Source: `ApiExamples.OFFER_TRIP_RESPONSE` → imported in `TripController` annot
 ```json
 {
   "tripId": "trip_001",
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "cancellationReason": "Change of plans"
 }
 ```
@@ -293,7 +293,7 @@ GET /api/trips/search/matching-route?
   destinationLatitude=50.7265&
   destinationLongitude=7.0895&
   requestedSeats=2&
-  effectiveUserId=user_456&
+  effectiveUserId=jane.passenger@example.com&
   earliestDepartureTime=2024-03-25T07:00:00Z&
   latestDepartureTime=2024-03-25T09:00:00Z
 ```
@@ -305,7 +305,7 @@ GET /api/trips/search/matching-route?
   "data": [
     {
       "tripId": "trip_001",
-      "driverId": "user_123",
+      "driverId": "john.driver@example.com",
       "departureTime": "2024-03-25T08:00:00Z",
       "sourceLocation": {
         "latitude": 50.8154,
@@ -329,7 +329,7 @@ Source: `ApiExamples.SEARCH_TRIPS_RESPONSE` → imported in `TripController` ann
 ### Get Active Trips
 **REQUEST** - Path parameter:
 ```
-GET /api/trips/active/driver/user_123
+GET /api/trips/active/driver/john.driver@example.com
 ```
 
 **RESPONSE** - What you get back:
@@ -362,7 +362,7 @@ Source: `ApiExamples.ACTIVE_TRIPS_RESPONSE` → imported in `TripController` ann
 **REQUEST** - What to send:
 ```json
 {
-  "userId": "user_456",
+  "userId": "jane.passenger@example.com",
   "userRole": "PASSENGER",
   "tripId": "trip_001",
   "bookingId": "booking_001",
@@ -380,9 +380,9 @@ Source: `ReviewApiExamples.SUBMIT_REVIEW_REQUEST` → imported in `SubmitReviewR
     "reviewId": "review_001",
     "tripId": "trip_001",
     "bookingId": "booking_001",
-    "reviewerId": "user_456",
+    "reviewerId": "jane.passenger@example.com",
     "reviewerType": "PASSENGER",
-    "revieweeId": "user_123",
+    "revieweeId": "john.driver@example.com",
     "revieweeType": "DRIVER",
     "rating": 5,
     "comment": "Great driver, very comfortable ride!",
@@ -400,7 +400,7 @@ Source: `ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE` → imported in `Revie
 ### Get Driver Reviews
 **REQUEST** - Path parameter:
 ```
-GET /api/reviews/driver/user_123
+GET /api/reviews/driver/john.driver@example.com
 ```
 
 **RESPONSE** - What you get back:
@@ -412,9 +412,9 @@ GET /api/reviews/driver/user_123
       "reviewId": "review_001",
       "tripId": "trip_001",
       "bookingId": "booking_001",
-      "reviewerId": "user_456",
+      "reviewerId": "jane.passenger@example.com",
       "reviewerType": "PASSENGER",
-      "revieweeId": "user_123",
+      "revieweeId": "john.driver@example.com",
       "revieweeType": "DRIVER",
       "rating": 5,
       "comment": "Great driver!",

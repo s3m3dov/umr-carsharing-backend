@@ -180,7 +180,7 @@ public class TripController {
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
             @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
-            @Parameter(description = "User ID of the passenger searching", example = "user_456") @RequestParam String effectiveUserId,
+            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam String effectiveUserId,
             @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
             @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
             @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
@@ -230,7 +230,7 @@ public class TripController {
     })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
-            @Parameter(description = "Driver's user ID", example = "user_123") @PathVariable String driverId) {
+            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
         log.info("Fetching active trips for driver: {}", driverId);
         List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(activeTrips));
@@ -254,7 +254,7 @@ public class TripController {
     })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
-            @Parameter(description = "Driver's user ID", example = "user_123") @PathVariable String driverId) {
+            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));

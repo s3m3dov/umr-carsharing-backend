@@ -8,6 +8,6 @@ import lombok.Builder;
 @Schema(name = "MarkNotificationReadRequest", description = "Request to mark a notification as read")
 public record MarkNotificationReadRequest(
         @NotBlank(message = "recipientId is required")
-        @Schema(description = "Notification owner user ID", example = "user_456")
+        @Schema(description = "Notification owner user ID", example = "jane.passenger@example.com")
         String recipientId) {
 }

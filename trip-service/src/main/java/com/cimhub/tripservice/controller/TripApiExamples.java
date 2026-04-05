@@ -12,7 +12,7 @@ public final class TripApiExamples {
 
     public static final String OFFER_TRIP_REQUEST = """
             {
-              "driverId": "user_123",
+              "driverId": "john.driver@example.com",
               "vehicleNumber": "HE-XX-1234",
               "carType": "SEDAN",
               "sourceAddress": {
@@ -30,7 +30,7 @@ public final class TripApiExamples {
     public static final String CANCEL_TRIP_REQUEST = """
             {
               "tripId": "trip_001",
-              "userId": "user_123",
+              "userId": "john.driver@example.com",
               "reason": "Change of plans"
             }""";
 
@@ -41,7 +41,7 @@ public final class TripApiExamples {
               "success": true,
               "data": {
                 "tripId": "trip_001",
-                "driverId": "user_123",
+                "driverId": "john.driver@example.com",
                 "departureTime": "2024-03-25T08:00:00Z",
                 "availableSeats": 3,
                 "status": "SCHEDULED"
@@ -55,7 +55,7 @@ public final class TripApiExamples {
               "data": [
                 {
                   "tripId": "trip_001",
-                  "driverId": "user_123",
+                  "driverId": "john.driver@example.com",
                   "departureTime": "2024-03-25T08:00:00Z",
                   "sourceLocation": {
                     "latitude": 50.8154,

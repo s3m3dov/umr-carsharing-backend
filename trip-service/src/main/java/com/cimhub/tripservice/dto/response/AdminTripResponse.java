@@ -15,7 +15,7 @@ import java.time.Instant;
         example = """
                 {
                   "tripId": "trip_001",
-                  "driverId": "user_123",
+                  "driverId": "john.driver@example.com",
                   "vehicleNumber": "HE-XX-1234",
                   "carType": "SEDAN",
                   "tripStatus": "SCHEDULED",

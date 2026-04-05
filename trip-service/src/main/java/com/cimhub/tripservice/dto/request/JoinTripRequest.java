@@ -17,10 +17,10 @@ public record JoinTripRequest(
                 @Schema(description = "Trip identifier to join", example = "trip_001")
                 String tripId,
 
-                @Schema(description = "Passenger's user ID", example = "user_456")
+                @Schema(description = "Passenger's user ID", example = "jane.passenger@example.com")
                 String passengerId,
 
-                @Schema(description = "Driver's user ID for the trip", example = "user_123")
+                @Schema(description = "Driver's user ID for the trip", example = "john.driver@example.com")
                 String driverId,
 
                 @Schema(description = "Passenger's pickup location")

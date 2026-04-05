@@ -225,7 +225,7 @@ User profile information.
     "userId": {
       "type": "string",
       "description": "Unique user identifier",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "firstName": {
       "type": "string",
@@ -293,7 +293,7 @@ Request to create or update user profile.
     "userId": {
       "type": "string",
       "description": "User ID to create profile for",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "firstName": {
       "type": "string",
@@ -335,7 +335,7 @@ Request to register a vehicle.
     "userId": {
       "type": "string",
       "description": "Driver's user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "vehicleName": {
       "type": "string",
@@ -416,7 +416,7 @@ Request to create a trip.
     "driverId": {
       "type": "string",
       "description": "Driver's user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "vehicleId": {
       "type": "string",
@@ -511,7 +511,7 @@ Response after creating a trip.
     "driverId": {
       "type": "string",
       "description": "Driver's user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "departureTime": {
       "type": "string",
@@ -551,7 +551,7 @@ Complete trip information.
     "driverId": {
       "type": "string",
       "description": "Driver's user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "vehicleId": {
       "type": "string",
@@ -611,7 +611,7 @@ Complete trip information.
         "properties": {
           "passengerId": {
             "type": "string",
-            "example": "user_456"
+            "example": "jane.passenger@example.com"
           },
           "firstName": {
             "type": "string",
@@ -704,7 +704,7 @@ Request to cancel a trip.
     "userId": {
       "type": "string",
       "description": "User cancelling the trip",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "reason": {
       "type": "string",
@@ -737,7 +737,7 @@ Request to join a trip as passenger.
     "passengerId": {
       "type": "string",
       "description": "Passenger's user ID",
-      "example": "user_456"
+      "example": "jane.passenger@example.com"
     },
     "tripId": {
       "type": "string",
@@ -783,7 +783,7 @@ Booking information from passenger's perspective.
     "driverId": {
       "type": "string",
       "description": "Driver's user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "driverName": {
       "type": "string",
@@ -862,7 +862,7 @@ Review details returned by review endpoints.
     "reviewerId": {
       "type": "string",
       "description": "Reviewer user ID",
-      "example": "user_456"
+      "example": "jane.passenger@example.com"
     },
     "reviewerType": {
       "type": "string",
@@ -873,7 +873,7 @@ Review details returned by review endpoints.
     "revieweeId": {
       "type": "string",
       "description": "Reviewee user ID",
-      "example": "user_123"
+      "example": "john.driver@example.com"
     },
     "revieweeType": {
       "type": "string",
@@ -929,7 +929,7 @@ Trip details returned by admin trip management endpoints.
   "type": "object",
   "properties": {
     "tripId": {"type": "string", "example": "trip_001"},
-    "driverId": {"type": "string", "example": "user_123"},
+    "driverId": {"type": "string", "example": "john.driver@example.com"},
     "vehicleNumber": {"type": "string", "example": "HE-XX-1234"},
     "carType": {"type": "string", "example": "SEDAN"},
     "tripStatus": {"type": "string", "example": "SCHEDULED"},
@@ -971,7 +971,7 @@ Vehicle details returned by admin vehicle management endpoints.
   "type": "object",
   "properties": {
     "id": {"type": "string", "example": "vehicle_001"},
-    "userId": {"type": "string", "example": "user_123"},
+    "userId": {"type": "string", "example": "john.driver@example.com"},
     "vehicleNumber": {"type": "string", "example": "HE-XX-1234"},
     "vehicleName": {"type": "string", "example": "Tesla Model 3"},
     "vehicleType": {"type": "string", "example": "sedan"},

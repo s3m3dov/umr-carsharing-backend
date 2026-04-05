@@ -153,7 +153,7 @@ public class RideController {
     })
     @GetMapping("/active/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerActiveRides(
-            @Parameter(description = "Passenger's user ID", example = "user_456") @PathVariable String passengerId) {
+            @Parameter(description = "Passenger's user ID", example = "jane.passenger@example.com") @PathVariable String passengerId) {
         log.info("Fetching active rides for passenger: {}", passengerId);
         List<PassengerRideResponse> activeRides = activeRidesService.findPassengerActiveRides(passengerId);
         return ResponseEntity.ok(ApiResponseWrapper.success(activeRides));
@@ -177,7 +177,7 @@ public class RideController {
     })
     @GetMapping("/history/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerRideHistory(
-            @Parameter(description = "Passenger's user ID", example = "user_456") @PathVariable String passengerId) {
+            @Parameter(description = "Passenger's user ID", example = "jane.passenger@example.com") @PathVariable String passengerId) {
         log.info("Fetching ride history for passenger: {}", passengerId);
         List<PassengerRideResponse> rideHistory = activeRidesService.findPassengerRideHistory(passengerId);
         return ResponseEntity.ok(ApiResponseWrapper.success(rideHistory));

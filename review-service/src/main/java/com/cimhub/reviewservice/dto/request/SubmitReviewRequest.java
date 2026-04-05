@@ -18,7 +18,7 @@ import lombok.Builder;
 @Builder
 public record SubmitReviewRequest(
         @NotBlank(message = "userId is required")
-        @Schema(description = "The ID of the user submitting the review", example = "user_123")
+        @Schema(description = "The ID of the user submitting the review", example = "jane.passenger@example.com")
         String userId,
 
         @NotNull(message = "userRole is required")

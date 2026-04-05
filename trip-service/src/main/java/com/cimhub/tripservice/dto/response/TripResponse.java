@@ -14,7 +14,7 @@ public record TripResponse(
         @Schema(description = "Unique trip identifier", example = "trip_001")
         String tripId,
 
-        @Schema(description = "Driver's user ID", example = "user_123")
+        @Schema(description = "Driver's user ID", example = "john.driver@example.com")
         String driverId,
 
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")

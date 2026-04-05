@@ -12,10 +12,10 @@ import java.util.Map;
 @Schema(name = "CreateNotificationRequest", description = "Request to create and deliver a notification")
 public record CreateNotificationRequest(
         @NotBlank(message = "recipientId is required")
-        @Schema(description = "Notification recipient user ID", example = "user_456")
+        @Schema(description = "Notification recipient user ID", example = "jane.passenger@example.com")
         String recipientId,
 
-        @Schema(description = "Notification sender user ID", example = "user_123")
+        @Schema(description = "Notification sender user ID", example = "john.driver@example.com")
         String senderId,
 
         @NotBlank(message = "title is required")
