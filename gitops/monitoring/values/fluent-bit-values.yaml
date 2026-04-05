@@ -3,11 +3,27 @@
 
 resources:
   requests:
-    memory: "16Mi"
-    cpu: "10m"
+    memory: "24Mi"
+    cpu: "15m"
   limits:
-    memory: "32Mi"
-    cpu: "50m"
+    memory: "48Mi"
+    cpu: "75m"
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 5
+
+readinessProbe:
+  httpGet:
+    path: /api/v2/health
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
 
 config:
   inputs: |
