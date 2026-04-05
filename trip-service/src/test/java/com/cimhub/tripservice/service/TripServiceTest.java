@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -117,9 +118,12 @@ class TripServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        String result = tripService.startTrip("trip-1", "driver-1");
+        StartTripResponse result = tripService.startTrip("trip-1", "driver-1");
 
-        assertEquals("Trip started successfully", result);
+        assertEquals("trip-1", result.tripId());
+        assertEquals("driver-1", result.driverId());
+        assertEquals(TripStatus.IN_PROGRESS, result.tripStatus());
+        assertNotNull(result.updatedAt());
         assertEquals(TripStatus.IN_PROGRESS, trip.getTripStatus());
         verify(tripsRepository).save(trip);
     }

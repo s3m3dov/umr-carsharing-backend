@@ -2,7 +2,10 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
+import com.cimhub.tripservice.model.OperationMessage;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.service.ActiveRidesService;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
@@ -43,13 +46,21 @@ class TripControllerIntegrationTest {
 
     @Test
     void completeTrip_shouldReturn200WithMessage() throws Exception {
+        CompleteTripResponse response = CompleteTripResponse.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.COMPLETED)
+                .autoCompletedRides(2)
+                .build();
         when(completionService.completeTrip("trip-1", "driver-1"))
-                .thenReturn("Trip completed successfully. 2 remaining ride(s) were auto-completed");
+                .thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Trip completed successfully. 2 remaining ride(s) were auto-completed"));
+                .andExpect(jsonPath("$.message").value(OperationMessage.TRIP_COMPLETED_SUCCESS.format(2)))
+                .andExpect(jsonPath("$.data.tripStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.data.autoCompletedRides").value(2));
     }
 
     @Test
@@ -93,12 +104,20 @@ class TripControllerIntegrationTest {
 
     @Test
     void completeTrip_withZeroAutoCompletedRides_shouldReturn200() throws Exception {
+        CompleteTripResponse response = CompleteTripResponse.builder()
+                .tripId("trip-2")
+                .driverId("driver-2")
+                .tripStatus(TripStatus.COMPLETED)
+                .autoCompletedRides(0)
+                .build();
         when(completionService.completeTrip("trip-2", "driver-2"))
-                .thenReturn("Trip completed successfully. 0 remaining ride(s) were auto-completed");
+                .thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-2/complete")
                         .param("driverId", "driver-2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Trip completed successfully. 0 remaining ride(s) were auto-completed"));
+                .andExpect(jsonPath("$.message").value(OperationMessage.TRIP_COMPLETED_SUCCESS.format(0)))
+                .andExpect(jsonPath("$.data.tripStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.data.autoCompletedRides").value(0));
     }
 }

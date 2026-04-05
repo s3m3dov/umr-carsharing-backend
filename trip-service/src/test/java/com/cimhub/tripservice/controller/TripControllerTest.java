@@ -4,9 +4,13 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.models.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.service.ActiveRidesService;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
@@ -143,14 +147,21 @@ class TripControllerTest {
 
     @Test
     void completeTrip_shouldReturnOkWithServiceResult() {
-        when(completionService.completeTrip("trip-1", "driver-1"))
-                .thenReturn("Trip completed successfully. 2 remaining ride(s) were auto-completed");
+        CompleteTripResponse completeTripResponse = CompleteTripResponse.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.COMPLETED)
+                .autoCompletedRides(2)
+                .build();
+        when(completionService.completeTrip("trip-1", "driver-1")).thenReturn(completeTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<String>> response = tripController.completeTrip("trip-1", "driver-1");
+        ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> response = tripController.completeTrip("trip-1", "driver-1");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Trip completed successfully. 2 remaining ride(s) were auto-completed",
+        assertEquals(OperationMessage.TRIP_COMPLETED_SUCCESS.format(2),
                 response.getBody().getMessage());
+        assertEquals(TripStatus.COMPLETED, response.getBody().getData().tripStatus());
+        assertEquals(2, response.getBody().getData().autoCompletedRides());
         verify(completionService).completeTrip("trip-1", "driver-1");
     }
 
@@ -178,12 +189,18 @@ class TripControllerTest {
 
     @Test
     void startTrip_shouldReturnOkWithServiceResult() {
-        when(tripService.startTrip("trip-1", "driver-1")).thenReturn("Trip started successfully");
+        StartTripResponse startTripResponse = StartTripResponse.builder()
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .tripStatus(TripStatus.IN_PROGRESS)
+                .build();
+        when(tripService.startTrip("trip-1", "driver-1")).thenReturn(startTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<String>> response = tripController.startTrip("trip-1", "driver-1");
+        ResponseEntity<ApiResponseWrapper<StartTripResponse>> response = tripController.startTrip("trip-1", "driver-1");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Trip started successfully", response.getBody().getMessage());
+        assertEquals(OperationMessage.TRIP_STARTED_SUCCESS.text(), response.getBody().getMessage());
+        assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());
         verify(tripService).startTrip("trip-1", "driver-1");
     }
 }

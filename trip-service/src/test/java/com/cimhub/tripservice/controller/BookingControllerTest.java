@@ -1,6 +1,10 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.tripservice.dto.response.CompleteRideResponse;
+import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.tripservice.model.OperationMessage;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
@@ -59,12 +63,22 @@ class BookingControllerTest {
 
     @Test
     void completeRide_shouldReturnOkWithServiceResult() {
-        when(completionService.completeRide("b-3", "driver-1")).thenReturn("Ride completed successfully");
+        CompleteRideResponse completeRideResponse = CompleteRideResponse.builder()
+                .bookingId("b-3")
+                .tripId("trip-3")
+                .driverId("driver-1")
+                .passengerId("passenger-1")
+                .bookingStatus(BookingStatus.COMPLETED)
+                .tripStatus(TripStatus.IN_PROGRESS)
+                .build();
+        when(completionService.completeRide("b-3", "driver-1")).thenReturn(completeRideResponse);
 
-        ResponseEntity<ApiResponseWrapper<String>> response = bookingController.completeRide("b-3", "driver-1");
+        ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> response = bookingController.completeRide("b-3", "driver-1");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Ride completed successfully", response.getBody().getMessage());
+        assertEquals(OperationMessage.RIDE_COMPLETED_SUCCESS.text(), response.getBody().getMessage());
+        assertEquals(BookingStatus.COMPLETED, response.getBody().getData().bookingStatus());
+        assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());
         verify(completionService).completeRide("b-3", "driver-1");
     }
 }

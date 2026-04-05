@@ -2,7 +2,11 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
+import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.tripservice.model.OperationMessage;
+import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
@@ -35,13 +39,23 @@ class BookingControllerIntegrationTest {
 
     @Test
     void completeRide_shouldReturn200WithMessage() throws Exception {
+        CompleteRideResponse response = CompleteRideResponse.builder()
+                .bookingId("b-1")
+                .tripId("trip-1")
+                .driverId("driver-1")
+                .passengerId("passenger-1")
+                .bookingStatus(BookingStatus.COMPLETED)
+                .tripStatus(TripStatus.IN_PROGRESS)
+                .build();
         when(completionService.completeRide("b-1", "driver-1"))
-                .thenReturn("Ride completed successfully");
+                .thenReturn(response);
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Ride completed successfully"));
+                .andExpect(jsonPath("$.message").value(OperationMessage.RIDE_COMPLETED_SUCCESS.text()))
+                .andExpect(jsonPath("$.data.bookingStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.data.tripStatus").value("IN_PROGRESS"));
     }
 
     @Test
