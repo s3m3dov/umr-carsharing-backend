@@ -47,8 +47,11 @@ public class CancellationService {
                         throw new UnauthorizedException("You are not authorized to cancel this booking");
                 }
 
-                if (booking.getStatus() == BookingStatus.CANCELLED) {
-                        throw new AlreadyCancelledException("This booking has already been cancelled");
+                if (booking.getStatus() == BookingStatus.CANCELLED
+                                || booking.getStatus() == BookingStatus.COMPLETED
+                                || booking.getStatus() == BookingStatus.REJECTED) {
+                        throw new AlreadyCancelledException("This booking cannot be cancelled (current status: "
+                                        + booking.getStatus() + ")");
                 }
 
                 booking.setStatus(BookingStatus.CANCELLED);
@@ -97,6 +100,7 @@ public class CancellationService {
                                 bookingRepository.save(booking);
                                 auditService.logCancel(EntityType.BOOKING, booking.getBookingId(), driverId,
                                                 "Booking cancelled due to trip cancellation by driver");
+                                driverNotificationService.notifyPassengerTripCancelledByDriver(trip, booking);
                         }
                 }
 

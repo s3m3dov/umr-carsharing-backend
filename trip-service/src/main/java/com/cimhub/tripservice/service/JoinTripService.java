@@ -107,6 +107,11 @@ public class JoinTripService {
         bookingRepository.save(booking);
         auditService.logApprove(EntityType.BOOKING, bookingId, booking.getDriverId(), "Booking accepted by driver");
 
+        Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
+        if (trip != null) {
+            driverNotificationService.notifyPassengerBookingAccepted(trip, booking);
+        }
+
         log.info("Booking {} accepted", bookingId);
         return "Booking accepted successfully";
     }
@@ -131,6 +136,7 @@ public class JoinTripService {
 
         Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
         if (trip != null) {
+            driverNotificationService.notifyPassengerBookingRejected(trip, booking);
             trip.setBookedSeats(trip.getBookedSeats() - booking.getRequestedSeats());
             trip.setUpdatedAt(Instant.now());
             tripsRepository.save(trip);

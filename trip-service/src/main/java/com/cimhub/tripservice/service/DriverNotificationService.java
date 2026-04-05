@@ -105,6 +105,51 @@ public class DriverNotificationService {
                 metadata(trip, booking)));
     }
 
+    public void notifyPassengerBookingAccepted(Trip trip, Booking booking) {
+        String message = String.format(
+                "Your booking for trip %s has been accepted by the driver.",
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getPassengerId(),
+                booking.getDriverId(),
+                "Booking accepted",
+                message,
+                NotificationType.BOOKING_CONFIRMED,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
+    public void notifyPassengerBookingRejected(Trip trip, Booking booking) {
+        String message = String.format(
+                "Your booking for trip %s has been rejected by the driver.",
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getPassengerId(),
+                booking.getDriverId(),
+                "Booking rejected",
+                message,
+                NotificationType.BOOKING_REJECTED,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
+    public void notifyPassengerTripCancelledByDriver(Trip trip, Booking booking) {
+        String message = String.format(
+                "The driver has cancelled trip %s. Your booking has been automatically cancelled.",
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getPassengerId(),
+                booking.getDriverId(),
+                "Trip cancelled",
+                message,
+                NotificationType.BOOKING_CANCELLED_BY_DRIVER,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
     private void sendNotification(CreateNotificationRequest request) {
         try {
             webClientBuilder
