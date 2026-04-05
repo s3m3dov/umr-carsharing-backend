@@ -50,6 +50,7 @@ class VehicleServiceTest {
                 "white",
                 "5");
 
+        when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(false);
         when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(inv -> {
             Vehicle v = inv.getArgument(0);
@@ -75,6 +76,25 @@ class VehicleServiceTest {
     }
 
     @Test
+    void registerVehicle_whenDriverAlreadyHasVehicle_shouldReturnNullWithoutPersisting() {
+        RegisterVehicleRequest request = new RegisterVehicleRequest(
+                "driver@example.com",
+                "BMW X5",
+                "HE-XX-9999",
+                "suv",
+                "black",
+                "7");
+
+        when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(true);
+
+        VehicleResponse result = vehicleService.registerVehicle(request);
+
+        assertNull(result);
+        verify(vehicleRepository, never()).save(any());
+        verify(auditService, never()).logCreate(any(), any(), any(), any());
+    }
+
+    @Test
     void registerVehicle_withDuplicatePlate_shouldReturnNullWithoutPersisting() {
         RegisterVehicleRequest request = new RegisterVehicleRequest(
                 "driver@example.com",
@@ -84,6 +104,7 @@ class VehicleServiceTest {
                 "black",
                 "7");
 
+        when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-9999")).thenReturn(true);
 
         VehicleResponse result = vehicleService.registerVehicle(request);
@@ -104,6 +125,7 @@ class VehicleServiceTest {
                 "red",
                 "4");
 
+        when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(true);
 
         VehicleResponse result = vehicleService.registerVehicle(request);

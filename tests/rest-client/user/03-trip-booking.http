@@ -10,8 +10,6 @@ Content-Type: application/json
 
 {
   "driverId": "{{driverEmail}}",
-  "vehicleNumber": "{{vehicleNumber}}",
-  "carType": "SEDAN",
   "sourceAddress": {
     "latitude": 50.8154,
     "longitude": 8.6747,
@@ -25,7 +23,8 @@ Content-Type: application/json
     "placeAddress": "Bonn Hbf"
   },
   "tripStartDateTime": "{{tripStartDateTime}}",
-  "totalSeats": 3
+  "totalSeats": 3,
+  "pricePerSeat": 5.0
 }
 
 > {%
@@ -36,6 +35,10 @@ client.test("Offer trip: status 200 or 201", function() {
 client.test("Offer trip: tripId returned", function() {
   client.assert(response.body.data != null, "Expected data");
   client.assert(response.body.data.tripId != null, "Expected tripId in data");
+});
+client.test("Offer trip: pricePerSeat returned", function() {
+  client.assert(response.body.data.pricePerSeat === 5.0,
+    "Expected pricePerSeat 5.0, got " + response.body.data.pricePerSeat);
 });
 if (response.body && response.body.data && response.body.data.tripId) {
   client.global.set("tripId", response.body.data.tripId);
@@ -48,12 +51,11 @@ Content-Type: application/json
 
 {
   "driverId": "{{driverEmail}}",
-  "vehicleNumber": "{{vehicleNumber}}",
-  "carType": "SEDAN",
   "sourceAddress": { "latitude": 50.8154, "longitude": 8.6747, "placeId": "", "placeAddress": "Marburg Hauptbahnhof" },
   "destinationAddress": { "latitude": 50.7265, "longitude": 7.0895, "placeId": "", "placeAddress": "Bonn Hbf" },
   "tripStartDateTime": "{{tripStartDateTime}}",
-  "totalSeats": 3
+  "totalSeats": 3,
+  "pricePerSeat": 5.0
 }
 
 > {%
@@ -109,8 +111,6 @@ Content-Type: application/json
 
 {
   "driverId": "{{driverEmail}}",
-  "vehicleNumber": "{{vehicleNumber}}",
-  "carType": "SEDAN",
   "sourceAddress": {
     "latitude": 50.8154,
     "longitude": 8.6747,
@@ -124,7 +124,8 @@ Content-Type: application/json
     "placeAddress": "Bonn Hbf"
   },
   "tripStartDateTime": "{{tripStartDateTime}}",
-  "totalSeats": 3
+  "totalSeats": 3,
+  "pricePerSeat": 5.0
 }
 
 > {%

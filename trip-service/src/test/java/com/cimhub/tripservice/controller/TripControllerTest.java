@@ -56,7 +56,6 @@ class TripControllerTest {
     void offerTrip_shouldReturnCreatedResponse() {
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("driver-1")
-                .vehicleNumber("HE-XX-1234")
                 .sourceAddress(new Points())
                 .destinationAddress(new Points())
                 .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))

@@ -20,9 +20,6 @@ public record OfferRideRequest(
         @Schema(description = "Driver's user ID", example = "john.driver@example.com")
         String driverId,
 
-        @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
-        String vehicleNumber,
-
         @Schema(description = "Trip starting location")
         Points sourceAddress,
 

@@ -13,7 +13,6 @@ public final class TripApiExamples {
     public static final String OFFER_TRIP_REQUEST = """
             {
               "driverId": "john.driver@example.com",
-              "vehicleNumber": "HE-XX-1234",
               "sourceAddress": {
                 "latitude": 50.8154,
                 "longitude": 8.6747
