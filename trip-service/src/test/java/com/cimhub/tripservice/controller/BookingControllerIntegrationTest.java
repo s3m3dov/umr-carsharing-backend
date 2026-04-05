@@ -2,11 +2,13 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.tripservice.service.BookingService;
 import com.cimhub.tripservice.service.CancellationService;
 import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
@@ -18,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,10 +35,27 @@ class BookingControllerIntegrationTest {
     private JoinTripService joinTripService;
 
     @MockBean
+    private BookingService bookingService;
+
+    @MockBean
     private CancellationService cancellationService;
 
     @MockBean
     private CompletionService completionService;
+
+    @Test
+    void getBooking_shouldReturn200WithData() throws Exception {
+        BookingResponse response = BookingResponse.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.COMPLETED)
+                .build();
+        when(bookingService.getBooking("b-1")).thenReturn(response);
+
+        mockMvc.perform(get("/api/bookings/b-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.bookingId").value("b-1"))
+                .andExpect(jsonPath("$.data.status").value("COMPLETED"));
+    }
 
     @Test
     void completeRide_shouldReturn200WithMessage() throws Exception {

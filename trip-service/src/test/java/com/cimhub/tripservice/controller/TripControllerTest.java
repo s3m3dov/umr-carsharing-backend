@@ -8,6 +8,7 @@ import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -91,6 +92,22 @@ class TripControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Cancelled", response.getBody().getMessage());
         verify(cancellationService).cancelTrip(request);
+    }
+
+    @Test
+    void getTrip_shouldReturnOkWithTripData() {
+        TripResponse tripResponse = TripResponse.builder()
+                .tripId("trip-1")
+                .tripStatus(TripStatus.COMPLETED)
+                .build();
+        when(tripService.getTrip("trip-1")).thenReturn(tripResponse);
+
+        ResponseEntity<ApiResponseWrapper<TripResponse>> response = tripController.getTrip("trip-1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("trip-1", response.getBody().getData().tripId());
+        assertEquals(TripStatus.COMPLETED, response.getBody().getData().tripStatus());
+        verify(tripService).getTrip("trip-1");
     }
 
     @Test

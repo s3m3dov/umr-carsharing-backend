@@ -92,10 +92,12 @@ public class TripService {
     }
 
     private TripResponse mapToTripResponse(Trip trip) {
-        // Convert UTC Instant to ZonedDateTime with trip timezone
+        String timezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
+                ? "UTC"
+                : trip.getTripTimezone();
+
         ZonedDateTime tripStartDateTime = trip.getTripStartDateTimeUTC() != null
-                ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), 
-                    java.time.ZoneId.of(trip.getTripTimezone() != null ? trip.getTripTimezone() : "UTC"))
+                ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), java.time.ZoneId.of(timezone))
                 : null;
 
         return TripResponse.builder()
@@ -106,9 +108,9 @@ public class TripService {
                 .sourceAddress(trip.getSourceAddress())
                 .destinationAddress(trip.getDestinationAddress())
                 .tripStartDateTime(tripStartDateTime)
-                .tripTimezone(trip.getTripTimezone())
-                .tripStartDateTimeInUserTimezone(tripStartDateTime) // Same as trip timezone for now
-                .userTimezone(trip.getTripTimezone())
+                .tripTimezone(timezone)
+                .tripStartDateTimeInUserTimezone(tripStartDateTime)
+                .userTimezone(timezone)
                 .totalSeats(trip.getTotalSeats())
                 .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
                 .tripStatus(trip.getTripStatus())
