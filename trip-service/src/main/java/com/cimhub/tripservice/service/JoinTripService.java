@@ -178,14 +178,14 @@ public class JoinTripService {
 
     private Booking buildBooking(JoinTripRequest request, Trip trip, BookingStatus status) {
         Points pickupPoints = new Points();
-        pickupPoints.setLatitude(request.pickupPoint().latitude());
-        pickupPoints.setLongitude(request.pickupPoint().longitude());
-        pickupPoints.setPlaceAddress(request.pickupPoint().placeAddress());
+        pickupPoints.setLatitude(request.pickupPoint().getLatitude());
+        pickupPoints.setLongitude(request.pickupPoint().getLongitude());
+        pickupPoints.setPlaceAddress(request.pickupPoint().getPlaceAddress());
 
         Points dropoffPoints = new Points();
-        dropoffPoints.setLatitude(request.destinationPoint().latitude());
-        dropoffPoints.setLongitude(request.destinationPoint().longitude());
-        dropoffPoints.setPlaceAddress(request.destinationPoint().placeAddress());
+        dropoffPoints.setLatitude(request.destinationPoint().getLatitude());
+        dropoffPoints.setLongitude(request.destinationPoint().getLongitude());
+        dropoffPoints.setPlaceAddress(request.destinationPoint().getPlaceAddress());
 
         return Booking.builder()
                 .tripId(request.tripId())
