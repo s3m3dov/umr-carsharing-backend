@@ -13,9 +13,12 @@ import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.ErrorResponseException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -36,13 +39,12 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        log.error("Gateway exception", ex);
-
         if (exchange.getResponse().isCommitted()) {
             return Mono.error(ex);
         }
 
         ErrorAttributes attrs = resolveErrorAttributes(ex);
+        logException(exchange, ex, attrs);
         return writeErrorResponse(exchange, attrs);
     }
 
@@ -54,10 +56,55 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
                     businessEx.getMessage());
         }
 
+        if (ex instanceof NoResourceFoundException noResourceFoundException) {
+            return new ErrorAttributes(
+                    HttpStatus.NOT_FOUND,
+                    ErrorCode.RESOURCE_NOT_FOUND,
+                    noResourceFoundException.getReason());
+        }
+
+        if (ex instanceof ErrorResponseException errorResponseException) {
+            HttpStatus status = toHttpStatus(errorResponseException.getStatusCode());
+            return new ErrorAttributes(
+                    status,
+                    toErrorCode(status),
+                    errorResponseException.getBody().getDetail());
+        }
+
         return new ErrorAttributes(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ErrorCode.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred at the gateway level.");
+    }
+
+    private void logException(ServerWebExchange exchange, Throwable ex, ErrorAttributes attrs) {
+        String path = exchange.getRequest().getURI().getPath();
+        String method = exchange.getRequest().getMethod() != null
+                ? exchange.getRequest().getMethod().name()
+                : "UNKNOWN";
+
+        if (attrs.status().is5xxServerError()) {
+            log.error("Gateway exception [{} {}]", method, path, ex);
+            return;
+        }
+
+        log.warn("Gateway request error [{} {}]: {}", method, path, attrs.message());
+    }
+
+    private HttpStatus toHttpStatus(HttpStatusCode statusCode) {
+        HttpStatus resolved = HttpStatus.resolve(statusCode.value());
+        return resolved != null ? resolved : HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    private ErrorCode toErrorCode(HttpStatus status) {
+        return switch (status) {
+            case BAD_REQUEST -> ErrorCode.BAD_REQUEST;
+            case UNAUTHORIZED -> ErrorCode.UNAUTHORIZED;
+            case FORBIDDEN -> ErrorCode.FORBIDDEN;
+            case NOT_FOUND -> ErrorCode.RESOURCE_NOT_FOUND;
+            case UNPROCESSABLE_ENTITY -> ErrorCode.VALIDATION_ERROR;
+            default -> ErrorCode.INTERNAL_SERVER_ERROR;
+        };
     }
 
     private Mono<Void> writeErrorResponse(ServerWebExchange exchange, ErrorAttributes attrs) {
