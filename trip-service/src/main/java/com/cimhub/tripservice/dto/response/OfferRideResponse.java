@@ -45,6 +45,9 @@ public record OfferRideResponse(
         @Schema(description = "Estimated route duration in minutes", example = "90.0")
         Double routeDurationInMinutes,
 
+        @Schema(description = "Price per seat in EUR", example = "5.0")
+        Double pricePerSeat,
+
         @Schema(description = "Whether the trip was successfully created", example = "true")
         Boolean tripCreated,
 

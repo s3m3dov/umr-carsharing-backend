@@ -436,6 +436,46 @@ client.test("Passenger ride history: returns array", function() {
 });
 %}
 
-### 19) Driver reject a booking (driver-accept flow — see admin/03-admin-trip-booking-management.http for full reject flow)
-# Rejection is tested via: POST /api/bookings/reject?bookingId=<id>
-# See admin/03-admin-trip-booking-management.http for the reject flow in admin context.
+
+### 19) Driver completes a passenger's ride (drop-off at their stop)
+POST {{baseUrl}}/trip-service/api/bookings/{{rideId}}/complete?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Complete ride: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Complete ride: message confirms completion", function() {
+  client.assert(response.body.message === "Ride completed successfully",
+    "Expected 'Ride completed successfully', got: " + response.body.message);
+});
+%}
+
+### 20) Complete same ride again (negative: expect 409 RIDE_NOT_COMPLETABLE)
+POST {{baseUrl}}/trip-service/api/bookings/{{rideId}}/complete?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Complete ride again: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 for already-completed ride, got " + response.status);
+});
+client.test("Complete ride again: error code is RIDE_NOT_COMPLETABLE", function() {
+  client.assert(response.body.code === "RIDE_NOT_COMPLETABLE",
+    "Expected RIDE_NOT_COMPLETABLE, got: " + response.body.code);
+});
+%}
+
+### 21) Complete trip — trip not in progress (negative: expect 409)
+# Note: trip completion positive test requires a "start trip" endpoint (not yet implemented).
+POST {{baseUrl}}/trip-service/api/trips/{{tripId}}/complete?driverId={{driverEmail}}
+Authorization: Bearer {{driverToken}}
+
+> {%
+client.test("Complete trip not in progress: status 409", function() {
+  client.assert(response.status === 409, "Expected 409 for trip not in progress, got " + response.status);
+});
+client.test("Complete trip not in progress: error code is TRIP_NOT_IN_PROGRESS", function() {
+  client.assert(response.body.code === "TRIP_NOT_IN_PROGRESS",
+    "Expected TRIP_NOT_IN_PROGRESS, got: " + response.body.code);
+});
+%}

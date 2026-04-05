@@ -58,6 +58,36 @@ public class DriverNotificationService {
                 metadata(trip, booking)));
     }
 
+    public void notifyRideCompleted(Trip trip, Booking booking) {
+        String message = String.format(
+                "Your ride on trip %s has been completed. Thank you for riding!",
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getPassengerId(),
+                booking.getDriverId(),
+                "Ride completed",
+                message,
+                NotificationType.RIDE_COMPLETED,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
+    public void notifyTripCompleted(Trip trip, Booking booking) {
+        String message = String.format(
+                "Your ride on trip %s has been completed by the driver. Thank you for riding!",
+                booking.getTripId());
+
+        sendNotification(new CreateNotificationRequest(
+                booking.getPassengerId(),
+                booking.getDriverId(),
+                "Trip completed",
+                message,
+                NotificationType.TRIP_COMPLETED,
+                booking.getBookingId(),
+                metadata(trip, booking)));
+    }
+
     public void notifyBookingCancelledByPassenger(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s cancelled booking %s for trip %s.",

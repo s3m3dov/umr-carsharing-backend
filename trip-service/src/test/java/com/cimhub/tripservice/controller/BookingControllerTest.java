@@ -2,6 +2,7 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.service.CancellationService;
+import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.JoinTripService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,11 +25,14 @@ class BookingControllerTest {
     @Mock
     private CancellationService cancellationService;
 
+    @Mock
+    private CompletionService completionService;
+
     private BookingController bookingController;
 
     @BeforeEach
     void setUp() {
-        bookingController = new BookingController(joinTripService, cancellationService);
+        bookingController = new BookingController(joinTripService, cancellationService, completionService);
     }
 
     @Test
@@ -51,5 +55,16 @@ class BookingControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Booking rejected", response.getBody().getMessage());
         verify(joinTripService).rejectBooking("b-2");
+    }
+
+    @Test
+    void completeRide_shouldReturnOkWithServiceResult() {
+        when(completionService.completeRide("b-3", "driver-1")).thenReturn("Ride completed successfully");
+
+        ResponseEntity<ApiResponseWrapper<String>> response = bookingController.completeRide("b-3", "driver-1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Ride completed successfully", response.getBody().getMessage());
+        verify(completionService).completeRide("b-3", "driver-1");
     }
 }

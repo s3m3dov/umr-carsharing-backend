@@ -7,6 +7,7 @@ import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.CancellationService;
+import com.cimhub.tripservice.service.CompletionService;
 import com.cimhub.tripservice.service.OfferRideService;
 import com.cimhub.tripservice.service.TripGeospatialService;
 import com.cimhub.tripservice.service.ActiveRidesService;
@@ -35,6 +36,7 @@ public class TripController {
 
     private final OfferRideService offerRideService;
     private final CancellationService cancellationService;
+    private final CompletionService completionService;
     private final TripGeospatialService geoService;
     private final ActiveRidesService activeRidesService;
 
@@ -258,5 +260,32 @@ public class TripController {
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
+    }
+
+    @Operation(
+            summary = "Complete a trip",
+            description = "Driver ends the trip at the final destination. All remaining active rides are auto-completed."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Trip completed successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Trip is not in progress"
+            )
+    })
+    @PostMapping("/{tripId}/complete")
+    public ResponseEntity<ApiResponseWrapper<String>> completeTrip(
+            @Parameter(description = "Trip ID") @PathVariable String tripId,
+            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
+        log.info("Driver {} completing trip: {}", driverId, tripId);
+        String response = completionService.completeTrip(tripId, driverId);
+        return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }
