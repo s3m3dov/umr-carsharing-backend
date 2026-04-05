@@ -52,10 +52,10 @@ class JoinTripServiceTest {
         joinTripService = new JoinTripService(tripsRepository, bookingRepository, auditService, driverNotificationService);
     }
 
-    // ── joinTrip ──────────────────────────────────────────────────────────────
+    // ── joinTrip (auto-confirm) ───────────────────────────────────────────────
 
     @Test
-    void joinTrip_withAvailableSeats_shouldCreateBookingAndIncrementBookedSeats() {
+    void joinTrip_withAvailableSeats_shouldCreateConfirmedBookingAndIncrementBookedSeats() {
         Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
         JoinTripRequest request = buildRequest("trip-1", "passenger-1", 2);
 
@@ -69,7 +69,7 @@ class JoinTripServiceTest {
 
         String result = joinTripService.joinTrip(request);
 
-        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+        assertEquals("Ride booked successfully.", result);
 
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingRepository).save(bookingCaptor.capture());
@@ -78,13 +78,13 @@ class JoinTripServiceTest {
         assertEquals("passenger-1", saved.getPassengerId());
         assertEquals("driver-1", saved.getDriverId());
         assertEquals(2, saved.getRequestedSeats());
-        assertEquals(BookingStatus.REQUESTED, saved.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, saved.getStatus());
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripsRepository).save(tripCaptor.capture());
         assertEquals(3, tripCaptor.getValue().getBookedSeats()); // 1 + 2
 
-        verify(driverNotificationService).notifyBookingRequested(any(Trip.class), any(Booking.class));
+        verify(driverNotificationService).notifyBookingConfirmed(any(Trip.class), any(Booking.class));
     }
 
     @Test
@@ -98,7 +98,7 @@ class JoinTripServiceTest {
 
         String result = joinTripService.joinTrip(request);
 
-        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+        assertEquals("Ride booked successfully.", result);
     }
 
     @Test
@@ -155,10 +155,9 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // Should not throw — cancelled booking does not block re-booking
         String result = joinTripService.joinTrip(buildRequest("trip-1", "passenger-1", 1));
 
-        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+        assertEquals("Ride booked successfully.", result);
     }
 
     @Test
@@ -186,7 +185,106 @@ class JoinTripServiceTest {
 
         String result = joinTripService.joinTrip(buildRequest("trip-1", "passenger-1", 2));
 
+        assertEquals("Ride booked successfully.", result);
+    }
+
+    // ── joinTripWithDriverAccept ──────────────────────────────────────────────
+
+    @Test
+    void joinTripWithDriverAccept_withAvailableSeats_shouldCreateRequestedBookingAndIncrementBookedSeats() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 2);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> {
+            Booking b = inv.getArgument(0);
+            b.setBookingId("booking-new");
+            return b;
+        });
+
+        String result = joinTripService.joinTripWithDriverAccept(request);
+
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+
+        ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
+        verify(bookingRepository).save(bookingCaptor.capture());
+        Booking saved = bookingCaptor.getValue();
+        assertEquals("trip-1", saved.getTripId());
+        assertEquals("passenger-1", saved.getPassengerId());
+        assertEquals("driver-1", saved.getDriverId());
+        assertEquals(2, saved.getRequestedSeats());
+        assertEquals(BookingStatus.REQUESTED, saved.getStatus());
+
+        ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
+        verify(tripsRepository).save(tripCaptor.capture());
+        assertEquals(3, tripCaptor.getValue().getBookedSeats()); // 1 + 2
+
+        verify(driverNotificationService).notifyBookingRequested(any(Trip.class), any(Booking.class));
+    }
+
+    @Test
+    void joinTripWithDriverAccept_withCreatedStatus_shouldAlsoBeAllowed() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CREATED, 3, 0);
+        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 1);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        String result = joinTripService.joinTripWithDriverAccept(request);
+
+        assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
+    }
+
+    @Test
+    void joinTripWithDriverAccept_whenTripNotFound_shouldThrowResourceNotFoundException() {
+        when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
+
+        JoinTripRequest request = buildRequest("missing-trip", "passenger-1", 1);
+
+        assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTripWithDriverAccept(request));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void joinTripWithDriverAccept_whenTripNotAvailable_shouldThrowTripNotAvailableException() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+
+        assertThrows(TripNotAvailableException.class,
+                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1)));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void joinTripWithDriverAccept_whenPassengerAlreadyHasActiveBooking_shouldThrowAlreadyBookedException() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        Booking existing = Booking.builder()
+                .bookingId("b-existing")
+                .tripId("trip-1")
+                .passengerId("passenger-1")
+                .status(BookingStatus.REQUESTED)
+                .build();
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(existing));
+
+        assertThrows(AlreadyBookedException.class,
+                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1)));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void joinTripWithDriverAccept_whenInsufficientSeats_shouldThrowInsufficientSeatsException() {
+        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 2);
+
+        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
+
+        assertThrows(InsufficientSeatsException.class,
+                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 2)));
+        verify(bookingRepository, never()).save(any());
     }
 
     // ── acceptBooking ─────────────────────────────────────────────────────────
@@ -292,7 +390,6 @@ class JoinTripServiceTest {
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
         when(tripsRepository.findById("ghost-trip")).thenReturn(Optional.empty());
 
-        // Should NOT throw — trip not found is handled gracefully
         String result = joinTripService.rejectBooking("booking-1");
 
         assertEquals("Booking rejected", result);

@@ -71,6 +71,42 @@ public class RideController {
     }
 
     @Operation(
+            summary = "Book a ride with driver approval (join a trip)",
+            description = "Passenger requests a seat on an existing trip. The booking starts in REQUESTED state and must be explicitly accepted or rejected by the driver."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Booking request submitted, awaiting driver confirmation",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid ride data",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_INVALID_BOOKING_DATA))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Trip not found",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_NOT_FOUND))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "No available seats",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_FULL))
+            )
+    })
+    @PostMapping("/book/new")
+    public ResponseEntity<ApiResponseWrapper<String>> bookRideWithDriverAccept(
+            @Valid @RequestBody JoinTripRequest request) {
+        log.info("Passenger requesting ride (driver-accept) on trip: {}", request.tripId());
+        String response = joinTripService.joinTripWithDriverAccept(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponseWrapper.success(response));
+    }
+
+    @Operation(
             summary = "Cancel a ride",
             description = "Passenger cancels their ride on a trip."
     )
