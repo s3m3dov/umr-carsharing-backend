@@ -1,6 +1,7 @@
 package com.cimhub.authservice.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,8 @@ public class JwtService {
         return (extractedUsername.equals(username)) && !isTokenExpired(Token);
     }
 
-    public boolean isTokenExpired(String Token){
-        return extractClaim(Token, Claims::getExpiration).before(new Date());
+    public boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     public Date extractExpiration(String token) {
@@ -47,12 +48,16 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return io.jsonwebtoken.Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return io.jsonwebtoken.Jwts
+                    .parserBuilder()
+                    .setSigningKey(getSignInKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
     private java.security.Key getSignInKey() {
         byte[] keyBytes = java.util.Base64.getDecoder().decode(secretKey);

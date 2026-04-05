@@ -38,14 +38,13 @@ class AdminAuthorizationFilterTest {
         SecurityProperties securityProperties = new SecurityProperties();
         securityProperties.setAdminPaths(List.of("/api/admin/**"));
         filter = new AdminAuthorizationFilter(securityProperties);
-
-        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
     }
 
     @Test
     void filter_withNonAdminPath_shouldContinueFilterChain() {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/trips").build());
+        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         filter.filter(exchange, chain).block();
 
@@ -59,6 +58,7 @@ class AdminAuthorizationFilterTest {
                 MockServerHttpRequest.get("/api/admin/reviews")
                         .header(GatewayConstants.USER_ROLE_HEADER, UserType.ADMIN.name().toLowerCase(Locale.ROOT))
                         .build());
+        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         filter.filter(exchange, chain).block();
 
