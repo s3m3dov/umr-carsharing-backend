@@ -16,6 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -86,5 +87,20 @@ class TripServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> tripService.updateStatus("missing", TripStatus.AVAILABLE));
+    }
+
+    @Test
+    void updateStatus_whenTransitionBackwards_shouldThrowIllegalState() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-4");
+        trip.setTripStatus(TripStatus.AVAILABLE);
+
+        when(tripsRepository.findById("trip-4")).thenReturn(Optional.of(trip));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> tripService.updateStatus("trip-4", TripStatus.CREATED));
+
+        assertTrue(ex.getMessage().contains("Cannot transition trip"));
+        verify(tripsRepository, never()).save(any());
     }
 }

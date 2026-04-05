@@ -112,6 +112,29 @@ class TripControllerTest {
     }
 
     @Test
+    void searchMatchingRoute_withoutTimeRange_shouldInvokeGeoServiceWithNullTimes() {
+        Trip trip = new Trip();
+        trip.setTripId("trip-no-time");
+
+        when(geoService.findTripsMatchingRoute(
+                1.0, 2.0, 5.0,
+                3.0, 4.0, 6.0,
+                null, null,
+                null, "user-2",
+                null, null, null, null)).thenReturn(List.of(trip));
+
+        ResponseEntity<ApiResponseWrapper<List<Trip>>> response = tripController.searchMatchingRoute(
+                1.0, 2.0, 5.0,
+                3.0, 4.0, 6.0,
+                null, null,
+                null, "user-2",
+                null, null, null, null);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("trip-no-time", response.getBody().getData().getFirst().getTripId());
+    }
+
+    @Test
     void driverTripEndpoints_shouldReturnActiveAndHistoryLists() {
         DriverTripResponse active = DriverTripResponse.builder().tripId("active-trip").build();
         DriverTripResponse history = DriverTripResponse.builder().tripId("history-trip").build();

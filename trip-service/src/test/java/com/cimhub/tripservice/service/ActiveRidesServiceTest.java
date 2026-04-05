@@ -112,6 +112,23 @@ class ActiveRidesServiceTest {
                 List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
     }
 
+    @Test
+    void findDriverTripHistory_shouldMapCompletedAndCancelledTrips() {
+        Trip completed = buildTrip("trip-c", TripStatus.COMPLETED, 4, 4, 10.0);
+        Trip cancelled = buildTrip("trip-x", TripStatus.CANCELLED, 4, 1, 10.0);
+
+        when(tripsRepository.findByDriverIdAndTripStatusIn("driver-2",
+                List.of(TripStatus.COMPLETED, TripStatus.CANCELLED)))
+                .thenReturn(List.of(completed, cancelled));
+
+        List<DriverTripResponse> responses = activeRidesService.findDriverTripHistory("driver-2");
+
+        assertEquals(2, responses.size());
+        assertEquals("trip-c", responses.getFirst().tripId());
+        assertEquals(4, responses.getFirst().bookedSeats());
+        assertEquals(40.0, responses.getFirst().estimatedEarnings());
+    }
+
     private Trip buildTrip(String tripId, TripStatus status, int totalSeats, int bookedSeats, double pricePerSeat) {
         Trip trip = new Trip();
         trip.setTripId(tripId);
