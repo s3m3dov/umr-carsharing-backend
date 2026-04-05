@@ -51,7 +51,7 @@ public class UserController {
         })
         @GetMapping(value = "/{userId}")
         public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
-                @Parameter(description = "User's unique identifier", required = true, example = "user_123")
+                @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
                 @PathVariable String userId) {
                 log.info("Get user info for userId: {}", userId);
                 UserResponse userInfo = userService.getUserInfo(userId);

@@ -10,7 +10,7 @@ public final class ReviewApiExamples {
 
     public static final String SUBMIT_REVIEW_REQUEST = """
             {
-              "userId": "user_456",
+              "userId": "jane.passenger@example.com",
               "userRole": "PASSENGER",
               "tripId": "trip_001",
               "bookingId": "booking_001",
@@ -25,9 +25,9 @@ public final class ReviewApiExamples {
                 "reviewId": "review_001",
                 "tripId": "trip_001",
                 "bookingId": "booking_001",
-                "reviewerId": "user_456",
+                "reviewerId": "jane.passenger@example.com",
                 "reviewerType": "PASSENGER",
-                "revieweeId": "user_123",
+                "revieweeId": "john.driver@example.com",
                 "revieweeType": "DRIVER",
                 "rating": 5,
                 "comment": "Great driver, very comfortable ride!",
@@ -45,9 +45,9 @@ public final class ReviewApiExamples {
                 "reviewId": "review_002",
                 "tripId": "trip_001",
                 "bookingId": "booking_001",
-                "reviewerId": "user_123",
+                "reviewerId": "john.driver@example.com",
                 "reviewerType": "DRIVER",
-                "revieweeId": "user_456",
+                "revieweeId": "jane.passenger@example.com",
                 "revieweeType": "PASSENGER",
                 "rating": 4,
                 "comment": "Good passenger, on time and polite",
@@ -66,9 +66,9 @@ public final class ReviewApiExamples {
                   "reviewId": "review_001",
                   "tripId": "trip_001",
                   "bookingId": "booking_001",
-                  "reviewerId": "user_456",
+                  "reviewerId": "jane.passenger@example.com",
                   "reviewerType": "PASSENGER",
-                  "revieweeId": "user_123",
+                  "revieweeId": "john.driver@example.com",
                   "revieweeType": "DRIVER",
                   "rating": 5,
                   "comment": "Great driver!",
@@ -88,9 +88,9 @@ public final class ReviewApiExamples {
                   "reviewId": "review_002",
                   "tripId": "trip_001",
                   "bookingId": "booking_001",
-                  "reviewerId": "user_123",
+                  "reviewerId": "john.driver@example.com",
                   "reviewerType": "DRIVER",
-                  "revieweeId": "user_456",
+                  "revieweeId": "jane.passenger@example.com",
                   "revieweeType": "PASSENGER",
                   "rating": 4,
                   "comment": "Good passenger!",
@@ -106,7 +106,7 @@ public final class ReviewApiExamples {
             {
               "success": true,
               "data": {
-                "subjectId": "user_123",
+                "subjectId": "john.driver@example.com",
                 "averageRating": 4.75,
                 "totalReviews": 4
               },
@@ -158,7 +158,7 @@ public final class ReviewApiExamples {
               "code": "DRIVER_NOT_FOUND",
               "message": "Driver not found",
               "error": {
-                "path": "/api/driver-reviews/user_123",
+                "path": "/api/driver-reviews/john.driver@example.com",
                 "details": []
               },
               "timestamp": "2026-03-25T15:22:46.870Z",
@@ -171,7 +171,7 @@ public final class ReviewApiExamples {
               "code": "PASSENGER_NOT_FOUND",
               "message": "Passenger not found",
               "error": {
-                "path": "/api/passenger-reviews/user_456",
+                "path": "/api/passenger-reviews/jane.passenger@example.com",
                 "details": []
               },
               "timestamp": "2026-03-25T15:22:46.870Z",

@@ -14,7 +14,7 @@ Content-Type: application/json
   "tripId": "{{tripId}}",
   "bookingId": "{{rideId}}",
   "rating": 5,
-  "comment": "Attempting review before completion"
+  "comment": "Great driver, very comfortable ride!"
 }
 
 > {%
@@ -37,7 +37,7 @@ Content-Type: application/json
   "tripId": "{{tripId}}",
   "bookingId": "non-existent-booking-id",
   "rating": 4,
-  "comment": "Review for missing booking"
+  "comment": "Good passenger, on time and polite"
 }
 
 > {%

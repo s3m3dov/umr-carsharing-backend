@@ -6,7 +6,7 @@ public final class VehicleApiExamples {
 
     public static final String REGISTER_VEHICLE_REQUEST = """
             {
-              "userId": "user_123",
+              "userId": "john.driver@example.com",
               "vehicleName": "Tesla Model 3",
               "vehicleNumber": "HE-XX-1234",
               "vehicleType": "sedan",
@@ -73,9 +73,9 @@ public final class VehicleApiExamples {
             {
               "status": 404,
               "code": "NO_VEHICLES_FOUND",
-              "message": "No vehicles registered for user user_123",
+              "message": "No vehicles registered for user john.driver@example.com",
               "error": {
-                "path": "/api/vehicles/user_123",
+                "path": "/api/vehicles/john.driver@example.com",
                 "details": []
               },
               "timestamp": "2026-03-25T15:22:46.870Z",

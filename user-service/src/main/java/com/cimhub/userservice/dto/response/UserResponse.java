@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Schema(name = "UserResponse", description = "User profile information")
 public record UserResponse(
-        @Schema(description = "Unique user identifier", example = "user_123")
+        @Schema(description = "Unique user identifier", example = "john.driver@example.com")
         String userId,
 
         @Schema(description = "User's first name", example = "John")

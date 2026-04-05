@@ -9,12 +9,12 @@ Authorization: Bearer {{admin_driver_token}}
 Content-Type: application/json
 
 {
-  "userId": "{{admin_driver_id}}",
+  "userId": "{{admin_driver_email}}",
   "userRole": "DRIVER",
   "tripId": "{{admin_trip_id}}",
   "bookingId": "{{admin_booking_id}}",
   "rating": 4,
-  "comment": "Admin fixture review"
+  "comment": "Good passenger, on time and polite"
 }
 
 > {%

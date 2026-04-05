@@ -87,7 +87,7 @@ Passenger submits a review for a driver after completing a trip.
 
 ```json
 {
-  "userId": "user_456",
+  "userId": "jane.passenger@example.com",
   "userRole": "PASSENGER",
   "tripId": "trip_123",
   "bookingId": "booking_001",
@@ -104,9 +104,9 @@ Passenger submits a review for a driver after completing a trip.
     "reviewId": "review_789",
     "tripId": "trip_123",
     "bookingId": "booking_001",
-    "reviewerId": "user_456",
+    "reviewerId": "jane.passenger@example.com",
     "reviewerType": "PASSENGER",
-    "revieweeId": "user_123",
+    "revieweeId": "john.driver@example.com",
     "revieweeType": "DRIVER",
     "rating": 5,
     "comment": "Great driver, very friendly and professional!",
@@ -135,7 +135,7 @@ Get the average rating for a driver.
 ```json
 {
   "data": {
-    "subjectId": "user_123",
+    "subjectId": "john.driver@example.com",
     "averageRating": 4.8,
     "totalReviews": 25
   },

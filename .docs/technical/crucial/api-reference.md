@@ -287,7 +287,7 @@ Retrieves user profile information.
 {
   "success": true,
   "data": {
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
@@ -316,7 +316,7 @@ Creates or updates a user's detailed profile.
 **Request:**
 ```json
 {
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "firstName": "John",
   "lastName": "Driver",
   "age": 32,
@@ -329,7 +329,7 @@ Creates or updates a user's detailed profile.
 {
   "success": true,
   "data": {
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
@@ -401,7 +401,7 @@ Registers a new vehicle for a driver.
 **Request:**
 ```json
 {
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "vehicleName": "Tesla Model 3",
   "vehicleNumber": "HE-XX-1234",
   "vehicleType": "sedan",
@@ -448,7 +448,7 @@ A driver creates a new trip offer.
 **Request:**
 ```json
 {
-  "driverId": "user_123",
+  "driverId": "john.driver@example.com",
   "vehicleId": "vehicle_001",
   "sourceLatitude": 50.8154,
   "sourceLongitude": 8.6747,
@@ -467,7 +467,7 @@ A driver creates a new trip offer.
   "success": true,
   "data": {
     "tripId": "trip_001",
-    "driverId": "user_123",
+    "driverId": "john.driver@example.com",
     "departureTime": "2024-03-25T08:00:00Z",
     "availableSeats": 3,
     "status": "SCHEDULED"
@@ -494,7 +494,7 @@ Cancels a trip (driver) or booking (passenger).
 ```json
 {
   "tripId": "trip_001",
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "reason": "Change of plans"
 }
 ```
@@ -539,7 +539,7 @@ GET /api/trips/search/near-source?latitude=50.8154&longitude=8.6747&radiusKm=10
   "data": [
     {
       "tripId": "trip_001",
-      "driverId": "user_123",
+      "driverId": "john.driver@example.com",
       "departureTime": "2024-03-25T08:00:00Z",
       "sourceLocation": {"latitude": 50.8154, "longitude": 8.6747},
       "destinationLocation": {"latitude": 50.7265, "longitude": 7.0895},
@@ -590,7 +590,7 @@ Advanced search for trips matching a passenger's desired route.
 
 **Example Request:**
 ```
-GET /api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=user_456&earliestDepartureTime=2024-03-25T07:00:00Z&latestDepartureTime=2024-03-25T09:00:00Z
+GET /api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=jane.passenger@example.com&earliestDepartureTime=2024-03-25T07:00:00Z&latestDepartureTime=2024-03-25T09:00:00Z
 ```
 
 **Authentication:** Required
@@ -656,7 +656,7 @@ Passenger books a seat on an existing trip. Creates a pending booking waiting fo
 **Request:**
 ```json
 {
-  "passengerId": "user_456",
+  "passengerId": "jane.passenger@example.com",
   "tripId": "trip_001",
   "numberOfSeats": 2
 }
@@ -689,7 +689,7 @@ Passenger cancels their booked ride.
 ```json
 {
   "rideId": "ride_001",
-  "userId": "user_456"
+  "userId": "jane.passenger@example.com"
 }
 ```
 
@@ -774,7 +774,7 @@ Passenger submits a review for a driver after completing a trip.
 **Request:**
 ```json
 {
-  "userId": "user_456",
+  "userId": "jane.passenger@example.com",
   "userRole": "PASSENGER",
   "tripId": "trip_001",
   "bookingId": "booking_001",
@@ -791,9 +791,9 @@ Passenger submits a review for a driver after completing a trip.
     "reviewId": "review_001",
     "tripId": "trip_001",
     "bookingId": "booking_001",
-    "reviewerId": "user_456",
+    "reviewerId": "jane.passenger@example.com",
     "reviewerType": "PASSENGER",
-    "revieweeId": "user_123",
+    "revieweeId": "john.driver@example.com",
     "revieweeType": "DRIVER",
     "rating": 5,
     "comment": "Great driver, very comfortable ride!",
@@ -824,7 +824,7 @@ Driver submits a review for a passenger after completing a trip.
 **Request:**
 ```json
 {
-  "userId": "user_123",
+  "userId": "john.driver@example.com",
   "userRole": "DRIVER",
   "tripId": "trip_001",
   "bookingId": "booking_001",
@@ -841,9 +841,9 @@ Driver submits a review for a passenger after completing a trip.
     "reviewId": "review_002",
     "tripId": "trip_001",
     "bookingId": "booking_001",
-    "reviewerId": "user_123",
+    "reviewerId": "jane.passenger@example.com",
     "reviewerType": "DRIVER",
-    "revieweeId": "user_456",
+    "revieweeId": "jane.passenger@example.com",
     "revieweeType": "PASSENGER",
     "rating": 4,
     "comment": "Good passenger, on time and polite",
@@ -883,9 +883,9 @@ Retrieves all reviews about a specific driver.
       "reviewId": "review_001",
       "tripId": "trip_001",
       "bookingId": "booking_001",
-      "reviewerId": "user_456",
+      "reviewerId": "jane.passenger@example.com",
       "reviewerType": "PASSENGER",
-      "revieweeId": "user_123",
+      "revieweeId": "john.driver@example.com",
       "revieweeType": "DRIVER",
       "rating": 5,
       "comment": "Great driver!",
@@ -934,7 +934,7 @@ Calculates and returns the average rating for a driver.
 ```json
 {
   "data": {
-    "subjectId": "user_123",
+    "subjectId": "john.driver@example.com",
     "averageRating": 4.75,
     "totalReviews": 4
   },
@@ -998,8 +998,8 @@ Creates a notification and publishes it over WebSocket.
 **Request:**
 ```json
 {
-  "recipientId": "user_456",
-  "senderId": "user_123",
+  "recipientId": "jane.passenger@example.com",
+  "senderId": "john.driver@example.com",
   "title": "Booking Accepted",
   "message": "Your booking for trip_001 has been accepted.",
   "type": "BOOKING_ACCEPTED",
@@ -1012,7 +1012,7 @@ Creates a notification and publishes it over WebSocket.
 {
   "data": {
     "notificationId": "notif_001",
-    "recipientId": "user_456",
+    "recipientId": "jane.passenger@example.com",
     "title": "Booking Accepted",
     "message": "Your booking for trip_001 has been accepted.",
     "read": false,
@@ -1057,7 +1057,7 @@ Returns paginated notifications ordered by latest first. Users can only access t
 
 **Request:**
 ```json
-{ "recipientId": "user_456" }
+{ "recipientId": "jane.passenger@example.com" }
 ```
 
 **Error Responses:**
@@ -1121,7 +1121,7 @@ curl -X POST http://localhost:8080/user-service/api/vehicles/register \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
-    "userId": "user_123",
+    "userId": "john.driver@example.com",
     "vehicleName": "Tesla Model 3",
     "vehicleNumber": "HE-XX-1234",
     "vehicleType": "sedan",
@@ -1136,7 +1136,7 @@ curl -X POST http://localhost:8080/trip-service/api/trips/offer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
-    "driverId": "user_123",
+    "driverId": "john.driver@example.com",
     "vehicleId": "vehicle_001",
     "sourceLatitude": 50.8154,
     "sourceLongitude": 8.6747,
@@ -1169,7 +1169,7 @@ curl -X POST http://localhost:8080/auth-service/api/auth/signup \
 
 ### Step 2: Search for Matching Trips
 ```bash
-curl -X GET "http://localhost:8080/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2&effectiveUserId=user_456" \
+curl -X GET "http://localhost:8080/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2&effectiveUserId=jane.passenger@example.com" \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -1179,7 +1179,7 @@ curl -X POST http://localhost:8080/trip-service/api/rides/book \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
-    "passengerId": "user_456",
+    "passengerId": "jane.passenger@example.com",
     "tripId": "trip_001",
     "numberOfSeats": 2
   }'
@@ -1232,7 +1232,7 @@ For endpoints returning lists, pagination is implemented using:
 
 **Example:**
 ```
-GET /api/trips/active/driver/user_123?page=0&size=20&sort=departureTime:desc
+GET /api/trips/active/driver/john.driver@example.com?page=0&size=20&sort=departureTime:desc
 ```
 
 ---

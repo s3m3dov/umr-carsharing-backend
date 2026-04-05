@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 @Schema(name = "NotificationStatsResponse", description = "Aggregated notification counters")
 public record NotificationStatsResponse(
-        @Schema(description = "Recipient user id", example = "user_456")
+        @Schema(description = "Recipient user id", example = "jane.passenger@example.com")
         String recipientId,
 
         @Schema(description = "Unread notification count", example = "3")

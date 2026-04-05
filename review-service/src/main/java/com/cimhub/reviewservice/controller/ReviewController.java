@@ -130,7 +130,7 @@ public class ReviewController {
     })
     @GetMapping("/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getDriverReviews(
-            @Parameter(description = "Driver's unique identifier", required = true, example = "user_123")
+            @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String driverId) {
         log.info("Fetching reviews for driver: {}", driverId);
         List<ReviewResponse> reviews = reviewService.getDriverReviews(driverId);
@@ -155,7 +155,7 @@ public class ReviewController {
     })
     @GetMapping("/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getPassengerReviews(
-            @Parameter(description = "Passenger's unique identifier", required = true, example = "user_456")
+            @Parameter(description = "Passenger's unique identifier", required = true, example = "jane.passenger@example.com")
             @PathVariable String passengerId) {
         log.info("Fetching reviews for passenger: {}", passengerId);
         List<ReviewResponse> reviews = reviewService.getPassengerReviews(passengerId);
@@ -180,7 +180,7 @@ public class ReviewController {
     })
     @GetMapping("/driver/{driverId}/average-rating")
     public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getDriverAverageRating(
-            @Parameter(description = "Driver's unique identifier", required = true, example = "user_123")
+            @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String driverId) {
         log.info("Fetching average rating for driver: {}", driverId);
         AverageRatingResponse response = reviewService.getDriverAverageRating(driverId);
@@ -205,7 +205,7 @@ public class ReviewController {
     })
     @GetMapping("/passenger/{passengerId}/average-rating")
     public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getPassengerAverageRating(
-            @Parameter(description = "Passenger's unique identifier", required = true, example = "user_456")
+            @Parameter(description = "Passenger's unique identifier", required = true, example = "jane.passenger@example.com")
             @PathVariable String passengerId) {
         log.info("Fetching average rating for passenger: {}", passengerId);
         AverageRatingResponse response = reviewService.getPassengerAverageRating(passengerId);

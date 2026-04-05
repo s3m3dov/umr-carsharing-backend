@@ -13,8 +13,8 @@ public final class BookingApiExamples {
     public static final String JOIN_TRIP_REQUEST = """
             {
               "tripId": "trip_001",
-              "passengerId": "user_456",
-              "driverId": "user_123",
+              "passengerId": "jane.passenger@example.com",
+              "driverId": "john.driver@example.com",
               "pickupPoint": {
                 "latitude": 50.8154,
                 "longitude": 8.6747
@@ -30,7 +30,7 @@ public final class BookingApiExamples {
     public static final String CANCEL_BOOKING_REQUEST = """
             {
               "tripId": "trip_001",
-              "userId": "user_456",
+              "userId": "jane.passenger@example.com",
               "rideId": "ride_001",
               "cancellationReason": "Change of plans"
             }""";
@@ -58,7 +58,7 @@ public final class BookingApiExamples {
                 {
                   "rideId": "ride_001",
                   "tripId": "trip_001",
-                  "driverId": "user_123",
+                  "driverId": "john.driver@example.com",
                   "vehicleNumber": "HE-XX-1234",
                   "rideStatus": "CONFIRMED",
                   "tripStartDateTime": "2024-03-25T08:00:00Z",

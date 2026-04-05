@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 )
 @Builder
 public record OfferRideRequest(
-        @Schema(description = "Driver's user ID", example = "user_123")
+        @Schema(description = "Driver's user ID", example = "john.driver@example.com")
         String driverId,
 
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")

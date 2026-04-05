@@ -12,7 +12,7 @@ public final class UserApiExamples {
 
     public static final String CREATE_PROFILE_REQUEST = """
             {
-              "userId": "user_123",
+              "userId": "john.driver@example.com",
               "firstName": "John",
               "lastName": "Driver",
               "phoneNumber": "+49 123 456789",
@@ -26,7 +26,7 @@ public final class UserApiExamples {
             {
               "success": true,
               "data": {
-                "userId": "user_123",
+                "userId": "john.driver@example.com",
                 "firstName": "John",
                 "lastName": "Driver",
                 "email": "john.driver@example.com",
@@ -42,7 +42,7 @@ public final class UserApiExamples {
             {
               "success": true,
               "data": {
-                "userId": "user_123",
+                "userId": "john.driver@example.com",
                 "firstName": "John",
                 "lastName": "Driver",
                 "email": "john.driver@example.com",
@@ -60,9 +60,9 @@ public final class UserApiExamples {
             {
               "status": 404,
               "code": "USER_NOT_FOUND",
-              "message": "User with ID user_123 not found",
+              "message": "User with ID john.driver@example.com not found",
               "error": {
-                "path": "/api/users/user_123",
+                "path": "/api/users/john.driver@example.com",
                 "details": []
               },
               "timestamp": "2026-03-25T15:22:46.870Z",

@@ -11,7 +11,7 @@ import lombok.Builder;
 )
 @Builder
 public record CancelTripRequest(
-        @Schema(description = "User ID of the person cancelling", example = "user_123")
+        @Schema(description = "User ID of the person cancelling", example = "john.driver@example.com")
         String userId,
 
         @Schema(description = "Trip identifier to cancel", example = "trip_001")

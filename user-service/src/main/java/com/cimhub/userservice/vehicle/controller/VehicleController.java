@@ -53,7 +53,7 @@ public class VehicleController {
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
-            @Parameter(description = "User's unique identifier", required = true, example = "user_123")
+            @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         log.info("Getting vehicles for userId: {}", userId);
         List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);

@@ -13,10 +13,10 @@ public record NotificationResponse(
         @Schema(description = "Notification id", example = "not_001")
         String notificationId,
 
-        @Schema(description = "Notification recipient user id", example = "user_456")
+        @Schema(description = "Notification recipient user id", example = "jane.passenger@example.com")
         String recipientId,
 
-        @Schema(description = "Notification sender user id", example = "user_123")
+        @Schema(description = "Notification sender user id", example = "john.driver@example.com")
         String senderId,
 
         @Schema(description = "Notification title", example = "Booking Confirmed")

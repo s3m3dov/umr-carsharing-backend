@@ -30,7 +30,7 @@ public final class AuthApiExamples {
 
     public static final String VALIDATE_TOKEN_REQUEST = """
             {
-              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature"
+              "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huLmRyaXZlckBleGFtcGxlLmNvbSIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature"
             }""";
 
     // ---- Responses ----
@@ -39,7 +39,7 @@ public final class AuthApiExamples {
             {
               "success": true,
               "data": {
-                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huLmRyaXZlckBleGFtcGxlLmNvbSIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature",
                 "email": "john.driver@example.com",
                 "role": "DRIVER"
               },
@@ -50,7 +50,7 @@ public final class AuthApiExamples {
             {
               "success": true,
               "data": {
-                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature",
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huLmRyaXZlckBleGFtcGxlLmNvbSIsInJvbGUiOiJEUklWRVIiLCJleHAiOjE2OTk4NzcyMDB9.signature",
                 "email": "john.driver@example.com",
                 "role": "DRIVER"
               },

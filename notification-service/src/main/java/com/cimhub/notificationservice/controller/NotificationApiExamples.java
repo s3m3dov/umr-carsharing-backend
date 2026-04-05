@@ -7,8 +7,8 @@ public final class NotificationApiExamples {
 
     public static final String CREATE_NOTIFICATION_REQUEST = """
             {
-              "recipientId": "user_456",
-              "senderId": "user_123",
+              "recipientId": "jane.passenger@example.com",
+              "senderId": "john.driver@example.com",
               "title": "Booking Confirmed",
               "message": "Your booking for trip trip_001 is confirmed.",
               "type": "BOOKING_REQUESTED",
@@ -21,15 +21,15 @@ public final class NotificationApiExamples {
 
     public static final String MARK_READ_REQUEST = """
             {
-              "recipientId": "user_456"
+              "recipientId": "jane.passenger@example.com"
             }""";
 
     public static final String CREATE_NOTIFICATION_RESPONSE = """
             {
               "data": {
                 "notificationId": "not_001",
-                "recipientId": "user_456",
-                "senderId": "user_123",
+                "recipientId": "jane.passenger@example.com",
+                "senderId": "john.driver@example.com",
                 "title": "Booking Confirmed",
                 "message": "Your booking for trip trip_001 is confirmed.",
                 "type": "BOOKING_REQUESTED",
@@ -50,7 +50,7 @@ public final class NotificationApiExamples {
     public static final String NOTIFICATION_STATS_RESPONSE = """
             {
               "data": {
-                "recipientId": "user_456",
+                "recipientId": "jane.passenger@example.com",
                 "unreadCount": 3
               },
               "message": "Operation successful",
@@ -76,7 +76,7 @@ public final class NotificationApiExamples {
               "code": "UNAUTHORIZED_NOTIFICATION_ACCESS",
               "message": "You are not allowed to access notifications for this user",
               "error": {
-                "path": "/api/notifications/user_123",
+                "path": "/api/notifications/john.driver@example.com",
                 "details": []
               },
               "timestamp": "2026-03-30T11:35:21.111Z",
