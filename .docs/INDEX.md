@@ -7,7 +7,7 @@ Welcome to the Car Sharing Backend documentation.
 ## Technical Documentation
 
 ### API Reference
-- **[API Reference](technical/_main/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
+- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides, bookings, reviews, notifications
 - **[OpenAPI Schemas](technical/openapi/openapi-schemas.md)**: All DTO schemas, validation rules, and field constraints
 - **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
@@ -56,9 +56,13 @@ Welcome to the Car Sharing Backend documentation.
 
 ## Service Endpoints (Quick Reference)
 
-| Service | Port | Swagger UI |
-|---------|------|------------|
-| API Gateway | 8080 | — |
-| Auth Service | 8081 | `/auth-service/swagger-ui.html` |
-| User Service | 8082 | `/user-service/swagger-ui.html` |
-| Trip Service | 8084 | `/trip-service/swagger-ui.html` |
+All services are accessed through the API Gateway at **port 8080**. Path prefixes route to the correct service.
+
+| Service | Path Prefix | Swagger UI |
+|---------|-------------|------------|
+| API Gateway | `http://localhost:8080` | `http://localhost:8080/swagger-ui.html` (aggregated) |
+| Auth Service | `/auth-service` | `/auth-service/v3/api-docs` loaded via gateway dropdown |
+| User Service | `/user-service` | `/user-service/v3/api-docs` loaded via gateway dropdown |
+| Trip Service | `/trip-service` | `/trip-service/v3/api-docs` loaded via gateway dropdown |
+| Review Service | `/review-service` | `/review-service/v3/api-docs` loaded via gateway dropdown |
+| Notification Service | `/notification-service` | `/notification-service/v3/api-docs` loaded via gateway dropdown |

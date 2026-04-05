@@ -18,13 +18,28 @@ Authorization: Bearer <your_jwt_token>
 
 All API responses follow a standard envelope:
 
+**Success:**
 ```json
 {
-  "success": true,
-  "errorMessage": null,
-  "responseContent": { ... }
+  "data": { ... },
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T12:00:00Z"
 }
 ```
+
+**Error:**
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error description"
+  },
+  "message": "An error occurred",
+  "timestamp": "2026-04-05T12:00:00Z"
+}
+```
+
+> `data` and `error` are mutually exclusive — only one is present per response.
 
 ## 🛠️ Technical Implementation Details
 
@@ -57,24 +72,25 @@ All review endpoints require JWT authentication via the `Authorization: Bearer <
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/reviews` | Submit a review |
-| GET | `/api/reviews/driver/{driverId}` | Get reviews about a driver |
-| GET | `/api/reviews/user/{userId}` | Get reviews about a passenger |
-| GET | `/api/reviews/trip/{tripId}` | Get all reviews for a trip |
-| GET | `/api/reviews/given` | Get reviews I submitted (authenticated user) |
-| GET | `/api/reviews/received` | Get reviews I received (authenticated user) |
+| POST | `/api/reviews/driver` | Passenger submits a review for a driver |
+| POST | `/api/reviews/passenger` | Driver submits a review for a passenger |
+| GET | `/api/reviews/driver/{driverId}` | Get all reviews about a driver |
+| GET | `/api/reviews/passenger/{passengerId}` | Get all reviews about a passenger |
 | GET | `/api/reviews/driver/{driverId}/average-rating` | Get average rating for a driver |
+| GET | `/api/reviews/passenger/{passengerId}/average-rating` | Get average rating for a passenger |
 
-### POST /api/reviews
+### POST /api/reviews/driver
 
-Submit a review for a driver or passenger after a completed trip.
+Passenger submits a review for a driver after completing a trip.
 
 **Request Body:**
 
 ```json
 {
+  "userId": "user_456",
+  "userRole": "PASSENGER",
   "tripId": "trip_123",
-  "revieweeId": "user_456",
+  "bookingId": "booking_001",
   "rating": 5,
   "comment": "Great driver, very friendly and professional!"
 }
@@ -84,88 +100,31 @@ Submit a review for a driver or passenger after a completed trip.
 
 ```json
 {
-  "success": true,
-  "errorMessage": null,
-  "responseContent": {
-    "id": "review_789",
+  "data": {
+    "reviewId": "review_789",
     "tripId": "trip_123",
-    "reviewerId": "user_123",
-    "revieweeId": "user_456",
+    "bookingId": "booking_001",
+    "reviewerId": "user_456",
+    "reviewerType": "PASSENGER",
+    "revieweeId": "user_123",
+    "revieweeType": "DRIVER",
     "rating": 5,
     "comment": "Great driver, very friendly and professional!",
-    "createdAt": "2025-10-13T20:06:00+02:00"
-  }
+    "status": "PUBLISHED",
+    "createdAt": "2026-04-05T10:00:00.000Z"
+  },
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
+
+### POST /api/reviews/passenger
+
+Driver submits a review for a passenger. Same request/response structure as above with `userRole: "DRIVER"`.
 
 ### GET /api/reviews/driver/{driverId}
 
-Retrieve all reviews for a specific driver.
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "errorMessage": null,
-  "responseContent": [
-    {
-      "id": "review_789",
-      "tripId": "trip_123",
-      "reviewerId": "user_123",
-      "rating": 5,
-      "comment": "Great driver, very friendly and professional!",
-      "createdAt": "2025-10-13T20:06:00+02:00"
-    }
-  ]
-}
-```
-
-### GET /api/reviews/user/{userId}
-
-Retrieve all reviews for a specific passenger.
-
-**Response:** Same format as driver reviews endpoint.
-
-### GET /api/reviews/trip/{tripId}
-
-Get all reviews (driver and passenger) associated with a completed trip.
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "errorMessage": null,
-  "responseContent": [
-    {
-      "id": "review_789",
-      "tripId": "trip_123",
-      "reviewerId": "driver_123",
-      "revieweeId": "passenger_456",
-      "rating": 5,
-      "comment": "Great passenger!",
-      "createdAt": "2025-10-13T20:06:00+02:00"
-    }
-  ]
-}
-```
-
-### GET /api/reviews/given
-
-Retrieve all reviews submitted by the authenticated user.
-
-**Headers:** Requires `Authorization: Bearer <token>`
-
-**Response:** Same format as other review list endpoints.
-
-### GET /api/reviews/received
-
-Retrieve all reviews received by the authenticated user (about them).
-
-**Headers:** Requires `Authorization: Bearer <token>`
-
-**Response:** Same format as other review list endpoints.
+Retrieve all reviews for a specific driver. Returns a list using the same envelope with `data` as an array.
 
 ### GET /api/reviews/driver/{driverId}/average-rating
 
@@ -175,13 +134,13 @@ Get the average rating for a driver.
 
 ```json
 {
-  "success": true,
-  "errorMessage": null,
-  "responseContent": {
-    "driverId": "user_456",
+  "data": {
+    "subjectId": "user_123",
     "averageRating": 4.8,
     "totalReviews": 25
-  }
+  },
+  "message": "Operation successful",
+  "timestamp": "2026-04-05T10:00:00Z"
 }
 ```
 
