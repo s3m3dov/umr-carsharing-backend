@@ -35,7 +35,11 @@ public final class VehicleApiExamples {
     public static final String REGISTER_VEHICLE_RESPONSE = """
             {
               "success": true,
-              "data": null,
+              "data": {
+                "value": "HE-XX-1234",
+                "text": "Tesla Model 3 | white",
+                "seatingCapacity": "5"
+              },
               "message": "Vehicle registered successfully"
             }""";
 

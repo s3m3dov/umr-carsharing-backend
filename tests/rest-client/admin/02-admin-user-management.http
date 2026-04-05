@@ -196,8 +196,8 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Driver register vehicle: status 200", function() {
-  client.assert(response.status === 200, "Expected 200, got " + response.status);
+client.test("Driver register vehicle: status 201", function() {
+  client.assert(response.status === 201, "Expected 201, got " + response.status);
 });
 %}
 

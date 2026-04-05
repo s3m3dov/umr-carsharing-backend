@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,25 +26,24 @@ public class VehicleService {
     public List<VehicleResponse> findUserVehicles(String userId) {
         log.info("Fetching vehicles for userId: {}", userId);
         return vehicleRepository.findByUserId(userId).stream()
-                .map(vehicle -> new VehicleResponse(
-                        vehicle.getVehicleNumber(),
-                        vehicle.getVehicleName() + " | " + vehicle.getVehicleColor(),
-                        vehicle.getSeatingCapacity()))
+                .map(this::toVehicleResponse)
                 .collect(Collectors.toList());
     }
 
-    public boolean registerVehicle(RegisterVehicleRequest request) {
+    public VehicleResponse registerVehicle(RegisterVehicleRequest request) {
         log.info("Registering new vehicle: {} for userId: {}", request.vehicleNumber(), request.userId());
 
-        if (vehicleRepository.existsByVehicleNumber(request.vehicleNumber().toUpperCase())) {
+        String normalizedVehicleNumber = request.vehicleNumber().toUpperCase(Locale.ROOT);
+
+        if (vehicleRepository.existsByVehicleNumber(normalizedVehicleNumber)) {
             log.warn("Vehicle with number {} already exists", request.vehicleNumber());
-            return false;
+            return null;
         }
 
         Vehicle newVehicle = new Vehicle();
         newVehicle.setUserId(request.userId());
         newVehicle.setVehicleName(request.vehicleName());
-        newVehicle.setVehicleNumber(request.vehicleNumber().toUpperCase());
+        newVehicle.setVehicleNumber(normalizedVehicleNumber);
         newVehicle.setVehicleType(request.vehicleType());
         newVehicle.setVehicleColor(request.vehicleColor());
         newVehicle.setSeatingCapacity(request.seatingCapacity());
@@ -54,6 +54,13 @@ public class VehicleService {
         Vehicle savedVehicle = vehicleRepository.save(newVehicle);
         auditService.logCreate(EntityType.VEHICLE, savedVehicle.getId(), request.userId(), "Vehicle registered by user");
         log.info("Vehicle registered successfully: {}", request.vehicleNumber());
-        return true;
+        return toVehicleResponse(savedVehicle);
+    }
+
+    private VehicleResponse toVehicleResponse(Vehicle vehicle) {
+        return new VehicleResponse(
+                vehicle.getVehicleNumber(),
+                vehicle.getVehicleName() + " | " + vehicle.getVehicleColor(),
+                vehicle.getSeatingCapacity());
     }
 }
