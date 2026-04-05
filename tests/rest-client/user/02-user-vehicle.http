@@ -3,12 +3,45 @@
 
 @baseUrl = http://localhost:8888
 
-### 1) Get driver profile
+### 1) Get driver profile (happy path)
 GET {{baseUrl}}/user-service/api/users/{{driverEmail}}
 Authorization: Bearer {{driverToken}}
 Accept: application/json
 
-### 2) Register vehicle for driver
+> {%
+client.test("Get driver profile: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Get driver profile: userId matches", function() {
+  client.assert(response.body.data != null, "Expected data");
+  client.assert(response.body.data.userId === client.global.get("driverEmail"),
+    "Expected userId to match driverEmail");
+});
+%}
+
+### 2) Get driver profile without auth (negative: expect 401 or 403)
+GET {{baseUrl}}/user-service/api/users/{{driverEmail}}
+Accept: application/json
+
+> {%
+client.test("Get profile no auth: status 401 or 403", function() {
+  client.assert(response.status === 401 || response.status === 403,
+    "Expected 401/403, got " + response.status);
+});
+%}
+
+### 3) Get non-existent user profile (negative: expect 404)
+GET {{baseUrl}}/user-service/api/users/nobody-{{runId}}@example.com
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+> {%
+client.test("Get non-existent user: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 4) Register vehicle for driver (happy path)
 POST {{baseUrl}}/user-service/api/vehicles/register
 Authorization: Bearer {{driverToken}}
 Content-Type: application/json
@@ -22,7 +55,95 @@ Content-Type: application/json
   "seatingCapacity": "4"
 }
 
-### 3) List driver vehicles
+> {%
+client.test("Register vehicle: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("Register vehicle: success result", function() {
+  client.assert(response.body.data === true || response.body.data != null,
+    "Expected truthy data indicating vehicle was registered");
+});
+%}
+
+### 5) Register duplicate vehicle (negative: expect 409 or data=false)
+POST {{baseUrl}}/user-service/api/vehicles/register
+Authorization: Bearer {{driverToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{driverEmail}}",
+  "vehicleName": "Duplicate Car",
+  "vehicleNumber": "{{vehicleNumber}}",
+  "vehicleType": "suv",
+  "vehicleColor": "black",
+  "seatingCapacity": "5"
+}
+
+> {%
+client.test("Duplicate vehicle: status 200 with false, or 409", function() {
+  // Service returns false (not 409) for duplicates — both are acceptable
+  client.assert(response.status === 409 || response.status === 200,
+    "Expected 409 or 200, got " + response.status);
+  if (response.status === 200) {
+    client.assert(response.body.data === false,
+      "Expected data=false for duplicate vehicle registration");
+  }
+});
+%}
+
+### 6) Register vehicle without auth (negative: expect 401 or 403)
+POST {{baseUrl}}/user-service/api/vehicles/register
+Content-Type: application/json
+
+{
+  "userId": "{{driverEmail}}",
+  "vehicleName": "Unauthorized Car",
+  "vehicleNumber": "UNAUTH-{{runId}}",
+  "vehicleType": "sedan",
+  "vehicleColor": "red",
+  "seatingCapacity": "4"
+}
+
+> {%
+client.test("Register vehicle no auth: status 401 or 403", function() {
+  client.assert(response.status === 401 || response.status === 403,
+    "Expected 401/403, got " + response.status);
+});
+%}
+
+### 7) List driver vehicles (happy path)
 GET {{baseUrl}}/user-service/api/vehicles/{{driverEmail}}
 Authorization: Bearer {{driverToken}}
 Accept: application/json
+
+> {%
+client.test("List driver vehicles: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
+});
+client.test("List driver vehicles: returns array", function() {
+  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+  client.assert(response.body.data.length > 0, "Expected at least one vehicle");
+});
+client.test("List driver vehicles: each entry has value and text fields", function() {
+  var vehicles = response.body.data;
+  client.assert(vehicles[0].value != null, "Expected value (vehicleNumber) field");
+  client.assert(vehicles[0].text != null, "Expected text (name | color) field");
+  client.assert(vehicles[0].seatingCapacity != null, "Expected seatingCapacity field");
+});
+%}
+
+### 8) List vehicles for non-existent driver (expect empty array or 404)
+GET {{baseUrl}}/user-service/api/vehicles/nobody-{{runId}}@example.com
+Authorization: Bearer {{driverToken}}
+Accept: application/json
+
+> {%
+client.test("Vehicles for non-existent driver: status 200 or 404", function() {
+  client.assert(response.status === 200 || response.status === 404,
+    "Expected 200 or 404, got " + response.status);
+  if (response.status === 200) {
+    client.assert(Array.isArray(response.body.data) && response.body.data.length === 0,
+      "Expected empty array for non-existent driver");
+  }
+});
+%}
