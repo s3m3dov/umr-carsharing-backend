@@ -11,6 +11,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -45,6 +46,10 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 })
                 .build();
         ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
+
+        if (HttpMethod.OPTIONS.equals(sanitizedExchange.getRequest().getMethod())) {
+            return chain.filter(sanitizedExchange);
+        }
 
         // Skip JWT validation for public endpoints
         if (isPublicPath(path)) {
