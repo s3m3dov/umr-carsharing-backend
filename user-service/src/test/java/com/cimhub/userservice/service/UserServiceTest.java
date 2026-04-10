@@ -53,7 +53,6 @@ class UserServiceTest {
         driver.setUpdatedAt(Instant.now());
 
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.of(driver));
-        when(passengerRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         UserResponse response = userService.getUserInfo(userId);
 
