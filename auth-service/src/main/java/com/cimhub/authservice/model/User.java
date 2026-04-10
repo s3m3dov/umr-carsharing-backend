@@ -45,5 +45,6 @@ public class User {
 
     @Indexed(sparse = true)
     private String resetToken;
+    private String resetTokenHash;
     private Date resetTokenExpiry;
 }
