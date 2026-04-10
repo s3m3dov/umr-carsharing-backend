@@ -33,10 +33,12 @@ public class PassengerService {
         Passenger passenger = new Passenger();
         passenger.setUserId(userId);
         passenger.setEmail(userId);
-        passenger.setFirstName(request.firstName());
-        passenger.setLastName(request.lastName());
-        passenger.setPhoneNumber(request.phoneNumber());
-        passenger.setAge(request.age());
+        ProfileUpdater.applyCommonProfileFields(
+                request,
+                passenger::setFirstName,
+                passenger::setLastName,
+                passenger::setPhoneNumber,
+                passenger::setAge);
         passenger.setCreatedAt(now);
         passenger.setUpdatedAt(now);
         passenger.setCreatedBy(userId);
@@ -48,10 +50,12 @@ public class PassengerService {
     public PassengerResponse updatePassengerProfile(String userId, UpdatePassengerRequest request) {
         Passenger passenger = findPassengerOrThrow(userId);
 
-        if (request.firstName() != null) passenger.setFirstName(request.firstName());
-        if (request.lastName() != null) passenger.setLastName(request.lastName());
-        if (request.phoneNumber() != null) passenger.setPhoneNumber(request.phoneNumber());
-        if (request.age() != null) passenger.setAge(request.age());
+        ProfileUpdater.applyCommonProfileUpdates(
+                request,
+                passenger::setFirstName,
+                passenger::setLastName,
+                passenger::setPhoneNumber,
+                passenger::setAge);
 
         Instant now = Instant.now();
         passenger.setUpdatedAt(now);

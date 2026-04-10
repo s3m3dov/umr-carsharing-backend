@@ -4,5 +4,5 @@ public record UpdatePassengerRequest(
         String firstName,
         String lastName,
         String phoneNumber,
-        Integer age) {
+        Integer age) implements UpdateProfileRequest {
 }
