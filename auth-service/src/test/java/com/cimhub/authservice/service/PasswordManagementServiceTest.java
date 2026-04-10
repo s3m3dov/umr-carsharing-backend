@@ -140,7 +140,6 @@ class PasswordManagementServiceTest {
         user.setResetTokenExpiry(pastExpiry);
 
         when(authUserRepository.findByResetTokenHash(hashedToken)).thenReturn(Optional.of(user));
-        when(authUserRepository.save(any(User.class))).thenReturn(user);
 
         ConfirmResetPasswordRequest request = new ConfirmResetPasswordRequest(rawToken, "newPassword");
 
@@ -158,11 +157,11 @@ class PasswordManagementServiceTest {
 
         when(authUserRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("OldPass", "old-hashed")).thenReturn(true);
-        when(passwordEncoder.encode("NewPass")).thenReturn("new-hashed");
+        when(passwordEncoder.encode("NewPass1!")).thenReturn("new-hashed");
         when(authUserRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ResetPasswordResponse response = passwordManagementService.changePassword(
-                "user@example.com", new ChangePasswordRequest("OldPass", "NewPass"));
+                "user@example.com", new ChangePasswordRequest("OldPass", "NewPass1!"));
 
         assertEquals("Password has been changed successfully", response.message());
 
