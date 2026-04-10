@@ -42,12 +42,12 @@ public class AdminPassengerController {
     }
 
     @Operation(summary = "Get passenger detail", description = "Retrieve detailed information about a specific passenger")
-    @GetMapping("/{id}")
+    @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassenger(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Passenger ID") @PathVariable String id) {
+            @Parameter(description = "Passenger ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminPassengerService.getPassenger(id)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminPassengerService.getPassenger(userId)));
     }
 
     @Operation(summary = "Add new passenger", description = "Deprecated: user creation must be done via auth-service signup")
@@ -62,25 +62,25 @@ public class AdminPassengerController {
     }
 
     @Operation(summary = "Edit passenger", description = "Update passenger information")
-    @PutMapping("/{id}")
+    @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassenger(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Passenger ID") @PathVariable String id,
+            @Parameter(description = "Passenger ID") @PathVariable String userId,
             @RequestBody UpdatePassengerRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(
-                adminPassengerService.updatePassenger(id, request, adminEmail)));
+                adminPassengerService.updatePassenger(userId, request, adminEmail)));
     }
 
     @Operation(summary = "Delete passenger", description = "Delete a passenger account")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<String>> deletePassenger(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Passenger ID") @PathVariable String id) {
+            @Parameter(description = "Passenger ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        adminPassengerService.deletePassenger(id, adminEmail);
+        adminPassengerService.deletePassenger(userId, adminEmail);
         return ResponseEntity.ok(ApiResponseWrapper.success("Passenger deleted"));
     }
 }

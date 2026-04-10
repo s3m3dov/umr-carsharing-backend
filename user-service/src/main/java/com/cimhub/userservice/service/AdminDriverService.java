@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -67,6 +68,7 @@ public class AdminDriverService {
         return mapToDriverResponse(driver);
     }
 
+    @Transactional
     public int bulkApprove(BulkDriverActionRequest request, String adminEmail) {
         int count = 0;
         for (String driverId : request.driverIds()) {
@@ -80,6 +82,7 @@ public class AdminDriverService {
         return count;
     }
 
+    @Transactional
     public int bulkReject(BulkDriverActionRequest request, String adminEmail) {
         int count = 0;
         for (String driverId : request.driverIds()) {
