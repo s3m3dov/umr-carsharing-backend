@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.model;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

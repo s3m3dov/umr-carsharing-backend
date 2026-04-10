@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;

@@ -1,11 +1,11 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import com.cimhub.common.service.AuditService;
-import com.cimhub.tripservice.dto.OSRM.Geometry;
-import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
-import com.cimhub.tripservice.dto.OSRM.Route;
+import com.cimhub.tripservice.dto.osrm.Geometry;
+import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
+import com.cimhub.tripservice.dto.osrm.Route;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;

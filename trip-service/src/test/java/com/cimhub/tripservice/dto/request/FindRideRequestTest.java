@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

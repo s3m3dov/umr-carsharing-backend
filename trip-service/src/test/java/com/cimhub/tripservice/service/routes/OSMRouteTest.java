@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service.routes;
 
-import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
+import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
