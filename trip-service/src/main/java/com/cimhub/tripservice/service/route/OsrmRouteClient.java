@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service.routes;
+package com.cimhub.tripservice.service.route;
 
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;

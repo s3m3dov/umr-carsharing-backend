@@ -14,7 +14,7 @@ import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.geo.TripGeospatialService;
-import com.cimhub.tripservice.service.routes.OsrmRouteClient;
+import com.cimhub.tripservice.service.route.OsrmRouteClient;
 import com.cimhub.tripservice.service.trip.OfferRideService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
