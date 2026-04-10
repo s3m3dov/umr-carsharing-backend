@@ -1,13 +1,13 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.tripservice.controller.TripApiExamples;
+import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Schema(
         name = "CancelTripRequest",
         description = "Request to cancel a trip or booking",
-        example = TripApiExamples.CANCEL_TRIP_REQUEST
+        example = TripApiDoc.CANCEL_TRIP_REQUEST
 )
 @Builder
 public record CancelTripRequest(

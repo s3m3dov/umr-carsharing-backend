@@ -1,9 +1,8 @@
-package com.cimhub.notificationservice.controller;
+package com.cimhub.notificationservice.dto.examples;
 
-public final class NotificationApiExamples {
+public final class NotificationApiDoc {
 
-    private NotificationApiExamples() {
-    }
+    private NotificationApiDoc() {}
 
     public static final String CREATE_NOTIFICATION_REQUEST = """
             {

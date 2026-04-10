@@ -1,12 +1,12 @@
-package com.cimhub.tripservice.controller;
+package com.cimhub.tripservice.dto.examples;
 
 /**
  * OpenAPI example payloads for Trip endpoints.
- * Referenced by {@link TripApi} annotations.
+ * Referenced by {@link io.swagger.v3.oas.annotations.media.Schema} annotations.
  */
-public final class TripApiExamples {
+public final class TripApiDoc {
 
-    private TripApiExamples() {}
+    private TripApiDoc() {}
 
     // ---- Requests ----
 

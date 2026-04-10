@@ -1,12 +1,12 @@
-package com.cimhub.reviewservice.controller;
+package com.cimhub.reviewservice.dto.examples;
 
 /**
  * OpenAPI example payloads for Review endpoints.
- * Referenced by {@link Schema} annotations.
+ * Referenced by {@link io.swagger.v3.oas.annotations.media.Schema} annotations.
  */
-public final class ReviewApiExamples {
+public final class ReviewApiDoc {
 
-    private ReviewApiExamples() {}
+    private ReviewApiDoc() {}
 
     public static final String SUBMIT_REVIEW_REQUEST = """
             {
