@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OSMRouteTest {
+class OsrmRouteClientTest {
 
     @Test
     void getRoute_shouldBuildExpectedUriAndDeserializeResponse() {
@@ -53,7 +53,7 @@ class OSMRouteTest {
                 })
                 .build();
 
-        OSMRoute osmRoute = new OSMRoute(webClient);
+        OsrmRouteClient osmRoute = new OsrmRouteClient(webClient);
 
         OsrmResponseDTO response = osmRoute.getRoute(52.5, 13.4, 52.6, 13.5).block();
 
