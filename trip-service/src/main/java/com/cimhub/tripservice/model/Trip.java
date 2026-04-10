@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -78,6 +79,9 @@ public class Trip {
     private List<ObjectId> joinedBookingIds;
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    @Version
+    private Long version;
 
     @Builder.Default
     private Instant updatedAt = Instant.now();

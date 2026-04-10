@@ -47,6 +47,12 @@ public enum ErrorCode implements ServiceErrorCode {
             "Required upstream service is unavailable",
             ErrorType.SYSTEM_ERROR),
 
+    // Concurrency
+    CONFLICT(
+            HttpStatus.CONFLICT,
+            "Resource conflict - please retry",
+            ErrorType.CONFLICT_ERROR),
+
     // Generic
     INTERNAL_SERVER_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR,
