@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;

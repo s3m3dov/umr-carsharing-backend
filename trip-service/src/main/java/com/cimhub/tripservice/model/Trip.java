@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.model;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.dto.OSRM.Geometry;
+import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;

@@ -10,7 +10,7 @@ import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.routes.OSMRoute;
-import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
+import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

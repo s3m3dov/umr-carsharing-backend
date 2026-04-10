@@ -1,8 +1,8 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.dto.OSRM.Geometry;
-import com.cimhub.tripservice.dto.OSRM.Route;
+import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
+import com.cimhub.tripservice.dto.osrm.Route;
 import com.cimhub.tripservice.model.Trip;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

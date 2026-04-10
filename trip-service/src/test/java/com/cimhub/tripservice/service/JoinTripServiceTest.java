@@ -2,7 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
 import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;

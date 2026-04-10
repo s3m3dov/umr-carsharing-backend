@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service.routes;
 
-import com.cimhub.tripservice.dto.OSRM.OsrmResponseDTO;
+import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

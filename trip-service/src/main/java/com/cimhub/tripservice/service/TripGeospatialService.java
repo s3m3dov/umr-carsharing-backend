@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service;
 
-import com.cimhub.tripservice.dto.OSRM.Geometry;
+import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class TripGeospatialService {
 
     private final MongoTemplate mongoTemplate;
 
-    public void enrichTripWithGeospatialData(Trip trip, com.cimhub.tripservice.dto.OSRM.Route route) {
+    public void enrichTripWithGeospatialData(Trip trip, com.cimhub.tripservice.dto.osrm.Route route) {
         if (trip == null || route == null)
             return;
 

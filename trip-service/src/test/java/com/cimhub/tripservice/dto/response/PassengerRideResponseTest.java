@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.model.BookingStatus;
 import org.junit.jupiter.api.Test;
 

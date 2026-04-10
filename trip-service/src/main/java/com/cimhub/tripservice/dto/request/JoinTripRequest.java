@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.dto.request;
 
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
