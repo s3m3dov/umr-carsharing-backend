@@ -5,6 +5,7 @@ import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
+import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -24,27 +25,28 @@ public class AdminTripService {
 
     private final TripsRepository tripsRepository;
     private final AuditService auditService;
+    private final TripMapper tripMapper;
 
     public Page<AdminTripResponse> listTrips(Pageable pageable) {
-        return tripsRepository.findAll(pageable).map(this::mapToResponse);
+        return tripsRepository.findAll(pageable).map(tripMapper::toAdminTripResponse);
     }
 
     public AdminTripResponse getTrip(String tripId) {
         Trip trip = tripsRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found: " + tripId));
-        return mapToResponse(trip);
+        return tripMapper.toAdminTripResponse(trip);
     }
 
     public Page<AdminTripResponse> getUpcomingTrips(Pageable pageable) {
         return tripsRepository.findByTripStatusInAndTripStartDateTimeUTCAfter(
                 List.of(TripStatus.CREATED, TripStatus.AVAILABLE), Instant.now(), pageable
-        ).map(this::mapToResponse);
+        ).map(tripMapper::toAdminTripResponse);
     }
 
     public Page<AdminTripResponse> getTripHistory(Pageable pageable) {
         return tripsRepository.findByTripStatusIn(
                 List.of(TripStatus.COMPLETED, TripStatus.CANCELLED), pageable
-        ).map(this::mapToResponse);
+        ).map(tripMapper::toAdminTripResponse);
     }
 
     public void cancelTrip(String tripId, String adminEmail) {
@@ -60,27 +62,5 @@ public class AdminTripService {
         tripsRepository.save(trip);
         auditService.logCancel(EntityType.TRIP, tripId, adminEmail, "Trip cancelled by admin");
         log.info("Trip {} cancelled by admin {}", tripId, adminEmail);
-    }
-
-    private AdminTripResponse mapToResponse(Trip trip) {
-        return AdminTripResponse.builder()
-                .tripId(trip.getTripId())
-                .driverId(trip.getDriverId())
-                .vehicleNumber(trip.getVehicleNumber())
-                .carType(trip.getCarType())
-                .tripStatus(trip.getTripStatus())
-                .sourceAddress(trip.getSourceAddress())
-                .destinationAddress(trip.getDestinationAddress())
-                .totalSeats(trip.getTotalSeats())
-                .bookedSeats(trip.getBookedSeats())
-                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
-                .pricePerSeat(trip.getPricePerSeat())
-                .routeDistance(trip.getRouteDistance())
-                .routeDuration(trip.getRouteDuration())
-                .tripStartDateTimeUTC(trip.getTripStartDateTimeUTC())
-                .tripTimezone(trip.getTripTimezone())
-                .createdAt(trip.getCreatedAt())
-                .updatedAt(trip.getUpdatedAt())
-                .build();
     }
 }

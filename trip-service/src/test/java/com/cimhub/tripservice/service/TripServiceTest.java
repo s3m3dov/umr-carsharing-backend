@@ -3,7 +3,9 @@ package com.cimhub.tripservice.service;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
+import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -31,11 +33,14 @@ class TripServiceTest {
     @Mock
     private TripsRepository tripsRepository;
 
+    @Mock
+    private TripMapper tripMapper;
+
     private TripService tripService;
 
     @BeforeEach
     void setUp() {
-        tripService = new TripService(tripsRepository);
+        tripService = new TripService(tripsRepository, tripMapper);
     }
 
     @Test

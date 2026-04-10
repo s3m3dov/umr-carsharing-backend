@@ -5,6 +5,7 @@ import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
+import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -26,6 +27,7 @@ import java.util.Set;
 public class TripService {
 
     private final TripsRepository tripsRepository;
+    private final TripMapper tripMapper;
 
     private static final Map<TripStatus, Set<TripStatus>> VALID_TRANSITIONS = new HashMap<>();
 
@@ -61,7 +63,7 @@ public class TripService {
     public TripResponse getTrip(String tripId) {
         Trip trip = tripsRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
-        return mapToTripResponse(trip);
+        return tripMapper.toTripResponse(trip);
     }
 
     @Transactional
@@ -88,33 +90,6 @@ public class TripService {
                 .driverId(trip.getDriverId())
                 .tripStatus(trip.getTripStatus())
                 .updatedAt(trip.getUpdatedAt())
-                .build();
-    }
-
-    private TripResponse mapToTripResponse(Trip trip) {
-        String timezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
-                ? "UTC"
-                : trip.getTripTimezone();
-
-        ZonedDateTime tripStartDateTime = trip.getTripStartDateTimeUTC() != null
-                ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), java.time.ZoneId.of(timezone))
-                : null;
-
-        return TripResponse.builder()
-                .tripId(trip.getTripId())
-                .driverId(trip.getDriverId())
-                .vehicleNumber(trip.getVehicleNumber())
-                .carType(trip.getCarType())
-                .sourceAddress(trip.getSourceAddress())
-                .destinationAddress(trip.getDestinationAddress())
-                .tripStartDateTime(tripStartDateTime)
-                .tripTimezone(timezone)
-                .tripStartDateTimeInUserTimezone(tripStartDateTime)
-                .userTimezone(timezone)
-                .totalSeats(trip.getTotalSeats())
-                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
-                .tripStatus(trip.getTripStatus())
-                .pricePerSeat(trip.getPricePerSeat())
                 .build();
     }
 
