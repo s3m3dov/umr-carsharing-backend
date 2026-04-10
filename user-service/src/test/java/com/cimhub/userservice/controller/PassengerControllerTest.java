@@ -1,0 +1,80 @@
+package com.cimhub.userservice.controller;
+
+import com.cimhub.common.enums.UserType;
+import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
+import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
+import com.cimhub.userservice.dto.response.PassengerResponse;
+import com.cimhub.userservice.service.PassengerService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class PassengerControllerTest {
+
+    @Mock
+    private PassengerService passengerService;
+
+    @InjectMocks
+    private PassengerController passengerController;
+
+    @Test
+    void getPassengerProfile_shouldReturnWrappedResponse() {
+        PassengerResponse passengerResponse = PassengerResponse.builder()
+                .userId("passenger@example.com")
+                .firstName("Jane")
+                .lastName("Doe")
+                .email("passenger@example.com")
+                .userType(UserType.PASSENGER)
+                .phoneNumber("+123")
+                .age(28)
+                .createdAt(Instant.parse("2026-01-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-01-01T10:05:00Z"))
+                .build();
+        when(passengerService.getPassengerProfile("passenger@example.com")).thenReturn(passengerResponse);
+
+        var response = passengerController.getPassengerProfile("passenger@example.com");
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("passenger@example.com", response.getBody().getData().userId());
+    }
+
+    @Test
+    void createPassengerProfile_shouldReturnCreatedStatus() {
+        CreatePassengerProfileRequest request = new CreatePassengerProfileRequest("Jane", "Doe", "+123", 28);
+        PassengerResponse passengerResponse = PassengerResponse.builder()
+                .userId("passenger@example.com")
+                .userType(UserType.PASSENGER)
+                .build();
+        when(passengerService.createPassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
+
+        var response = passengerController.createPassengerProfile("passenger@example.com", request);
+
+        assertEquals(201, response.getStatusCode().value());
+        verify(passengerService).createPassengerProfile("passenger@example.com", request);
+    }
+
+    @Test
+    void updatePassengerProfile_shouldReturnUpdatedResponse() {
+        UpdatePassengerRequest request = new UpdatePassengerRequest("Janet", null, null, null);
+        PassengerResponse passengerResponse = PassengerResponse.builder()
+                .userId("passenger@example.com")
+                .firstName("Janet")
+                .userType(UserType.PASSENGER)
+                .build();
+        when(passengerService.updatePassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
+
+        var response = passengerController.updatePassengerProfile("passenger@example.com", request);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Janet", response.getBody().getData().firstName());
+    }
+}
