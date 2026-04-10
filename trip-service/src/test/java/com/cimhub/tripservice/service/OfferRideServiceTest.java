@@ -13,7 +13,7 @@ import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
-import com.cimhub.tripservice.service.routes.OSMRoute;
+import com.cimhub.tripservice.service.routes.OsrmRouteClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ class OfferRideServiceTest {
     private VehicleDocumentRepository vehicleDocumentRepository;
 
     @Mock
-    private OSMRoute osmRoute;
+    private OsrmRouteClient osmRoute;
 
     @Mock
     private TripGeospatialService tripGeospatialService;

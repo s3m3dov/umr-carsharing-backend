@@ -9,7 +9,8 @@ import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
-import com.cimhub.tripservice.service.routes.OSMRoute;
+import com.cimhub.tripservice.service.geo.TripGeospatialService;
+import com.cimhub.tripservice.service.routes.OsrmRouteClient;
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class OfferRideService {
 
         private final TripsRepository tripsRepository;
         private final VehicleDocumentRepository vehicleDocumentRepository;
-        private final OSMRoute osmRoute;
+        private final OsrmRouteClient osmRoute;
         private final TripGeospatialService tripGeospatialService;
         private final AuditService auditService;
 
