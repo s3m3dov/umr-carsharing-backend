@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.model.Points;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
@@ -90,12 +91,16 @@ public class JoinTripService {
     }
 
     @Transactional
-    public String acceptBooking(String bookingId) {
-        log.info("Accepting booking: {}", bookingId);
+    public String acceptBooking(String bookingId, String driverId) {
+        log.info("Driver {} accepting booking: {}", driverId, bookingId);
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Booking not found with id: " + bookingId));
+
+        if (!driverId.equals(booking.getDriverId())) {
+            throw new UnauthorizedException("You are not authorized to accept this booking");
+        }
 
         if (booking.getStatus() != BookingStatus.REQUESTED) {
             throw new BookingAlreadyProcessedException(
@@ -105,24 +110,28 @@ public class JoinTripService {
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
-        auditService.logApprove(EntityType.BOOKING, bookingId, booking.getDriverId(), "Booking accepted by driver");
+        auditService.logApprove(EntityType.BOOKING, bookingId, driverId, "Booking accepted by driver");
 
         Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
         if (trip != null) {
             driverNotificationService.notifyPassengerBookingAccepted(trip, booking);
         }
 
-        log.info("Booking {} accepted", bookingId);
+        log.info("Booking {} accepted by driver {}", bookingId, driverId);
         return "Booking accepted successfully";
     }
 
     @Transactional
-    public String rejectBooking(String bookingId) {
-        log.info("Rejecting booking: {}", bookingId);
+    public String rejectBooking(String bookingId, String driverId) {
+        log.info("Driver {} rejecting booking: {}", driverId, bookingId);
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Booking not found with id: " + bookingId));
+
+        if (!driverId.equals(booking.getDriverId())) {
+            throw new UnauthorizedException("You are not authorized to reject this booking");
+        }
 
         if (booking.getStatus() != BookingStatus.REQUESTED) {
             throw new BookingAlreadyProcessedException(
@@ -132,7 +141,7 @@ public class JoinTripService {
         booking.setStatus(BookingStatus.REJECTED);
         booking.setUpdatedAt(Instant.now());
         bookingRepository.save(booking);
-        auditService.logReject(EntityType.BOOKING, bookingId, booking.getDriverId(), "Booking rejected by driver");
+        auditService.logReject(EntityType.BOOKING, bookingId, driverId, "Booking rejected by driver");
 
         Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
         if (trip != null) {
@@ -142,7 +151,7 @@ public class JoinTripService {
             tripsRepository.save(trip);
         }
 
-        log.info("Booking {} rejected", bookingId);
+        log.info("Booking {} rejected by driver {}", bookingId, driverId);
         return "Booking rejected";
     }
 

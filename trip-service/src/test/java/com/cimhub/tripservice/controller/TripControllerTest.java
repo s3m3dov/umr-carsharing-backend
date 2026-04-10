@@ -1,6 +1,8 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.exception.ForbiddenException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
@@ -30,6 +32,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +78,7 @@ class TripControllerTest {
         OfferRideResponse offerResponse = OfferRideResponse.builder().tripId("trip-1").tripCreated(true).build();
         when(offerRideService.offerRide(request)).thenReturn(offerResponse);
 
-        ResponseEntity<ApiResponseWrapper<OfferRideResponse>> response = tripController.offerTrip(request);
+        ResponseEntity<ApiResponseWrapper<OfferRideResponse>> response = tripController.offerTrip("driver-1", "DRIVER", request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("trip-1", response.getBody().getData().tripId());
@@ -87,7 +90,7 @@ class TripControllerTest {
         CancelTripRequest request = CancelTripRequest.builder().userId("driver-1").tripId("trip-1").build();
         when(cancellationService.cancelTrip(request)).thenReturn("Cancelled");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = tripController.cancelTrip(request);
+        ResponseEntity<ApiResponseWrapper<String>> response = tripController.cancelTrip("driver-1", "DRIVER", request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Cancelled", response.getBody().getMessage());
@@ -127,6 +130,8 @@ class TripControllerTest {
         ResponseEntity<ApiResponseWrapper<List<Trip>>> source = tripController.searchNearSource(1.1, 2.2, 5.0);
         ResponseEntity<ApiResponseWrapper<List<Trip>>> destination = tripController.searchNearDestination(3.3, 4.4, 6.0);
         ResponseEntity<ApiResponseWrapper<List<Trip>>> route = tripController.searchMatchingRoute(
+                "user-1",
+                "PASSENGER",
                 1.0, 2.0, 5.0,
                 3.0, 4.0, 6.0,
                 "2026-04-01T10:00:00Z", "2026-04-01T12:00:00Z",
@@ -152,6 +157,8 @@ class TripControllerTest {
                 null, null, null, null)).thenReturn(List.of(trip));
 
         ResponseEntity<ApiResponseWrapper<List<Trip>>> response = tripController.searchMatchingRoute(
+                "user-2",
+                "PASSENGER",
                 1.0, 2.0, 5.0,
                 3.0, 4.0, 6.0,
                 null, null,
@@ -172,7 +179,7 @@ class TripControllerTest {
                 .build();
         when(completionService.completeTrip("trip-1", "driver-1")).thenReturn(completeTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> response = tripController.completeTrip("trip-1", "driver-1");
+        ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> response = tripController.completeTrip("trip-1", "driver-1", "DRIVER", null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(OperationMessage.TRIP_COMPLETED_SUCCESS.format(2),
@@ -191,9 +198,9 @@ class TripControllerTest {
         when(activeRidesService.findDriverTripHistory("driver-77")).thenReturn(List.of(history));
 
         ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> activeResponse =
-                tripController.getDriverActiveTrips("driver-77");
+                tripController.getDriverActiveTrips("driver-77", "DRIVER", "driver-77");
         ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> historyResponse =
-                tripController.getDriverTripHistory("driver-77");
+                tripController.getDriverTripHistory("driver-77", "DRIVER", "driver-77");
 
         assertEquals(HttpStatus.OK, activeResponse.getStatusCode());
         assertEquals("active-trip", activeResponse.getBody().getData().getFirst().tripId());
@@ -213,11 +220,79 @@ class TripControllerTest {
                 .build();
         when(tripService.startTrip("trip-1", "driver-1")).thenReturn(startTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<StartTripResponse>> response = tripController.startTrip("trip-1", "driver-1");
+        ResponseEntity<ApiResponseWrapper<StartTripResponse>> response = tripController.startTrip("trip-1", "driver-1", "DRIVER", null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(OperationMessage.TRIP_STARTED_SUCCESS.text(), response.getBody().getMessage());
         assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());
         verify(tripService).startTrip("trip-1", "driver-1");
+    }
+
+    @Test
+    void startTrip_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.startTrip("trip-1", "driver-1", "DRIVER", "other-driver"));
+    }
+
+    @Test
+    void completeTrip_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.completeTrip("trip-1", "driver-1", "DRIVER", "other-driver"));
+    }
+
+    @Test
+    void driverTripEndpoints_whenPathDriverDoesNotMatchHeader_shouldThrowUnauthorized() {
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.getDriverActiveTrips("other-driver", "DRIVER", "driver-77"));
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.getDriverTripHistory("other-driver", "DRIVER", "driver-77"));
+    }
+
+    @Test
+    void offerTrip_whenDriverInPayloadMismatchesHeader_shouldThrowUnauthorized() {
+        OfferRideRequest request = OfferRideRequest.builder()
+                .driverId("other-driver")
+                .sourceAddress(new Points())
+                .destinationAddress(new Points())
+                .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))
+                .totalSeats(3)
+                .pricePerSeat(5.0)
+                .build();
+
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.offerTrip("driver-1", "DRIVER", request));
+    }
+
+    @Test
+    void cancelTrip_whenUserInPayloadMismatchesHeader_shouldThrowUnauthorized() {
+        CancelTripRequest request = CancelTripRequest.builder().userId("other-user").tripId("trip-1").build();
+
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.cancelTrip("driver-1", "DRIVER", request));
+    }
+
+    @Test
+    void searchMatchingRoute_whenEffectiveUserIdMismatchesHeader_shouldThrowUnauthorized() {
+        assertThrows(UnauthorizedException.class,
+                () -> tripController.searchMatchingRoute(
+                        "header-user",
+                        "PASSENGER",
+                        1.0, 2.0, 5.0,
+                        3.0, 4.0, 6.0,
+                        null, null,
+                        1, "payload-user",
+                        null, null, null, null));
+    }
+
+    @Test
+    void startTrip_whenRoleIsNotDriver_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> tripController.startTrip("trip-1", "driver-1", "PASSENGER", null));
+    }
+
+    @Test
+    void completeTrip_whenRoleIsNotDriver_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> tripController.completeTrip("trip-1", "driver-1", "PASSENGER", null));
     }
 }
