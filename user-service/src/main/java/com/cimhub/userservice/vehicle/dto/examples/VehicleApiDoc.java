@@ -1,8 +1,8 @@
-package com.cimhub.userservice.vehicle.controller;
+package com.cimhub.userservice.vehicle.dto.examples;
 
-public final class VehicleApiExamples {
+public final class VehicleApiDoc {
 
-    private VehicleApiExamples() {}
+    private VehicleApiDoc() {}
 
     public static final String REGISTER_VEHICLE_REQUEST = """
             {

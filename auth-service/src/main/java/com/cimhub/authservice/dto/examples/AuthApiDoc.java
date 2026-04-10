@@ -1,12 +1,12 @@
-package com.cimhub.authservice.controller;
+package com.cimhub.authservice.dto.examples;
 
 /**
  * OpenAPI example payloads for Auth Service endpoints.
- * Referenced by {@link AuthApi} annotations.
+ * Referenced by {@link io.swagger.v3.oas.annotations.media.Schema} annotations.
  */
-public final class AuthApiExamples {
+public final class AuthApiDoc {
 
-    private AuthApiExamples() {}
+    private AuthApiDoc() {}
 
     // ---- Requests ----
 

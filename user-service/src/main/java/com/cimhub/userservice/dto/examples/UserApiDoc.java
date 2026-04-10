@@ -1,12 +1,12 @@
-package com.cimhub.userservice.controller;
+package com.cimhub.userservice.dto.examples;
 
 /**
  * OpenAPI example payloads for User Service endpoints.
- * Referenced by {@link UserApi} annotations.
+ * Referenced by {@link io.swagger.v3.oas.annotations.media.Schema} annotations.
  */
-public final class UserApiExamples {
+public final class UserApiDoc {
 
-    private UserApiExamples() {}
+    private UserApiDoc() {}
 
     // ---- Responses ----
 

@@ -1,12 +1,12 @@
-package com.cimhub.tripservice.controller;
+package com.cimhub.tripservice.dto.examples;
 
 /**
  * OpenAPI example payloads for Booking endpoints.
- * Referenced by {@link BookingApi} annotations.
+ * Referenced by {@link io.swagger.v3.oas.annotations.media.Schema} annotations.
  */
-public final class BookingApiExamples {
+public final class BookingApiDoc {
 
-    private BookingApiExamples() {}
+    private BookingApiDoc() {}
 
     // ---- Requests ----
 

@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.tripservice.controller.BookingApiExamples;
+import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.models.Points;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -11,7 +11,7 @@ import lombok.Builder;
 @Schema(
         name = "JoinTripRequest",
         description = "Request to join an existing trip as a passenger",
-        example = BookingApiExamples.JOIN_TRIP_REQUEST
+        example = BookingApiDoc.JOIN_TRIP_REQUEST
 )
 public record JoinTripRequest(
         @Schema(description = "Trip identifier to join", example = "trip_001")
