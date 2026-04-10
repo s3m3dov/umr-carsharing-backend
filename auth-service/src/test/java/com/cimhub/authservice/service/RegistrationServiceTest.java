@@ -76,7 +76,7 @@ class RegistrationServiceTest {
     void registerUser_passengerEmailIsNormalizedToLowercase() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "Jane", "P", "Jane.P@Example.COM",
-                "Pw123!", UserType.PASSENGER, "+1", 25, null);
+                "Pw12345!", UserType.PASSENGER, "+1", 25, null);
 
         when(authUserRepository.findByEmail("jane.p@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("hashed");
