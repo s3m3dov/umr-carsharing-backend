@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.ConcurrencyConflictException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.model.Points;
@@ -29,6 +30,8 @@ import java.util.List;
 @Slf4j
 public class JoinTripService {
 
+    private static final int MAX_RETRIES = 3;
+
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
     private final AuditService auditService;
@@ -44,22 +47,39 @@ public class JoinTripService {
                 request.passengerId(), request.tripId(), request.requestedSeats());
 
         Trip trip = validateAndFetchTrip(request);
-        Booking booking = buildBooking(request, trip, BookingStatus.CONFIRMED);
+        int seatsToBook = request.requestedSeats();
 
-        bookingRepository.save(booking);
-        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
-                "Booking auto-confirmed for passenger");
+        int attempt = 0;
+        while (attempt < MAX_RETRIES) {
+            try {
+                Booking booking = buildBooking(request, trip, BookingStatus.CONFIRMED);
 
-        driverNotificationService.notifyBookingConfirmed(trip, booking);
+                bookingRepository.save(booking);
+                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                        "Booking auto-confirmed for passenger");
 
-        trip.setBookedSeats(trip.getBookedSeats() + request.requestedSeats());
-        trip.setUpdatedAt(Instant.now());
-        tripsRepository.save(trip);
+                driverNotificationService.notifyBookingConfirmed(trip, booking);
 
-        log.info("Passenger {} joined trip {} (auto-confirmed). Seats: {}",
-                request.passengerId(), request.tripId(), request.requestedSeats());
+                trip.setBookedSeats(trip.getBookedSeats() + seatsToBook);
+                trip.setUpdatedAt(Instant.now());
+                tripsRepository.save(trip);
 
-        return "Ride booked successfully.";
+                log.info("Passenger {} joined trip {} (auto-confirmed). Seats: {}",
+                        request.passengerId(), request.tripId(), seatsToBook);
+
+                return "Ride booked successfully.";
+            } catch (org.springframework.dao.OptimisticLockingFailureException e) {
+                attempt++;
+                if (attempt >= MAX_RETRIES) {
+                    log.error("Failed to book trip {} after {} retries due to concurrent modification", request.tripId(), MAX_RETRIES);
+                    throw new ConcurrencyConflictException("Seat booking conflict - please retry");
+                }
+                log.warn("Optimistic lock conflict on trip {}, retrying (attempt {}/{})", request.tripId(), attempt, MAX_RETRIES);
+                trip = tripsRepository.findById(request.tripId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
+            }
+        }
+        throw new ConcurrencyConflictException("Seat booking conflict - please retry");
     }
 
     /**
@@ -72,22 +92,39 @@ public class JoinTripService {
                 request.passengerId(), request.tripId(), request.requestedSeats());
 
         Trip trip = validateAndFetchTrip(request);
-        Booking booking = buildBooking(request, trip, BookingStatus.REQUESTED);
+        int seatsToBook = request.requestedSeats();
 
-        bookingRepository.save(booking);
-        auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
-                "Booking request submitted by passenger");
+        int attempt = 0;
+        while (attempt < MAX_RETRIES) {
+            try {
+                Booking booking = buildBooking(request, trip, BookingStatus.REQUESTED);
 
-        driverNotificationService.notifyBookingRequested(trip, booking);
+                bookingRepository.save(booking);
+                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                        "Booking request submitted by passenger");
 
-        trip.setBookedSeats(trip.getBookedSeats() + request.requestedSeats());
-        trip.setUpdatedAt(Instant.now());
-        tripsRepository.save(trip);
+                driverNotificationService.notifyBookingRequested(trip, booking);
 
-        log.info("Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
-                request.passengerId(), request.tripId(), request.requestedSeats());
+                trip.setBookedSeats(trip.getBookedSeats() + seatsToBook);
+                trip.setUpdatedAt(Instant.now());
+                tripsRepository.save(trip);
 
-        return "Booking request submitted. Waiting for driver confirmation.";
+                log.info("Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
+                        request.passengerId(), request.tripId(), seatsToBook);
+
+                return "Booking request submitted. Waiting for driver confirmation.";
+            } catch (org.springframework.dao.OptimisticLockingFailureException e) {
+                attempt++;
+                if (attempt >= MAX_RETRIES) {
+                    log.error("Failed to request booking for trip {} after {} retries due to concurrent modification", request.tripId(), MAX_RETRIES);
+                    throw new ConcurrencyConflictException("Seat booking conflict - please retry");
+                }
+                log.warn("Optimistic lock conflict on trip {}, retrying (attempt {}/{})", request.tripId(), attempt, MAX_RETRIES);
+                trip = tripsRepository.findById(request.tripId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
+            }
+        }
+        throw new ConcurrencyConflictException("Seat booking conflict - please retry");
     }
 
     @Transactional
