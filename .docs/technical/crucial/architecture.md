@@ -54,14 +54,16 @@ The system uses a decentralized security model managed at the API Gateway level:
 
 ### Auth Service
 
-- User registration and JWT issuance (`POST /api/auth/signup`)
+- User registration and JWT issuance (`POST /api/auth/signup`) — orchestrates full signup: saves credentials, then calls user-service to create passenger/driver profile; rolls back auth credentials if user-service calls fail
 - Login (`POST /api/auth/login`)
 - Token validation (`POST /api/auth/validate`) — called internally by API Gateway
 - Password reset and change (`POST /api/auth/reset-password`, `PUT /api/auth/change-password`)
 
 ### User Service
 
-- User profile creation and retrieval (`/api/users`)
+- Base user profile retrieval (`GET /api/users/{userId}`) — role-aware aggregator over `drivers` and `passengers`
+- Passenger sub-profile management (`GET/POST/PUT /api/passengers/{userId}`)
+- Driver sub-profile management (`GET/POST/PUT /api/drivers/{userId}`) — stores `licenseNumber` and `driverStatus`
 - Vehicle registration and lookup (`/api/vehicles`) — max 5 vehicles per driver
 - Admin endpoints for drivers and passengers (`/api/admin`)
 
@@ -125,19 +127,26 @@ The Trip Service integrates with the **OpenStreetMap Routing Machine (OSRM)**. F
 
 ## Database Strategy
 
-The application uses **MongoDB Atlas** for persistent storage. All services connect via the `MONGODB_URI` environment variable. Collections are organized by domain:
+The application uses **MongoDB Atlas** for persistent storage. All services connect via the `MONGODB_URI` environment variable. Collection ownership is strictly enforced per service:
 
-- User and vehicle collections (User Service)
-- Trip, ride, and booking collections (Trip Service)
-- Review collections (Review Service)
-- Notification collections (Notification Service)
+| Collection | Owner Service | Purpose |
+|------------|---------------|---------|
+| `users` | Auth Service | Credentials only (email, hashed password, userType, reset token) |
+| `passengers` | User Service | Passenger full profile (firstName, lastName, phoneNumber, age) |
+| `drivers` | User Service | Driver full profile + `licenseNumber`, `driverStatus` |
+| `vehicles` | User Service | Vehicle registrations |
+| `trips` | Trip Service | Trip offers and lifecycle |
+| `bookings` | Trip Service | Passenger booking records |
+| `reviews` | Review Service | Driver/passenger reviews |
+| `notifications` | Notification Service | User notifications |
 
 > [!NOTE]
 > While the current implementation uses a shared database, the microservices architecture allows for future migration to separate databases per service if needed for better isolation and scalability.
 
 ## Service Dependencies
 
-The Review Service depends on the Trip Service for validating trip completion status before allowing reviews to be submitted. Only participants of completed trips can leave reviews for one another.
+- **Auth Service → User Service**: During signup, auth-service calls user-service (`POST /api/passengers/{userId}` or `POST /api/drivers/{userId}`) to initialize profile data. Auth-service rolls back its own auth document if any user-service call fails.
+- **Review Service → Trip Service**: Review Service calls Trip Service to validate trip/booking completion status before allowing a review to be submitted. Only participants of completed trips can leave reviews.
 
 ## Development Guidelines
 

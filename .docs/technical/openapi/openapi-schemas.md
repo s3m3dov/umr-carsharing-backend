@@ -253,17 +253,16 @@ User profile information.
       "description": "User's age",
       "example": 32
     },
-    "role": {
+    "userType": {
       "type": "string",
       "enum": ["DRIVER", "PASSENGER"],
-      "description": "User's role",
+      "description": "User's type",
       "example": "DRIVER"
     },
-    "profileCompletedAt": {
+    "licenseNumber": {
       "type": "string",
-      "format": "date-time",
-      "description": "ISO 8601 timestamp of profile completion",
-      "example": "2024-01-15T10:30:00Z"
+      "description": "Driver license number (only for DRIVER users)",
+      "example": "LD-123456789"
     },
     "createdAt": {
       "type": "string",
@@ -278,23 +277,18 @@ User profile information.
       "example": "2024-01-15T10:30:00Z"
     }
   },
-  "required": ["userId", "firstName", "lastName", "email", "role"]
+  "required": ["userId", "firstName", "lastName", "email", "userType"]
 }
 ```
 
-### CreateProfileRequest
+### CreateDriverProfileRequest
 
-Request to create or update user profile.
+Request to create a driver sub-profile.
 
 ```json
 {
   "type": "object",
   "properties": {
-    "userId": {
-      "type": "string",
-      "description": "User ID to create profile for",
-      "example": "john.driver@example.com"
-    },
     "firstName": {
       "type": "string",
       "description": "First name",
@@ -307,16 +301,54 @@ Request to create or update user profile.
     },
     "phoneNumber": {
       "type": "string",
-      "description": "Phone number (optional)",
+      "description": "Phone number",
       "example": "+49 123 456789"
     },
     "age": {
       "type": "integer",
-      "description": "Age (optional)",
+      "description": "Age",
       "example": 32
+    },
+    "licenseNumber": {
+      "type": "string",
+      "description": "Driver license number",
+      "example": "LD-123456789"
     }
   },
-  "required": ["userId", "firstName", "lastName"]
+  "required": ["firstName", "lastName", "licenseNumber"]
+}
+```
+
+### CreatePassengerProfileRequest
+
+Request to create a passenger profile.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "type": "string",
+      "description": "First name",
+      "example": "Jane"
+    },
+    "lastName": {
+      "type": "string",
+      "description": "Last name",
+      "example": "Passenger"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "Phone number",
+      "example": "+49 111 222333"
+    },
+    "age": {
+      "type": "integer",
+      "description": "Age",
+      "example": 27
+    }
+  },
+  "required": ["firstName", "lastName"]
 }
 ```
 

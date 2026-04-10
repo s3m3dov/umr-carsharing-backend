@@ -150,6 +150,7 @@ Quick steps:
 |------|-------|
 | Full doc index | [`.docs/INDEX.md`](.docs/INDEX.md) |
 | Architecture | [`.docs/technical/crucial/architecture.md`](.docs/technical/crucial/architecture.md) |
+| User/profile architecture | [`.docs/technical/crucial/user-profile-architecture.md`](.docs/technical/crucial/user-profile-architecture.md) |
 | API reference | [`.docs/technical/crucial/api-reference.md`](.docs/technical/crucial/api-reference.md) |
 | Monitoring setup | [`.docs/technical/devops/monitoring.md`](.docs/technical/devops/monitoring.md) |
 | GCP deployment | [`.docs/technical/devops/gcp-deployment.md`](.docs/technical/devops/gcp-deployment.md) |

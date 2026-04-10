@@ -13,6 +13,34 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.9.3] – User Registration & Profile Refactor (2026-04-09)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Fixed
+
+- `GET /api/users/{userId}` returning null `firstName`, `lastName`, `phoneNumber` after signup — root cause was auth-service and user-service both writing to the same `users` MongoDB collection; auth-service saved a credentials-only document first, user-service found it and threw 409, auth-service silently ignored the conflict, leaving the null-field document in place forever
+
+### Changed
+
+- **auth-service** credentials are stored in `users` and user-service is profile-only (`drivers`/`passengers`)
+- **Signup flow** is fully server-side: auth-service creates auth user then role profile (`passenger` or `driver`) during `POST /api/auth/signup`; the Flutter client receives a JWT and is done — no follow-up calls required
+- `licenseNumber` is stored exclusively in the `drivers` collection. `GET /api/users/{userId}` aggregates role profile data from `drivers`/`passengers`
+- `POST /api/users/profile` removed; role profile creation uses `POST /api/passengers/{userId}` and `POST /api/drivers/{userId}`
+
+### Added
+
+- `GET  /api/passengers/{userId}` — retrieve passenger profile
+- `POST /api/passengers/{userId}` — initialize passenger sub-profile (called automatically during signup; also idempotent for manual use)
+- `PUT  /api/passengers/{userId}` — update passenger name / phone / age
+- `GET  /api/drivers/{userId}` — retrieve driver profile including `licenseNumber` and `driverStatus`
+- `POST /api/drivers/{userId}` — initialize driver sub-profile with `licenseNumber` (called automatically during signup)
+- `PUT  /api/drivers/{userId}` — update driver name / phone / age / license number
+- Driver sub-profile auto-created on first GET if missing (lazy creation fallback)
+- Auth-service rolls back the auth `users` document if user-service profile creation fails, keeping both stores consistent
+
+---
+
 ## [v0.9.2] – Trip Start, Retrieval & Test Coverage (2026-04-06)
 
 **Author:** s3m3dov (Hikmat Samadov)

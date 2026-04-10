@@ -131,7 +131,9 @@ Creates a new user account and returns a JWT token.
 
 **Notes:**
 - `userType` must be either "DRIVER" or "PASSENGER"
-- For DRIVER accounts, vehicle information is recommended
+- `licenseNumber` is **required** for DRIVER accounts; omitting it returns 400
+- `licenseNumber` is stored exclusively in the `drivers` sub-collection, not on the base user profile
+- Signup is fully server-side: auth-service automatically creates the passenger or driver profile — no follow-up calls from the client are required
 - Password must be strong (minimum 8 characters recommended)
 
 ---
@@ -269,15 +271,15 @@ Changes the password for the currently authenticated user. Requires the current 
 
 ## 2. User Service API
 
-The User Service manages user profiles and personal information.
+The User Service manages base user profiles and role-specific profile data.
 
 ### Endpoints
 
-#### 2.1 Get User Information
+#### 2.1 Get Base User Information
 
 **GET** `/api/users/{userId}`
 
-Retrieves user profile information.
+Retrieves base user profile information and role-aware fields.
 
 **Parameters:**
 - `userId` (path, required): User's unique identifier
@@ -291,12 +293,14 @@ Retrieves user profile information.
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
+    "userType": "DRIVER",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "role": "DRIVER",
-    "profileCompletedAt": "2024-01-15T10:30:00Z"
+    "licenseNumber": "LD-123456789",
+    "createdAt": "2026-03-30T16:48:24.233Z",
+    "updatedAt": "2026-03-30T16:48:24.233Z"
   },
-  "message": "User profile retrieved successfully"
+  "message": "Operation successful"
 }
 ```
 
@@ -307,20 +311,23 @@ Retrieves user profile information.
 
 ---
 
-#### 2.2 Create User Profile
+#### 2.2 Create Driver Profile
 
-**POST** `/api/users/profile`
+**POST** `/api/drivers/{userId}`
 
-Creates or updates a user's detailed profile.
+Initializes the driver sub-profile for an existing DRIVER user.
+
+**Parameters:**
+- `userId` (path, required): Driver user ID
 
 **Request:**
 ```json
 {
-  "userId": "john.driver@example.com",
   "firstName": "John",
   "lastName": "Driver",
+  "phoneNumber": "+49 123 456789",
   "age": 32,
-  "phoneNumber": "+49 123 456789"
+  "licenseNumber": "LD-123456789"
 }
 ```
 
@@ -333,18 +340,122 @@ Creates or updates a user's detailed profile.
     "firstName": "John",
     "lastName": "Driver",
     "email": "john.driver@example.com",
+    "userType": "DRIVER",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "role": "DRIVER",
-    "profileCompletedAt": "2024-01-15T10:35:00Z"
+    "licenseNumber": "LD-123456789",
+    "driverStatus": "PENDING",
+    "createdAt": "2026-04-09T10:15:01.000Z",
+    "updatedAt": "2026-04-09T10:15:01.000Z"
   },
-  "message": "User profile created successfully"
+  "message": "Operation successful"
 }
 ```
 
 **Error Responses:**
-- 400: Invalid profile data
-- 404: User not found
+- 400: Missing/invalid license number
+- 404: User not found or not a driver
+- 409: Driver profile already exists
+
+**Authentication:** Required
+
+---
+
+#### 2.3 Get Driver Profile
+
+**GET** `/api/drivers/{userId}`
+
+Returns driver profile including driver-specific fields.
+
+**Error Responses:**
+- 404: Driver not found
+
+**Authentication:** Required
+
+---
+
+#### 2.4 Update Driver Profile
+
+**PUT** `/api/drivers/{userId}`
+
+Partially updates driver profile fields.
+
+**Request:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Driver",
+  "phoneNumber": "+49 123 456789",
+  "age": 33,
+  "licenseNumber": "LD-NEW-98765"
+}
+```
+
+**Error Responses:**
+- 404: Driver not found
+
+**Authentication:** Required
+
+---
+
+#### 2.5 Create Passenger Profile
+
+**POST** `/api/passengers/{userId}`
+
+Initializes the passenger sub-profile for an existing PASSENGER user.
+
+**Parameters:**
+- `userId` (path, required): Passenger user ID
+
+**Request:**
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Passenger",
+  "phoneNumber": "+49 111 222333",
+  "age": 27
+}
+```
+
+**Error Responses:**
+- 404: User not found or not a passenger
+- 409: Passenger profile already exists
+
+**Authentication:** Required
+
+---
+
+#### 2.6 Get Passenger Profile
+
+**GET** `/api/passengers/{userId}`
+
+Returns passenger profile.
+
+**Error Responses:**
+- 404: Passenger not found
+
+**Authentication:** Required
+
+---
+
+#### 2.7 Update Passenger Profile
+
+**PUT** `/api/passengers/{userId}`
+
+Partially updates passenger profile fields.
+
+**Request:**
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Passenger",
+  "phoneNumber": "+49 111 222333",
+  "age": 27
+}
+```
+
+**Error Responses:**
+- 404: Passenger not found
 
 **Authentication:** Required
 
