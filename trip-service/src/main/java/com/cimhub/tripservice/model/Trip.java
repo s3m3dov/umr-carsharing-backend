@@ -3,7 +3,7 @@ package com.cimhub.tripservice.model;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,22 +35,22 @@ public class Trip {
     @Id
     private String tripId;
 
-    @NotBlank
+    @NotNull
     private TripStatus tripStatus;
 
-    @NotBlank
+    @NotNull
     private String vehicleNumber;
 
-    @NotBlank
+    @NotNull
     private String carType;
 
-    @NotBlank
+    @NotNull
     private String driverId;
 
-    @NotBlank
+    @NotNull
     private Points sourceAddress;
 
-    @NotBlank
+    @NotNull
     private Points destinationAddress;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
