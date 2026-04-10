@@ -30,7 +30,7 @@ class JwtServiceTest {
         JwtService jwtService = new JwtService(BASE64_SECRET, 60_000);
         UserDetails userDetails = new User("driver@example.com", "pwd", List.of());
 
-        String token = jwtService.generateToken(userDetails, UserType.DRIVER.name());
+        String token = jwtService.generateTokenWithRole(userDetails, UserType.DRIVER.name());
 
         assertNotNull(token);
         assertEquals("driver@example.com", jwtService.extractUsername(token));
@@ -42,7 +42,7 @@ class JwtServiceTest {
     void isTokenValid_shouldReturnFalseForDifferentUserAndExpiredToken() {
         JwtService jwtService = new JwtService(BASE64_SECRET, 10_000);
         UserDetails userDetails = new User("user@example.com", "pwd", List.of());
-        String token = jwtService.generateToken(userDetails, UserType.PASSENGER.name());
+        String token = jwtService.generateTokenWithRole(userDetails, UserType.PASSENGER.name());
 
         assertFalse(jwtService.isTokenValid(token, "other@example.com"));
 
@@ -62,7 +62,7 @@ class JwtServiceTest {
     void isTokenValid_shouldReturnTrueForMatchingUser() {
         JwtService jwtService = new JwtService(BASE64_SECRET, 60_000);
         UserDetails userDetails = new User("user@example.com", "pwd", List.of());
-        String token = jwtService.generateToken(userDetails, UserType.PASSENGER.name());
+        String token = jwtService.generateTokenWithRole(userDetails, UserType.PASSENGER.name());
 
         assertTrue(jwtService.isTokenValid(token, "user@example.com"));
     }
@@ -72,7 +72,7 @@ class JwtServiceTest {
         JwtService jwtService = new JwtService(BASE64_SECRET, 60_000);
         UserDetails userDetails = new User("passenger@example.com", "pwd", List.of());
 
-        String token = jwtService.generateToken(userDetails, UserType.PASSENGER.name());
+        String token = jwtService.generateTokenWithRole(userDetails, UserType.PASSENGER.name());
 
         assertEquals(UserType.PASSENGER.name(), jwtService.extractRole(token));
         assertEquals("passenger@example.com", jwtService.extractUsername(token));
@@ -83,7 +83,7 @@ class JwtServiceTest {
         JwtService jwtService = new JwtService(BASE64_SECRET, 0);
         UserDetails userDetails = new User("user@example.com", "pwd", List.of());
 
-        String token = jwtService.generateToken(userDetails, UserType.DRIVER.name());
+        String token = jwtService.generateTokenWithRole(userDetails, UserType.DRIVER.name());
 
         assertTrue(jwtService.isTokenExpired(token));
         assertFalse(jwtService.isTokenValid(token, "user@example.com"));
