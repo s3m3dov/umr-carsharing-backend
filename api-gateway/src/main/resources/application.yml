@@ -121,6 +121,7 @@ gateway:
       - /**/v3/api-docs/**
       - /**/swagger-ui/**
     actuator-paths:
+      - /actuator/**
       - /actuator/health/**
       - /actuator/info/**
       - /actuator/prometheus
