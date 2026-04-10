@@ -7,7 +7,7 @@ Welcome to the Car Sharing Backend documentation.
 ## Technical Documentation
 
 ### API Reference
-- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides, bookings, reviews, notifications
+- **[API Reference](technical/api-architecture/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides, bookings, reviews, notifications
 - **[OpenAPI Schemas](technical/openapi/openapi-schemas.md)**: All DTO schemas, validation rules, and field constraints
 - **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
@@ -17,11 +17,11 @@ Welcome to the Car Sharing Backend documentation.
 - **[Testing Quick Reference](technical/testing/testing_quick_reference.md)**: Quick commands for running tests and viewing coverage
 
 ### Architecture & Infrastructure
-- **[Architecture & Tech Stack](technical/crucial/architecture.md)**: System design, microservices, and technical capabilities
-- **[User & Profile Architecture](technical/crucial/user-profile-architecture.md)**: Ownership boundaries for auth users and driver/passenger profile collections
-- **[API Development Guide](technical/crucial/api-guide.md)**: Authentication, response formats, and implementation details
-- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
-- **[BlaBlaCar Architecture Overview](technical/crucial/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
+- **[Architecture & Tech Stack](technical/api-architecture/architecture.md)**: System design, microservices, and technical capabilities
+- **[User & Profile Architecture](technical/services/user-service/user-profile-architecture.md)**: Ownership boundaries for auth users and driver/passenger profile collections
+- **[API Development Guide](technical/api-architecture/api-guide.md)**: Authentication, response formats, and implementation details
+- **[API Reference](technical/api-architecture/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
+- **[BlaBlaCar Architecture Overview](technical/api-architecture/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
 - **[GitOps Workflow](technical/devops/gitops.md)**: Deployment rules, scripts, and commands
 - **[GCP Initial Setup](technical/devops/gcp-initial-setup.md)**: First-time cloud setup guide (GKE, Artifact Registry, Static IP)
 - **[GCP Deployment](technical/devops/gcp-deployment.md)**: Cloud deployment guide

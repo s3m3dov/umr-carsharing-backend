@@ -149,9 +149,9 @@ Quick steps:
 | What | Where |
 |------|-------|
 | Full doc index | [`.docs/INDEX.md`](.docs/INDEX.md) |
-| Architecture | [`.docs/technical/crucial/architecture.md`](.docs/technical/crucial/architecture.md) |
-| User/profile architecture | [`.docs/technical/crucial/user-profile-architecture.md`](.docs/technical/crucial/user-profile-architecture.md) |
-| API reference | [`.docs/technical/crucial/api-reference.md`](.docs/technical/crucial/api-reference.md) |
+| Architecture | [`.docs/technical/crucial/architecture.md`](.docs/technical/api-architecture/architecture.md) |
+| User/profile architecture | [`.docs/technical/crucial/user-profile-architecture.md`](.docs/technical/services/user-service/user-profile-architecture.md) |
+| API reference | [`.docs/technical/crucial/api-reference.md`](.docs/technical/api-architecture/api-reference.md) |
 | Monitoring setup | [`.docs/technical/devops/monitoring.md`](.docs/technical/devops/monitoring.md) |
 | GCP deployment | [`.docs/technical/devops/gcp-deployment.md`](.docs/technical/devops/gcp-deployment.md) |
 | Domain glossary | [`.docs/domain/glossary.md`](.docs/domain/glossary.md) |
