@@ -1,6 +1,8 @@
 package com.cimhub.userservice.vehicle.service;
 
 import com.cimhub.common.service.AuditService;
+import com.cimhub.common.exception.BadRequestException;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.model.Vehicle;
@@ -15,8 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -76,7 +77,7 @@ class VehicleServiceTest {
     }
 
     @Test
-    void registerVehicle_whenDriverAlreadyHasVehicle_shouldReturnNullWithoutPersisting() {
+    void registerVehicle_whenDriverAlreadyHasVehicle_shouldThrowBadRequestWithoutPersisting() {
         RegisterVehicleRequest request = new RegisterVehicleRequest(
                 "driver@example.com",
                 "BMW X5",
@@ -87,15 +88,13 @@ class VehicleServiceTest {
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(true);
 
-        VehicleResponse result = vehicleService.registerVehicle(request);
-
-        assertNull(result);
+        assertThrows(BadRequestException.class, () -> vehicleService.registerVehicle(request));
         verify(vehicleRepository, never()).save(any());
         verify(auditService, never()).logCreate(any(), any(), any(), any());
     }
 
     @Test
-    void registerVehicle_withDuplicatePlate_shouldReturnNullWithoutPersisting() {
+    void registerVehicle_withDuplicatePlate_shouldThrowBadRequestWithoutPersisting() {
         RegisterVehicleRequest request = new RegisterVehicleRequest(
                 "driver@example.com",
                 "BMW X5",
@@ -107,9 +106,7 @@ class VehicleServiceTest {
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-9999")).thenReturn(true);
 
-        VehicleResponse result = vehicleService.registerVehicle(request);
-
-        assertNull(result);
+        assertThrows(BadRequestException.class, () -> vehicleService.registerVehicle(request));
         verify(vehicleRepository, never()).save(any());
         verify(auditService, never()).logCreate(any(), any(), any(), any());
     }
@@ -128,9 +125,7 @@ class VehicleServiceTest {
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(true);
 
-        VehicleResponse result = vehicleService.registerVehicle(request);
-
-        assertNull(result);
+        assertThrows(BadRequestException.class, () -> vehicleService.registerVehicle(request));
         verify(vehicleRepository).existsByVehicleNumber("HE-XX-1234");
         verify(vehicleRepository, never()).save(any());
     }
@@ -166,11 +161,10 @@ class VehicleServiceTest {
     }
 
     @Test
-    void findUserVehicles_whenNoneExist_shouldReturnEmptyList() {
+    void findUserVehicles_whenNoneExist_shouldThrowResourceNotFound() {
         when(vehicleRepository.findByUserId("driver@example.com")).thenReturn(List.of());
 
-        List<VehicleResponse> responses = vehicleService.findUserVehicles("driver@example.com");
-
-        assertTrue(responses.isEmpty());
+        assertThrows(ResourceNotFoundException.class,
+                () -> vehicleService.findUserVehicles("driver@example.com"));
     }
 }

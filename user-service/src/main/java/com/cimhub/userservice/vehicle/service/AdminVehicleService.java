@@ -1,6 +1,7 @@
 package com.cimhub.userservice.vehicle.service;
 
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Locale;
 
 @Slf4j
 @Service
@@ -35,10 +37,19 @@ public class AdminVehicleService {
     }
 
     public AdminVehicleResponse createVehicle(RegisterVehicleRequest request, String adminEmail) {
+        if (vehicleRepository.existsByUserId(request.userId())) {
+            throw new BadRequestException("Driver already has a vehicle registered");
+        }
+
+        String normalizedVehicleNumber = request.vehicleNumber().toUpperCase(Locale.ROOT);
+        if (vehicleRepository.existsByVehicleNumber(normalizedVehicleNumber)) {
+            throw new BadRequestException("Vehicle already registered");
+        }
+
         Vehicle vehicle = new Vehicle();
         vehicle.setUserId(request.userId());
         vehicle.setVehicleName(request.vehicleName());
-        vehicle.setVehicleNumber(request.vehicleNumber().toUpperCase());
+        vehicle.setVehicleNumber(normalizedVehicleNumber);
         vehicle.setVehicleType(request.vehicleType());
         vehicle.setVehicleColor(request.vehicleColor());
         vehicle.setSeatingCapacity(request.seatingCapacity());
