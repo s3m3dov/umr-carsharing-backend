@@ -125,6 +125,10 @@ gateway:
       - /actuator/health/**
       - /actuator/info/**
       - /actuator/prometheus
+      - /**/actuator/**
+      - /**/actuator/health/**
+      - /**/actuator/info/**
+      - /**/actuator/prometheus
     admin-paths:
       - /api/admin/**
       - /**/api/admin/**
