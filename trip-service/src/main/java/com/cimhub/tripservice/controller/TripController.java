@@ -2,11 +2,10 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.enums.UserType;
-import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.request.TripSearchCriteria;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
@@ -14,12 +13,12 @@ import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.service.CancellationService;
-import com.cimhub.tripservice.service.CompletionService;
-import com.cimhub.tripservice.service.OfferRideService;
-import com.cimhub.tripservice.service.TripGeospatialService;
-import com.cimhub.tripservice.service.TripService;
-import com.cimhub.tripservice.service.ActiveRidesService;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.CompletionService;
+import com.cimhub.tripservice.service.trip.OfferRideService;
+import com.cimhub.tripservice.service.geo.TripGeospatialService;
+import com.cimhub.tripservice.service.trip.TripService;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,6 +27,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
@@ -123,10 +126,7 @@ public class TripController {
             @RequestHeader("X-User-Id") String authenticatedUserId,
             @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
-        if (!UserType.DRIVER.name().equalsIgnoreCase(authenticatedUserRole) && 
-            !UserType.PASSENGER.name().equalsIgnoreCase(authenticatedUserRole)) {
-            throw new ForbiddenException("Driver or Passenger access required");
-        }
+        AuthorizationHelper.requireDriverOrPassengerRole(authenticatedUserRole);
         if (request.userId() != null && !request.userId().equals(authenticatedUserId)) {
             throw new UnauthorizedException("User identity mismatch");
         }
@@ -186,9 +186,9 @@ public class TripController {
     })
     @GetMapping("/search/near-source")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearSource(
-            @Parameter(description = "Latitude of the pickup location", example = "50.8154") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the pickup location", example = "8.6747") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
+            @Parameter(description = "Longitude of the pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
         log.info("Searching for trips near source: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
@@ -213,9 +213,9 @@ public class TripController {
     })
     @GetMapping("/search/near-destination")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearDestination(
-            @Parameter(description = "Latitude of the dropoff location", example = "50.7265") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the dropoff location", example = "7.0895") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
+            @Parameter(description = "Longitude of the dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
         log.info("Searching for trips near destination: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
@@ -242,12 +242,12 @@ public class TripController {
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
             @RequestHeader("X-User-Id") String authenticatedUserId,
             @RequestHeader("X-User-Role") String authenticatedUserRole,
-            @Parameter(description = "Latitude of pickup location", example = "50.8154") @RequestParam double sourceLatitude,
-            @Parameter(description = "Longitude of pickup location", example = "8.6747") @RequestParam double sourceLongitude,
-            @Parameter(description = "Radius around pickup in km", example = "5.0") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
-            @Parameter(description = "Latitude of dropoff location", example = "50.7265") @RequestParam double destinationLatitude,
-            @Parameter(description = "Longitude of dropoff location", example = "7.0895") @RequestParam double destinationLongitude,
-            @Parameter(description = "Radius around dropoff in km", example = "5.0") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
+            @Parameter(description = "Latitude of pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double sourceLatitude,
+            @Parameter(description = "Longitude of pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double sourceLongitude,
+            @Parameter(description = "Radius around pickup in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
+            @Parameter(description = "Latitude of dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double destinationLatitude,
+            @Parameter(description = "Longitude of dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double destinationLongitude,
+            @Parameter(description = "Radius around dropoff in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
             @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
@@ -257,36 +257,21 @@ public class TripController {
             @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
             @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
         requirePassengerRole(authenticatedUserRole);
-        
+
         if (effectiveUserId != null && !effectiveUserId.equals(authenticatedUserId)) {
             throw new UnauthorizedException("User identity mismatch");
         }
 
-        String effectiveSearchUserId = authenticatedUserId;
-
         log.info("Searching for matching route trips");
 
-        if (earliestDepartureTime != null && latestDepartureTime != null) {
-            log.info("Using time range: {} to {}", earliestDepartureTime, latestDepartureTime);
-        } else {
-            log.info("No time range specified, searching all available trips");
-        }
+        TripSearchCriteria criteria = new TripSearchCriteria(
+                sourceLatitude, sourceLongitude, sourceRadiusKm,
+                destinationLatitude, destinationLongitude, destinationRadiusKm,
+                earliestDepartureTime, latestDepartureTime,
+                requestedSeats, authenticatedUserId,
+                minPrice, maxPrice, carType, minAvailableSeats);
 
-        List<Trip> trips = geoService.findTripsMatchingRoute(
-                sourceLatitude,
-                sourceLongitude,
-                sourceRadiusKm,
-                destinationLatitude,
-                destinationLongitude,
-                destinationRadiusKm,
-                earliestDepartureTime,
-                latestDepartureTime,
-                requestedSeats,
-                effectiveSearchUserId,
-                minPrice,
-                maxPrice,
-                carType,
-                minAvailableSeats);
+        List<Trip> trips = geoService.findTripsMatchingRoute(criteria);
 
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
@@ -430,14 +415,10 @@ public class TripController {
     }
 
     private void requireDriverRole(String userRole) {
-        if (!UserType.DRIVER.name().equalsIgnoreCase(userRole)) {
-            throw new ForbiddenException("Driver access required");
-        }
+        AuthorizationHelper.requireDriverRole(userRole);
     }
 
     private void requirePassengerRole(String userRole) {
-        if (!UserType.PASSENGER.name().equalsIgnoreCase(userRole)) {
-            throw new ForbiddenException("Passenger access required");
-        }
+        AuthorizationHelper.requirePassengerRole(userRole);
     }
 }
