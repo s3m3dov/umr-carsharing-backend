@@ -1,5 +1,6 @@
 package com.cimhub.authservice.controller;
 
+import com.cimhub.authservice.dto.examples.AuthApiDoc;
 import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
@@ -54,17 +55,17 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "201",
                     description = "User successfully registered",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.SIGNUP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.SIGNUP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input - missing fields or invalid email",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "User with this email already exists",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_USER_EXISTS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_USER_EXISTS))
             )
     })
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,17 +86,17 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Login successful",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.LOGIN_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.LOGIN_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Invalid email or password",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_CREDENTIALS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_INVALID_CREDENTIALS))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Missing required fields",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             )
     })
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,17 +115,17 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Token is valid",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.VALIDATE_TOKEN_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.VALIDATE_TOKEN_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Token is invalid or expired",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_TOKEN))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_INVALID_TOKEN))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Token field missing",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             )
     })
     @PostMapping(value = "/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -1,5 +1,6 @@
 package com.cimhub.reviewservice.controller;
 
+import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
@@ -38,27 +39,27 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Review submitted successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid review data or trip not completed",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_TRIP_NOT_COMPLETED))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Review already exists for this trip",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_REVIEW_ALREADY_EXISTS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Driver or user not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_DRIVER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Unauthorized to review this driver",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_UNAUTHORIZED_REVIEWER))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER))
             )
     })
     @PostMapping("/driver")
@@ -79,27 +80,27 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Review submitted successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.SUBMIT_PASSENGER_REVIEW_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.SUBMIT_PASSENGER_REVIEW_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid review data or trip not completed",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_TRIP_NOT_COMPLETED))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Review already exists for this trip",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_REVIEW_ALREADY_EXISTS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_PASSENGER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Unauthorized to review this passenger",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_UNAUTHORIZED_REVIEWER))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER))
             )
     })
     @PostMapping("/passenger")
@@ -120,12 +121,12 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Reviews retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.GET_DRIVER_REVIEWS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_DRIVER_REVIEWS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Driver not found or no reviews exist",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_DRIVER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
             )
     })
     @GetMapping("/driver/{driverId}")
@@ -145,12 +146,12 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Reviews retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.GET_PASSENGER_REVIEWS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_PASSENGER_REVIEWS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Passenger not found or no reviews exist",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_PASSENGER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
             )
     })
     @GetMapping("/passenger/{passengerId}")
@@ -170,12 +171,12 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Average rating retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.GET_AVERAGE_RATING_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_DRIVER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
             )
     })
     @GetMapping("/driver/{driverId}/average-rating")
@@ -195,12 +196,12 @@ public class ReviewController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Average rating retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.GET_AVERAGE_RATING_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiExamples.ERROR_PASSENGER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
             )
     })
     @GetMapping("/passenger/{passengerId}/average-rating")
