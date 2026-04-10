@@ -4,7 +4,7 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
-import com.cimhub.tripservice.service.AdminBookingService;
+import com.cimhub.tripservice.service.booking.AdminBookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
