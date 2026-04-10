@@ -2,6 +2,8 @@ package com.cimhub.authservice.service;
 
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
+import com.cimhub.authservice.security.UserDetailsBuilder;
+import com.cimhub.authservice.util.EmailNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,13 +17,10 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User authUser = authUserRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        String normalizedEmail = EmailNormalizer.normalize(email);
+        User authUser = authUserRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + normalizedEmail));
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(authUser.getEmail())
-                .password(authUser.getPassword())
-                .roles("USER")
-                .build();
+        return UserDetailsBuilder.fromUser(authUser);
     }
 }

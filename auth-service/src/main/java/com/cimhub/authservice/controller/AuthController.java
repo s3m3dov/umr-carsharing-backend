@@ -11,6 +11,7 @@ import com.cimhub.authservice.dto.response.ResetPasswordResponse;
 import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
+import com.cimhub.authservice.service.PasswordManagementService;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordManagementService passwordManagementService;
 
     @Operation(
             summary = "Register new user",
@@ -152,7 +154,7 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {
         log.info("Password reset request for user: {}", request.email());
-        ResetPasswordResponse response = authService.initiatePasswordReset(request);
+        ResetPasswordResponse response = passwordManagementService.initiatePasswordReset(request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -178,7 +180,7 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> confirmResetPassword(
             @Valid @RequestBody ConfirmResetPasswordRequest request) {
         log.info("Password reset confirmation request");
-        ResetPasswordResponse response = authService.confirmPasswordReset(request);
+        ResetPasswordResponse response = passwordManagementService.confirmPasswordReset(request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -205,7 +207,7 @@ public class AuthController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody ChangePasswordRequest request) {
         log.info("Password change request for user: {}", userDetails.getUsername());
-        ResetPasswordResponse response = authService.changePassword(userDetails.getUsername(), request);
+        ResetPasswordResponse response = passwordManagementService.changePassword(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }
