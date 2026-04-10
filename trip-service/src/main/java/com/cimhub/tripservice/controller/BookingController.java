@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.controller;
 
+import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
@@ -39,12 +40,12 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking details retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @GetMapping("/{bookingId}")
@@ -63,12 +64,12 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking accepted",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @PostMapping("/accept")
@@ -87,12 +88,12 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking rejected",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.CANCEL_BOOKING_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.CANCEL_BOOKING_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @PostMapping("/reject")

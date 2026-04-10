@@ -1,5 +1,6 @@
 package com.cimhub.userservice.controller;
 
+import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.service.UserService;
@@ -40,12 +41,12 @@ public class UserController {
             @ApiResponse(
                     responseCode = "200",
                     description = "User found and profile returned",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.GET_USER_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.GET_USER_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "User not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiExamples.ERROR_USER_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.ERROR_USER_NOT_FOUND))
             )
     })
     @GetMapping(value = "/{userId}")

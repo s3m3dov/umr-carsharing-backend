@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.controller;
 
+import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
@@ -42,22 +43,22 @@ public class RideController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Ride booked successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid ride data",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_INVALID_BOOKING_DATA))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_INVALID_BOOKING_DATA))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "No available seats",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_FULL))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_FULL))
             )
     })
     @PostMapping("/book")
@@ -78,22 +79,22 @@ public class RideController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Booking request submitted, awaiting driver confirmation",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid ride data",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_INVALID_BOOKING_DATA))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_INVALID_BOOKING_DATA))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "No available seats",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_FULL))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_FULL))
             )
     })
     @PostMapping("/book/new")
@@ -114,17 +115,17 @@ public class RideController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Ride cancelled",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.CANCEL_BOOKING_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.CANCEL_BOOKING_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Ride not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Cannot cancel (trip in progress)",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_TRIP_IN_PROGRESS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_IN_PROGRESS))
             )
     })
     @PostMapping("/cancel")
@@ -143,12 +144,12 @@ public class RideController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Active rides retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ACTIVE_BOOKINGS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ACTIVE_BOOKINGS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @GetMapping("/active/passenger/{passengerId}")
@@ -167,12 +168,12 @@ public class RideController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Ride history retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ACTIVE_BOOKINGS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ACTIVE_BOOKINGS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @GetMapping("/history/passenger/{passengerId}")

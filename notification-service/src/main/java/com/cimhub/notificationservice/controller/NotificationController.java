@@ -1,5 +1,6 @@
 package com.cimhub.notificationservice.controller;
 
+import com.cimhub.notificationservice.dto.examples.NotificationApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
@@ -37,11 +38,11 @@ public class NotificationController {
     @Operation(summary = "Create a notification", description = "Creates a notification and publishes it over WebSocket")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Notification created",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiExamples.CREATE_NOTIFICATION_RESPONSE))),
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiDoc.CREATE_NOTIFICATION_RESPONSE))),
             @ApiResponse(responseCode = "400", description = "Invalid sender or request payload",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiExamples.ERROR_INVALID_SENDER))),
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiDoc.ERROR_INVALID_SENDER))),
             @ApiResponse(responseCode = "403", description = "Forbidden",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiExamples.ERROR_UNAUTHORIZED)))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiDoc.ERROR_UNAUTHORIZED)))
     })
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<NotificationResponse>> createNotification(
@@ -86,7 +87,7 @@ public class NotificationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notification updated"),
             @ApiResponse(responseCode = "404", description = "Notification not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiExamples.ERROR_NOTIFICATION_NOT_FOUND)))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiDoc.ERROR_NOTIFICATION_NOT_FOUND)))
     })
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<ApiResponseWrapper<NotificationResponse>> markAsRead(
@@ -116,7 +117,7 @@ public class NotificationController {
     @Operation(summary = "Get notification stats", description = "Returns aggregated notification counters")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stats loaded",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiExamples.NOTIFICATION_STATS_RESPONSE)))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = NotificationApiDoc.NOTIFICATION_STATS_RESPONSE)))
     })
     @GetMapping("/{recipientId}/stats")
     public ResponseEntity<ApiResponseWrapper<NotificationStatsResponse>> getStats(

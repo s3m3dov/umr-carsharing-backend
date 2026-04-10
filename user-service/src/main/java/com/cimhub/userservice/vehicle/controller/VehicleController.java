@@ -1,5 +1,6 @@
 package com.cimhub.userservice.vehicle.controller;
 
+import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
@@ -43,12 +44,12 @@ public class VehicleController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Vehicles retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.GET_VEHICLES_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.GET_VEHICLES_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "No vehicles found for user",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_NO_VEHICLES))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_NO_VEHICLES))
             )
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -68,17 +69,17 @@ public class VehicleController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Vehicle registered successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.REGISTER_VEHICLE_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.REGISTER_VEHICLE_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_INVALID_VEHICLE_DATA))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_INVALID_VEHICLE_DATA))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Vehicle already exists or limit exceeded",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_VEHICLE_LIMIT))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_VEHICLE_LIMIT))
             )
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
