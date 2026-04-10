@@ -45,9 +45,9 @@ public final class VehicleApiDoc {
 
     public static final String ERROR_VEHICLE_EXISTS = """
             {
-              "status": 409,
-              "code": "VEHICLE_ALREADY_EXISTS",
-              "message": "Vehicle with license plate HE-XX-1234 already registered",
+              "status": 400,
+              "code": "BAD_REQUEST",
+              "message": "Vehicle already registered",
               "error": {
                 "path": "/api/vehicles/register",
                 "details": []
@@ -56,11 +56,11 @@ public final class VehicleApiDoc {
               "requestId": "req_12354"
             }""";
 
-    public static final String ERROR_VEHICLE_LIMIT = """
+    public static final String ERROR_DRIVER_HAS_VEHICLE = """
             {
-              "status": 409,
-              "code": "VEHICLE_LIMIT_EXCEEDED",
-              "message": "Maximum 5 vehicles can be registered per driver",
+              "status": 400,
+              "code": "BAD_REQUEST",
+              "message": "Driver already has a vehicle registered",
               "error": {
                 "path": "/api/vehicles/register",
                 "details": []
