@@ -11,6 +11,7 @@ import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import com.cimhub.tripservice.service.routes.OsrmRouteClient;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

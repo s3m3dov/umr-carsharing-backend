@@ -9,6 +9,10 @@ import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.mapper.BookingMapper;
+import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,13 +39,22 @@ class ActiveRidesServiceTest {
     @Mock
     private BookingRepository bookingRepository;
 
-    private TimezoneConversionService timezoneConversionService;
     private ActiveRidesService activeRidesService;
+
+    @Mock
+    private TripMapper tripMapper;
+
+    @Mock
+    private BookingMapper bookingMapper;
+
+    private TimezoneConversionService timezoneConversionService;
 
     @BeforeEach
     void setUp() {
         timezoneConversionService = new TimezoneConversionService();
-        activeRidesService = new ActiveRidesService(tripsRepository, timezoneConversionService, bookingRepository);
+        tripMapper = new TripMapper(timezoneConversionService);
+        bookingMapper = new BookingMapper(timezoneConversionService);
+        activeRidesService = new ActiveRidesService(tripsRepository, bookingRepository, tripMapper, bookingMapper);
     }
 
     @Test

@@ -5,6 +5,9 @@ import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.service.trip.TripSearchService;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,9 +29,12 @@ class TripSearchServiceTest {
 
     private TripSearchService tripSearchService;
 
+    private TripMapper tripMapper;
+
     @BeforeEach
     void setUp() {
-        tripSearchService = new TripSearchService(tripsRepository, new TimezoneConversionService());
+        tripMapper = new TripMapper(new TimezoneConversionService());
+        tripSearchService = new TripSearchService(tripsRepository, tripMapper);
     }
 
     @Test

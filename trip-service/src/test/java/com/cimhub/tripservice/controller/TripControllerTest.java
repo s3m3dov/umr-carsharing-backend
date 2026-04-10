@@ -6,6 +6,7 @@ import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.request.TripSearchCriteria;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,12 +122,7 @@ class TripControllerTest {
 
         when(geoService.findTripsWithSourceNear(1.1, 2.2, 5.0)).thenReturn(List.of(trip));
         when(geoService.findTripsWithDestinationNear(3.3, 4.4, 6.0)).thenReturn(List.of(trip));
-        when(geoService.findTripsMatchingRoute(
-                1.0, 2.0, 5.0,
-                3.0, 4.0, 6.0,
-                "2026-04-01T10:00:00Z", "2026-04-01T12:00:00Z",
-                2, "user-1",
-                5.0, 20.0, "SEDAN", 1)).thenReturn(List.of(trip));
+        when(geoService.findTripsMatchingRoute(any(TripSearchCriteria.class))).thenReturn(List.of(trip));
 
         ResponseEntity<ApiResponseWrapper<List<Trip>>> source = tripController.searchNearSource(1.1, 2.2, 5.0);
         ResponseEntity<ApiResponseWrapper<List<Trip>>> destination = tripController.searchNearDestination(3.3, 4.4, 6.0);
@@ -149,12 +146,7 @@ class TripControllerTest {
         Trip trip = new Trip();
         trip.setTripId("trip-no-time");
 
-        when(geoService.findTripsMatchingRoute(
-                1.0, 2.0, 5.0,
-                3.0, 4.0, 6.0,
-                null, null,
-                null, "user-2",
-                null, null, null, null)).thenReturn(List.of(trip));
+        when(geoService.findTripsMatchingRoute(any(TripSearchCriteria.class))).thenReturn(List.of(trip));
 
         ResponseEntity<ApiResponseWrapper<List<Trip>>> response = tripController.searchMatchingRoute(
                 "user-2",
