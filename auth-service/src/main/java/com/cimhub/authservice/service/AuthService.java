@@ -2,9 +2,9 @@ package com.cimhub.authservice.service;
 
 import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
-import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
+import com.cimhub.common.enums.UserType;
 import com.cimhub.authservice.dto.request.ResetPasswordRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
@@ -17,6 +17,7 @@ import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.repository.BlacklistedTokenRepository;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.authservice.security.JwtService;
+import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.service.AuditService;
@@ -47,15 +48,13 @@ public class AuthService {
         String normalizedEmail = request.email().toLowerCase();
         log.info("Registering new user: {}", normalizedEmail);
 
+        if (request.userType() == UserType.DRIVER && (request.licenseNumber() == null || request.licenseNumber().isBlank())) {
+            throw new BadRequestException("License number is required for DRIVER users");
+        }
+
         if (authUserRepository.findByEmail(normalizedEmail).isPresent()) {
             throw new UserAlreadyExistsException(
                     "User Already Exists with email: " + normalizedEmail);
-        }
-
-        if (userServiceClient.profileExists(normalizedEmail)) {
-            log.warn("User profile already exists in user-service for email: {}", normalizedEmail);
-            throw new UserAlreadyExistsException(
-                    "User profile already exists: " + normalizedEmail);
         }
 
         User newAuthUser = new User();
@@ -67,27 +66,30 @@ public class AuthService {
         newAuthUser.setCreatedAt(now);
         newAuthUser.setUpdatedAt(now);
         authUserRepository.save(newAuthUser);
-        auditService.logCreate(EntityType.USER, normalizedEmail, normalizedEmail, "Auth account registered");
+        auditService.logCreate(EntityType.USER, normalizedEmail, normalizedEmail, "User registered");
 
         try {
-            CreateProfileRequest profileRequest = CreateProfileRequest.builder()
-                    .userId(normalizedEmail)
-                    .email(normalizedEmail)
-                    .firstName(request.firstName())
-                    .lastName(request.lastName())
-                    .userType(request.userType())
-                    .phoneNumber(request.phoneNumber())
-                    .age(request.age())
-                    .licenseNumber(request.licenseNumber())
-                    .build();
-
-            userServiceClient.createProfile(profileRequest);
+            if (request.userType() == UserType.PASSENGER) {
+                userServiceClient.createPassengerSubProfile(
+                        normalizedEmail,
+                        request.firstName(),
+                        request.lastName(),
+                        request.phoneNumber(),
+                        request.age());
+            } else if (request.userType() == UserType.DRIVER) {
+                userServiceClient.createDriverSubProfile(
+                        normalizedEmail,
+                        request.firstName(),
+                        request.lastName(),
+                        request.phoneNumber(),
+                        request.age(),
+                        request.licenseNumber());
+            }
         } catch (Exception e) {
-            log.error("Failed to create profile in user-service, rolling back auth user: {}", normalizedEmail, e);
+            log.error("Failed to create sub-profile in user-service, rolling back user: {}", normalizedEmail, e);
             authUserRepository.deleteById(normalizedEmail);
-            auditService.logDelete(EntityType.USER, normalizedEmail, normalizedEmail,
-                    "Auth account rollback after profile creation failure");
-            throw new RuntimeException("Registration failed: unable to create user profile", e);
+            auditService.logDelete(EntityType.USER, normalizedEmail, normalizedEmail, "User rollback after sub-profile creation failure");
+            throw new RuntimeException("Registration failed: unable to create user sub-profile", e);
         }
 
         String token = jwtService.generateToken(

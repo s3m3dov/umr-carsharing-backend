@@ -11,6 +11,7 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
+import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
@@ -71,7 +72,6 @@ class AuthServiceTest {
                 "Password123!", UserType.DRIVER, "+49 123", 30, "LIC-001");
 
         when(authUserRepository.findByEmail("john.driver@example.com")).thenReturn(Optional.empty());
-        when(userServiceClient.profileExists("john.driver@example.com")).thenReturn(false);
         when(passwordEncoder.encode("Password123!")).thenReturn("hashed");
         when(authUserRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(jwtService.generateToken(any(), anyString())).thenReturn("jwt-token");
@@ -87,16 +87,22 @@ class AuthServiceTest {
         assertEquals("john.driver@example.com", captor.getValue().getEmail());
         assertEquals("hashed", captor.getValue().getPassword());
         assertEquals(UserType.DRIVER, captor.getValue().getUserType());
+        verify(userServiceClient).createDriverSubProfile(
+                "john.driver@example.com",
+                "John",
+                "Driver",
+                "+49 123",
+                30,
+                "LIC-001");
     }
 
     @Test
-    void registerUser_emailIsNormalizedToLowercase() {
+    void registerUser_passengerEmailIsNormalizedToLowercase() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "Jane", "P", "Jane.P@Example.COM",
                 "Pw123!", UserType.PASSENGER, "+1", 25, null);
 
         when(authUserRepository.findByEmail("jane.p@example.com")).thenReturn(Optional.empty());
-        when(userServiceClient.profileExists("jane.p@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("hashed");
         when(authUserRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
         when(jwtService.generateToken(any(), anyString())).thenReturn("token");
@@ -104,13 +110,19 @@ class AuthServiceTest {
         SignUpResponse response = authService.registerUser(request);
 
         assertEquals("jane.p@example.com", response.email());
+        verify(userServiceClient).createPassengerSubProfile(
+                "jane.p@example.com",
+                "Jane",
+                "P",
+                "+1",
+                25);
     }
 
     @Test
     void registerUser_whenEmailAlreadyInAuthRepo_shouldThrowUserAlreadyExists() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "John", "Driver", "existing@example.com",
-                "Password123!", UserType.DRIVER, "+49 123", 30, null);
+                "Password123!", UserType.DRIVER, "+49 123", 30, "LIC-EXISTS");
 
         when(authUserRepository.findByEmail("existing@example.com"))
                 .thenReturn(Optional.of(new User()));
@@ -120,15 +132,12 @@ class AuthServiceTest {
     }
 
     @Test
-    void registerUser_whenProfileExistsInUserService_shouldThrowUserAlreadyExists() {
+    void registerUser_whenDriverLicenseMissing_shouldThrowBadRequest() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "John", "Driver", "profile@example.com",
                 "Password123!", UserType.DRIVER, "+49 123", 30, null);
 
-        when(authUserRepository.findByEmail("profile@example.com")).thenReturn(Optional.empty());
-        when(userServiceClient.profileExists("profile@example.com")).thenReturn(true);
-
-        assertThrows(UserAlreadyExistsException.class, () -> authService.registerUser(request));
+        assertThrows(BadRequestException.class, () -> authService.registerUser(request));
         verify(authUserRepository, never()).save(any());
     }
 
@@ -136,13 +145,19 @@ class AuthServiceTest {
     void registerUser_whenProfileCreationFails_shouldRollbackAuthUserAndRethrow() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "John", "Driver", "rollback@example.com",
-                "Password123!", UserType.DRIVER, "+49 123", 30, null);
+                "Password123!", UserType.DRIVER, "+49 123", 30, "LIC-ROLLBACK");
 
         when(authUserRepository.findByEmail("rollback@example.com")).thenReturn(Optional.empty());
-        when(userServiceClient.profileExists("rollback@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("hashed");
         when(authUserRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-        doThrow(new RuntimeException("user-service down")).when(userServiceClient).createProfile(any());
+        doThrow(new RuntimeException("user-service down"))
+                .when(userServiceClient).createDriverSubProfile(
+                        "rollback@example.com",
+                        "John",
+                        "Driver",
+                        "+49 123",
+                        30,
+                        "LIC-ROLLBACK");
 
         assertThrows(RuntimeException.class, () -> authService.registerUser(request));
 

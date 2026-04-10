@@ -1,6 +1,5 @@
 package com.cimhub.authservice.service;
 
-import com.cimhub.authservice.dto.request.CreateProfileRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +8,9 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -20,73 +22,92 @@ public class UserServiceClient {
 
     private final RestClient restClient;
 
-    /**
-     * Check if a user profile already exists in user-service
-     * @param userId the user ID to check
-     * @return true if profile exists, false if not found
-     * @throws RuntimeException if service is unavailable or other errors occur
-     */
-    public boolean profileExists(String userId) {
-        try {
-            restClient.get()
-                    .uri(userServiceBaseUrl + "/api/users/{userId}", userId)
-                    .retrieve()
-                    .onStatus(status -> status.value() == HttpStatus.NOT_FOUND.value(), (req, res) -> {
-                        // Expected: user doesn't exist yet
-                        throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
-                    })
-                    .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        log.error("User service error checking profile: {}", res.getStatusText());
-                        throw new RuntimeException("Failed to check user profile: " + res.getStatusText());
-                    })
-                    .toBodilessEntity();
-            log.info("Profile exists for userId: {}", userId);
-            return true;
-        } catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                log.debug("Profile does not exist for userId: {}", userId);
-                return false;
-            }
-            throw e;
-        } catch (Exception e) {
-            log.error("Error checking if profile exists for userId {}: {}", userId, e.getMessage());
-            throw new RuntimeException("Failed to check user profile in user-service", e);
-        }
-    }
-
-    /**
-     * Create a user profile in user-service
-     * Handles idempotency: if profile already exists (409), logs and continues
-     * @param request the profile creation request
-     * @throws RuntimeException if profile creation fails for reasons other than 409 Conflict
-     */
-    public void createProfile(CreateProfileRequest request) {
+    public void createPassengerSubProfile(String userId,
+                                          String firstName,
+                                          String lastName,
+                                          String phoneNumber,
+                                          int age) {
         try {
             restClient.post()
-                    .uri(userServiceBaseUrl + "/api/users/profile")
-                    .body(request)
+                    .uri(userServiceBaseUrl + "/api/passengers/{userId}", userId)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(buildPassengerBody(firstName, lastName, phoneNumber, age))
                     .retrieve()
                     .onStatus(status -> status.value() == HttpStatus.CONFLICT.value(), (req, res) -> {
-                        // Profile already exists - not an error, log and continue
-                        log.warn("Profile already exists for userId: {} - continuing with signup", request.userId());
                         throw new HttpClientErrorException(HttpStatus.CONFLICT);
                     })
                     .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        log.error("User service error creating profile: {}", res.getStatusText());
-                        throw new RuntimeException("Failed to create user profile: " + res.getStatusText());
+                        throw new RuntimeException("Failed to create passenger sub-profile: " + res.getStatusText());
                     })
                     .toBodilessEntity();
-            log.info("Successfully created user profile for userId: {}", request.userId());
+            log.info("Passenger sub-profile created for userId: {}", userId);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.CONFLICT) {
-                // Profile already exists, which is acceptable during signup retry
-                log.info("Profile already exists for userId: {} - this is acceptable", request.userId());
+                log.warn("Passenger sub-profile already exists for userId: {}", userId);
                 return;
             }
             throw e;
         } catch (Exception e) {
-            log.error("Error calling user-service to create profile: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create user profile in user-service", e);
+            log.error("Error creating passenger sub-profile for userId {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to create passenger sub-profile", e);
         }
+    }
+
+    public void createDriverSubProfile(String userId,
+                                       String firstName,
+                                       String lastName,
+                                       String phoneNumber,
+                                       int age,
+                                       String licenseNumber) {
+        try {
+            restClient.post()
+                    .uri(userServiceBaseUrl + "/api/drivers/{userId}", userId)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(buildDriverBody(firstName, lastName, phoneNumber, age, licenseNumber))
+                    .retrieve()
+                    .onStatus(status -> status.value() == HttpStatus.CONFLICT.value(), (req, res) -> {
+                        throw new HttpClientErrorException(HttpStatus.CONFLICT);
+                    })
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        throw new RuntimeException("Failed to create driver sub-profile: " + res.getStatusText());
+                    })
+                    .toBodilessEntity();
+            log.info("Driver sub-profile created for userId: {}", userId);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.CONFLICT) {
+                log.warn("Driver sub-profile already exists for userId: {}", userId);
+                return;
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error("Error creating driver sub-profile for userId {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to create driver sub-profile", e);
+        }
+    }
+
+    private Map<String, Object> buildDriverBody(String firstName,
+                                                String lastName,
+                                                String phoneNumber,
+                                                int age,
+                                                String licenseNumber) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("firstName", firstName);
+        body.put("lastName", lastName);
+        body.put("phoneNumber", phoneNumber);
+        body.put("age", age);
+        body.put("licenseNumber", licenseNumber);
+        return body;
+    }
+
+    private Map<String, Object> buildPassengerBody(String firstName,
+                                                   String lastName,
+                                                   String phoneNumber,
+                                                   int age) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("firstName", firstName);
+        body.put("lastName", lastName);
+        body.put("phoneNumber", phoneNumber);
+        body.put("age", age);
+        return body;
     }
 }
