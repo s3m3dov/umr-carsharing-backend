@@ -5,6 +5,7 @@ import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
+import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
@@ -23,15 +24,16 @@ public class AdminBookingService {
 
     private final BookingRepository bookingRepository;
     private final AuditService auditService;
+    private final BookingMapper bookingMapper;
 
     public Page<BookingResponse> listBookings(Pageable pageable) {
-        return bookingRepository.findAll(pageable).map(this::mapToResponse);
+        return bookingRepository.findAll(pageable).map(bookingMapper::toBookingResponse);
     }
 
     public BookingResponse getBooking(String bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
-        return mapToResponse(booking);
+        return bookingMapper.toBookingResponse(booking);
     }
 
     public BookingResponse updateBooking(String bookingId, UpdateBookingRequest request, String adminEmail) {
@@ -45,7 +47,7 @@ public class AdminBookingService {
         bookingRepository.save(booking);
         auditService.logUpdate(EntityType.BOOKING, bookingId, adminEmail, "Booking updated by admin");
         log.info("Booking {} updated by admin {}", bookingId, adminEmail);
-        return mapToResponse(booking);
+        return bookingMapper.toBookingResponse(booking);
     }
 
     public void cancelBooking(String bookingId, String adminEmail) {
@@ -59,26 +61,6 @@ public class AdminBookingService {
     }
 
     public Page<BookingResponse> getPassengerBookings(String passengerId, Pageable pageable) {
-        return bookingRepository.findByPassengerId(passengerId, pageable).map(this::mapToResponse);
-    }
-
-    private BookingResponse mapToResponse(Booking b) {
-        return BookingResponse.builder()
-                .bookingId(b.getBookingId())
-                .passengerId(b.getPassengerId())
-                .tripId(b.getTripId())
-                .driverId(b.getDriverId())
-                .vehicleNumber(b.getVehicleNumber())
-                .pickupLocation(b.getPickupLocation())
-                .dropoffLocation(b.getDropoffLocation())
-                .requestedSeats(b.getRequestedSeats())
-                .status(b.getStatus())
-                .estimatedPrice(b.getEstimatedPrice())
-                .pricePerSeat(b.getPricePerSeat())
-                .rideStartTimeUTC(b.getRideStartTimeUTC())
-                .rideTimezone(b.getRideTimezone())
-                .createdAt(b.getCreatedAt())
-                .updatedAt(b.getUpdatedAt())
-                .build();
+        return bookingRepository.findByPassengerId(passengerId, pageable).map(bookingMapper::toBookingResponse);
     }
 }

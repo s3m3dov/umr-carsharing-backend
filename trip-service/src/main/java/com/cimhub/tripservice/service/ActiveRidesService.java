@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
+import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.model.Booking;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,6 +27,7 @@ public class ActiveRidesService {
         private final TripsRepository tripsRepository;
         private final TimezoneConversionService timezoneService;
         private final BookingRepository bookingRepository;
+        private final TripMapper tripMapper;
 
         public List<DriverTripResponse> findDriverActiveTrips(String driverId) {
                 log.info("Fetching active trips for driver: {}", driverId);
@@ -39,7 +40,7 @@ public class ActiveRidesService {
                 List<Trip> activeTrips = tripsRepository.findByDriverIdAndTripStatusIn(driverId, activeStatuses);
 
                 return activeTrips.stream()
-                                .map(this::convertToDriverTripResponse)
+                                .map(tripMapper::toDriverTripResponse)
                                 .collect(Collectors.toList());
         }
 
@@ -53,7 +54,7 @@ public class ActiveRidesService {
                 List<Trip> pastTrips = tripsRepository.findByDriverIdAndTripStatusIn(driverId, historyStatuses);
 
                 return pastTrips.stream()
-                                .map(this::convertToDriverTripResponse)
+                                .map(tripMapper::toDriverTripResponse)
                                 .collect(Collectors.toList());
         }
 
@@ -131,33 +132,4 @@ public class ActiveRidesService {
                                 .build();
         }
 
-        private DriverTripResponse convertToDriverTripResponse(Trip trip) {
-                ZonedDateTime tripTimeInOriginalZone = timezoneService.convertToTripTimezone(
-                                trip.getTripStartDateTimeUTC(),
-                                trip.getTripTimezone());
-
-                int bookedSeats = trip.getBookedSeats();
-                int availableSeats = trip.getTotalSeats() - bookedSeats;
-                double estimatedEarnings = bookedSeats * trip.getPricePerSeat();
-
-                return DriverTripResponse.builder()
-                                .tripId(trip.getTripId())
-                                .driverId(trip.getDriverId())
-                                .vehicleNumber(trip.getVehicleNumber())
-                                .carType(trip.getCarType())
-                                .tripStatus(trip.getTripStatus())
-                                .sourceAddress(trip.getSourceAddress())
-                                .destinationAddress(trip.getDestinationAddress())
-                                .tripStartDateTime(tripTimeInOriginalZone)
-                                .tripTimezone(trip.getTripTimezone())
-                                .totalSeats(trip.getTotalSeats())
-                                .availableSeats(availableSeats)
-                                .bookedSeats(bookedSeats)
-                                .passengers(new ArrayList<>())
-                                .routeDistanceInKm(trip.getRouteDistance() / 1000.0)
-                                .routeDurationInMinutes(trip.getRouteDuration() / 60.0)
-                                .pricePerSeat(trip.getPricePerSeat())
-                                .estimatedEarnings(estimatedEarnings)
-                                .build();
-        }
 }
