@@ -12,6 +12,7 @@ import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
 import com.cimhub.authservice.service.PasswordManagementService;
+import com.cimhub.authservice.service.RegistrationService;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final RegistrationService registrationService;
     private final PasswordManagementService passwordManagementService;
 
     @Operation(
@@ -69,7 +71,7 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<SignUpResponse>> registerUser(
             @Valid @RequestBody RegisterUserRequest request) {
         log.info("Signup request for user: {}", request.email());
-        SignUpResponse response = authService.registerUser(request);
+        SignUpResponse response = registrationService.registerUser(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
