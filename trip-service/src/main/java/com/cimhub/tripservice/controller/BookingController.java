@@ -2,16 +2,14 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.enums.UserType;
-import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.model.OperationMessage;
-import com.cimhub.tripservice.service.BookingService;
-import com.cimhub.tripservice.service.CancellationService;
-import com.cimhub.tripservice.service.CompletionService;
-import com.cimhub.tripservice.service.JoinTripService;
+import com.cimhub.tripservice.service.booking.BookingService;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.CompletionService;
+import com.cimhub.tripservice.service.booking.JoinTripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -151,8 +149,6 @@ public class BookingController {
     }
 
     private void requireDriverRole(String userRole) {
-        if (!UserType.DRIVER.name().equalsIgnoreCase(userRole)) {
-            throw new ForbiddenException("Driver access required");
-        }
+        AuthorizationHelper.requireDriverRole(userRole);
     }
 }

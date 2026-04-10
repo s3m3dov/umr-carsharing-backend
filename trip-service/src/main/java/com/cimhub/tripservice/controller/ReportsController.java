@@ -9,7 +9,7 @@ import com.cimhub.tripservice.dto.response.BookingSummaryReport;
 import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
 import com.cimhub.tripservice.dto.response.PassengerActivityReport;
 import com.cimhub.tripservice.dto.response.RevenueReport;
-import com.cimhub.tripservice.service.ReportsService;
+import com.cimhub.tripservice.service.report.ReportsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

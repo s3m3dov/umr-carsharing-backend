@@ -3,7 +3,7 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
-import com.cimhub.tripservice.service.AdminTripService;
+import com.cimhub.tripservice.service.trip.AdminTripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

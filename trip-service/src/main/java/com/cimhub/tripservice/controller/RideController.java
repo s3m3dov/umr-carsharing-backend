@@ -2,15 +2,13 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.enums.UserType;
-import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
-import com.cimhub.tripservice.service.CancellationService;
-import com.cimhub.tripservice.service.JoinTripService;
-import com.cimhub.tripservice.service.ActiveRidesService;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.JoinTripService;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -255,8 +253,6 @@ public class RideController {
     }
 
     private void requirePassengerRole(String userRole) {
-        if (!UserType.PASSENGER.name().equalsIgnoreCase(userRole)) {
-            throw new ForbiddenException("Passenger access required");
-        }
+        AuthorizationHelper.requirePassengerRole(userRole);
     }
 }
