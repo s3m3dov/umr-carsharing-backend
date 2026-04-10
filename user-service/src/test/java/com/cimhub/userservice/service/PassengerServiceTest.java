@@ -49,12 +49,12 @@ class PassengerServiceTest {
         PassengerResponse response = passengerService.createPassengerProfile(userId, request);
 
         assertNotNull(response);
-        assertEquals(userId, response.getUserId());
-        assertEquals("Jane", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
-        assertEquals("+1234567890", response.getPhoneNumber());
-        assertEquals(30, response.getAge());
-        assertEquals(UserType.PASSENGER, response.getUserType());
+        assertEquals(userId, response.userId());
+        assertEquals("Jane", response.firstName());
+        assertEquals("Doe", response.lastName());
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(30, response.age());
+        assertEquals(UserType.PASSENGER, response.userType());
 
         verify(passengerRepository).save(any(Passenger.class));
     }
@@ -92,12 +92,12 @@ class PassengerServiceTest {
         PassengerResponse response = passengerService.getPassengerProfile(userId);
 
         assertNotNull(response);
-        assertEquals(userId, response.getUserId());
-        assertEquals("Jane", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
-        assertEquals("+1234567890", response.getPhoneNumber());
-        assertEquals(30, response.getAge());
-        assertEquals(UserType.PASSENGER, response.getUserType());
+        assertEquals(userId, response.userId());
+        assertEquals("Jane", response.firstName());
+        assertEquals("Doe", response.lastName());
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(30, response.age());
+        assertEquals(UserType.PASSENGER, response.userType());
     }
 
     @Test
@@ -132,10 +132,10 @@ class PassengerServiceTest {
         PassengerResponse response = passengerService.updatePassengerProfile(userId, updateRequest);
 
         assertNotNull(response);
-        assertEquals("Jane", response.getFirstName());
-        assertEquals("Smith", response.getLastName());
-        assertEquals("+0987654321", response.getPhoneNumber());
-        assertEquals(30, response.getAge());
+        assertEquals("Jane", response.firstName());
+        assertEquals("Smith", response.lastName());
+        assertEquals("+0987654321", response.phoneNumber());
+        assertEquals(30, response.age());
 
         verify(passengerRepository).save(any(Passenger.class));
     }

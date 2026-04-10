@@ -50,14 +50,14 @@ class DriverServiceTest {
         DriverResponse response = driverService.createDriverProfile(userId, request);
 
         assertNotNull(response);
-        assertEquals(userId, response.getUserId());
-        assertEquals("John", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
-        assertEquals("+1234567890", response.getPhoneNumber());
-        assertEquals(25, response.getAge());
-        assertEquals("DL123456", response.getLicenseNumber());
-        assertEquals(UserType.DRIVER, response.getUserType());
-        assertEquals(DriverStatus.PENDING, response.getDriverStatus());
+        assertEquals(userId, response.userId());
+        assertEquals("John", response.firstName());
+        assertEquals("Doe", response.lastName());
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(25, response.age());
+        assertEquals("DL123456", response.licenseNumber());
+        assertEquals(UserType.DRIVER, response.userType());
+        assertEquals(DriverStatus.PENDING, response.driverStatus());
 
         verify(driverRepository).save(any(Driver.class));
     }
@@ -97,13 +97,13 @@ class DriverServiceTest {
         DriverResponse response = driverService.getDriverProfile(userId);
 
         assertNotNull(response);
-        assertEquals(userId, response.getUserId());
-        assertEquals("John", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
-        assertEquals("+1234567890", response.getPhoneNumber());
-        assertEquals(25, response.getAge());
-        assertEquals("DL123456", response.getLicenseNumber());
-        assertEquals(UserType.DRIVER, response.getUserType());
+        assertEquals(userId, response.userId());
+        assertEquals("John", response.firstName());
+        assertEquals("Doe", response.lastName());
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(25, response.age());
+        assertEquals("DL123456", response.licenseNumber());
+        assertEquals(UserType.DRIVER, response.userType());
     }
 
     @Test
@@ -139,11 +139,11 @@ class DriverServiceTest {
         DriverResponse response = driverService.updateDriverProfile(userId, updateRequest);
 
         assertNotNull(response);
-        assertEquals("John", response.getFirstName());
-        assertEquals("Smith", response.getLastName());
-        assertEquals("+0987654321", response.getPhoneNumber());
-        assertEquals(25, response.getAge());
-        assertEquals("DL123456", response.getLicenseNumber());
+        assertEquals("John", response.firstName());
+        assertEquals("Smith", response.lastName());
+        assertEquals("+0987654321", response.phoneNumber());
+        assertEquals(25, response.age());
+        assertEquals("DL123456", response.licenseNumber());
 
         verify(driverRepository).save(any(Driver.class));
     }
