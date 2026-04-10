@@ -1,5 +1,6 @@
-package com.cimhub.tripservice.dto.OSRM;
+package com.cimhub.tripservice.dto.osrm;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Route(
@@ -7,6 +8,6 @@ public record Route(
         List<Legs> legs,
         Double distance,
         Double duration,
-        String weight_name,
+        @JsonProperty("weight_name") String weightName,
         Double weight) {
 }

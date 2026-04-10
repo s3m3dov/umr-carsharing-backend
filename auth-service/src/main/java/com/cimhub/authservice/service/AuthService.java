@@ -3,7 +3,6 @@ package com.cimhub.authservice.service;
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
-import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
@@ -27,13 +26,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final AuthUserRepository authUserRepository;
-    private final RegistrationService registrationService;
-    private final PasswordManagementService passwordManagementService;
     private final AuditService auditService;
-
-    public SignUpResponse registerUser(com.cimhub.authservice.dto.request.RegisterUserRequest request) {
-        return registrationService.registerUser(request);
-    }
 
     public LoginResponse login(LoginRequest request) {
         String normalizedEmail = EmailNormalizer.normalize(request.email());
