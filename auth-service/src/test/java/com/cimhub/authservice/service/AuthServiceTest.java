@@ -31,8 +31,6 @@ class AuthServiceTest {
     @Mock private JwtService jwtService;
     @Mock private AuthenticationManager authenticationManager;
     @Mock private AuthUserRepository authUserRepository;
-    @Mock private RegistrationService registrationService;
-    @Mock private PasswordManagementService passwordManagementService;
     @Mock private AuditService auditService;
 
     private AuthService authService;
@@ -43,8 +41,6 @@ class AuthServiceTest {
                 jwtService,
                 authenticationManager,
                 authUserRepository,
-                registrationService,
-                passwordManagementService,
                 auditService);
     }
 
