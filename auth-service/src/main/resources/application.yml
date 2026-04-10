@@ -55,6 +55,7 @@ auth:
       - /swagger-ui.html
       - /webjars/**
     actuator-paths:
+      - /actuator/**
       - /actuator/health/**
       - /actuator/info/**
       - /actuator/prometheus

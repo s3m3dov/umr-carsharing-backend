@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SecurityProperties {
-    private List<String> actuatorPaths = List.of("/actuator/**");
+    private List<String> actuatorPaths = List.of();
     private List<String> publicPaths = List.of();
     private List<String> docsPaths = List.of();
 }
