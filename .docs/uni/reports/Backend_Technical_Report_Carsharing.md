@@ -486,7 +486,7 @@ Dependency versions are defined either explicitly in module `pom.xml` files or i
 |---|---|---|
 | `api-gateway` | `spring-cloud-starter-gateway`, `springdoc-openapi-starter-webflux-ui`, `spring-cloud-starter-kubernetes-fabric8`, `spring-cloud-starter-loadbalancer` | Managed by parent BOMs: `pom.xml`, `api-gateway/pom.xml` |
 | `auth-service` | `jjwt-api`, `jjwt-impl`, `jjwt-jackson` | Explicit `0.11.5`: `auth-service/pom.xml` |
-| `trip-service` | route calculation via OSRM (`WebClient`) | Implementation in `trip-service/src/main/java/com/cimhub/tripservice/service/routes/OSMRoute.java` |
+| `trip-service` | route calculation via OSRM (`WebClient`) | Implementation in `trip-service/src/main/java/com/cimhub/tripservice/service/route/OsrmRouteClient.java` |
 | `notification-service` | `firebase-admin` | Explicit `9.2.0`: `notification-service/pom.xml` |
 | `user-service` | `spring-boot-starter-web`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-validation` | Managed by Spring Boot parent: `user-service/pom.xml`, parent `pom.xml` |
 | `review-service` | `spring-boot-starter-web`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-validation` | Managed by Spring Boot parent: `review-service/pom.xml`, parent `pom.xml` |
@@ -590,7 +590,7 @@ Notes:
 Evidence:
 
 * Offer ride orchestration: `trip-service/.../OfferRideService.java`.
-* OSRM client: `trip-service/.../service/routes/OSMRoute.java`, `trip-service/.../config/OSMClientConfig.java`.
+* OSRM client: `trip-service/.../service/route/OsrmRouteClient.java`, `trip-service/.../config/OSMClientConfig.java`.
 * Geospatial enrichment and query logic: `trip-service/.../TripGeospatialService.java`.
 
 #### D3.4 Trip-Service: Matching-Route Search Strategy
