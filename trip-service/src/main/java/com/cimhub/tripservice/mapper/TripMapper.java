@@ -4,7 +4,7 @@ import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.service.TimezoneConversionService;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -64,6 +64,41 @@ public class TripMapper {
                 .tripTimezone(trip.getTripTimezone())
                 .createdAt(trip.getCreatedAt())
                 .updatedAt(trip.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * Converts a Trip to TripResponse with times shown in both the trip's
+     * original timezone and the caller-supplied user timezone.
+     */
+    public TripResponse toTripResponse(Trip trip, String userTimezone) {
+        String tripTimezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
+                ? "UTC"
+                : trip.getTripTimezone();
+
+        ZonedDateTime tripTimeInOriginalZone = trip.getTripStartDateTimeUTC() != null
+                ? timezoneService.convertToTripTimezone(trip.getTripStartDateTimeUTC(), tripTimezone)
+                : null;
+
+        ZonedDateTime tripTimeInUserZone = trip.getTripStartDateTimeUTC() != null
+                ? timezoneService.convertToUserTimezone(trip.getTripStartDateTimeUTC(), userTimezone)
+                : null;
+
+        return TripResponse.builder()
+                .tripId(trip.getTripId())
+                .driverId(trip.getDriverId())
+                .vehicleNumber(trip.getVehicleNumber())
+                .carType(trip.getCarType())
+                .sourceAddress(trip.getSourceAddress())
+                .destinationAddress(trip.getDestinationAddress())
+                .tripStartDateTime(tripTimeInOriginalZone)
+                .tripTimezone(tripTimezone)
+                .tripStartDateTimeInUserTimezone(tripTimeInUserZone)
+                .userTimezone(userTimezone)
+                .totalSeats(trip.getTotalSeats())
+                .availableSeats(trip.getTotalSeats() - trip.getBookedSeats())
+                .tripStatus(trip.getTripStatus())
+                .pricePerSeat(trip.getPricePerSeat())
                 .build();
     }
 
