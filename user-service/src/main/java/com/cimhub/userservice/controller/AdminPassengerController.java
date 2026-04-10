@@ -50,7 +50,7 @@ public class AdminPassengerController {
         return ResponseEntity.ok(ApiResponseWrapper.success(adminPassengerService.getPassenger(id)));
     }
 
-    @Operation(summary = "Add new passenger", description = "Create a new passenger account")
+    @Operation(summary = "Add new passenger", description = "Deprecated: user creation must be done via auth-service signup")
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> createPassenger(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,

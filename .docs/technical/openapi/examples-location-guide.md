@@ -38,11 +38,13 @@ All example files are in the `controller/` package alongside their controller.
 
 | Constant | Description |
 |----------|-------------|
-| `CREATE_PROFILE_REQUEST` | Profile creation payload |
 | `GET_USER_RESPONSE` | User profile |
-| `CREATE_PROFILE_RESPONSE` | Profile created |
 | `ERROR_USER_NOT_FOUND` | User doesn't exist |
-| `ERROR_INVALID_DATA` | Invalid input |
+
+Role profile request DTOs:
+- `user-service/.../dto/request/CreateDriverProfileRequest.java`
+- `user-service/.../dto/request/UpdateDriverRequest.java`
+- `user-service/.../dto/request/UpdatePassengerRequest.java`
 
 ### Trip Service
 **File:** `trip-service/.../controller/TripApiExamples.java`

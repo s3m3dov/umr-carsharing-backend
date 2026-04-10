@@ -8,18 +8,6 @@ public final class UserApiExamples {
 
     private UserApiExamples() {}
 
-    // ---- Requests ----
-
-    public static final String CREATE_PROFILE_REQUEST = """
-            {
-              "userId": "john.driver@example.com",
-              "firstName": "John",
-              "lastName": "Driver",
-              "phoneNumber": "+49 123 456789",
-              "age": 32,
-              "licenseNumber": "LD-123456789"
-            }""";
-
     // ---- Responses ----
 
     public static final String GET_USER_RESPONSE = """
@@ -30,28 +18,14 @@ public final class UserApiExamples {
                 "firstName": "John",
                 "lastName": "Driver",
                 "email": "john.driver@example.com",
+                "userType": "DRIVER",
                 "phoneNumber": "+49 123 456789",
                 "age": 32,
-                "role": "DRIVER",
-                "profileCompletedAt": "2024-01-15T10:30:00Z"
+                "licenseNumber": "LD-123456789",
+                "createdAt": "2026-03-30T16:48:24.233Z",
+                "updatedAt": "2026-03-30T16:48:24.233Z"
               },
-              "message": "User profile retrieved successfully"
-            }""";
-
-    public static final String CREATE_PROFILE_RESPONSE = """
-            {
-              "success": true,
-              "data": {
-                "userId": "john.driver@example.com",
-                "firstName": "John",
-                "lastName": "Driver",
-                "email": "john.driver@example.com",
-                "phoneNumber": "+49 123 456789",
-                "age": 32,
-                "role": "DRIVER",
-                "profileCompletedAt": "2024-01-15T10:35:00Z"
-              },
-              "message": "User profile created successfully"
+              "message": "Operation successful"
             }""";
 
     // ---- Errors ----
@@ -69,27 +43,4 @@ public final class UserApiExamples {
               "requestId": "req_12349"
             }""";
 
-    public static final String ERROR_INVALID_DATA = """
-            {
-              "status": 400,
-              "code": "VALIDATION_ERROR",
-              "message": "Invalid user data provided",
-              "error": {
-                "path": "/api/users/profile",
-                "details": [
-                  {
-                    "field": "phoneNumber",
-                    "message": "Phone number is required",
-                    "type": "NotBlank"
-                  },
-                  {
-                    "field": "age",
-                    "message": "Age must be at least 18",
-                    "type": "Min"
-                  }
-                ]
-              },
-              "timestamp": "2026-03-25T15:22:46.870Z",
-              "requestId": "req_12350"
-            }""";
 }

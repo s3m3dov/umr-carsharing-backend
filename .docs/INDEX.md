@@ -18,6 +18,7 @@ Welcome to the Car Sharing Backend documentation.
 
 ### Architecture & Infrastructure
 - **[Architecture & Tech Stack](technical/crucial/architecture.md)**: System design, microservices, and technical capabilities
+- **[User & Profile Architecture](technical/crucial/user-profile-architecture.md)**: Ownership boundaries for auth users and driver/passenger profile collections
 - **[API Development Guide](technical/crucial/api-guide.md)**: Authentication, response formats, and implementation details
 - **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
 - **[BlaBlaCar Architecture Overview](technical/crucial/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution

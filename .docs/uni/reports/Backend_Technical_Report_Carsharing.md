@@ -532,7 +532,7 @@ Design notes:
 * The codebase contains a token blacklist model (`BlacklistedToken`) but validation does not consult it; treat logout/blacklisting as not implemented end-to-end.
   * Evidence: `auth-service/.../model/BlacklistedToken.java`, `.../repository/BlacklistedTokenRepository.java`, and `AuthService.validateToken(...)`.
 
-#### D3.2 Auth-Service: Signup Creates Profile in User-Service
+#### D3.2 Auth-Service: Signup Creates Base + Role Profiles in User-Service
 
 Signup is cross-service and attempts to keep data consistent by rolling back the auth user record if profile creation fails.
 
@@ -545,12 +545,12 @@ sequenceDiagram
   participant M as MongoDB
 
   C->>A: POST /api/auth/signup
-  A->>M: Insert auth-service users document
-  A->>U: POST /api/users/profile
+  A->>M: Insert auth user in users
+  A->>U: POST /api/passengers/{userId} or /api/drivers/{userId}
   alt Profile created
     U-->>A: 201
     A-->>C: 201 + JWT
-  else Profile creation failed
+  else Any profile step failed
     A->>M: Delete auth user (rollback)
     A-->>C: 5xx (registration failed)
   end
