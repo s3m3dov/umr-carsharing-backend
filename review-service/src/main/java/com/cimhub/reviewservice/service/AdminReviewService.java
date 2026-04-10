@@ -4,6 +4,7 @@ import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
+import com.cimhub.reviewservice.mapper.ReviewMapper;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
@@ -30,13 +31,13 @@ public class AdminReviewService {
         } else {
             reviews = reviewDataRepository.findAll(pageable);
         }
-        return reviews.map(this::mapToResponse);
+        return reviews.map(ReviewMapper::toResponse);
     }
 
     public ReviewResponse getReview(String reviewId) {
         Review review = reviewDataRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
-        return mapToResponse(review);
+        return ReviewMapper.toResponse(review);
     }
 
     public ReviewResponse flagReview(String reviewId, String adminEmail) {
@@ -47,7 +48,7 @@ public class AdminReviewService {
         reviewDataRepository.save(review);
         auditService.logFlag(EntityType.REVIEW, reviewId, adminEmail, "Review flagged by admin");
         log.info("Review {} flagged by admin {}", reviewId, adminEmail);
-        return mapToResponse(review);
+        return ReviewMapper.toResponse(review);
     }
 
     public void removeReview(String reviewId, String adminEmail) {
@@ -68,24 +69,7 @@ public class AdminReviewService {
         reviewDataRepository.save(review);
         auditService.logPublish(EntityType.REVIEW, reviewId, adminEmail, "Review published by admin");
         log.info("Review {} published by admin {}", reviewId, adminEmail);
-        return mapToResponse(review);
-    }
-
-    private ReviewResponse mapToResponse(Review review) {
-        return ReviewResponse.builder()
-                .reviewId(review.getReviewId())
-                .tripId(review.getTripId())
-                .bookingId(review.getBookingId())
-                .reviewerId(review.getReviewerId())
-                .reviewerType(review.getReviewerType())
-                .revieweeId(review.getRevieweeId())
-                .revieweeType(review.getRevieweeType())
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .status(review.getStatus())
-                .createdAt(review.getCreatedAt())
-                .updatedAt(review.getUpdatedAt())
-                .build();
+        return ReviewMapper.toResponse(review);
     }
 
 }

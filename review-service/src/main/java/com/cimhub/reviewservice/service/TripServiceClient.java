@@ -1,17 +1,18 @@
 package com.cimhub.reviewservice.service;
 
+import com.cimhub.common.exception.DependencyUnavailableException;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Map;
-
 /**
  * Client for calling the trip-service to validate trip and booking completion status.
- * Note: Returns false silently on errors - this may mask service unavailability issues.
  */
 @Service
 @RequiredArgsConstructor
@@ -27,60 +28,28 @@ public class TripServiceClient {
      * Fetch trip details from trip-service to verify it's completed.
      *
      * @param tripId the trip ID
-     * @return true if trip is completed, false otherwise (including errors)
+     * @return true if trip is completed, false otherwise
      */
     public boolean isTripCompleted(String tripId) {
-        try {
-            String url = tripServiceUrl + "/api/trips/" + tripId;
-            Map<String, Object> response = restClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .body(Map.class);
-
-            if (response != null) {
-                Object data = response.get("data");
-                if (data instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> tripData = (Map<String, Object>) data;
-                    Object status = tripData.get("tripStatus");
-                    return "COMPLETED".equals(status);
-                }
-            }
-            return false;
-        } catch (RestClientException e) {
-            log.error("Error calling trip-service for tripId: {}", tripId, e);
+        JsonNode tripData = fetchTripData(tripId);
+        if (tripData == null) {
             return false;
         }
+        return "COMPLETED".equals(tripData.path("tripStatus").asText(null));
     }
 
     /**
      * Fetch booking details from trip-service to verify it's completed.
      *
      * @param bookingId the booking ID
-     * @return true if booking is completed, false otherwise (including errors)
+     * @return true if booking is completed, false otherwise
      */
     public boolean isBookingCompleted(String bookingId) {
-        try {
-            String url = tripServiceUrl + "/api/bookings/" + bookingId;
-            Map<String, Object> response = restClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .body(Map.class);
-
-            if (response != null) {
-                Object data = response.get("data");
-                if (data instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> bookingData = (Map<String, Object>) data;
-                    Object status = bookingData.get("status");
-                    return "COMPLETED".equals(status);
-                }
-            }
-            return false;
-        } catch (RestClientException e) {
-            log.error("Error calling trip-service for bookingId: {}", bookingId, e);
+        JsonNode bookingData = fetchBookingData(bookingId);
+        if (bookingData == null) {
             return false;
         }
+        return "COMPLETED".equals(bookingData.path("status").asText(null));
     }
 
     /**
@@ -90,27 +59,12 @@ public class TripServiceClient {
      * @return driver ID if found, null otherwise
      */
     public String getTripDriverId(String tripId) {
-        try {
-            String url = tripServiceUrl + "/api/trips/" + tripId;
-            Map<String, Object> response = restClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .body(Map.class);
-
-            if (response != null) {
-                Object data = response.get("data");
-                if (data instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> tripData = (Map<String, Object>) data;
-                    Object driverId = tripData.get("driverId");
-                    return driverId != null ? driverId.toString() : null;
-                }
-            }
-            return null;
-        } catch (RestClientException e) {
-            log.error("Error calling trip-service for tripId: {}", tripId, e);
+        JsonNode tripData = fetchTripData(tripId);
+        if (tripData == null) {
             return null;
         }
+        String driverId = tripData.path("driverId").asText(null);
+        return StringUtils.hasText(driverId) ? driverId : null;
     }
 
     /**
@@ -120,26 +74,49 @@ public class TripServiceClient {
      * @return passenger ID if found, null otherwise
      */
     public String getBookingPassengerId(String bookingId) {
+        JsonNode bookingData = fetchBookingData(bookingId);
+        if (bookingData == null) {
+            return null;
+        }
+        String passengerId = bookingData.path("passengerId").asText(null);
+        return StringUtils.hasText(passengerId) ? passengerId : null;
+    }
+
+    private JsonNode fetchTripData(String tripId) {
+        return fetchResourceData("/api/trips/" + tripId, "trip", tripId);
+    }
+
+    private JsonNode fetchBookingData(String bookingId) {
+        return fetchResourceData("/api/bookings/" + bookingId, "booking", bookingId);
+    }
+
+    private JsonNode fetchResourceData(String endpoint, String resourceType, String resourceId) {
         try {
-            String url = tripServiceUrl + "/api/bookings/" + bookingId;
-            Map<String, Object> response = restClient.get()
+            return executeRequest(endpoint, resourceType, resourceId);
+        } catch (RestClientException ex) {
+            throw new DependencyUnavailableException(
+                    "Trip service is unavailable while fetching " + resourceType + ": " + resourceId);
+        }
+    }
+
+    private JsonNode executeRequest(String endpoint, String resourceType, String resourceId) {
+        try {
+            String url = tripServiceUrl + endpoint;
+            JsonNode response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(Map.class);
+                    .body(JsonNode.class);
 
-            if (response != null) {
-                Object data = response.get("data");
-                if (data instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> bookingData = (Map<String, Object>) data;
-                    Object passengerId = bookingData.get("passengerId");
-                    return passengerId != null ? passengerId.toString() : null;
-                }
+            if (response == null) {
+                return null;
             }
+            JsonNode data = response.get("data");
+            return data != null && data.isObject() ? data : null;
+        } catch (HttpClientErrorException.NotFound ex) {
             return null;
         } catch (RestClientException e) {
-            log.error("Error calling trip-service for bookingId: {}", bookingId, e);
-            return null;
+            log.error("Error calling trip-service for {}Id: {}", resourceType, resourceId, e);
+            throw e;
         }
     }
 }

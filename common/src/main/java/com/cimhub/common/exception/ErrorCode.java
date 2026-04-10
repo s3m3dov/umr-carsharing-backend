@@ -42,6 +42,10 @@ public enum ErrorCode implements ServiceErrorCode {
             HttpStatus.UNPROCESSABLE_ENTITY,
             "Validation failed",
             ErrorType.VALIDATION_ERROR),
+    DEPENDENCY_UNAVAILABLE(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Required upstream service is unavailable",
+            ErrorType.SYSTEM_ERROR),
 
     // Generic
     INTERNAL_SERVER_ERROR(

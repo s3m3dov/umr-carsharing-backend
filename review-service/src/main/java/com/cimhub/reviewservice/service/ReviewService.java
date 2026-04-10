@@ -7,11 +7,14 @@ import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.exception.DriverNotFoundException;
+import com.cimhub.reviewservice.exception.InvalidRatingException;
+import com.cimhub.reviewservice.exception.InvalidReviewerException;
 import com.cimhub.reviewservice.exception.PassengerNotFoundException;
 import com.cimhub.reviewservice.exception.ReviewAlreadyExistsException;
 import com.cimhub.reviewservice.exception.ReviewsNotFoundException;
 import com.cimhub.reviewservice.exception.TripNotCompletedException;
 import com.cimhub.reviewservice.exception.UnauthorizedReviewerException;
+import com.cimhub.reviewservice.mapper.ReviewMapper;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -36,20 +40,81 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse submitDriverReview(SubmitReviewRequest request) {
-        log.info("Submitting driver review from user: {} for trip: {}", request.userId(), request.tripId());
+        return submitReview(
+                request,
+                UserType.PASSENGER,
+                UserType.DRIVER,
+                "Only passengers can review drivers",
+                reviewerId -> new PassengerNotFoundException("Reviewer user not found: " + reviewerId),
+                this::resolveDriverRevieweeId,
+                "Driver review submitted"
+        );
+    }
 
-        validateUserRole(request.userRole(), UserType.PASSENGER, "Only passengers can review drivers");
+    @Transactional
+    public ReviewResponse submitPassengerReview(SubmitReviewRequest request) {
+        return submitReview(
+                request,
+                UserType.DRIVER,
+                UserType.PASSENGER,
+                "Only drivers can review passengers",
+                reviewerId -> new DriverNotFoundException("Reviewer user not found: " + reviewerId),
+                this::resolvePassengerRevieweeId,
+                "Passenger review submitted"
+        );
+    }
 
-        if (!userRepository.existsByUserId(request.userId())) {
-            throw new PassengerNotFoundException("Reviewer user not found: " + request.userId());
-        }
+    public List<ReviewResponse> getDriverReviews(String driverId) {
+        log.info("Fetching reviews for driver: {}", driverId);
+        ensureUserExists(driverId, reviewerId -> new DriverNotFoundException("Driver not found: " + reviewerId));
+        return getReviewsForReviewee(driverId, UserType.DRIVER, "No reviews found for driver: " + driverId);
+    }
 
+    public List<ReviewResponse> getPassengerReviews(String passengerId) {
+        log.info("Fetching reviews for passenger: {}", passengerId);
+        ensureUserExists(passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
+        return getReviewsForReviewee(passengerId, UserType.PASSENGER, "No reviews found for passenger: " + passengerId);
+    }
+
+    public AverageRatingResponse getDriverAverageRating(String driverId) {
+        log.info("Calculating average rating for driver: {}", driverId);
+        ensureUserExists(driverId, reviewerId -> new DriverNotFoundException("Driver not found: " + reviewerId));
+        return calculateAverageRating(driverId, UserType.DRIVER);
+    }
+
+    public AverageRatingResponse getPassengerAverageRating(String passengerId) {
+        log.info("Calculating average rating for passenger: {}", passengerId);
+        ensureUserExists(passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
+        return calculateAverageRating(passengerId, UserType.PASSENGER);
+    }
+
+    private ReviewResponse submitReview(
+            SubmitReviewRequest request,
+            UserType expectedReviewerRole,
+            UserType revieweeType,
+            String roleValidationError,
+            Function<String, RuntimeException> reviewerNotFoundFactory,
+            Function<SubmitReviewRequest, String> revieweeIdResolver,
+            String auditMessage) {
+        log.info("Submitting {} review from user: {} for trip: {}", revieweeType.name().toLowerCase(), request.userId(), request.tripId());
+
+        validateRatingRange(request.rating());
+        validateUserRole(request.userRole(), expectedReviewerRole, roleValidationError);
+        ensureUserExists(request.userId(), reviewerNotFoundFactory);
         validateTripAndBookingCompleted(request.tripId(), request.bookingId());
+        ensureReviewDoesNotExist(request.userId(), request.tripId(), request.bookingId());
 
-        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(request.userId(), request.tripId(), request.bookingId())) {
-            throw new ReviewAlreadyExistsException("You have already reviewed this trip");
-        }
+        String revieweeId = revieweeIdResolver.apply(request);
+        Review review = buildReview(request, expectedReviewerRole, revieweeId, revieweeType);
 
+        Review savedReview = reviewRepository.save(review);
+        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), auditMessage);
+        log.info("Review saved with ID: {}", savedReview.getReviewId());
+
+        return ReviewMapper.toResponse(savedReview);
+    }
+
+    private String resolveDriverRevieweeId(SubmitReviewRequest request) {
         String driverId = tripServiceClient.getTripDriverId(request.tripId());
         if (driverId == null) {
             throw new DriverNotFoundException("Driver not found for trip: " + request.tripId());
@@ -60,44 +125,14 @@ public class ReviewService {
             throw new UnauthorizedReviewerException("You are not the passenger of this booking");
         }
 
-        Review review = Review.builder()
-                .updatedAt(Instant.now())
-                .tripId(request.tripId())
-                .bookingId(request.bookingId())
-                .reviewerId(request.userId())
-                .reviewerType(UserType.PASSENGER)
-                .revieweeId(driverId)
-                .revieweeType(UserType.DRIVER)
-                .rating(request.rating())
-                .comment(request.comment())
-                .status(ReviewStatus.PUBLISHED)
-                .createdAt(Instant.now())
-                .build();
-
-        Review savedReview = reviewRepository.save(review);
-        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), "Driver review submitted");
-        log.info("Driver review saved with ID: {}", savedReview.getReviewId());
-
-        return mapToResponse(savedReview);
+        return driverId;
     }
 
-    @Transactional
-    public ReviewResponse submitPassengerReview(SubmitReviewRequest request) {
-        log.info("Submitting passenger review from user: {} for trip: {}", request.userId(), request.tripId());
-
-        validateUserRole(request.userRole(), UserType.DRIVER, "Only drivers can review passengers");
-
-        if (!userRepository.existsByUserId(request.userId())) {
-            throw new DriverNotFoundException("Reviewer user not found: " + request.userId());
-        }
-
-        validateTripAndBookingCompleted(request.tripId(), request.bookingId());
-
-        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(request.userId(), request.tripId(), request.bookingId())) {
-            throw new ReviewAlreadyExistsException("You have already reviewed this trip");
-        }
-
+    private String resolvePassengerRevieweeId(SubmitReviewRequest request) {
         String driverId = tripServiceClient.getTripDriverId(request.tripId());
+        if (driverId == null) {
+            throw new DriverNotFoundException("Driver not found for trip: " + request.tripId());
+        }
         if (!request.userId().equals(driverId)) {
             throw new UnauthorizedReviewerException("Only the driver of this trip can review passengers");
         }
@@ -107,124 +142,74 @@ public class ReviewService {
             throw new PassengerNotFoundException("Passenger not found for booking: " + request.bookingId());
         }
 
-        Review review = Review.builder()
-                .updatedAt(Instant.now())
+        return passengerId;
+    }
+
+    private Review buildReview(SubmitReviewRequest request, UserType reviewerType, String revieweeId, UserType revieweeType) {
+        Instant now = Instant.now();
+        return Review.builder()
                 .tripId(request.tripId())
                 .bookingId(request.bookingId())
                 .reviewerId(request.userId())
-                .reviewerType(UserType.DRIVER)
-                .revieweeId(passengerId)
-                .revieweeType(UserType.PASSENGER)
+                .reviewerType(reviewerType)
+                .revieweeId(revieweeId)
+                .revieweeType(revieweeType)
                 .rating(request.rating())
                 .comment(request.comment())
                 .status(ReviewStatus.PUBLISHED)
-                .createdAt(Instant.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
-
-        Review savedReview = reviewRepository.save(review);
-        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), "Passenger review submitted");
-        log.info("Passenger review saved with ID: {}", savedReview.getReviewId());
-
-        return mapToResponse(savedReview);
     }
 
-    public List<ReviewResponse> getDriverReviews(String driverId) {
-        log.info("Fetching reviews for driver: {}", driverId);
-        
-        if (!userRepository.existsByUserId(driverId)) {
-            throw new DriverNotFoundException("Driver not found: " + driverId);
+    private void ensureUserExists(String userId, Function<String, RuntimeException> notFoundFactory) {
+        if (!userRepository.existsByUserId(userId)) {
+            throw notFoundFactory.apply(userId);
         }
+    }
 
-        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(driverId, UserType.DRIVER);
-        
+    private void ensureReviewDoesNotExist(String reviewerId, String tripId, String bookingId) {
+        if (reviewRepository.existsByReviewerIdAndTripIdAndBookingId(reviewerId, tripId, bookingId)) {
+            throw new ReviewAlreadyExistsException("You have already reviewed this trip");
+        }
+    }
+
+    private void validateRatingRange(int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new InvalidRatingException("Rating must be between 1 and 5");
+        }
+    }
+
+    private List<ReviewResponse> getReviewsForReviewee(String revieweeId, UserType revieweeType, String noReviewsMessage) {
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(revieweeId, revieweeType);
         if (reviews.isEmpty()) {
-            throw new ReviewsNotFoundException("No reviews found for driver: " + driverId);
+            throw new ReviewsNotFoundException(noReviewsMessage);
         }
-
         return reviews.stream()
-                .map(this::mapToResponse)
+                .map(ReviewMapper::toResponse)
                 .toList();
     }
 
-    public List<ReviewResponse> getPassengerReviews(String passengerId) {
-        log.info("Fetching reviews for passenger: {}", passengerId);
-        
-        if (!userRepository.existsByUserId(passengerId)) {
-            throw new PassengerNotFoundException("Passenger not found: " + passengerId);
-        }
-
-        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(passengerId, UserType.PASSENGER);
-        
-        if (reviews.isEmpty()) {
-            throw new ReviewsNotFoundException("No reviews found for passenger: " + passengerId);
-        }
-
-        return reviews.stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public AverageRatingResponse getDriverAverageRating(String driverId) {
-        log.info("Calculating average rating for driver: {}", driverId);
-
-        if (!userRepository.existsByUserId(driverId)) {
-            throw new DriverNotFoundException("Driver not found: " + driverId);
-        }
-
-        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(driverId, UserType.DRIVER);
-
+    private AverageRatingResponse calculateAverageRating(String subjectId, UserType revieweeType) {
+        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(subjectId, revieweeType);
         if (reviews.isEmpty()) {
             return AverageRatingResponse.builder()
-                    .subjectId(driverId)
+                    .subjectId(subjectId)
                     .averageRating(0.0)
                     .totalReviews(0)
                     .build();
         }
 
-        double averageRating = reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
-
         return AverageRatingResponse.builder()
-                .subjectId(driverId)
-                .averageRating(averageRating)
-                .totalReviews(reviews.size())
-                .build();
-    }
-
-    public AverageRatingResponse getPassengerAverageRating(String passengerId) {
-        log.info("Calculating average rating for passenger: {}", passengerId);
-
-        if (!userRepository.existsByUserId(passengerId)) {
-            throw new PassengerNotFoundException("Passenger not found: " + passengerId);
-        }
-
-        List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(passengerId, UserType.PASSENGER);
-
-        if (reviews.isEmpty()) {
-            return AverageRatingResponse.builder()
-                    .subjectId(passengerId)
-                    .averageRating(0.0)
-                    .totalReviews(0)
-                    .build();
-        }
-
-        double averageRating = reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
-
-        return AverageRatingResponse.builder()
-                .subjectId(passengerId)
-                .averageRating(averageRating)
+                .subjectId(subjectId)
+                .averageRating(reviews.stream().mapToInt(Review::getRating).average().orElse(0.0))
                 .totalReviews(reviews.size())
                 .build();
     }
 
     private void validateUserRole(UserType userRole, UserType expectedRole, String errorMessage) {
         if (userRole != expectedRole) {
-            throw new IllegalArgumentException(errorMessage);
+            throw new InvalidReviewerException(errorMessage);
         }
     }
 
@@ -236,22 +221,5 @@ public class ReviewService {
         if (!tripServiceClient.isBookingCompleted(bookingId)) {
             throw new TripNotCompletedException("Booking must be completed before review can be submitted");
         }
-    }
-
-    private ReviewResponse mapToResponse(Review review) {
-        return ReviewResponse.builder()
-                .reviewId(review.getReviewId())
-                .tripId(review.getTripId())
-                .bookingId(review.getBookingId())
-                .reviewerId(review.getReviewerId())
-                .reviewerType(review.getReviewerType())
-                .revieweeId(review.getRevieweeId())
-                .revieweeType(review.getRevieweeType())
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .status(review.getStatus())
-                .createdAt(review.getCreatedAt())
-                .updatedAt(review.getUpdatedAt())
-                .build();
     }
 }
