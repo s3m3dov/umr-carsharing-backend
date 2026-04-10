@@ -7,5 +7,5 @@ public record CreateDriverProfileRequest(
         @NotBlank(message = "Last name is required") String lastName,
         String phoneNumber,
         int age,
-        @NotBlank(message = "License number is required") String licenseNumber) {
+        @NotBlank(message = "License number is required") String licenseNumber) implements CreateProfileRequest {
 }

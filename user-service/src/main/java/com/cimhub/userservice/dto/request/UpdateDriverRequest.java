@@ -5,5 +5,5 @@ public record UpdateDriverRequest(
         String lastName,
         String phoneNumber,
         Integer age,
-        String licenseNumber) {
+        String licenseNumber) implements UpdateProfileRequest {
 }

@@ -34,10 +34,12 @@ public class DriverService {
         Driver driver = new Driver();
         driver.setUserId(userId);
         driver.setEmail(userId);
-        driver.setFirstName(request.firstName());
-        driver.setLastName(request.lastName());
-        driver.setPhoneNumber(request.phoneNumber());
-        driver.setAge(request.age());
+        ProfileUpdater.applyCommonProfileFields(
+                request,
+                driver::setFirstName,
+                driver::setLastName,
+                driver::setPhoneNumber,
+                driver::setAge);
         driver.setLicenseNumber(request.licenseNumber());
         driver.setCreatedAt(now);
         driver.setUpdatedAt(now);
@@ -50,10 +52,12 @@ public class DriverService {
     public DriverResponse updateDriverProfile(String userId, UpdateDriverRequest request) {
         Driver driver = findDriverOrThrow(userId);
 
-        if (request.firstName() != null) driver.setFirstName(request.firstName());
-        if (request.lastName() != null) driver.setLastName(request.lastName());
-        if (request.phoneNumber() != null) driver.setPhoneNumber(request.phoneNumber());
-        if (request.age() != null) driver.setAge(request.age());
+        ProfileUpdater.applyCommonProfileUpdates(
+                request,
+                driver::setFirstName,
+                driver::setLastName,
+                driver::setPhoneNumber,
+                driver::setAge);
         if (request.licenseNumber() != null) driver.setLicenseNumber(request.licenseNumber());
 
         Instant now = Instant.now();
