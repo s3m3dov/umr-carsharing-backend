@@ -4,6 +4,8 @@ import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.dto.osrm.Route;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.dto.request.TripSearchCriteria;
+import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -133,16 +135,17 @@ class TripGeospatialServiceTest {
                 passing));
 
         List<Trip> result = tripGeospatialService.findTripsMatchingRoute(
-                52.5, 13.4, 10.0,
-                52.6, 13.5, 5.0,
-                "2026-06-01T10:00:00Z",
-                "2026-06-01T12:00:00Z",
-                1,
-                "current-user",
-                10.0,
-                30.0,
-                "SEDAN",
-                4);
+                new TripSearchCriteria(
+                        52.5, 13.4, 10.0,
+                        52.6, 13.5, 5.0,
+                        "2026-06-01T10:00:00Z",
+                        "2026-06-01T12:00:00Z",
+                        1,
+                        "current-user",
+                        10.0,
+                        30.0,
+                        "SEDAN",
+                        4));
 
         assertEquals(1, result.size());
         assertEquals("ok", result.getFirst().getTripId());
@@ -152,16 +155,17 @@ class TripGeospatialServiceTest {
     void findTripsMatchingRoute_whenInvalidTimeRange_shouldThrow() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 tripGeospatialService.findTripsMatchingRoute(
-                        52.5, 13.4, 5.0,
-                        52.6, 13.5, 5.0,
-                        "2026-06-01T12:00:00Z",
-                        "2026-06-01T11:00:00Z",
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
+                        new TripSearchCriteria(
+                                52.5, 13.4, 5.0,
+                                52.6, 13.5, 5.0,
+                                "2026-06-01T12:00:00Z",
+                                "2026-06-01T11:00:00Z",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null)));
 
         assertEquals("latestDepartureTime must be after earliestDepartureTime", ex.getMessage());
     }
@@ -170,16 +174,17 @@ class TripGeospatialServiceTest {
     void findTripsMatchingRoute_whenInvalidTimeFormat_shouldThrow() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                 tripGeospatialService.findTripsMatchingRoute(
-                        52.5, 13.4, 5.0,
-                        52.6, 13.5, 5.0,
-                        "not-a-date",
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
+                        new TripSearchCriteria(
+                                52.5, 13.4, 5.0,
+                                52.6, 13.5, 5.0,
+                                "not-a-date",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null)));
 
         assertTrue(ex.getMessage().startsWith("Invalid time range parameters:"));
     }
@@ -190,40 +195,43 @@ class TripGeospatialServiceTest {
         when(mongoTemplate.find(any(Query.class), eq(Trip.class))).thenReturn(List.of(passing));
 
         List<Trip> noTime = tripGeospatialService.findTripsMatchingRoute(
-                52.5, 13.4, 10.0,
-                52.6, 13.5, 5.0,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                new TripSearchCriteria(
+                        52.5, 13.4, 10.0,
+                        52.6, 13.5, 5.0,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
 
         List<Trip> onlyEarliest = tripGeospatialService.findTripsMatchingRoute(
-                52.5, 13.4, 10.0,
-                52.6, 13.5, 5.0,
-                "2026-06-01T09:00:00",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                new TripSearchCriteria(
+                        52.5, 13.4, 10.0,
+                        52.6, 13.5, 5.0,
+                        "2026-06-01T09:00:00",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
 
         List<Trip> onlyLatest = tripGeospatialService.findTripsMatchingRoute(
-                52.5, 13.4, 10.0,
-                52.6, 13.5, 5.0,
-                null,
-                "2026-06-01T14:00:00Z",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                new TripSearchCriteria(
+                        52.5, 13.4, 10.0,
+                        52.6, 13.5, 5.0,
+                        null,
+                        "2026-06-01T14:00:00Z",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
 
         assertEquals(1, noTime.size());
         assertEquals(1, onlyEarliest.size());

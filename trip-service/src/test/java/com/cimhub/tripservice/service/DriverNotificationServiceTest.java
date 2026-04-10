@@ -2,6 +2,7 @@ package com.cimhub.tripservice.service;
 
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;

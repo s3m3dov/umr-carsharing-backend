@@ -8,6 +8,9 @@ import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
+import com.cimhub.tripservice.mapper.BookingMapper;
+import com.cimhub.tripservice.service.booking.AdminBookingService;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,9 +43,12 @@ class AdminBookingServiceTest {
 
     private AdminBookingService adminBookingService;
 
+    private BookingMapper bookingMapper;
+
     @BeforeEach
     void setUp() {
-        adminBookingService = new AdminBookingService(bookingRepository, auditService);
+        bookingMapper = new BookingMapper(new TimezoneConversionService());
+        adminBookingService = new AdminBookingService(bookingRepository, auditService, bookingMapper);
     }
 
     @Test

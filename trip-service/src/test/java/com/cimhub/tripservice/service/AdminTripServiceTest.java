@@ -8,6 +8,9 @@ import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.service.trip.AdminTripService;
+import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,9 +46,12 @@ class AdminTripServiceTest {
 
     private AdminTripService adminTripService;
 
+    private TripMapper tripMapper;
+
     @BeforeEach
     void setUp() {
-        adminTripService = new AdminTripService(tripsRepository, auditService);
+        tripMapper = new TripMapper(new TimezoneConversionService());
+        adminTripService = new AdminTripService(tripsRepository, auditService, tripMapper);
     }
 
     @Test
