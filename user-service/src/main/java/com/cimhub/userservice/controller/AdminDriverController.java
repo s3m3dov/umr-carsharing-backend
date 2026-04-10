@@ -52,32 +52,32 @@ public class AdminDriverController {
     @ApiResponse(responseCode = "200", description = "Successfully retrieved driver")
     @ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
     @ApiResponse(responseCode = "404", description = "Driver not found", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
-    @GetMapping("/{id}")
+    @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriver(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Driver ID") @PathVariable String id) {
+            @Parameter(description = "Driver ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriver(id)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriver(userId)));
     }
 
     @Operation(summary = "Approve driver application", description = "Approve a pending driver application")
-    @PostMapping("/{id}/approve")
+    @PostMapping("/{userId}/approve")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> approveDriver(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Driver ID") @PathVariable String id) {
+            @Parameter(description = "Driver ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.approveDriver(id, adminEmail)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.approveDriver(userId, adminEmail)));
     }
 
     @Operation(summary = "Reject driver application", description = "Reject a pending driver application")
-    @PostMapping("/{id}/reject")
+    @PostMapping("/{userId}/reject")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> rejectDriver(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Driver ID") @PathVariable String id) {
+            @Parameter(description = "Driver ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.rejectDriver(id, adminEmail)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.rejectDriver(userId, adminEmail)));
     }
 
     @Operation(summary = "Bulk approve drivers", description = "Approve multiple driver applications at once")
@@ -103,33 +103,33 @@ public class AdminDriverController {
     }
 
     @Operation(summary = "Edit driver info", description = "Update driver information")
-    @PutMapping("/{id}")
+    @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriver(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Driver ID") @PathVariable String id,
+            @Parameter(description = "Driver ID") @PathVariable String userId,
             @RequestBody UpdateDriverRequest request) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.updateDriver(id, request, adminEmail)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.updateDriver(userId, request, adminEmail)));
     }
 
     @Operation(summary = "Delete driver", description = "Delete a driver and all associated data")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<String>> deleteDriver(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
             @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Driver ID") @PathVariable String id) {
+            @Parameter(description = "Driver ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        adminDriverService.deleteDriver(id, adminEmail);
+        adminDriverService.deleteDriver(userId, adminEmail);
         return ResponseEntity.ok(ApiResponseWrapper.success("Driver deleted"));
     }
 
     @Operation(summary = "Get driver documents", description = "Retrieve driver documents (NIDA/License)")
-    @GetMapping("/{id}/documents")
+    @GetMapping("/{userId}/documents")
     public ResponseEntity<ApiResponseWrapper<List<DriverDocumentResponse>>> getDriverDocuments(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Driver ID") @PathVariable String id) {
+            @Parameter(description = "Driver ID") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriverDocuments(id)));
+        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriverDocuments(userId)));
     }
 }

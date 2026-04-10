@@ -62,7 +62,7 @@ public class DriverController {
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriverProfile(
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId,
-            @RequestBody UpdateDriverRequest request) {
+            @Valid @RequestBody UpdateDriverRequest request) {
         log.info("Update driver profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(driverService.updateDriverProfile(userId, request)));
     }

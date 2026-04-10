@@ -61,7 +61,7 @@ public class PassengerController {
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassengerProfile(
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId,
-            @RequestBody UpdatePassengerRequest request) {
+            @Valid @RequestBody UpdatePassengerRequest request) {
         log.info("Update passenger profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.updatePassengerProfile(userId, request)));
     }
