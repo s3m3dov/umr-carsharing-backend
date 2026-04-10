@@ -12,8 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SecurityProperties {
-    // Uses defaults from application.yml
-    private List<String> actuatorPaths = List.of();
+    private List<String> actuatorPaths = List.of("/actuator/**");
     private List<String> publicPaths = List.of();
     private List<String> docsPaths = List.of();
     private List<String> adminPaths = List.of();
