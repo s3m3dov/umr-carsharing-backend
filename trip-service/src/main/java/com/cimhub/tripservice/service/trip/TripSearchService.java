@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.trip;
 
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;

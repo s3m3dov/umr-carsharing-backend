@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.geo;
 
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.model.Trip;
