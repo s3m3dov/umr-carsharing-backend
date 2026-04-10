@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.report;
 
 import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;

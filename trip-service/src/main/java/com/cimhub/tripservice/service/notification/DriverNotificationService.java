@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.notification;
 
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.tripservice.model.Booking;

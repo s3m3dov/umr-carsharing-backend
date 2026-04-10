@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.util;
 
 import org.springframework.stereotype.Service;
 

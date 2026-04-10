@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.booking;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
