@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -35,4 +36,7 @@ public interface TripsRepository extends MongoRepository<Trip, String> {
     long countByDriverId(String driverId);
 
     List<Trip> findByDriverIdAndTripStatus(String driverId, TripStatus status);
+
+    @Query(value = "{ 'driverId': { $exists: true, $ne: null } }", fields = "{ 'driverId': 1 }")
+    List<Trip> findDistinctDriverIds();
 }
