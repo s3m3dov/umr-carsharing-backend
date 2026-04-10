@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
@@ -341,7 +342,7 @@ class JoinTripServiceTest {
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.acceptBooking("booking-1");
+        String result = joinTripService.acceptBooking("booking-1", "driver-1");
 
         assertEquals("Booking accepted successfully", result);
 
@@ -355,19 +356,20 @@ class JoinTripServiceTest {
     void acceptBooking_whenNotFound_shouldThrowResourceNotFoundException() {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> joinTripService.acceptBooking("missing"));
+        assertThrows(ResourceNotFoundException.class, () -> joinTripService.acceptBooking("missing", "driver-1"));
     }
 
     @Test
     void acceptBooking_whenAlreadyConfirmed_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
+                .driverId("driver-1")
                 .status(BookingStatus.CONFIRMED)
                 .build();
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -375,12 +377,28 @@ class JoinTripServiceTest {
     void acceptBooking_whenAlreadyCancelled_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
+                .driverId("driver-1")
                 .status(BookingStatus.CANCELLED)
                 .build();
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void acceptBooking_whenDriverIsNotOwner_shouldThrowUnauthorizedException() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .driverId("driver-1")
+                .status(BookingStatus.REQUESTED)
+                .build();
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+
+        assertThrows(UnauthorizedException.class,
+                () -> joinTripService.acceptBooking("booking-1", "driver-2"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -404,7 +422,7 @@ class JoinTripServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(tripsRepository.save(any(Trip.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.rejectBooking("booking-1");
+        String result = joinTripService.rejectBooking("booking-1", "driver-1");
 
         assertEquals("Booking rejected", result);
 
@@ -431,7 +449,7 @@ class JoinTripServiceTest {
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
         when(tripsRepository.findById("ghost-trip")).thenReturn(Optional.empty());
 
-        String result = joinTripService.rejectBooking("booking-1");
+        String result = joinTripService.rejectBooking("booking-1", "driver-1");
 
         assertEquals("Booking rejected", result);
         verify(tripsRepository, never()).save(any());
@@ -441,19 +459,35 @@ class JoinTripServiceTest {
     void rejectBooking_whenNotFound_shouldThrowResourceNotFoundException() {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> joinTripService.rejectBooking("missing"));
+        assertThrows(ResourceNotFoundException.class, () -> joinTripService.rejectBooking("missing", "driver-1"));
     }
 
     @Test
     void rejectBooking_whenNotInRequestedState_shouldThrowBookingAlreadyProcessedException() {
         Booking booking = Booking.builder()
                 .bookingId("booking-1")
+                .driverId("driver-1")
                 .status(BookingStatus.CONFIRMED)
                 .build();
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.rejectBooking("booking-1"));
+        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.rejectBooking("booking-1", "driver-1"));
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectBooking_whenDriverIsNotOwner_shouldThrowUnauthorizedException() {
+        Booking booking = Booking.builder()
+                .bookingId("booking-1")
+                .driverId("driver-1")
+                .status(BookingStatus.REQUESTED)
+                .build();
+
+        when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
+
+        assertThrows(UnauthorizedException.class,
+                () -> joinTripService.rejectBooking("booking-1", "driver-2"));
         verify(bookingRepository, never()).save(any());
     }
 

@@ -2,6 +2,9 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.exception.ForbiddenException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
@@ -70,9 +73,25 @@ public class TripController {
     })
     @PostMapping("/offer")
     public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Valid @RequestBody OfferRideRequest request) {
-        log.info("Offering trip for driver: {}", request.driverId());
-        OfferRideResponse response = offerRideService.offerRide(request);
+        requireDriverRole(authenticatedUserRole);
+        if (request.driverId() != null && !request.driverId().equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        OfferRideRequest effectiveRequest = OfferRideRequest.builder()
+                .driverId(authenticatedUserId)
+                .sourceAddress(request.sourceAddress())
+                .destinationAddress(request.destinationAddress())
+                .tripStartDateTime(request.tripStartDateTime())
+                .totalSeats(request.totalSeats())
+                .pricePerSeat(request.pricePerSeat())
+                .build();
+
+        log.info("Offering trip for driver: {}", authenticatedUserId);
+        OfferRideResponse response = offerRideService.offerRide(effectiveRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
@@ -101,9 +120,26 @@ public class TripController {
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
-        log.info("Cancelling trip: {} for user: {}", request.tripId(), request.userId());
-        String response = cancellationService.cancelTrip(request);
+        if (!UserType.DRIVER.name().equalsIgnoreCase(authenticatedUserRole) && 
+            !UserType.PASSENGER.name().equalsIgnoreCase(authenticatedUserRole)) {
+            throw new ForbiddenException("Driver or Passenger access required");
+        }
+        if (request.userId() != null && !request.userId().equals(authenticatedUserId)) {
+            throw new UnauthorizedException("User identity mismatch");
+        }
+
+        CancelTripRequest effectiveRequest = CancelTripRequest.builder()
+                .userId(authenticatedUserId)
+                .tripId(request.tripId())
+                .rideId(request.rideId())
+                .cancellationReason(request.cancellationReason())
+                .build();
+
+        log.info("Cancelling trip: {} for user: {}", request.tripId(), authenticatedUserId);
+        String response = cancellationService.cancelTrip(effectiveRequest);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -204,6 +240,8 @@ public class TripController {
     })
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Parameter(description = "Latitude of pickup location", example = "50.8154") @RequestParam double sourceLatitude,
             @Parameter(description = "Longitude of pickup location", example = "8.6747") @RequestParam double sourceLongitude,
             @Parameter(description = "Radius around pickup in km", example = "5.0") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
@@ -213,11 +251,19 @@ public class TripController {
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
             @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
-            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam String effectiveUserId,
+            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam(required = false) String effectiveUserId,
             @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
             @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
             @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
             @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
+        requirePassengerRole(authenticatedUserRole);
+        
+        if (effectiveUserId != null && !effectiveUserId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("User identity mismatch");
+        }
+
+        String effectiveSearchUserId = authenticatedUserId;
+
         log.info("Searching for matching route trips");
 
         if (earliestDepartureTime != null && latestDepartureTime != null) {
@@ -236,7 +282,7 @@ public class TripController {
                 earliestDepartureTime,
                 latestDepartureTime,
                 requestedSeats,
-                effectiveUserId,
+                effectiveSearchUserId,
                 minPrice,
                 maxPrice,
                 carType,
@@ -263,7 +309,14 @@ public class TripController {
     })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+        requireDriverRole(authenticatedUserRole);
+        if (!driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("You are not authorized to view these trips");
+        }
+
         log.info("Fetching active trips for driver: {}", driverId);
         List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(activeTrips));
@@ -287,7 +340,14 @@ public class TripController {
     })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+        requireDriverRole(authenticatedUserRole);
+        if (!driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("You are not authorized to view this trip history");
+        }
+
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
@@ -318,9 +378,17 @@ public class TripController {
     @PostMapping("/{tripId}/start")
     public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
-        log.info("Driver {} starting trip: {}", driverId, tripId);
-        StartTripResponse response = tripService.startTrip(tripId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} starting trip: {}", authenticatedUserId, tripId);
+        StartTripResponse response = tripService.startTrip(tripId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
     }
 
@@ -345,11 +413,31 @@ public class TripController {
     @PostMapping("/{tripId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
-        log.info("Driver {} completing trip: {}", driverId, tripId);
-        CompleteTripResponse response = completionService.completeTrip(tripId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} completing trip: {}", authenticatedUserId, tripId);
+        CompleteTripResponse response = completionService.completeTrip(tripId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(
                 response,
                 OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
+    }
+
+    private void requireDriverRole(String userRole) {
+        if (!UserType.DRIVER.name().equalsIgnoreCase(userRole)) {
+            throw new ForbiddenException("Driver access required");
+        }
+    }
+
+    private void requirePassengerRole(String userRole) {
+        if (!UserType.PASSENGER.name().equalsIgnoreCase(userRole)) {
+            throw new ForbiddenException("Passenger access required");
+        }
     }
 }

@@ -2,6 +2,9 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.exception.ForbiddenException;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.model.OperationMessage;
@@ -74,9 +77,13 @@ public class BookingController {
     })
     @PostMapping("/accept")
     public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
-            @RequestParam String bookingId) {
-        log.info("Driver accepting booking: {}", bookingId);
-        String response = joinTripService.acceptBooking(bookingId);
+            @RequestParam String bookingId,
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+        requireDriverRole(authenticatedUserRole);
+
+        log.info("Driver {} accepting booking: {}", authenticatedUserId, bookingId);
+        String response = joinTripService.acceptBooking(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -98,9 +105,13 @@ public class BookingController {
     })
     @PostMapping("/reject")
     public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
-            @RequestParam String bookingId) {
-        log.info("Driver rejecting booking: {}", bookingId);
-        String response = joinTripService.rejectBooking(bookingId);
+            @RequestParam String bookingId,
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+        requireDriverRole(authenticatedUserRole);
+
+        log.info("Driver {} rejecting booking: {}", authenticatedUserId, bookingId);
+        String response = joinTripService.rejectBooking(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -125,9 +136,23 @@ public class BookingController {
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
-            @RequestParam String driverId) {
-        log.info("Driver {} completing ride: {}", driverId, bookingId);
-        CompleteRideResponse response = completionService.completeRide(bookingId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} completing ride: {}", authenticatedUserId, bookingId);
+        CompleteRideResponse response = completionService.completeRide(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.RIDE_COMPLETED_SUCCESS.text()));
+    }
+
+    private void requireDriverRole(String userRole) {
+        if (!UserType.DRIVER.name().equalsIgnoreCase(userRole)) {
+            throw new ForbiddenException("Driver access required");
+        }
     }
 }
