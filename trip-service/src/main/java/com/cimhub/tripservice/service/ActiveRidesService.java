@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -66,9 +68,7 @@ public class ActiveRidesService {
                 List<Booking> activeBookings = bookingRepository.findByPassengerIdAndStatusIn(passengerId,
                                 activeStatuses);
 
-                return activeBookings.stream()
-                                .map(this::convertToPassengerRideResponse)
-                                .collect(Collectors.toList());
+                return buildPassengerRideResponses(activeBookings);
         }
 
         public List<PassengerRideResponse> findPassengerRideHistory(String passengerId) {
@@ -81,17 +81,37 @@ public class ActiveRidesService {
                 List<Booking> pastBookings = bookingRepository.findByPassengerIdAndStatusIn(passengerId,
                                 historyStatuses);
 
-                return pastBookings.stream()
-                                .map(this::convertToPassengerRideResponse)
+                return buildPassengerRideResponses(pastBookings);
+        }
+
+        private List<PassengerRideResponse> buildPassengerRideResponses(List<Booking> bookings) {
+                if (bookings.isEmpty()) {
+                        return List.of();
+                }
+
+                List<String> tripIds = bookings.stream()
+                                .map(Booking::getTripId)
+                                .distinct()
+                                .toList();
+
+                Map<String, Trip> tripMap = tripsRepository.findAllById(tripIds).stream()
+                                .collect(Collectors.toMap(Trip::getTripId, Function.identity()));
+
+                return bookings.stream()
+                                .map(booking -> convertToPassengerRideResponse(booking, tripMap.get(booking.getTripId())))
                                 .collect(Collectors.toList());
         }
 
         private PassengerRideResponse convertToPassengerRideResponse(Booking booking) {
+                Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
+                return convertToPassengerRideResponse(booking, trip);
+        }
+
+        private PassengerRideResponse convertToPassengerRideResponse(Booking booking, Trip trip) {
                 ZonedDateTime bookingTimeInOriginalZone = timezoneService.convertToTimezone(
                                 booking.getRideStartTimeUTC(),
                                 booking.getRideTimezone());
 
-                Trip trip = tripsRepository.findById(booking.getTripId()).orElse(null);
                 String carType = trip != null ? trip.getCarType() : null;
 
                 return PassengerRideResponse.builder()

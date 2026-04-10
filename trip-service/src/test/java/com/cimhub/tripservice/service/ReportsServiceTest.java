@@ -65,7 +65,7 @@ class ReportsServiceTest {
         when(tripsRepository.countByTripStatus(TripStatus.CANCELLED)).thenReturn(2L);
         when(tripsRepository.countByTripStatus(TripStatus.IN_PROGRESS)).thenReturn(1L);
         when(tripsRepository.countByTripStatus(TripStatus.AVAILABLE)).thenReturn(3L);
-        when(tripsRepository.findAll()).thenReturn(List.of(t1, t2, t3));
+        when(tripsRepository.findDistinctDriverIds()).thenReturn(List.of(t1, t2, t3));
 
         DriverPerformanceReport report = reportsService.getDriverPerformanceReport();
 

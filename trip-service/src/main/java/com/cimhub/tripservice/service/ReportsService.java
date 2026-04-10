@@ -11,6 +11,7 @@ import com.cimhub.tripservice.dto.response.PassengerActivityReport;
 import com.cimhub.tripservice.dto.response.RevenueReport;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
@@ -44,8 +45,10 @@ public class ReportsService {
         long cancelled = tripsRepository.countByTripStatus(TripStatus.CANCELLED);
         long inProgress = tripsRepository.countByTripStatus(TripStatus.IN_PROGRESS);
         long available = tripsRepository.countByTripStatus(TripStatus.AVAILABLE);
-        long totalDrivers = tripsRepository.findAll().stream()
-                .map(t -> t.getDriverId())
+        
+        List<Trip> tripsWithDrivers = tripsRepository.findDistinctDriverIds();
+        long totalDrivers = tripsWithDrivers.stream()
+                .map(Trip::getDriverId)
                 .distinct()
                 .count();
 

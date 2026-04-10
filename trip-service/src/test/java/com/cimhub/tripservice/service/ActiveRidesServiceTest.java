@@ -73,7 +73,7 @@ class ActiveRidesServiceTest {
         when(bookingRepository.findByPassengerIdAndStatusIn("passenger-1",
                 List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
                 .thenReturn(List.of(booking));
-        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
+        when(tripsRepository.findAllById(List.of("trip-1"))).thenReturn(List.of(trip));
 
         List<PassengerRideResponse> responses = activeRidesService.findPassengerActiveRides("passenger-1");
 
@@ -91,7 +91,7 @@ class ActiveRidesServiceTest {
         when(bookingRepository.findByPassengerIdAndStatusIn("passenger-2",
                 List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
                 .thenReturn(List.of(booking));
-        when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
+        when(tripsRepository.findAllById(List.of("missing-trip"))).thenReturn(List.of());
 
         List<PassengerRideResponse> responses = activeRidesService.findPassengerActiveRides("passenger-2");
 
