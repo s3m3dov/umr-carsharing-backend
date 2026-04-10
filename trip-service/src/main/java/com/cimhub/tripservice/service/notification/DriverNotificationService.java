@@ -24,6 +24,9 @@ public class DriverNotificationService {
     @Value("${services.notification.base-url:http://notification-service:8080}")
     private String notificationServiceBaseUrl;
 
+    @Value("${services.notification.timeout-seconds:3}")
+    private int notificationTimeoutSeconds;
+
     public void notifyBookingRequested(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s requested %d seat(s) on your trip %s.",
@@ -161,10 +164,13 @@ public class DriverNotificationService {
                     .bodyValue(request)
                     .retrieve()
                     .toBodilessEntity()
-                    .timeout(Duration.ofSeconds(3))
+                    .timeout(Duration.ofSeconds(notificationTimeoutSeconds))
                     .block();
         } catch (Exception ex) {
-            log.warn("Failed to send driver notification to {} via {}: {}",
+            // Notification failures are non-fatal: the booking/trip operation has already
+            // succeeded. Log as error so it is visible in monitoring but do not propagate.
+            log.error("Failed to send notification (type={}, recipient={}, url={}): {}",
+                    request.type(),
                     request.recipientId(),
                     notificationServiceBaseUrl,
                     ex.getMessage());

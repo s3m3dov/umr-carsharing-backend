@@ -17,6 +17,7 @@ import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
+import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
