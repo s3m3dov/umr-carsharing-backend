@@ -1,7 +1,7 @@
 package com.cimhub.apigateway.filter;
 
 import com.cimhub.apigateway.config.SecurityProperties;
-import com.cimhub.apigateway.constant.GatewayConstants;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class AdminAuthorizationFilterTest {
     void filter_withAdminPathAndAdminRole_shouldContinueFilterChain() {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/admin/reviews")
-                        .header(GatewayConstants.USER_ROLE_HEADER, UserType.ADMIN.name().toLowerCase(Locale.ROOT))
+                        .header(HeaderConstants.X_USER_ROLE, UserType.ADMIN.name().toLowerCase(Locale.ROOT))
                         .build());
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
@@ -70,7 +70,7 @@ class AdminAuthorizationFilterTest {
     void filter_withAdminPathAndNonAdminRole_shouldReturnForbidden() {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/admin/reviews")
-                        .header(GatewayConstants.USER_ROLE_HEADER, UserType.DRIVER.name())
+                        .header(HeaderConstants.X_USER_ROLE, UserType.DRIVER.name())
                         .build());
 
         filter.filter(exchange, chain).block();
@@ -95,7 +95,7 @@ class AdminAuthorizationFilterTest {
     void filter_withAdminPathAndPassengerRole_shouldReturnForbidden() {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/admin/trips")
-                        .header(GatewayConstants.USER_ROLE_HEADER, UserType.PASSENGER.name())
+                        .header(HeaderConstants.X_USER_ROLE, UserType.PASSENGER.name())
                         .build());
 
         filter.filter(exchange, chain).block();
