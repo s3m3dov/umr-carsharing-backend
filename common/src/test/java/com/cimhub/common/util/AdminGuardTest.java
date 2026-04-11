@@ -35,7 +35,8 @@ class AdminGuardTest {
     @Test
     void requireAdmin_withNullRole_shouldThrowForbidden() {
         // null does not equal "ADMIN" — must be treated as unauthorized
-        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin(null));
+        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin((String) null));
+        assertThrows(ForbiddenException.class, () -> AdminGuard.requireAdmin((UserType) null));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.enums.UserType;
+import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +43,10 @@ class PassengerControllerTest {
                 .build();
         when(passengerService.getPassengerProfile("passenger@example.com")).thenReturn(passengerResponse);
 
-        var response = passengerController.getPassengerProfile("passenger@example.com");
+        var response = passengerController.getPassengerProfile(
+                "passenger@example.com",
+                UserType.PASSENGER,
+                "passenger@example.com");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("passenger@example.com", response.getBody().getData().userId());
@@ -56,7 +61,11 @@ class PassengerControllerTest {
                 .build();
         when(passengerService.createPassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
 
-        var response = passengerController.createPassengerProfile("passenger@example.com", request);
+        var response = passengerController.createPassengerProfile(
+                "passenger@example.com",
+                UserType.PASSENGER,
+                "passenger@example.com",
+                request);
 
         assertEquals(201, response.getStatusCode().value());
         verify(passengerService).createPassengerProfile("passenger@example.com", request);
@@ -72,9 +81,19 @@ class PassengerControllerTest {
                 .build();
         when(passengerService.updatePassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
 
-        var response = passengerController.updatePassengerProfile("passenger@example.com", request);
+        var response = passengerController.updatePassengerProfile(
+                "passenger@example.com",
+                UserType.PASSENGER,
+                "passenger@example.com",
+                request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Janet", response.getBody().getData().firstName());
+    }
+
+    @Test
+    void getPassengerProfile_withMismatchedOwner_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> passengerController.getPassengerProfile("other@example.com", UserType.PASSENGER, "passenger@example.com"));
     }
 }

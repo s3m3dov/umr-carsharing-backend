@@ -2,6 +2,9 @@ package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.service.VehicleService;
@@ -54,8 +57,11 @@ public class VehicleController {
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Getting vehicles for userId: {}", userId);
         List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(resultList));
@@ -83,7 +89,10 @@ public class VehicleController {
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Valid @RequestBody RegisterVehicleRequest request) {
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());
         VehicleResponse registeredVehicle = vehicleService.registerVehicle(request);
         return ResponseEntity

@@ -1,6 +1,8 @@
 package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
 import com.cimhub.userservice.dto.response.AdminVehicleResponse;
@@ -45,7 +47,7 @@ public class AdminVehicleController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<AdminVehicleResponse>>> listVehicles(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.listVehicles(pageable)));
@@ -58,7 +60,7 @@ public class AdminVehicleController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> getVehicle(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.getVehicle(id)));
@@ -71,8 +73,8 @@ public class AdminVehicleController {
     })
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> createVehicle(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
             @Valid @RequestBody RegisterVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         AdminVehicleResponse response = adminVehicleService.createVehicle(request, adminEmail);
@@ -86,8 +88,8 @@ public class AdminVehicleController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> updateVehicle(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id,
             @RequestBody UpdateVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
@@ -102,8 +104,8 @@ public class AdminVehicleController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> deleteVehicle(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminVehicleService.deleteVehicle(id, adminEmail);

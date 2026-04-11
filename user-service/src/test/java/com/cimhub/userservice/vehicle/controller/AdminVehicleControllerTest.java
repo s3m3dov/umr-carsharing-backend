@@ -1,5 +1,6 @@
 package com.cimhub.userservice.vehicle.controller;
 
+import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
 import com.cimhub.userservice.dto.response.AdminVehicleResponse;
@@ -35,7 +36,7 @@ class AdminVehicleControllerTest {
         Page<AdminVehicleResponse> page = new PageImpl<>(List.of(AdminVehicleResponse.builder().id("v1").build()));
         when(adminVehicleService.listVehicles(PageRequest.of(0, 10))).thenReturn(page);
 
-        var response = adminVehicleController.listVehicles("ADMIN", PageRequest.of(0, 10));
+        var response = adminVehicleController.listVehicles(UserType.ADMIN, PageRequest.of(0, 10));
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().getTotalElements());
@@ -44,14 +45,14 @@ class AdminVehicleControllerTest {
     @Test
     void listVehicles_withNonAdminRole_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class,
-                () -> adminVehicleController.listVehicles("DRIVER", PageRequest.of(0, 10)));
+                () -> adminVehicleController.listVehicles(UserType.DRIVER, PageRequest.of(0, 10)));
     }
 
     @Test
     void getVehicle_shouldReturnResponse() {
         when(adminVehicleService.getVehicle("v1")).thenReturn(AdminVehicleResponse.builder().id("v1").build());
 
-        var response = adminVehicleController.getVehicle("ADMIN", "v1");
+        var response = adminVehicleController.getVehicle(UserType.ADMIN, "v1");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("v1", response.getBody().getData().id());
@@ -63,7 +64,7 @@ class AdminVehicleControllerTest {
         when(adminVehicleService.createVehicle(request, "admin@example.com"))
                 .thenReturn(AdminVehicleResponse.builder().id("v1").vehicleNumber("HE-XX-1234").build());
 
-        var response = adminVehicleController.createVehicle("ADMIN", "admin@example.com", request);
+        var response = adminVehicleController.createVehicle(UserType.ADMIN, "admin@example.com", request);
 
         assertEquals(201, response.getStatusCode().value());
         assertEquals("v1", response.getBody().getData().id());
@@ -75,7 +76,7 @@ class AdminVehicleControllerTest {
         when(adminVehicleService.updateVehicle("v1", request, "admin@example.com"))
                 .thenReturn(AdminVehicleResponse.builder().id("v1").vehicleName("Tesla 3").build());
 
-        var response = adminVehicleController.updateVehicle("ADMIN", "admin@example.com", "v1", request);
+        var response = adminVehicleController.updateVehicle(UserType.ADMIN, "admin@example.com", "v1", request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Tesla 3", response.getBody().getData().vehicleName());
@@ -83,7 +84,7 @@ class AdminVehicleControllerTest {
 
     @Test
     void deleteVehicle_shouldCallServiceAndReturnMessage() {
-        var response = adminVehicleController.deleteVehicle("ADMIN", "admin@example.com", "v1");
+        var response = adminVehicleController.deleteVehicle(UserType.ADMIN, "admin@example.com", "v1");
 
         verify(adminVehicleService).deleteVehicle("v1", "admin@example.com");
         assertEquals(200, response.getStatusCode().value());

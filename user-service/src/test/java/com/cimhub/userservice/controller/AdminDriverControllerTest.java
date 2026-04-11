@@ -39,7 +39,7 @@ class AdminDriverControllerTest {
         Page<DriverResponse> page = new PageImpl<>(List.of(DriverResponse.builder().userId("driver-1").build()));
         when(adminDriverService.listDrivers(DriverStatus.ACTIVE, PageRequest.of(0, 10))).thenReturn(page);
 
-        var response = adminDriverController.listDrivers("ADMIN", DriverStatus.ACTIVE, PageRequest.of(0, 10));
+        var response = adminDriverController.listDrivers(UserType.ADMIN, DriverStatus.ACTIVE, PageRequest.of(0, 10));
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().getTotalElements());
@@ -48,7 +48,7 @@ class AdminDriverControllerTest {
     @Test
     void listDrivers_withNonAdminRole_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class,
-                () -> adminDriverController.listDrivers("PASSENGER", null, PageRequest.of(0, 10)));
+                () -> adminDriverController.listDrivers(UserType.PASSENGER, null, PageRequest.of(0, 10)));
     }
 
     @Test
@@ -56,7 +56,7 @@ class AdminDriverControllerTest {
         DriverResponse approved = DriverResponse.builder().userId("driver-1").driverStatus(DriverStatus.ACTIVE).build();
         when(adminDriverService.approveDriver("driver-1", "admin@example.com")).thenReturn(approved);
 
-        var response = adminDriverController.approveDriver("ADMIN", "admin@example.com", "driver-1");
+        var response = adminDriverController.approveDriver(UserType.ADMIN, "admin@example.com", "driver-1");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(DriverStatus.ACTIVE, response.getBody().getData().driverStatus());
@@ -67,7 +67,7 @@ class AdminDriverControllerTest {
         when(adminDriverService.bulkApprove(any(BulkDriverActionRequest.class), any())).thenReturn(2);
 
         var response = adminDriverController.bulkApprove(
-                "ADMIN",
+                UserType.ADMIN,
                 "admin@example.com",
                 new BulkDriverActionRequest(List.of("d1", "d2")));
 
@@ -81,7 +81,7 @@ class AdminDriverControllerTest {
         DriverResponse updated = DriverResponse.builder().userId("driver-1").firstName("New").userType(UserType.DRIVER).build();
         when(adminDriverService.updateDriver("driver-1", request, "admin@example.com")).thenReturn(updated);
 
-        var response = adminDriverController.updateDriver("ADMIN", "admin@example.com", "driver-1", request);
+        var response = adminDriverController.updateDriver(UserType.ADMIN, "admin@example.com", "driver-1", request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("New", response.getBody().getData().firstName());
@@ -89,7 +89,7 @@ class AdminDriverControllerTest {
 
     @Test
     void deleteDriver_shouldCallServiceAndReturnMessage() {
-        var response = adminDriverController.deleteDriver("ADMIN", "admin@example.com", "driver-1");
+        var response = adminDriverController.deleteDriver(UserType.ADMIN, "admin@example.com", "driver-1");
 
         verify(adminDriverService).deleteDriver("driver-1", "admin@example.com");
         assertEquals(200, response.getStatusCode().value());
@@ -101,7 +101,7 @@ class AdminDriverControllerTest {
         when(adminDriverService.getDriverDocuments("driver-1"))
                 .thenReturn(List.of(DriverDocumentResponse.builder().id("doc-1").driverId("driver-1").build()));
 
-        var response = adminDriverController.getDriverDocuments("ADMIN", "driver-1");
+        var response = adminDriverController.getDriverDocuments(UserType.ADMIN, "driver-1");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().size());

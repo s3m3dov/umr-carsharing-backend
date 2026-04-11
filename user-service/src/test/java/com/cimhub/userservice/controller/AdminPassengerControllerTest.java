@@ -36,7 +36,7 @@ class AdminPassengerControllerTest {
         Page<PassengerResponse> page = new PageImpl<>(List.of(PassengerResponse.builder().userId("p1").build()));
         when(adminPassengerService.listPassengers(PageRequest.of(0, 10))).thenReturn(page);
 
-        var response = adminPassengerController.listPassengers("ADMIN", PageRequest.of(0, 10));
+        var response = adminPassengerController.listPassengers(UserType.ADMIN, PageRequest.of(0, 10));
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().getData().getTotalElements());
@@ -45,7 +45,7 @@ class AdminPassengerControllerTest {
     @Test
     void listPassengers_withNonAdminRole_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class,
-                () -> adminPassengerController.listPassengers("DRIVER", PageRequest.of(0, 10)));
+                () -> adminPassengerController.listPassengers(UserType.DRIVER, PageRequest.of(0, 10)));
     }
 
     @Test
@@ -53,7 +53,7 @@ class AdminPassengerControllerTest {
         PassengerResponse payload = PassengerResponse.builder().userId("p1").userType(UserType.PASSENGER).build();
         when(adminPassengerService.getPassenger("p1")).thenReturn(payload);
 
-        var response = adminPassengerController.getPassenger("ADMIN", "p1");
+        var response = adminPassengerController.getPassenger(UserType.ADMIN, "p1");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("p1", response.getBody().getData().userId());
@@ -65,7 +65,7 @@ class AdminPassengerControllerTest {
         PassengerResponse payload = PassengerResponse.builder().userId("p1").build();
         when(adminPassengerService.createPassenger(request, "admin@example.com")).thenReturn(payload);
 
-        var response = adminPassengerController.createPassenger("ADMIN", "admin@example.com", request);
+        var response = adminPassengerController.createPassenger(UserType.ADMIN, "admin@example.com", request);
 
         assertEquals(201, response.getStatusCode().value());
         assertEquals("p1", response.getBody().getData().userId());
@@ -77,7 +77,7 @@ class AdminPassengerControllerTest {
         PassengerResponse payload = PassengerResponse.builder().userId("p1").firstName("Pat").build();
         when(adminPassengerService.updatePassenger("p1", request, "admin@example.com")).thenReturn(payload);
 
-        var response = adminPassengerController.updatePassenger("ADMIN", "admin@example.com", "p1", request);
+        var response = adminPassengerController.updatePassenger(UserType.ADMIN, "admin@example.com", "p1", request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Pat", response.getBody().getData().firstName());
@@ -85,7 +85,7 @@ class AdminPassengerControllerTest {
 
     @Test
     void deletePassenger_shouldCallServiceAndReturnMessage() {
-        var response = adminPassengerController.deletePassenger("ADMIN", "admin@example.com", "p1");
+        var response = adminPassengerController.deletePassenger(UserType.ADMIN, "admin@example.com", "p1");
 
         verify(adminPassengerService).deletePassenger("p1", "admin@example.com");
         assertEquals(200, response.getStatusCode().value());

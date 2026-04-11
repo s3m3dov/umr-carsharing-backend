@@ -132,6 +132,7 @@ class AdminDriverServiceTest {
         assertEquals("999", response.phoneNumber());
         assertEquals(31, response.age());
         assertEquals("NEW-LIC", response.licenseNumber());
+        assertEquals("driver-4@example.com", response.email());
         verify(auditService).logUpdate(EntityType.DRIVER, "driver-4", "admin@example.com", "Driver info updated");
     }
 

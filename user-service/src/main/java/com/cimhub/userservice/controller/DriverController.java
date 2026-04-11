@@ -1,6 +1,9 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.request.CreateDriverProfileRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
@@ -33,7 +36,11 @@ public class DriverController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriverProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Get driver profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(driverService.getDriverProfile(userId)));
     }
@@ -47,8 +54,12 @@ public class DriverController {
     })
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> createDriverProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody CreateDriverProfileRequest request) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Create driver profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(driverService.createDriverProfile(userId, request)));
@@ -61,8 +72,12 @@ public class DriverController {
     })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriverProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody UpdateDriverRequest request) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Update driver profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(driverService.updateDriverProfile(userId, request)));
     }

@@ -2,6 +2,7 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
+import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.request.CreateDriverProfileRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +46,7 @@ class DriverControllerTest {
                 .build();
         when(driverService.getDriverProfile("driver@example.com")).thenReturn(driverResponse);
 
-        var response = driverController.getDriverProfile("driver@example.com");
+        var response = driverController.getDriverProfile("driver@example.com", UserType.DRIVER, "driver@example.com");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("driver@example.com", response.getBody().getData().userId());
@@ -60,7 +62,11 @@ class DriverControllerTest {
                 .build();
         when(driverService.createDriverProfile("driver@example.com", request)).thenReturn(driverResponse);
 
-        var response = driverController.createDriverProfile("driver@example.com", request);
+        var response = driverController.createDriverProfile(
+                "driver@example.com",
+                UserType.DRIVER,
+                "driver@example.com",
+                request);
 
         assertEquals(201, response.getStatusCode().value());
         verify(driverService).createDriverProfile("driver@example.com", request);
@@ -76,9 +82,19 @@ class DriverControllerTest {
                 .build();
         when(driverService.updateDriverProfile("driver@example.com", request)).thenReturn(driverResponse);
 
-        var response = driverController.updateDriverProfile("driver@example.com", request);
+        var response = driverController.updateDriverProfile(
+                "driver@example.com",
+                UserType.DRIVER,
+                "driver@example.com",
+                request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Jane", response.getBody().getData().firstName());
+    }
+
+    @Test
+    void getDriverProfile_withMismatchedOwner_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> driverController.getDriverProfile("other@example.com", UserType.DRIVER, "driver@example.com"));
     }
 }
