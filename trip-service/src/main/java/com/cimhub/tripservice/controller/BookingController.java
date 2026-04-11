@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/bookings")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Booking Management", description = "APIs for drivers to manage booking requests (accept/reject) and confirm passenger bookings for their trips.")
+@Tag(
+        name = "Booking Management",
+        description =
+                "APIs for drivers to manage booking requests (accept/reject) and confirm passenger bookings for their trips.")
 public class BookingController {
 
     private final JoinTripService joinTripService;
@@ -37,23 +40,27 @@ public class BookingController {
 
     @Operation(
             summary = "Get booking details",
-            description = "Retrieve detailed information about a specific booking by ID. Used for review validation and other purposes."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Booking details retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
-            )
-    })
+            description =
+                    "Retrieve detailed information about a specific booking by ID. Used for review validation and other purposes.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Booking details retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Booking not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
+            })
     @GetMapping("/{bookingId}")
-    public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(
-            @PathVariable String bookingId) {
+    public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(@PathVariable String bookingId) {
         log.info("Fetching booking details for bookingId: {}", bookingId);
         BookingResponse response = bookingService.getBooking(bookingId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
@@ -61,25 +68,39 @@ public class BookingController {
 
     @Operation(
             summary = "Accept a booking request",
-            description = "Driver accepts a passenger's booking request, confirming the ride."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Booking accepted",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
-            )
-    })
+            description = "Driver accepts a passenger's booking request, confirming the ride.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Booking accepted",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Booking not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
+            })
     @PostMapping("/accept")
     public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
             @RequestParam String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 
@@ -88,27 +109,39 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
-    @Operation(
-            summary = "Reject a booking request",
-            description = "Driver rejects a passenger's booking request."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Booking rejected",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.CANCEL_BOOKING_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
-            )
-    })
+    @Operation(summary = "Reject a booking request", description = "Driver rejects a passenger's booking request.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Booking rejected",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.CANCEL_BOOKING_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Booking not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
+            })
     @PostMapping("/reject")
     public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
             @RequestParam String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 
@@ -119,27 +152,29 @@ public class BookingController {
 
     @Operation(
             summary = "Complete a passenger's ride",
-            description = "Driver confirms a passenger's drop-off at their stop. The trip continues for remaining passengers."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Ride completed"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Booking not found"
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Ride is not in a completable state"
-            )
-    })
+            description =
+                    "Driver confirms a passenger's drop-off at their stop. The trip continues for remaining passengers.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Ride completed"),
+                @ApiResponse(responseCode = "404", description = "Booking not found"),
+                @ApiResponse(responseCode = "409", description = "Ride is not in a completable state")
+            })
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 

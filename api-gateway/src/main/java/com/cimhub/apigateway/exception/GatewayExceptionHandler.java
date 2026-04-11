@@ -6,6 +6,10 @@ import com.cimhub.common.exception.BusinessException;
 import com.cimhub.common.exception.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.ConnectException;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
@@ -20,11 +24,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.net.ConnectException;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Collections;
 
 /**
  * Global exception handler for API Gateway.
@@ -69,14 +68,15 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
      */
     private Mono<Void> forwardDownstreamError(ServerWebExchange exchange, WebClientResponseException ex) {
         ServerHttpResponse response = exchange.getResponse();
-        
+
         response.setStatusCode(ex.getStatusCode());
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        
-        String method = exchange.getRequest().getMethod() != null 
-                ? exchange.getRequest().getMethod().name() : "UNKNOWN";
+
+        String method = exchange.getRequest().getMethod() != null
+                ? exchange.getRequest().getMethod().name()
+                : "UNKNOWN";
         String path = exchange.getRequest().getURI().getPath();
-        
+
         if (ex.getStatusCode().is5xxServerError()) {
             log.error("Downstream error [{} {}]: {}", method, path, ex.getStatusCode(), ex);
         } else {
@@ -86,11 +86,12 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         byte[] body = ex.getResponseBodyAsByteArray();
         if (body.length == 0) {
             // No body from downstream - create minimal error
-            body = String.format("{\"status\":%d,\"error\":\"%s\"}", 
-                    ex.getStatusCode().value(), 
-                    ex.getStatusText()).getBytes(StandardCharsets.UTF_8);
+            body = String.format(
+                            "{\"status\":%d,\"error\":\"%s\"}",
+                            ex.getStatusCode().value(), ex.getStatusText())
+                    .getBytes(StandardCharsets.UTF_8);
         }
-        
+
         DataBuffer buffer = response.bufferFactory().wrap(body);
         return response.writeWith(Mono.just(buffer));
     }
@@ -125,10 +126,11 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
             message = "Gateway error";
         }
 
-        String method = exchange.getRequest().getMethod() != null 
-                ? exchange.getRequest().getMethod().name() : "UNKNOWN";
+        String method = exchange.getRequest().getMethod() != null
+                ? exchange.getRequest().getMethod().name()
+                : "UNKNOWN";
         String path = exchange.getRequest().getURI().getPath();
-        
+
         if (status.is5xxServerError()) {
             log.error("Gateway error [{} {}]", method, path, ex);
         } else {

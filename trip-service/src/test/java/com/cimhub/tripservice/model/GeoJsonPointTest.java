@@ -1,11 +1,10 @@
 package com.cimhub.tripservice.model;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class GeoJsonPointTest {
 
@@ -21,7 +20,8 @@ class GeoJsonPointTest {
 
     @Test
     void getters_whenCoordinatesMissing_shouldReturnNull() {
-        GeoJsonPoint point = GeoJsonPoint.builder().type("Point").coordinates(List.of()).build();
+        GeoJsonPoint point =
+                GeoJsonPoint.builder().type("Point").coordinates(List.of()).build();
 
         assertNull(point.getLongitude());
         assertNull(point.getLatitude());
@@ -29,7 +29,8 @@ class GeoJsonPointTest {
 
     @Test
     void getLatitude_whenOnlyLongitudePresent_shouldReturnNull() {
-        GeoJsonPoint point = GeoJsonPoint.builder().type("Point").coordinates(List.of(13.4)).build();
+        GeoJsonPoint point =
+                GeoJsonPoint.builder().type("Point").coordinates(List.of(13.4)).build();
 
         assertEquals(13.4, point.getLongitude());
         assertNull(point.getLatitude());

@@ -1,5 +1,12 @@
 package com.cimhub.userservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
@@ -9,21 +16,13 @@ import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.repository.DriverRepository;
+import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DriverServiceTest {
@@ -41,8 +40,8 @@ class DriverServiceTest {
     @Test
     void createDriverProfile_happyPath() {
         String userId = "driver@example.com";
-        CreateDriverProfileRequest request = new CreateDriverProfileRequest(
-                "John", "Doe", "+1234567890", 25, "DL123456");
+        CreateDriverProfileRequest request =
+                new CreateDriverProfileRequest("John", "Doe", "+1234567890", 25, "DL123456");
 
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.empty());
         when(driverRepository.save(any(Driver.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -65,15 +64,14 @@ class DriverServiceTest {
     @Test
     void createDriverProfile_whenAlreadyExists_throwsUserAlreadyExists() {
         String userId = "driver@example.com";
-        CreateDriverProfileRequest request = new CreateDriverProfileRequest(
-                "John", "Doe", "+1234567890", 25, "DL123456");
+        CreateDriverProfileRequest request =
+                new CreateDriverProfileRequest("John", "Doe", "+1234567890", 25, "DL123456");
 
         Driver existingDriver = new Driver();
         existingDriver.setUserId(userId);
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.of(existingDriver));
 
-        assertThrows(UserAlreadyExistsException.class,
-                () -> driverService.createDriverProfile(userId, request));
+        assertThrows(UserAlreadyExistsException.class, () -> driverService.createDriverProfile(userId, request));
     }
 
     @Test
@@ -112,8 +110,7 @@ class DriverServiceTest {
 
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> driverService.getDriverProfile(userId));
+        assertThrows(ResourceNotFoundException.class, () -> driverService.getDriverProfile(userId));
     }
 
     @Test
@@ -130,8 +127,7 @@ class DriverServiceTest {
         existingDriver.setCreatedAt(Instant.now());
         existingDriver.setUpdatedAt(Instant.now());
 
-        UpdateDriverRequest updateRequest = new UpdateDriverRequest(
-                null, "Smith", "+0987654321", null, null);
+        UpdateDriverRequest updateRequest = new UpdateDriverRequest(null, "Smith", "+0987654321", null, null);
 
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.of(existingDriver));
         when(driverRepository.save(any(Driver.class))).thenAnswer(inv -> inv.getArgument(0));

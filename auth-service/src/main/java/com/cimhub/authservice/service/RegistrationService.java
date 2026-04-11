@@ -13,12 +13,11 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.service.AuditService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -59,8 +58,8 @@ public class RegistrationService {
     }
 
     private void validateLicenseNumber(RegisterUserRequest request) {
-        if (request.userType() == UserType.DRIVER && 
-                (request.licenseNumber() == null || request.licenseNumber().isBlank())) {
+        if (request.userType() == UserType.DRIVER
+                && (request.licenseNumber() == null || request.licenseNumber().isBlank())) {
             throw new BadRequestException("License number is required for DRIVER users");
         }
     }
@@ -98,7 +97,10 @@ public class RegistrationService {
         } catch (Exception e) {
             log.error("Failed to create sub-profile in user-service, rolling back user: {}", normalizedEmail, e);
             authUserRepository.deleteById(normalizedEmail);
-            auditService.logDelete(EntityType.USER, normalizedEmail, normalizedEmail, 
+            auditService.logDelete(
+                    EntityType.USER,
+                    normalizedEmail,
+                    normalizedEmail,
                     "User rollback after sub-profile creation failure");
             throw new RuntimeException("Registration failed: unable to create user sub-profile", e);
         }
@@ -106,8 +108,7 @@ public class RegistrationService {
 
     private SignUpResponse generateSignupResponse(User user) {
         String token = jwtService.generateTokenWithRole(
-                UserDetailsBuilder.fromUser(user),
-                user.getUserType().name());
+                UserDetailsBuilder.fromUser(user), user.getUserType().name());
 
         return SignUpResponse.builder()
                 .token(token)

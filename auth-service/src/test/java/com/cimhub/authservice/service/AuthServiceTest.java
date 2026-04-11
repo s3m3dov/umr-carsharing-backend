@@ -1,5 +1,10 @@
 package com.cimhub.authservice.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
@@ -10,6 +15,7 @@ import com.cimhub.authservice.testsupport.AuthFixtures;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,30 +24,26 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock private JwtService jwtService;
-    @Mock private AuthenticationManager authenticationManager;
-    @Mock private AuthUserRepository authUserRepository;
-    @Mock private AuditService auditService;
+    @Mock
+    private JwtService jwtService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private AuthUserRepository authUserRepository;
+
+    @Mock
+    private AuditService auditService;
 
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(
-                jwtService,
-                authenticationManager,
-                authUserRepository,
-                auditService);
+        authService = new AuthService(jwtService, authenticationManager, authUserRepository, auditService);
     }
 
     // ── login ─────────────────────────────────────────────────────────────────
@@ -75,10 +77,11 @@ class AuthServiceTest {
     @Test
     void login_withWrongCredentials_shouldThrowUnauthorized() {
         doThrow(new BadCredentialsException("Bad credentials"))
-                .when(authenticationManager).authenticate(any());
+                .when(authenticationManager)
+                .authenticate(any());
 
-        assertThrows(UnauthorizedException.class,
-                () -> authService.login(new LoginRequest("bad@example.com", "wrong")));
+        assertThrows(
+                UnauthorizedException.class, () -> authService.login(new LoginRequest("bad@example.com", "wrong")));
 
         verify(jwtService, never()).generateTokenWithRole(any(), anyString());
     }
@@ -110,8 +113,7 @@ class AuthServiceTest {
 
     @Test
     void validateToken_withMalformedToken_shouldReturnFalseWithoutThrowing() {
-        when(jwtService.extractUsername("garbage"))
-                .thenThrow(new io.jsonwebtoken.MalformedJwtException("bad token"));
+        when(jwtService.extractUsername("garbage")).thenThrow(new io.jsonwebtoken.MalformedJwtException("bad token"));
 
         ValidateTokenResponse response = authService.validateToken(new ValidateTokenRequest("garbage"));
 

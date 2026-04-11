@@ -1,11 +1,11 @@
 package com.cimhub.authservice.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.authservice.model.User;
 import com.cimhub.common.enums.UserType;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UserDetailsBuilderTest {
 
@@ -30,7 +30,8 @@ class UserDetailsBuilderTest {
 
         UserDetails userDetails = UserDetailsBuilder.fromUser(user, UserType.ADMIN.name());
 
-        assertEquals("ROLE_ADMIN", userDetails.getAuthorities().iterator().next().getAuthority());
+        assertEquals(
+                "ROLE_ADMIN", userDetails.getAuthorities().iterator().next().getAuthority());
     }
 
     @Test
@@ -42,6 +43,7 @@ class UserDetailsBuilderTest {
 
         UserDetails userDetails = UserDetailsBuilder.fromUserWithType(user);
 
-        assertEquals("ROLE_DRIVER", userDetails.getAuthorities().iterator().next().getAuthority());
+        assertEquals(
+                "ROLE_DRIVER", userDetails.getAuthorities().iterator().next().getAuthority());
     }
 }

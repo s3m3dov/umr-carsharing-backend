@@ -1,10 +1,9 @@
 package com.cimhub.tripservice.service.util;
 
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle timezone conversions for trip times.

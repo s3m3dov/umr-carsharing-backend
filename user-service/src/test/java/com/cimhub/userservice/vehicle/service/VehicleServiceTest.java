@@ -1,27 +1,26 @@
 package com.cimhub.userservice.vehicle.service;
 
-import com.cimhub.common.service.AuditService;
-import com.cimhub.common.exception.BadRequestException;
-import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
-import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
-import com.cimhub.userservice.vehicle.model.Vehicle;
-import com.cimhub.userservice.vehicle.repository.VehicleRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.cimhub.common.exception.BadRequestException;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.service.AuditService;
+import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
+import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
+import com.cimhub.userservice.vehicle.model.Vehicle;
+import com.cimhub.userservice.vehicle.repository.VehicleRepository;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceTest {
@@ -43,13 +42,8 @@ class VehicleServiceTest {
 
     @Test
     void registerVehicle_withNewPlate_shouldUppercasePersistAndReturnVehicleResponse() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Tesla Model 3",
-                "he-xx-1234",
-                "sedan",
-                "white",
-                "5");
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Tesla Model 3", "he-xx-1234", "sedan", "white", "5");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(false);
@@ -78,13 +72,8 @@ class VehicleServiceTest {
 
     @Test
     void registerVehicle_whenDriverAlreadyHasVehicle_shouldThrowBadRequestWithoutPersisting() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "BMW X5",
-                "HE-XX-9999",
-                "suv",
-                "black",
-                "7");
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "BMW X5", "HE-XX-9999", "suv", "black", "7");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(true);
 
@@ -95,13 +84,8 @@ class VehicleServiceTest {
 
     @Test
     void registerVehicle_withDuplicatePlate_shouldThrowBadRequestWithoutPersisting() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "BMW X5",
-                "HE-XX-9999",
-                "suv",
-                "black",
-                "7");
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "BMW X5", "HE-XX-9999", "suv", "black", "7");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-9999")).thenReturn(true);
@@ -114,13 +98,8 @@ class VehicleServiceTest {
     @Test
     void registerVehicle_plateNormalizationIsAppliedBeforeDuplicateCheck() {
         // Lowercase input "he-xx-1234" must be uppercased to "HE-XX-1234" before the uniqueness check
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Mini Cooper",
-                "he-xx-1234",
-                "hatchback",
-                "red",
-                "4");
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Mini Cooper", "he-xx-1234", "hatchback", "red", "4");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(true);
@@ -164,7 +143,6 @@ class VehicleServiceTest {
     void findUserVehicles_whenNoneExist_shouldThrowResourceNotFound() {
         when(vehicleRepository.findByUserId("driver@example.com")).thenReturn(List.of());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> vehicleService.findUserVehicles("driver@example.com"));
+        assertThrows(ResourceNotFoundException.class, () -> vehicleService.findUserVehicles("driver@example.com"));
     }
 }

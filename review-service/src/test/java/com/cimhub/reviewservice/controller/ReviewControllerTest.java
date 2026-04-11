@@ -1,10 +1,15 @@
 package com.cimhub.reviewservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.service.ReviewService;
 import com.cimhub.reviewservice.testsupport.ReviewFixtures;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewControllerTest {
@@ -44,8 +43,8 @@ class ReviewControllerTest {
         when(reviewService.submitDriverReview("passenger@example.com", UserType.PASSENGER, request))
                 .thenReturn(responseBody);
 
-        ResponseEntity<?> response = reviewController.submitDriverReview(
-                "passenger@example.com", UserType.PASSENGER, request);
+        ResponseEntity<?> response =
+                reviewController.submitDriverReview("passenger@example.com", UserType.PASSENGER, request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         verify(reviewService).submitDriverReview("passenger@example.com", UserType.PASSENGER, request);
@@ -63,8 +62,8 @@ class ReviewControllerTest {
         when(reviewService.submitPassengerReview("driver@example.com", UserType.DRIVER, request))
                 .thenReturn(responseBody);
 
-        ResponseEntity<?> response = reviewController.submitPassengerReview(
-                "driver@example.com", UserType.DRIVER, request);
+        ResponseEntity<?> response =
+                reviewController.submitPassengerReview("driver@example.com", UserType.DRIVER, request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         verify(reviewService).submitPassengerReview("driver@example.com", UserType.DRIVER, request);
@@ -82,7 +81,8 @@ class ReviewControllerTest {
 
     @Test
     void getPassengerReviews_shouldReturnOkResponse() {
-        when(reviewService.getPassengerReviews("passenger-1")).thenReturn(List.of(ReviewFixtures.reviewResponse("review-3")));
+        when(reviewService.getPassengerReviews("passenger-1"))
+                .thenReturn(List.of(ReviewFixtures.reviewResponse("review-3")));
 
         ResponseEntity<?> response = reviewController.getPassengerReviews("passenger-1");
 

@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.service.booking;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
@@ -7,15 +8,13 @@ import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -31,13 +30,15 @@ public class AdminBookingService {
     }
 
     public BookingResponse getBooking(String bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository
+                .findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
         return bookingMapper.toBookingResponse(booking);
     }
 
     public BookingResponse updateBooking(String bookingId, UpdateBookingRequest request, String adminEmail) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository
+                .findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
 
         if (request.status() != null) booking.setStatus(request.status());
@@ -51,7 +52,8 @@ public class AdminBookingService {
     }
 
     public void cancelBooking(String bookingId, String adminEmail) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository
+                .findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setUpdatedAt(Instant.now());

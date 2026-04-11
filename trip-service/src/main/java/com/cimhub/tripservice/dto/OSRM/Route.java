@@ -9,5 +9,4 @@ public record Route(
         Double distance,
         Double duration,
         @JsonProperty("weight_name") String weightName,
-        Double weight) {
-}
+        Double weight) {}

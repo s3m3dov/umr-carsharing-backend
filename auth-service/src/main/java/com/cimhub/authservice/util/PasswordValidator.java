@@ -1,9 +1,7 @@
 package com.cimhub.authservice.util;
 
-import lombok.experimental.UtilityClass;
-import org.springframework.stereotype.Component;
-
 import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PasswordValidator {

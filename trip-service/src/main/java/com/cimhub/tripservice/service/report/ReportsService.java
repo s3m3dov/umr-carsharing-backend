@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.service.report;
 
 import com.cimhub.common.enums.AuditAction;
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.model.AuditLog;
 import com.cimhub.tripservice.dto.response.AuditLogResponse;
@@ -10,11 +12,13 @@ import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
 import com.cimhub.tripservice.dto.response.PassengerActivityReport;
 import com.cimhub.tripservice.dto.response.RevenueReport;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,11 +29,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -45,12 +44,10 @@ public class ReportsService {
         long cancelled = tripsRepository.countByTripStatus(TripStatus.CANCELLED);
         long inProgress = tripsRepository.countByTripStatus(TripStatus.IN_PROGRESS);
         long available = tripsRepository.countByTripStatus(TripStatus.AVAILABLE);
-        
+
         List<Trip> tripsWithDrivers = tripsRepository.findDistinctDriverIds();
-        long totalDrivers = tripsWithDrivers.stream()
-                .map(Trip::getDriverId)
-                .distinct()
-                .count();
+        long totalDrivers =
+                tripsWithDrivers.stream().map(Trip::getDriverId).distinct().count();
 
         return DriverPerformanceReport.builder()
                 .totalDrivers(totalDrivers)
@@ -114,8 +111,7 @@ public class ReportsService {
             String performedBy,
             Instant from,
             Instant to,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Query query = new Query();
         List<Criteria> filters = new ArrayList<>();
 
@@ -150,8 +146,7 @@ public class ReportsService {
         }
         query.with(pageable);
 
-        List<AuditLogResponse> logs = mongoTemplate.find(query, AuditLog.class)
-                .stream()
+        List<AuditLogResponse> logs = mongoTemplate.find(query, AuditLog.class).stream()
                 .map(this::toResponse)
                 .toList();
 

@@ -8,13 +8,12 @@ import com.cimhub.reviewservice.mapper.ReviewMapper;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -35,13 +34,15 @@ public class AdminReviewService {
     }
 
     public ReviewResponse getReview(String reviewId) {
-        Review review = reviewDataRepository.findById(reviewId)
+        Review review = reviewDataRepository
+                .findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         return ReviewMapper.toResponse(review);
     }
 
     public ReviewResponse flagReview(String reviewId, String adminEmail) {
-        Review review = reviewDataRepository.findById(reviewId)
+        Review review = reviewDataRepository
+                .findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.FLAGGED);
         review.setUpdatedAt(Instant.now());
@@ -52,7 +53,8 @@ public class AdminReviewService {
     }
 
     public void removeReview(String reviewId, String adminEmail) {
-        Review review = reviewDataRepository.findById(reviewId)
+        Review review = reviewDataRepository
+                .findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.REMOVED);
         review.setUpdatedAt(Instant.now());
@@ -62,7 +64,8 @@ public class AdminReviewService {
     }
 
     public ReviewResponse publishReview(String reviewId, String adminEmail) {
-        Review review = reviewDataRepository.findById(reviewId)
+        Review review = reviewDataRepository
+                .findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found: " + reviewId));
         review.setStatus(ReviewStatus.PUBLISHED);
         review.setUpdatedAt(Instant.now());
@@ -71,5 +74,4 @@ public class AdminReviewService {
         log.info("Review {} published by admin {}", reviewId, adminEmail);
         return ReviewMapper.toResponse(review);
     }
-
 }

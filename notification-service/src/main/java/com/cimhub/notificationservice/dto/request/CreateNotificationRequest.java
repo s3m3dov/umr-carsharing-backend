@@ -4,9 +4,8 @@ import com.cimhub.common.enums.NotificationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-
 import java.util.Map;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "CreateNotificationRequest", description = "Request to create and deliver a notification")
@@ -26,13 +25,10 @@ public record CreateNotificationRequest(
         @Schema(description = "Notification message body", example = "Your booking for trip trip_001 is confirmed.")
         String message,
 
-        @NotNull(message = "type is required")
-        @Schema(description = "Notification type", example = "BOOKING_REQUESTED")
+        @NotNull(message = "type is required") @Schema(description = "Notification type", example = "BOOKING_REQUESTED")
         NotificationType type,
 
         @Schema(description = "Related entity id such as trip or booking", example = "booking_001")
         String relatedEntityId,
 
-        @Schema(description = "Additional metadata payload")
-        Map<String, Object> metadata) {
-}
+        @Schema(description = "Additional metadata payload") Map<String, Object> metadata) {}

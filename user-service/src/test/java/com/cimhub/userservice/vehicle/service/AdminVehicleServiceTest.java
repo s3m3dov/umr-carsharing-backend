@@ -1,5 +1,13 @@
 package com.cimhub.userservice.vehicle.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ResourceNotFoundException;
@@ -8,22 +16,13 @@ import com.cimhub.userservice.dto.response.AdminVehicleResponse;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.model.Vehicle;
 import com.cimhub.userservice.vehicle.repository.VehicleRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminVehicleServiceTest {
@@ -43,14 +42,8 @@ class AdminVehicleServiceTest {
 
     @Test
     void createVehicle_shouldUppercaseVehicleNumberAndAudit() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Tesla Model 3",
-                "he-xx-1234",
-                "sedan",
-                "white",
-                "5"
-        );
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Tesla Model 3", "he-xx-1234", "sedan", "white", "5");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(false);
@@ -71,24 +64,18 @@ class AdminVehicleServiceTest {
         verify(vehicleRepository).save(vehicleCaptor.capture());
         assertEquals("HE-XX-1234", vehicleCaptor.getValue().getVehicleNumber());
 
-        verify(auditService).logCreate(EntityType.VEHICLE, "vehicle-1", "admin@example.com", "Vehicle created by admin");
+        verify(auditService)
+                .logCreate(EntityType.VEHICLE, "vehicle-1", "admin@example.com", "Vehicle created by admin");
     }
 
     @Test
     void createVehicle_whenDriverAlreadyHasVehicle_shouldThrowBadRequest() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Tesla Model 3",
-                "he-xx-1234",
-                "sedan",
-                "white",
-                "5"
-        );
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Tesla Model 3", "he-xx-1234", "sedan", "white", "5");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(true);
 
-        assertThrows(BadRequestException.class,
-                () -> adminVehicleService.createVehicle(request, "admin@example.com"));
+        assertThrows(BadRequestException.class, () -> adminVehicleService.createVehicle(request, "admin@example.com"));
 
         verify(vehicleRepository, never()).save(any(Vehicle.class));
         verify(auditService, never()).logCreate(any(), any(), any(), any());
@@ -96,20 +83,13 @@ class AdminVehicleServiceTest {
 
     @Test
     void createVehicle_whenVehicleNumberExists_shouldThrowBadRequest() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Tesla Model 3",
-                "he-xx-1234",
-                "sedan",
-                "white",
-                "5"
-        );
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Tesla Model 3", "he-xx-1234", "sedan", "white", "5");
 
         when(vehicleRepository.existsByUserId("driver@example.com")).thenReturn(false);
         when(vehicleRepository.existsByVehicleNumber("HE-XX-1234")).thenReturn(true);
 
-        assertThrows(BadRequestException.class,
-                () -> adminVehicleService.createVehicle(request, "admin@example.com"));
+        assertThrows(BadRequestException.class, () -> adminVehicleService.createVehicle(request, "admin@example.com"));
 
         verify(vehicleRepository, never()).save(any(Vehicle.class));
         verify(auditService, never()).logCreate(any(), any(), any(), any());

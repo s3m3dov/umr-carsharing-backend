@@ -1,5 +1,7 @@
 package com.cimhub.authservice.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,9 +10,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -22,13 +21,11 @@ public class UserServiceClient {
 
     private final RestClient restClient;
 
-    public void createPassengerSubProfile(String userId,
-                                          String firstName,
-                                          String lastName,
-                                          String phoneNumber,
-                                          int age) {
+    public void createPassengerSubProfile(
+            String userId, String firstName, String lastName, String phoneNumber, int age) {
         try {
-            restClient.post()
+            restClient
+                    .post()
                     .uri(userServiceBaseUrl + "/api/internal/passengers/{userId}", userId)
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .body(buildPassengerBody(firstName, lastName, phoneNumber, age))
@@ -53,14 +50,11 @@ public class UserServiceClient {
         }
     }
 
-    public void createDriverSubProfile(String userId,
-                                       String firstName,
-                                       String lastName,
-                                       String phoneNumber,
-                                       int age,
-                                       String licenseNumber) {
+    public void createDriverSubProfile(
+            String userId, String firstName, String lastName, String phoneNumber, int age, String licenseNumber) {
         try {
-            restClient.post()
+            restClient
+                    .post()
                     .uri(userServiceBaseUrl + "/api/internal/drivers/{userId}", userId)
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .body(buildDriverBody(firstName, lastName, phoneNumber, age, licenseNumber))
@@ -85,11 +79,8 @@ public class UserServiceClient {
         }
     }
 
-    private Map<String, Object> buildDriverBody(String firstName,
-                                                String lastName,
-                                                String phoneNumber,
-                                                int age,
-                                                String licenseNumber) {
+    private Map<String, Object> buildDriverBody(
+            String firstName, String lastName, String phoneNumber, int age, String licenseNumber) {
         Map<String, Object> body = new HashMap<>();
         body.put("firstName", firstName);
         body.put("lastName", lastName);
@@ -99,10 +90,7 @@ public class UserServiceClient {
         return body;
     }
 
-    private Map<String, Object> buildPassengerBody(String firstName,
-                                                   String lastName,
-                                                   String phoneNumber,
-                                                   int age) {
+    private Map<String, Object> buildPassengerBody(String firstName, String lastName, String phoneNumber, int age) {
         Map<String, Object> body = new HashMap<>();
         body.put("firstName", firstName);
         body.put("lastName", lastName);

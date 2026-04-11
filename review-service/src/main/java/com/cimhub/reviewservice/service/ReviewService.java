@@ -19,15 +19,14 @@ import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
 import com.cimhub.reviewservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,27 +41,29 @@ public class ReviewService {
     @Transactional
     public ReviewResponse submitDriverReview(String userId, UserType userRole, SubmitReviewRequest request) {
         return submitReview(
-                userId, userRole, request,
+                userId,
+                userRole,
+                request,
                 UserType.PASSENGER,
                 UserType.DRIVER,
                 "Only passengers can review drivers",
                 reviewerId -> new PassengerNotFoundException("Reviewer user not found: " + reviewerId),
                 this::resolveDriverRevieweeId,
-                "Driver review submitted"
-        );
+                "Driver review submitted");
     }
 
     @Transactional
     public ReviewResponse submitPassengerReview(String userId, UserType userRole, SubmitReviewRequest request) {
         return submitReview(
-                userId, userRole, request,
+                userId,
+                userRole,
+                request,
                 UserType.DRIVER,
                 UserType.PASSENGER,
                 "Only drivers can review passengers",
                 reviewerId -> new DriverNotFoundException("Reviewer user not found: " + reviewerId),
                 this::resolvePassengerRevieweeId,
-                "Passenger review submitted"
-        );
+                "Passenger review submitted");
     }
 
     public List<ReviewResponse> getDriverReviews(String driverId) {
@@ -73,7 +74,8 @@ public class ReviewService {
 
     public List<ReviewResponse> getPassengerReviews(String passengerId) {
         log.info("Fetching reviews for passenger: {}", passengerId);
-        ensureUserExists(passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
+        ensureUserExists(
+                passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
         return getReviewsForReviewee(passengerId, UserType.PASSENGER, "No reviews found for passenger: " + passengerId);
     }
 
@@ -85,7 +87,8 @@ public class ReviewService {
 
     public AverageRatingResponse getPassengerAverageRating(String passengerId) {
         log.info("Calculating average rating for passenger: {}", passengerId);
-        ensureUserExists(passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
+        ensureUserExists(
+                passengerId, reviewerId -> new PassengerNotFoundException("Passenger not found: " + reviewerId));
         return calculateAverageRating(passengerId, UserType.PASSENGER);
     }
 
@@ -99,7 +102,11 @@ public class ReviewService {
             Function<String, RuntimeException> reviewerNotFoundFactory,
             BiFunction<String, SubmitReviewRequest, String> revieweeIdResolver,
             String auditMessage) {
-        log.info("Submitting {} review from user: {} for trip: {}", revieweeType.name().toLowerCase(), userId, request.tripId());
+        log.info(
+                "Submitting {} review from user: {} for trip: {}",
+                revieweeType.name().toLowerCase(),
+                userId,
+                request.tripId());
 
         validateRatingRange(request.rating());
         validateUserRole(userRole, expectedReviewerRole, roleValidationError);
@@ -148,7 +155,12 @@ public class ReviewService {
         return passengerId;
     }
 
-    private Review buildReview(String userId, UserType reviewerType, SubmitReviewRequest request, String revieweeId, UserType revieweeType) {
+    private Review buildReview(
+            String userId,
+            UserType reviewerType,
+            SubmitReviewRequest request,
+            String revieweeId,
+            UserType revieweeType) {
         Instant now = Instant.now();
         return Review.builder()
                 .tripId(request.tripId())
@@ -183,14 +195,13 @@ public class ReviewService {
         }
     }
 
-    private List<ReviewResponse> getReviewsForReviewee(String revieweeId, UserType revieweeType, String noReviewsMessage) {
+    private List<ReviewResponse> getReviewsForReviewee(
+            String revieweeId, UserType revieweeType, String noReviewsMessage) {
         List<Review> reviews = reviewRepository.findByRevieweeIdAndRevieweeType(revieweeId, revieweeType);
         if (reviews.isEmpty()) {
             throw new ReviewsNotFoundException(noReviewsMessage);
         }
-        return reviews.stream()
-                .map(ReviewMapper::toResponse)
-                .toList();
+        return reviews.stream().map(ReviewMapper::toResponse).toList();
     }
 
     private AverageRatingResponse calculateAverageRating(String subjectId, UserType revieweeType) {
@@ -205,7 +216,8 @@ public class ReviewService {
 
         return AverageRatingResponse.builder()
                 .subjectId(subjectId)
-                .averageRating(reviews.stream().mapToInt(Review::getRating).average().orElse(0.0))
+                .averageRating(
+                        reviews.stream().mapToInt(Review::getRating).average().orElse(0.0))
                 .totalReviews(reviews.size())
                 .build();
     }

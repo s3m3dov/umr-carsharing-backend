@@ -9,5 +9,4 @@ public record BookingSummaryReport(
         long cancelledBookings,
         long requestedBookings,
         long completedBookings,
-        long rejectedBookings) {
-}
+        long rejectedBookings) {}

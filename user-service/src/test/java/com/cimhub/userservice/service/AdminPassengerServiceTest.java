@@ -1,5 +1,12 @@
 package com.cimhub.userservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
@@ -9,6 +16,9 @@ import com.cimhub.userservice.dto.request.CreatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.PassengerRepository;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,17 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminPassengerServiceTest {
@@ -48,16 +47,11 @@ class AdminPassengerServiceTest {
 
     @Test
     void createPassenger_shouldThrowBadRequest() {
-        CreatePassengerRequest request = new CreatePassengerRequest(
-                "passenger@example.com",
-                "Pat",
-                "Rider",
-                "+49 100 200300",
-                27
-        );
+        CreatePassengerRequest request =
+                new CreatePassengerRequest("passenger@example.com", "Pat", "Rider", "+49 100 200300", 27);
 
-        assertThrows(BadRequestException.class,
-                () -> adminPassengerService.createPassenger(request, "admin@example.com"));
+        assertThrows(
+                BadRequestException.class, () -> adminPassengerService.createPassenger(request, "admin@example.com"));
 
         verify(passengerRepository, never()).save(any(Passenger.class));
         verify(auditService, never()).logCreate(any(), any(), any(), any());
@@ -67,8 +61,7 @@ class AdminPassengerServiceTest {
     void getPassenger_whenMissing_shouldThrowResourceNotFound() {
         when(passengerRepository.findByUserId("missing-passenger")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> adminPassengerService.getPassenger("missing-passenger"));
+        assertThrows(ResourceNotFoundException.class, () -> adminPassengerService.getPassenger("missing-passenger"));
     }
 
     @Test
@@ -117,8 +110,8 @@ class AdminPassengerServiceTest {
         assertEquals("999", response.phoneNumber());
         assertEquals(31, response.age());
         assertEquals("p3@example.com", response.email());
-        verify(auditService).logUpdate(EntityType.PASSENGER, "p3@example.com", "admin@example.com",
-                "Passenger info updated");
+        verify(auditService)
+                .logUpdate(EntityType.PASSENGER, "p3@example.com", "admin@example.com", "Passenger info updated");
     }
 
     @Test
@@ -133,7 +126,7 @@ class AdminPassengerServiceTest {
         adminPassengerService.deletePassenger("p4@example.com", "admin@example.com");
 
         verify(passengerRepository).delete(passenger);
-        verify(auditService).logDelete(EntityType.PASSENGER, "p4@example.com", "admin@example.com",
-                "Passenger deleted");
+        verify(auditService)
+                .logDelete(EntityType.PASSENGER, "p4@example.com", "admin@example.com", "Passenger deleted");
     }
 }

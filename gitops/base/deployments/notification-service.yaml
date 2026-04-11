@@ -1,79 +1,80 @@
-apiVersion: apps/v1
-kind: Deployment
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
 metadata:
-  name: notification-service
-  namespace: carsharing
+  name: "notification-service"
+  namespace: "carsharing"
   labels:
-    app: notification-service
+    app: "notification-service"
 spec:
   replicas: 0
   selector:
     matchLabels:
-      app: notification-service
+      app: "notification-service"
   template:
     metadata:
       labels:
-        app: notification-service
+        app: "notification-service"
     spec:
-      serviceAccountName: spring-cloud
+      serviceAccountName: "spring-cloud"
       containers:
-        - name: notification-service
-          image: eu.gcr.io/project-id/notification-service:latest
-          ports:
-            - containerPort: 8080
-              name: http
-          env:
-            - name: MONGODB_URI
-              valueFrom:
-                secretKeyRef:
-                  name: carsharing-secrets
-                  key: MONGODB_URI
-            - name: SPRING_PROFILES_ACTIVE
-              value: "kubernetes"
-            - name: JAVA_TOOL_OPTIONS
-              value: "-XX:MaxRAMPercentage=70 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError"
-          resources:
-            requests:
-              memory: "192Mi"
-              cpu: "75m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          startupProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 30
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8080
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6
+      - name: "notification-service"
+        image: "eu.gcr.io/project-id/notification-service:latest"
+        ports:
+        - containerPort: 8080
+          name: "http"
+        env:
+        - name: "MONGODB_URI"
+          valueFrom:
+            secretKeyRef:
+              name: "carsharing-secrets"
+              key: "MONGODB_URI"
+        - name: "SPRING_PROFILES_ACTIVE"
+          value: "kubernetes"
+        - name: "JAVA_TOOL_OPTIONS"
+          value: "-XX:MaxRAMPercentage=70 -XX:InitialRAMPercentage=20 -XX:+ExitOnOutOfMemoryError"
+        resources:
+          requests:
+            memory: "192Mi"
+            cpu: "75m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: "/actuator/health/liveness"
+            port: 8080
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: "/actuator/health/liveness"
+            port: 8080
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: "/actuator/health/readiness"
+            port: 8080
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
 ---
-apiVersion: v1
-kind: Service
+apiVersion: "v1"
+kind: "Service"
 metadata:
-  name: notification-service
-  namespace: carsharing
+  name: "notification-service"
+  namespace: "carsharing"
   labels:
-    app: notification-service
+    app: "notification-service"
 spec:
-  type: ClusterIP
+  type: "ClusterIP"
   ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-      name: http
+  - port: 8080
+    targetPort: 8080
+    protocol: "TCP"
+    name: "http"
   selector:
-    app: notification-service
+    app: "notification-service"

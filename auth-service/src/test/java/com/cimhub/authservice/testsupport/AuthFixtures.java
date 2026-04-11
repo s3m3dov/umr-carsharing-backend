@@ -3,13 +3,11 @@ package com.cimhub.authservice.testsupport;
 import com.cimhub.authservice.dto.request.RegisterUserRequest;
 import com.cimhub.authservice.model.User;
 import com.cimhub.common.enums.UserType;
-
 import java.time.Instant;
 
 public final class AuthFixtures {
 
-    private AuthFixtures() {
-    }
+    private AuthFixtures() {}
 
     public static User user(String email, UserType userType) {
         User user = new User();
@@ -23,15 +21,6 @@ public final class AuthFixtures {
     }
 
     public static RegisterUserRequest registerRequest(String email, UserType userType, String licenseNumber) {
-        return new RegisterUserRequest(
-                "John",
-                "Driver",
-                email,
-                "Password123!",
-                userType,
-                "+49 123",
-                30,
-                licenseNumber
-        );
+        return new RegisterUserRequest("John", "Driver", email, "Password123!", userType, "+49 123", 30, licenseNumber);
     }
 }

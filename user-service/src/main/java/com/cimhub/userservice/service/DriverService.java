@@ -8,11 +8,10 @@ import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.repository.DriverRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -35,11 +34,7 @@ public class DriverService {
         driver.setUserId(userId);
         driver.setEmail(userId);
         ProfileUpdater.applyCommonProfileFields(
-                request,
-                driver::setFirstName,
-                driver::setLastName,
-                driver::setPhoneNumber,
-                driver::setAge);
+                request, driver::setFirstName, driver::setLastName, driver::setPhoneNumber, driver::setAge);
         driver.setLicenseNumber(request.licenseNumber());
         driver.setCreatedAt(now);
         driver.setUpdatedAt(now);
@@ -53,11 +48,7 @@ public class DriverService {
         Driver driver = findDriverOrThrow(userId);
 
         ProfileUpdater.applyCommonProfileUpdates(
-                request,
-                driver::setFirstName,
-                driver::setLastName,
-                driver::setPhoneNumber,
-                driver::setAge);
+                request, driver::setFirstName, driver::setLastName, driver::setPhoneNumber, driver::setAge);
         if (request.licenseNumber() != null) driver.setLicenseNumber(request.licenseNumber());
 
         Instant now = Instant.now();
@@ -80,9 +71,8 @@ public class DriverService {
     }
 
     private DriverResponse buildResponse(Driver driver) {
-        String resolvedEmail = (driver.getEmail() == null || driver.getEmail().isBlank())
-                ? driver.getUserId()
-                : driver.getEmail();
+        String resolvedEmail =
+                (driver.getEmail() == null || driver.getEmail().isBlank()) ? driver.getUserId() : driver.getEmail();
 
         return DriverResponse.builder()
                 .userId(driver.getUserId())

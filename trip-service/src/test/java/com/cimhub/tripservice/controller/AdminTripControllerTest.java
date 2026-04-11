@@ -1,9 +1,15 @@
 package com.cimhub.tripservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.service.trip.AdminTripService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,13 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminTripControllerTest {
@@ -56,8 +55,7 @@ class AdminTripControllerTest {
         AdminTripResponse trip = AdminTripResponse.builder().tripId("trip-1").build();
         when(adminTripService.getTrip("trip-1")).thenReturn(trip);
 
-        ResponseEntity<ApiResponseWrapper<AdminTripResponse>> response =
-                adminTripController.getTrip("ADMIN", "trip-1");
+        ResponseEntity<ApiResponseWrapper<AdminTripResponse>> response = adminTripController.getTrip("ADMIN", "trip-1");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("trip-1", response.getBody().getData().tripId());
@@ -96,15 +94,12 @@ class AdminTripControllerTest {
     void endpoints_withNonAdminRole_shouldThrowForbidden() {
         Pageable pageable = PageRequest.of(0, 1);
 
-        assertThrows(ForbiddenException.class,
-                () -> adminTripController.listTrips("PASSENGER", pageable));
-        assertThrows(ForbiddenException.class,
-                () -> adminTripController.getTrip("DRIVER", "trip-1"));
-        assertThrows(ForbiddenException.class,
-                () -> adminTripController.getUpcomingTrips("USER", pageable));
-        assertThrows(ForbiddenException.class,
-                () -> adminTripController.getTripHistory("GUEST", pageable));
-        assertThrows(ForbiddenException.class,
+        assertThrows(ForbiddenException.class, () -> adminTripController.listTrips("PASSENGER", pageable));
+        assertThrows(ForbiddenException.class, () -> adminTripController.getTrip("DRIVER", "trip-1"));
+        assertThrows(ForbiddenException.class, () -> adminTripController.getUpcomingTrips("USER", pageable));
+        assertThrows(ForbiddenException.class, () -> adminTripController.getTripHistory("GUEST", pageable));
+        assertThrows(
+                ForbiddenException.class,
                 () -> adminTripController.cancelTrip("passenger", "admin@example.com", "trip-1"));
     }
 }

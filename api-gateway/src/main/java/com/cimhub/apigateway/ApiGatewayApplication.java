@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.cimhub.apigateway"})
-@EnableConfigurationProperties({ SecurityProperties.class, ServiceProperties.class })
+@EnableConfigurationProperties({SecurityProperties.class, ServiceProperties.class})
 public class ApiGatewayApplication {
     public static void main(String[] args) {
         SpringApplication.run(ApiGatewayApplication.class, args);

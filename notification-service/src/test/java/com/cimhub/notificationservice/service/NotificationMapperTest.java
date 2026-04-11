@@ -1,14 +1,13 @@
 package com.cimhub.notificationservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
 import com.cimhub.notificationservice.model.Notification;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class NotificationMapperTest {
 

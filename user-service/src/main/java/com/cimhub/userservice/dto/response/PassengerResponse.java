@@ -3,22 +3,21 @@ package com.cimhub.userservice.dto.response;
 import com.cimhub.common.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 public record PassengerResponse(
         String userId,
         String firstName,
         String lastName,
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        String email,
+        @JsonInclude(JsonInclude.Include.NON_NULL) String email,
         UserType userType,
         String phoneNumber,
         int age,
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant createdAt,
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

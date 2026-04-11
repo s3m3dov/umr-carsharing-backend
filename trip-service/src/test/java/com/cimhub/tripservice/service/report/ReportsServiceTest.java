@@ -1,7 +1,14 @@
 package com.cimhub.tripservice.service.report;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.AuditAction;
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.model.AuditLog;
 import com.cimhub.tripservice.dto.response.AuditLogResponse;
@@ -10,11 +17,11 @@ import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
 import com.cimhub.tripservice.dto.response.PassengerActivityReport;
 import com.cimhub.tripservice.dto.response.RevenueReport;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,14 +31,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReportsServiceTest {
@@ -151,8 +150,10 @@ class ReportsServiceTest {
                 .timestamp(Instant.parse("2026-01-01T10:00:00Z"))
                 .build();
 
-        when(mongoTemplate.count(any(Query.class), org.mockito.ArgumentMatchers.eq(AuditLog.class))).thenReturn(1L);
-        when(mongoTemplate.find(any(Query.class), org.mockito.ArgumentMatchers.eq(AuditLog.class))).thenReturn(List.of(log));
+        when(mongoTemplate.count(any(Query.class), org.mockito.ArgumentMatchers.eq(AuditLog.class)))
+                .thenReturn(1L);
+        when(mongoTemplate.find(any(Query.class), org.mockito.ArgumentMatchers.eq(AuditLog.class)))
+                .thenReturn(List.of(log));
 
         Page<AuditLogResponse> page = reportsService.getAuditLogs(
                 AuditAction.BOOK,

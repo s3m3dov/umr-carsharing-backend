@@ -1,8 +1,12 @@
 package com.cimhub.apigateway.exception;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.ConnectException;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -10,11 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import java.net.ConnectException;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GatewayExceptionHandlerTest {
 
@@ -32,7 +31,8 @@ class GatewayExceptionHandlerTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.post("/trip-service/api/trips/offer").build());
 
-        handler.handle(exchange, new UnauthorizedException("Missing Authorization header")).block();
+        handler.handle(exchange, new UnauthorizedException("Missing Authorization header"))
+                .block();
 
         assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
 
@@ -95,9 +95,7 @@ class GatewayExceptionHandlerTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.post("/auth-service/api/auth/signup").build());
 
-        RuntimeException wrapped = new RuntimeException(
-                "connect failed",
-                new ConnectException("Connection refused"));
+        RuntimeException wrapped = new RuntimeException("connect failed", new ConnectException("Connection refused"));
 
         handler.handle(exchange, wrapped).block();
 
@@ -139,7 +137,9 @@ class GatewayExceptionHandlerTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/unknown").build());
 
-        handler.handle(exchange, new org.springframework.web.reactive.resource.NoResourceFoundException("GET /api/unknown"))
+        handler.handle(
+                        exchange,
+                        new org.springframework.web.reactive.resource.NoResourceFoundException("GET /api/unknown"))
                 .block();
 
         assertEquals(HttpStatus.NOT_FOUND, exchange.getResponse().getStatusCode());

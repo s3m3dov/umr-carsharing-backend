@@ -1,5 +1,9 @@
 package com.cimhub.userservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -9,10 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InternalPassengerControllerTest {
@@ -30,7 +30,8 @@ class InternalPassengerControllerTest {
                 .userId("passenger@example.com")
                 .userType(UserType.PASSENGER)
                 .build();
-        when(passengerService.createPassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
+        when(passengerService.createPassengerProfile("passenger@example.com", request))
+                .thenReturn(passengerResponse);
 
         var response = internalPassengerController.createPassengerProfile("passenger@example.com", request);
 

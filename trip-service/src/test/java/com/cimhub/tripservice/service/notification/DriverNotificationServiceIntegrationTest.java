@@ -1,10 +1,21 @@
 package com.cimhub.tripservice.service.notification;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,18 +29,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DriverNotificationServiceIntegrationTest {
 
@@ -57,11 +56,14 @@ class DriverNotificationServiceIntegrationTest {
         assertEquals("driver-1", payload.path("recipientId").asText());
         assertEquals("passenger-1", payload.path("senderId").asText());
         assertEquals("New booking request", payload.path("title").asText());
-        assertEquals(NotificationType.BOOKING_REQUESTED.name(), payload.path("type").asText());
+        assertEquals(
+                NotificationType.BOOKING_REQUESTED.name(), payload.path("type").asText());
         assertEquals("b-1", payload.path("relatedEntityId").asText());
         assertEquals("trip-1", payload.path("metadata").path("tripId").asText());
         assertEquals("b-1", payload.path("metadata").path("bookingId").asText());
-        assertEquals("2026-06-01T10:00:00Z", payload.path("metadata").path("tripStartDateTimeUTC").asText());
+        assertEquals(
+                "2026-06-01T10:00:00Z",
+                payload.path("metadata").path("tripStartDateTimeUTC").asText());
     }
 
     @Test
@@ -72,7 +74,9 @@ class DriverNotificationServiceIntegrationTest {
         service.notifyBookingCancelledByPassenger(new Trip(), booking());
 
         JsonNode payload = objectMapper.readTree(captured.get().body());
-        assertEquals(NotificationType.BOOKING_CANCELLED_BY_PASSENGER.name(), payload.path("type").asText());
+        assertEquals(
+                NotificationType.BOOKING_CANCELLED_BY_PASSENGER.name(),
+                payload.path("type").asText());
         assertFalse(payload.path("metadata").has("tripStartDateTimeUTC"));
     }
 
@@ -86,7 +90,8 @@ class DriverNotificationServiceIntegrationTest {
         JsonNode payload = objectMapper.readTree(captured.get().body());
         assertEquals("passenger-1", payload.path("recipientId").asText());
         assertEquals("driver-1", payload.path("senderId").asText());
-        assertEquals(NotificationType.RIDE_COMPLETED.name(), payload.path("type").asText());
+        assertEquals(
+                NotificationType.RIDE_COMPLETED.name(), payload.path("type").asText());
         assertTrue(payload.path("message").asText().contains("trip-1"));
     }
 
@@ -95,22 +100,24 @@ class DriverNotificationServiceIntegrationTest {
     private DriverNotificationService serviceWithCapture(AtomicReference<CapturedRequest> captured) {
         WebClient.Builder builder = WebClient.builder().exchangeFunction(request -> {
             MockClientHttpRequest mockRequest = new MockClientHttpRequest(request.method(), request.url());
-            request.body().insert(mockRequest, new BodyInserter.Context() {
-                @Override
-                public List<HttpMessageWriter<?>> messageWriters() {
-                    return ExchangeStrategies.withDefaults().messageWriters();
-                }
+            request.body()
+                    .insert(mockRequest, new BodyInserter.Context() {
+                        @Override
+                        public List<HttpMessageWriter<?>> messageWriters() {
+                            return ExchangeStrategies.withDefaults().messageWriters();
+                        }
 
-                @Override
-                public Optional<ServerHttpRequest> serverRequest() {
-                    return Optional.empty();
-                }
+                        @Override
+                        public Optional<ServerHttpRequest> serverRequest() {
+                            return Optional.empty();
+                        }
 
-                @Override
-                public Map<String, Object> hints() {
-                    return Collections.emptyMap();
-                }
-            }).block();
+                        @Override
+                        public Map<String, Object> hints() {
+                            return Collections.emptyMap();
+                        }
+                    })
+                    .block();
 
             captured.set(new CapturedRequest(
                     request.url().toString(),
@@ -135,6 +142,5 @@ class DriverNotificationServiceIntegrationTest {
         return booking;
     }
 
-    private record CapturedRequest(String url, String contentType, String body) {
-    }
+    private record CapturedRequest(String url, String contentType, String body) {}
 }

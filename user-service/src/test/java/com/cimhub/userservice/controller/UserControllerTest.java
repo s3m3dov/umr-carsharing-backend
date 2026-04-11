@@ -1,20 +1,19 @@
 package com.cimhub.userservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.service.UserService;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
@@ -57,13 +56,13 @@ class UserControllerTest {
 
     @Test
     void getUserInfo_withMismatchedOwner_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
-                () -> userController.getUserInfo("other@example.com", "driver@example.com"));
+        assertThrows(
+                ForbiddenException.class, () -> userController.getUserInfo("other@example.com", "driver@example.com"));
     }
 
     @Test
     void getUserInfo_adminAccessingOtherUser_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
-                () -> userController.getUserInfo("admin@example.com", "driver@example.com"));
+        assertThrows(
+                ForbiddenException.class, () -> userController.getUserInfo("admin@example.com", "driver@example.com"));
     }
 }

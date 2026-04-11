@@ -1,14 +1,13 @@
 package com.cimhub.reviewservice.mapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class ReviewMapperTest {
 

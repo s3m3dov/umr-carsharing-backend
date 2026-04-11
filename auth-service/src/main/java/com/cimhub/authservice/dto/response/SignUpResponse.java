@@ -13,24 +13,15 @@ import lombok.Builder;
                   "email": "john.driver@example.com",
                   "role": "DRIVER"
                 }
-                """
-)
+                """)
 public record SignUpResponse(
         @Schema(
                 description = "JWT authentication token for subsequent API requests",
-                example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
+                example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
         String token,
 
-        @Schema(
-                description = "Registered user's email address",
-                example = "john.driver@example.com"
-        )
+        @Schema(description = "Registered user's email address", example = "john.driver@example.com")
         String email,
 
-        @Schema(
-                description = "User's role in the system (DRIVER or PASSENGER)",
-                example = "DRIVER"
-        )
-        String role) {
-}
+        @Schema(description = "User's role in the system (DRIVER or PASSENGER)", example = "DRIVER")
+        String role) {}

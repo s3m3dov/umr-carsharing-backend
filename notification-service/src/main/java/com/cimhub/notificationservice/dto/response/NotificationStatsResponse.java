@@ -10,5 +10,4 @@ public record NotificationStatsResponse(
         String recipientId,
 
         @Schema(description = "Unread notification count", example = "3")
-        long unreadCount) {
-}
+        long unreadCount) {}

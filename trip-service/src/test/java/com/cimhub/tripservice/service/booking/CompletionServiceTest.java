@@ -1,6 +1,12 @@
 package com.cimhub.tripservice.service.booking;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
@@ -9,13 +15,13 @@ import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import com.cimhub.tripservice.service.trip.TripService;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,21 +31,23 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CompletionServiceTest {
 
-    @Mock private BookingRepository bookingRepository;
-    @Mock private TripsRepository tripsRepository;
-    @Mock private TripService tripService;
-    @Mock private AuditService auditService;
-    @Mock private DriverNotificationService driverNotificationService;
+    @Mock
+    private BookingRepository bookingRepository;
+
+    @Mock
+    private TripsRepository tripsRepository;
+
+    @Mock
+    private TripService tripService;
+
+    @Mock
+    private AuditService auditService;
+
+    @Mock
+    private DriverNotificationService driverNotificationService;
 
     private CompletionService completionService;
 
@@ -112,8 +120,7 @@ class CompletionServiceTest {
     void completeRide_whenBookingNotFound_shouldThrowResourceNotFound() {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> completionService.completeRide("missing", "driver-1"));
+        assertThrows(ResourceNotFoundException.class, () -> completionService.completeRide("missing", "driver-1"));
     }
 
     @Test
@@ -126,13 +133,14 @@ class CompletionServiceTest {
 
         when(bookingRepository.findById("b-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(UnauthorizedException.class,
-                () -> completionService.completeRide("b-1", "intruder"));
+        assertThrows(UnauthorizedException.class, () -> completionService.completeRide("b-1", "intruder"));
         verify(bookingRepository, never()).save(any());
     }
 
     @ParameterizedTest
-    @EnumSource(value = BookingStatus.class, names = {"CANCELLED", "REJECTED", "COMPLETED", "REQUESTED"})
+    @EnumSource(
+            value = BookingStatus.class,
+            names = {"CANCELLED", "REJECTED", "COMPLETED", "REQUESTED"})
     void completeRide_whenStatusNotCompletable_shouldThrowRideNotCompletable(BookingStatus status) {
         Booking booking = Booking.builder()
                 .bookingId("b-1")
@@ -142,8 +150,7 @@ class CompletionServiceTest {
 
         when(bookingRepository.findById("b-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(RideNotCompletableException.class,
-                () -> completionService.completeRide("b-1", "driver-1"));
+        assertThrows(RideNotCompletableException.class, () -> completionService.completeRide("b-1", "driver-1"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -159,8 +166,7 @@ class CompletionServiceTest {
         when(bookingRepository.findById("b-1")).thenReturn(Optional.of(booking));
         when(tripsRepository.findById("ghost-trip")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> completionService.completeRide("b-1", "driver-1"));
+        assertThrows(ResourceNotFoundException.class, () -> completionService.completeRide("b-1", "driver-1"));
     }
 
     @Test
@@ -195,7 +201,8 @@ class CompletionServiceTest {
                 .build();
 
         when(bookingRepository.findById("b-1")).thenReturn(Optional.of(booking));
-        when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS)));
+        when(tripsRepository.findById("trip-1"))
+                .thenReturn(Optional.of(tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS)));
         when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         completionService.completeRide("b-1", "driver-1");
@@ -211,10 +218,22 @@ class CompletionServiceTest {
     void completeTrip_shouldCompleteRemainingRidesAndTrip() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
 
-        Booking confirmed = Booking.builder().bookingId("b-1").status(BookingStatus.CONFIRMED).build();
-        Booking inProgress = Booking.builder().bookingId("b-2").status(BookingStatus.IN_PROGRESS).build();
-        Booking alreadyDone = Booking.builder().bookingId("b-3").status(BookingStatus.COMPLETED).build();
-        Booking cancelled = Booking.builder().bookingId("b-4").status(BookingStatus.CANCELLED).build();
+        Booking confirmed = Booking.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        Booking inProgress = Booking.builder()
+                .bookingId("b-2")
+                .status(BookingStatus.IN_PROGRESS)
+                .build();
+        Booking alreadyDone = Booking.builder()
+                .bookingId("b-3")
+                .status(BookingStatus.COMPLETED)
+                .build();
+        Booking cancelled = Booking.builder()
+                .bookingId("b-4")
+                .status(BookingStatus.CANCELLED)
+                .build();
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1"))
@@ -238,8 +257,9 @@ class CompletionServiceTest {
 
         verify(tripService).updateStatus("trip-1", TripStatus.COMPLETED);
         verify(auditService).logComplete(EntityType.TRIP, "trip-1", "driver-1", "Trip completed by driver");
-        verify(auditService, times(2)).logComplete(eq(EntityType.BOOKING), any(), eq("driver-1"),
-                eq("Ride auto-completed on trip completion"));
+        verify(auditService, times(2))
+                .logComplete(
+                        eq(EntityType.BOOKING), any(), eq("driver-1"), eq("Ride auto-completed on trip completion"));
         verify(driverNotificationService, times(2)).notifyTripCompleted(eq(trip), any(Booking.class));
     }
 
@@ -247,7 +267,10 @@ class CompletionServiceTest {
     void completeTrip_withNoRemainingActiveRides_shouldCompleteTrip() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
 
-        Booking done = Booking.builder().bookingId("b-1").status(BookingStatus.COMPLETED).build();
+        Booking done = Booking.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.COMPLETED)
+                .build();
 
         Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip), Optional.of(completedTrip));
@@ -267,8 +290,7 @@ class CompletionServiceTest {
     void completeTrip_whenTripNotFound_shouldThrowResourceNotFound() {
         when(tripsRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> completionService.completeTrip("missing", "driver-1"));
+        assertThrows(ResourceNotFoundException.class, () -> completionService.completeTrip("missing", "driver-1"));
     }
 
     @Test
@@ -276,19 +298,19 @@ class CompletionServiceTest {
         Trip trip = tripWithStatus("trip-1", "real-driver", TripStatus.IN_PROGRESS);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(UnauthorizedException.class,
-                () -> completionService.completeTrip("trip-1", "intruder"));
+        assertThrows(UnauthorizedException.class, () -> completionService.completeTrip("trip-1", "intruder"));
         verify(tripService, never()).updateStatus(any(), any());
     }
 
     @ParameterizedTest
-    @EnumSource(value = TripStatus.class, names = {"CREATED", "COMPLETED", "CANCELLED"})
+    @EnumSource(
+            value = TripStatus.class,
+            names = {"CREATED", "COMPLETED", "CANCELLED"})
     void completeTrip_whenStatusNotCompletable_shouldThrowTripNotInProgress(TripStatus status) {
         Trip trip = tripWithStatus("trip-1", "driver-1", status);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(TripNotInProgressException.class,
-                () -> completionService.completeTrip("trip-1", "driver-1"));
+        assertThrows(TripNotInProgressException.class, () -> completionService.completeTrip("trip-1", "driver-1"));
         verify(tripService, never()).updateStatus(any(), any());
     }
 
@@ -296,7 +318,10 @@ class CompletionServiceTest {
     void completeTrip_whenAvailable_shouldTransitionAndComplete() {
         Trip availableTrip = tripWithStatus("trip-1", "driver-1", TripStatus.AVAILABLE);
         Trip completedTrip = tripWithStatus("trip-1", "driver-1", TripStatus.COMPLETED);
-        Booking confirmed = Booking.builder().bookingId("b-1").status(BookingStatus.CONFIRMED).build();
+        Booking confirmed = Booking.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(availableTrip), Optional.of(completedTrip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(confirmed));
@@ -332,8 +357,14 @@ class CompletionServiceTest {
     @Test
     void completeTrip_shouldSetUpdatedAtOnEachAutoCompletedBooking() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
-        Booking b1 = Booking.builder().bookingId("b-1").status(BookingStatus.CONFIRMED).build();
-        Booking b2 = Booking.builder().bookingId("b-2").status(BookingStatus.IN_PROGRESS).build();
+        Booking b1 = Booking.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        Booking b2 = Booking.builder()
+                .bookingId("b-2")
+                .status(BookingStatus.IN_PROGRESS)
+                .build();
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(b1, b2));
@@ -349,9 +380,21 @@ class CompletionServiceTest {
     @Test
     void completeTrip_shouldNotifyEachAutoCompletedPassengerIndividually() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
-        Booking b1 = Booking.builder().bookingId("b-1").passengerId("p-1").status(BookingStatus.CONFIRMED).build();
-        Booking b2 = Booking.builder().bookingId("b-2").passengerId("p-2").status(BookingStatus.CONFIRMED).build();
-        Booking b3 = Booking.builder().bookingId("b-3").passengerId("p-3").status(BookingStatus.CANCELLED).build();
+        Booking b1 = Booking.builder()
+                .bookingId("b-1")
+                .passengerId("p-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        Booking b2 = Booking.builder()
+                .bookingId("b-2")
+                .passengerId("p-2")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        Booking b3 = Booking.builder()
+                .bookingId("b-3")
+                .passengerId("p-3")
+                .status(BookingStatus.CANCELLED)
+                .build();
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(b1, b2, b3));
@@ -366,8 +409,14 @@ class CompletionServiceTest {
     @Test
     void completeTrip_shouldAuditEachAutoCompletedBooking() {
         Trip trip = tripWithStatus("trip-1", "driver-1", TripStatus.IN_PROGRESS);
-        Booking b1 = Booking.builder().bookingId("b-1").status(BookingStatus.CONFIRMED).build();
-        Booking b2 = Booking.builder().bookingId("b-2").status(BookingStatus.CONFIRMED).build();
+        Booking b1 = Booking.builder()
+                .bookingId("b-1")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        Booking b2 = Booking.builder()
+                .bookingId("b-2")
+                .status(BookingStatus.CONFIRMED)
+                .build();
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(b1, b2));
@@ -375,8 +424,10 @@ class CompletionServiceTest {
 
         completionService.completeTrip("trip-1", "driver-1");
 
-        verify(auditService).logComplete(EntityType.BOOKING, "b-1", "driver-1", "Ride auto-completed on trip completion");
-        verify(auditService).logComplete(EntityType.BOOKING, "b-2", "driver-1", "Ride auto-completed on trip completion");
+        verify(auditService)
+                .logComplete(EntityType.BOOKING, "b-1", "driver-1", "Ride auto-completed on trip completion");
+        verify(auditService)
+                .logComplete(EntityType.BOOKING, "b-2", "driver-1", "Ride auto-completed on trip completion");
         verify(auditService).logComplete(EntityType.TRIP, "trip-1", "driver-1", "Trip completed by driver");
     }
 

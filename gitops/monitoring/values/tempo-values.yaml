@@ -1,20 +1,19 @@
-# Tempo: distributed tracing backend (single binary)
+---
 tempo:
   storage:
     trace:
-      backend: local
+      backend: "local"
       local:
-        path: /var/tempo/traces
+        path: "/var/tempo/traces"
       wal:
-        path: /var/tempo/wal
-
+        path: "/var/tempo/wal"
   receivers:
     otlp:
       protocols:
         grpc:
-          endpoint: 0.0.0.0:4317
+          endpoint: "0.0.0.0:4317"
         http:
-          endpoint: 0.0.0.0:4318
+          endpoint: "0.0.0.0:4318"
   resources:
     requests:
       memory: "512Mi"
@@ -24,7 +23,7 @@ tempo:
       cpu: "500m"
   livenessProbe:
     httpGet:
-      path: /ready
+      path: "/ready"
       port: 3200
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -32,17 +31,16 @@ tempo:
     failureThreshold: 5
   readinessProbe:
     httpGet:
-      path: /ready
+      path: "/ready"
       port: 3200
     initialDelaySeconds: 20
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 6
   memBallastSizeMbs: 0
-
   metricsGenerator:
     enabled: true
-    remoteWriteUrl: http://prometheus-operated.monitoring.svc.cluster.local:9090/api/v1/write
+    remoteWriteUrl: "http://prometheus-operated.monitoring.svc.cluster.local:9090/api/v1/write"
     resources:
       requests:
         memory: "128Mi"
@@ -50,12 +48,9 @@ tempo:
       limits:
         memory: "256Mi"
         cpu: "200m"
-
 persistence:
   enabled: true
-  size: 500Mi
-
+  size: "500Mi"
 replicas: 1
-
 service:
-  type: ClusterIP
+  type: "ClusterIP"

@@ -1,10 +1,9 @@
 package com.cimhub.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-
 import java.time.Instant;
 import java.util.List;
+import lombok.Builder;
 
 /**
  * Standardized error response contract.
@@ -19,13 +18,7 @@ import java.util.List;
  */
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ApiError(
-        int status,
-        String code,
-        String message,
-        ErrorBody error,
-        Instant timestamp,
-        String requestId) {
+public record ApiError(int status, String code, String message, ErrorBody error, Instant timestamp, String requestId) {
 
     /**
      * Create a simple error without details.
@@ -43,8 +36,8 @@ public record ApiError(
     /**
      * Create an error with structured details.
      */
-    public static ApiError withDetails(int status, String code, String message, String path,
-            List<ErrorDetail> details) {
+    public static ApiError withDetails(
+            int status, String code, String message, String path, List<ErrorDetail> details) {
         return ApiError.builder()
                 .status(status)
                 .code(code)
@@ -71,8 +64,8 @@ public record ApiError(
     /**
      * Create an error with request ID and details for tracing.
      */
-    public static ApiError withRequestIdAndDetails(int status, String code, String message, String path,
-            List<ErrorDetail> details, String requestId) {
+    public static ApiError withRequestIdAndDetails(
+            int status, String code, String message, String path, List<ErrorDetail> details, String requestId) {
         return ApiError.builder()
                 .status(status)
                 .code(code)

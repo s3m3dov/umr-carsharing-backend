@@ -1,12 +1,15 @@
 package com.cimhub.authservice.exception;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.cimhub.common.dto.response.ApiError;
-import com.cimhub.common.testsupport.WebRequests;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ErrorCode;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.filter.RequestIdFilter;
+import com.cimhub.common.testsupport.WebRequests;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,9 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.context.request.ServletWebRequest;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AuthExceptionHandlerTest {
 
@@ -37,9 +37,8 @@ class AuthExceptionHandlerTest {
     void handleBadCredentials_shouldReturnUnauthorizedErrorPayload() {
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/login", "header-req");
 
-        ResponseEntity<ApiError> response = authExceptionHandler.handleBadCredentials(
-                new BadCredentialsException("bad credentials"),
-                request);
+        ResponseEntity<ApiError> response =
+                authExceptionHandler.handleBadCredentials(new BadCredentialsException("bad credentials"), request);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals(ErrorCode.UNAUTHORIZED.code(), response.getBody().code());
@@ -52,9 +51,8 @@ class AuthExceptionHandlerTest {
     void handleUnauthorized_shouldReturnUnauthorizedErrorPayload() {
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/validate", "header-req-2");
 
-        ResponseEntity<ApiError> response = authExceptionHandler.handleUnauthorized(
-                new UnauthorizedException("Invalid or expired token"),
-                request);
+        ResponseEntity<ApiError> response =
+                authExceptionHandler.handleUnauthorized(new UnauthorizedException("Invalid or expired token"), request);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals(ErrorCode.UNAUTHORIZED.code(), response.getBody().code());
@@ -68,8 +66,7 @@ class AuthExceptionHandlerTest {
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/signup", "header-req-3");
 
         ResponseEntity<ApiError> response = authExceptionHandler.handleUserAlreadyExists(
-                new UserAlreadyExistsException("User already exists"),
-                request);
+                new UserAlreadyExistsException("User already exists"), request);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals(ErrorCode.USER_ALREADY_EXISTS.code(), response.getBody().code());
@@ -83,12 +80,12 @@ class AuthExceptionHandlerTest {
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/reset-password", "header-req-4");
 
         ResponseEntity<ApiError> response = authExceptionHandler.handleBadRequest(
-                new BadRequestException("Password must be at least 8 characters"),
-                request);
+                new BadRequestException("Password must be at least 8 characters"), request);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(ErrorCode.BAD_REQUEST.code(), response.getBody().code());
-        assertEquals("Password must be at least 8 characters", response.getBody().message());
+        assertEquals(
+                "Password must be at least 8 characters", response.getBody().message());
         assertEquals("/api/auth/reset-password", response.getBody().error().path());
         assertEquals("header-req-4", response.getBody().requestId());
     }
@@ -98,9 +95,8 @@ class AuthExceptionHandlerTest {
         MDC.put(RequestIdFilter.MDC_KEY, "mdc-id-1");
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/login", "header-ignored");
 
-        ResponseEntity<ApiError> response = authExceptionHandler.handleBadCredentials(
-                new BadCredentialsException("bad credentials"),
-                request);
+        ResponseEntity<ApiError> response =
+                authExceptionHandler.handleBadCredentials(new BadCredentialsException("bad credentials"), request);
 
         assertEquals("mdc-id-1", response.getBody().requestId());
     }
@@ -109,9 +105,8 @@ class AuthExceptionHandlerTest {
     void handlers_shouldFallbackToNullWhenNoMdcAndNoHeaderRequestId() {
         ServletWebRequest request = WebRequests.mockServletRequest("/api/auth/login", null);
 
-        ResponseEntity<ApiError> response = authExceptionHandler.handleUnauthorized(
-                new UnauthorizedException("missing request id"),
-                request);
+        ResponseEntity<ApiError> response =
+                authExceptionHandler.handleUnauthorized(new UnauthorizedException("missing request id"), request);
 
         assertNull(response.getBody().requestId());
     }

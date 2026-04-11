@@ -1,13 +1,12 @@
 package com.cimhub.tripservice.dto.response;
 
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
-import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.ZonedDateTime;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "OfferRideResponse", description = "Response after successfully creating a trip")
@@ -18,11 +17,9 @@ public record OfferRideResponse(
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
         String vehicleNumber,
 
-        @Schema(description = "Trip starting location")
-        Points sourceAddress,
+        @Schema(description = "Trip starting location") Points sourceAddress,
 
-        @Schema(description = "Trip destination location")
-        Points destinationAddress,
+        @Schema(description = "Trip destination location") Points destinationAddress,
 
         @Schema(description = "Trip departure date and time", example = "2026-01-11T13:09:26+01:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -56,5 +53,4 @@ public record OfferRideResponse(
         Boolean tripCreated,
 
         @Schema(description = "Error message if trip creation failed", example = "null")
-        String errorMessage) {
-}
+        String errorMessage) {}

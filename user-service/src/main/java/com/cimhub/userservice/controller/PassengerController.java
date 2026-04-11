@@ -28,14 +28,25 @@ public class PassengerController {
     private final PassengerService passengerService;
 
     @Operation(summary = "Get passenger profile", description = "Returns full profile for a passenger user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Passenger profile returned"),
-            @ApiResponse(responseCode = "404", description = "Passenger not found")
-    })
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Passenger profile returned"),
+                @ApiResponse(responseCode = "404", description = "Passenger not found")
+            })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassengerProfile(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
@@ -43,15 +54,28 @@ public class PassengerController {
         return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.getPassengerProfile(userId)));
     }
 
-    @Operation(summary = "Update passenger profile", description = "Updates personal info for the passenger. All fields are optional (partial update).")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Passenger profile updated"),
-            @ApiResponse(responseCode = "404", description = "Passenger not found")
-    })
+    @Operation(
+            summary = "Update passenger profile",
+            description = "Updates personal info for the passenger. All fields are optional (partial update).")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Passenger profile updated"),
+                @ApiResponse(responseCode = "404", description = "Passenger not found")
+            })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassengerProfile(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody UpdatePassengerRequest request) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);

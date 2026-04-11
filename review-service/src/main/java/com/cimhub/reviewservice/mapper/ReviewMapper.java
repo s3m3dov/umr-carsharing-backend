@@ -5,8 +5,7 @@ import com.cimhub.reviewservice.model.Review;
 
 public final class ReviewMapper {
 
-    private ReviewMapper() {
-    }
+    private ReviewMapper() {}
 
     public static ReviewResponse toResponse(Review review) {
         return ReviewResponse.builder()

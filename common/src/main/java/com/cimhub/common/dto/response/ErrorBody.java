@@ -1,7 +1,6 @@
 package com.cimhub.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -10,9 +9,7 @@ import java.util.List;
  * Contains the request path and structured error details.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ErrorBody(
-        String path,
-        List<ErrorDetail> details) {
+public record ErrorBody(String path, List<ErrorDetail> details) {
 
     /**
      * Create an error body with just a path (empty details).

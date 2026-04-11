@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.service.trip;
 
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.StartTripResponse;
@@ -7,19 +8,16 @@ import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -41,7 +39,8 @@ public class TripService {
 
     @Transactional
     public void updateStatus(String tripId, TripStatus newStatus) {
-        Trip trip = tripsRepository.findById(tripId)
+        Trip trip = tripsRepository
+                .findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
 
         validateTransition(trip.getTripStatus(), newStatus);
@@ -61,14 +60,16 @@ public class TripService {
      * @throws ResourceNotFoundException if trip is not found
      */
     public TripResponse getTrip(String tripId) {
-        Trip trip = tripsRepository.findById(tripId)
+        Trip trip = tripsRepository
+                .findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
         return tripMapper.toTripResponse(trip);
     }
 
     @Transactional
     public StartTripResponse startTrip(String tripId, String driverId) {
-        Trip trip = tripsRepository.findById(tripId)
+        Trip trip = tripsRepository
+                .findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
 
         if (!trip.getDriverId().equals(driverId)) {

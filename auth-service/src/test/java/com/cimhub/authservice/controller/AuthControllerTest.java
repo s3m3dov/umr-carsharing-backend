@@ -1,5 +1,10 @@
 package com.cimhub.authservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
@@ -15,6 +20,7 @@ import com.cimhub.authservice.service.PasswordManagementService;
 import com.cimhub.authservice.service.RegistrationService;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,13 +29,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -53,14 +52,7 @@ class AuthControllerTest {
     @Test
     void registerUser_shouldReturnCreatedResponse() {
         RegisterUserRequest request = new RegisterUserRequest(
-                "John",
-                "Driver",
-                "john.driver@example.com",
-                "Password123!",
-                UserType.DRIVER,
-                "+49 123",
-                31,
-                "LIC-1");
+                "John", "Driver", "john.driver@example.com", "Password123!", UserType.DRIVER, "+49 123", 31, "LIC-1");
         SignUpResponse signUpResponse = SignUpResponse.builder()
                 .token("token-1")
                 .email("john.driver@example.com")

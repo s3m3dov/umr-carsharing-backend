@@ -1,14 +1,14 @@
 package com.cimhub.userservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.response.AdminProfileResponse;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AdminControllerTest {
 
@@ -31,7 +31,8 @@ class AdminControllerTest {
 
     @Test
     void getAdminProfile_withNonAdminRole_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
+        assertThrows(
+                ForbiddenException.class,
                 () -> adminController.getAdminProfile(UserType.PASSENGER, "admin@example.com"));
     }
 }

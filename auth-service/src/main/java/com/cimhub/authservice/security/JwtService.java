@@ -2,13 +2,12 @@ package com.cimhub.authservice.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
@@ -18,18 +17,14 @@ public class JwtService {
     private final String secretKey;
     private final long expirationMs;
 
-    public JwtService(
-            @Value("${jwt.secret-key}") String secretKey,
-            @Value("${jwt.expiration-ms}") long expirationMs) {
+    public JwtService(@Value("${jwt.secret-key}") String secretKey, @Value("${jwt.expiration-ms}") long expirationMs) {
         this.secretKey = secretKey;
         this.expirationMs = expirationMs;
     }
 
     public boolean isTokenValid(String token, String username) {
         String extractedUsername = extractUsername(token);
-        return extractedUsername != null 
-                && extractedUsername.equals(username) 
-                && !isTokenExpired(token);
+        return extractedUsername != null && extractedUsername.equals(username) && !isTokenExpired(token);
     }
 
     public boolean isTokenExpired(String token) {
@@ -55,8 +50,7 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         try {
-            return io.jsonwebtoken.Jwts
-                    .parserBuilder()
+            return io.jsonwebtoken.Jwts.parserBuilder()
                     .setSigningKey(getSignInKey())
                     .build()
                     .parseClaimsJws(token)
@@ -83,19 +77,12 @@ public class JwtService {
         return generateToken(claims, userDetails);
     }
 
-    public String generateTokenWithExtraClaims(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails
-    ) {
+    public String generateTokenWithExtraClaims(Map<String, Object> extraClaims, UserDetails userDetails) {
         return generateToken(extraClaims, userDetails);
     }
 
-    private String generateToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails
-    ) {
-        return io.jsonwebtoken.Jwts
-                .builder()
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return io.jsonwebtoken.Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))

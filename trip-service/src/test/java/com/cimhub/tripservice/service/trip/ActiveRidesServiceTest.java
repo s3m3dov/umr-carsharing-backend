@@ -1,33 +1,31 @@
 package com.cimhub.tripservice.service.trip;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
-import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
-import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
-import com.cimhub.tripservice.repository.BookingRepository;
-import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.model.Booking;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.repository.BookingRepository;
+import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ActiveRidesServiceTest {
@@ -62,8 +60,8 @@ class ActiveRidesServiceTest {
     void findDriverActiveTrips_shouldMapSeatAndEarningFields() {
         Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 2, 9.5);
 
-        when(tripsRepository.findByDriverIdAndTripStatusIn("driver-1",
-                List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
+        when(tripsRepository.findByDriverIdAndTripStatusIn(
+                        "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
                 .thenReturn(List.of(trip));
 
         List<DriverTripResponse> responses = activeRidesService.findDriverActiveTrips("driver-1");
@@ -75,8 +73,9 @@ class ActiveRidesServiceTest {
         assertEquals(2, response.bookedSeats());
         assertEquals(19.0, response.estimatedEarnings());
 
-        verify(tripsRepository).findByDriverIdAndTripStatusIn("driver-1",
-                List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS));
+        verify(tripsRepository)
+                .findByDriverIdAndTripStatusIn(
+                        "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS));
     }
 
     @Test
@@ -84,8 +83,9 @@ class ActiveRidesServiceTest {
         Booking booking = buildBooking("booking-1", "trip-1", BookingStatus.CONFIRMED, "Europe/Berlin");
         Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 1, 12.0);
 
-        when(bookingRepository.findByPassengerIdAndStatusIn("passenger-1",
-                List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+        when(bookingRepository.findByPassengerIdAndStatusIn(
+                        "passenger-1",
+                        List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
                 .thenReturn(List.of(booking));
         when(tripsRepository.findAllById(List.of("trip-1"))).thenReturn(List.of(trip));
 
@@ -102,8 +102,9 @@ class ActiveRidesServiceTest {
     void findPassengerActiveRides_whenTripMissing_shouldSetCarTypeNull() {
         Booking booking = buildBooking("booking-2", "missing-trip", BookingStatus.REQUESTED, "UTC");
 
-        when(bookingRepository.findByPassengerIdAndStatusIn("passenger-2",
-                List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+        when(bookingRepository.findByPassengerIdAndStatusIn(
+                        "passenger-2",
+                        List.of(BookingStatus.REQUESTED, BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
                 .thenReturn(List.of(booking));
         when(tripsRepository.findAllById(List.of("missing-trip"))).thenReturn(List.of());
 
@@ -117,15 +118,15 @@ class ActiveRidesServiceTest {
 
     @Test
     void findPassengerRideHistory_shouldUseHistoryStatuses() {
-        when(bookingRepository.findByPassengerIdAndStatusIn("passenger-3",
-                List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED)))
+        when(bookingRepository.findByPassengerIdAndStatusIn(
+                        "passenger-3", List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED)))
                 .thenReturn(List.of());
 
         List<PassengerRideResponse> responses = activeRidesService.findPassengerRideHistory("passenger-3");
 
         assertTrue(responses.isEmpty());
-        verify(bookingRepository).findByPassengerIdAndStatusIn("passenger-3",
-                List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
+        verify(bookingRepository)
+                .findByPassengerIdAndStatusIn("passenger-3", List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
     }
 
     @Test
@@ -133,8 +134,8 @@ class ActiveRidesServiceTest {
         Trip completed = buildTrip("trip-c", TripStatus.COMPLETED, 4, 4, 10.0);
         Trip cancelled = buildTrip("trip-x", TripStatus.CANCELLED, 4, 1, 10.0);
 
-        when(tripsRepository.findByDriverIdAndTripStatusIn("driver-2",
-                List.of(TripStatus.COMPLETED, TripStatus.CANCELLED)))
+        when(tripsRepository.findByDriverIdAndTripStatusIn(
+                        "driver-2", List.of(TripStatus.COMPLETED, TripStatus.CANCELLED)))
                 .thenReturn(List.of(completed, cancelled));
 
         List<DriverTripResponse> responses = activeRidesService.findDriverTripHistory("driver-2");
@@ -176,7 +177,8 @@ class ActiveRidesServiceTest {
         booking.setStatus(status);
         booking.setRequestedSeats(2);
         booking.setRideTimezone(timezone);
-        booking.setRideStartTimeUTC(ZonedDateTime.of(2026, 3, 1, 10, 0, 0, 0, ZoneId.of("UTC")).toInstant());
+        booking.setRideStartTimeUTC(
+                ZonedDateTime.of(2026, 3, 1, 10, 0, 0, 0, ZoneId.of("UTC")).toInstant());
         booking.setPricePerSeat(12.5);
         booking.setEstimatedPrice(25.0);
         booking.setPickupLocation(Points.of(0, 0, ""));

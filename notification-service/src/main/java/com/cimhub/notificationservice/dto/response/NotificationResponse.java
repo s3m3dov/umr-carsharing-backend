@@ -2,10 +2,9 @@ package com.cimhub.notificationservice.dto.response;
 
 import com.cimhub.common.enums.NotificationType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.Instant;
 import java.util.Map;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "NotificationResponse", description = "Notification payload returned by API")
@@ -31,18 +30,13 @@ public record NotificationResponse(
         @Schema(description = "Related entity id", example = "booking_001")
         String relatedEntityId,
 
-        @Schema(description = "Additional metadata")
-        Map<String, Object> metadata,
+        @Schema(description = "Additional metadata") Map<String, Object> metadata,
 
         @Schema(description = "Whether notification is read", example = "false")
         boolean read,
 
-        @Schema(description = "Read timestamp")
-        Instant readAt,
+        @Schema(description = "Read timestamp") Instant readAt,
 
-        @Schema(description = "Creation timestamp")
-        Instant createdAt,
+        @Schema(description = "Creation timestamp") Instant createdAt,
 
-        @Schema(description = "Update timestamp")
-        Instant updatedAt) {
-}
+        @Schema(description = "Update timestamp") Instant updatedAt) {}

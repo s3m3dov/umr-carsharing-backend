@@ -16,13 +16,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -35,110 +34,153 @@ public class ReviewController {
 
     @Operation(
             summary = "Submit a review for a driver",
-            description = "Passenger submits a review for a driver after completing a trip. User role must be PASSENGER."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Review submitted successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid review data or trip not completed",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Review already exists for this trip",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Driver or user not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized to review this driver",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER))
-            )
-    })
+            description =
+                    "Passenger submits a review for a driver after completing a trip. User role must be PASSENGER.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Review submitted successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid review data or trip not completed",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))),
+                @ApiResponse(
+                        responseCode = "409",
+                        description = "Review already exists for this trip",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Driver or user not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "Unauthorized to review this driver",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER)))
+            })
     @PostMapping("/driver")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitDriverReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String userId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting driver review from user: {}", userId);
         ReviewResponse response = reviewService.submitDriverReview(userId, userRole, request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
     }
 
     @Operation(
             summary = "Submit a review for a passenger",
-            description = "Driver submits a review for a passenger after completing a trip. User role must be DRIVER."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Review submitted successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.SUBMIT_PASSENGER_REVIEW_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid review data or trip not completed",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Review already exists for this trip",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Unauthorized to review this passenger",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER))
-            )
-    })
+            description = "Driver submits a review for a passenger after completing a trip. User role must be DRIVER.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Review submitted successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples =
+                                                @ExampleObject(value = ReviewApiDoc.SUBMIT_PASSENGER_REVIEW_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid review data or trip not completed",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_TRIP_NOT_COMPLETED))),
+                @ApiResponse(
+                        responseCode = "409",
+                        description = "Review already exists for this trip",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_REVIEW_ALREADY_EXISTS))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Passenger not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "Unauthorized to review this passenger",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER)))
+            })
     @PostMapping("/passenger")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitPassengerReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String userId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting passenger review from user: {}", userId);
         ReviewResponse response = reviewService.submitPassengerReview(userId, userRole, request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
     }
 
     @Operation(
             summary = "Get all reviews for a driver",
-            description = "Retrieves all reviews submitted about a specific driver"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Reviews retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_DRIVER_REVIEWS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Driver not found or no reviews exist",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
-            )
-    })
+            description = "Retrieves all reviews submitted about a specific driver")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Reviews retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.GET_DRIVER_REVIEWS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Driver not found or no reviews exist",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND)))
+            })
     @GetMapping("/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getDriverReviews(
             @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
-            @PathVariable String driverId) {
+                    @PathVariable
+                    String driverId) {
         log.info("Fetching reviews for driver: {}", driverId);
         List<ReviewResponse> reviews = reviewService.getDriverReviews(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
@@ -146,24 +188,33 @@ public class ReviewController {
 
     @Operation(
             summary = "Get all reviews for a passenger",
-            description = "Retrieves all reviews submitted about a specific passenger"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Reviews retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_PASSENGER_REVIEWS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Passenger not found or no reviews exist",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
-            )
-    })
+            description = "Retrieves all reviews submitted about a specific passenger")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Reviews retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples =
+                                                @ExampleObject(value = ReviewApiDoc.GET_PASSENGER_REVIEWS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Passenger not found or no reviews exist",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND)))
+            })
     @GetMapping("/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getPassengerReviews(
-            @Parameter(description = "Passenger's unique identifier", required = true, example = "jane.passenger@example.com")
-            @PathVariable String passengerId) {
+            @Parameter(
+                            description = "Passenger's unique identifier",
+                            required = true,
+                            example = "jane.passenger@example.com")
+                    @PathVariable
+                    String passengerId) {
         log.info("Fetching reviews for passenger: {}", passengerId);
         List<ReviewResponse> reviews = reviewService.getPassengerReviews(passengerId);
         return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
@@ -171,24 +222,29 @@ public class ReviewController {
 
     @Operation(
             summary = "Get driver's average rating",
-            description = "Calculates and returns the average rating for a driver based on all reviews"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Average rating retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND))
-            )
-    })
+            description = "Calculates and returns the average rating for a driver based on all reviews")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Average rating retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Driver not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND)))
+            })
     @GetMapping("/driver/{driverId}/average-rating")
     public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getDriverAverageRating(
             @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
-            @PathVariable String driverId) {
+                    @PathVariable
+                    String driverId) {
         log.info("Fetching average rating for driver: {}", driverId);
         AverageRatingResponse response = reviewService.getDriverAverageRating(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
@@ -196,24 +252,32 @@ public class ReviewController {
 
     @Operation(
             summary = "Get passenger's average rating",
-            description = "Calculates and returns the average rating for a passenger based on all reviews"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Average rating retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Passenger not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND))
-            )
-    })
+            description = "Calculates and returns the average rating for a passenger based on all reviews")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Average rating retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Passenger not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND)))
+            })
     @GetMapping("/passenger/{passengerId}/average-rating")
     public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getPassengerAverageRating(
-            @Parameter(description = "Passenger's unique identifier", required = true, example = "jane.passenger@example.com")
-            @PathVariable String passengerId) {
+            @Parameter(
+                            description = "Passenger's unique identifier",
+                            required = true,
+                            example = "jane.passenger@example.com")
+                    @PathVariable
+                    String passengerId) {
         log.info("Fetching average rating for passenger: {}", passengerId);
         AverageRatingResponse response = reviewService.getPassengerAverageRating(passengerId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));

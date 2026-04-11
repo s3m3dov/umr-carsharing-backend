@@ -257,9 +257,7 @@ class TripControllerTest {
 
     @Test
     void cancelTrip_whenUserInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        CancelTripRequest request = CancelTripRequest.builder()
-                .tripId("trip-1")
-                .build();
+        CancelTripRequest request = CancelTripRequest.builder().tripId("trip-1").build();
 
         assertThrows(UnauthorizedException.class, () -> tripController.cancelTrip("driver-1", "DRIVER", request));
     }

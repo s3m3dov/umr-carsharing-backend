@@ -8,5 +8,4 @@ public record DriverPerformanceReport(
         long totalTripsCompleted,
         long totalTripsCancelled,
         long totalTripsInProgress,
-        long totalTripsAvailable) {
-}
+        long totalTripsAvailable) {}

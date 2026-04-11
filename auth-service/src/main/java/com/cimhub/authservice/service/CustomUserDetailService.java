@@ -18,7 +18,8 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         String normalizedEmail = EmailNormalizer.normalize(email);
-        User authUser = authUserRepository.findByEmail(normalizedEmail)
+        User authUser = authUserRepository
+                .findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + normalizedEmail));
 
         return UserDetailsBuilder.fromUser(authUser);

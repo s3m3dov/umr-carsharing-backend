@@ -9,8 +9,7 @@ import com.cimhub.common.exception.ForbiddenException;
  */
 public final class AdminGuard {
 
-    private AdminGuard() {
-    }
+    private AdminGuard() {}
 
     public static void requireAdmin(UserType userRole) {
         if (!UserType.ADMIN.equals(userRole)) {

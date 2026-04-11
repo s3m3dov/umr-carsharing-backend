@@ -1,14 +1,13 @@
 package com.cimhub.tripservice.service.route;
 
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-
-import java.time.Duration;
 
 @Slf4j
 @Service
@@ -19,10 +18,11 @@ public class OsrmRouteClient {
     private final int retryMaxAttempts;
     private final long retryBackoffMillis;
 
-    public OsrmRouteClient(WebClient webClient,
-                           @Value("${osrm.timeout-seconds:5}") int timeoutSeconds,
-                           @Value("${osrm.retry.max-attempts:3}") int retryMaxAttempts,
-                           @Value("${osrm.retry.backoff-millis:500}") long retryBackoffMillis) {
+    public OsrmRouteClient(
+            WebClient webClient,
+            @Value("${osrm.timeout-seconds:5}") int timeoutSeconds,
+            @Value("${osrm.retry.max-attempts:3}") int retryMaxAttempts,
+            @Value("${osrm.retry.backoff-millis:500}") long retryBackoffMillis) {
         this.webClient = webClient;
         this.timeoutSeconds = timeoutSeconds;
         this.retryMaxAttempts = retryMaxAttempts;
@@ -32,7 +32,8 @@ public class OsrmRouteClient {
     public Mono<OsrmResponseDTO> getRoute(double startLat, double startLon, double endLat, double endLon) {
         String coordinates = startLon + "," + startLat + ";" + endLon + "," + endLat;
 
-        return webClient.get()
+        return webClient
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(coordinates)
                         .queryParam("overview", "full")

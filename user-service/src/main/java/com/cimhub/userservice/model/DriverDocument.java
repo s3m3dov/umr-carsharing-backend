@@ -1,5 +1,6 @@
 package com.cimhub.userservice.model;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,8 +9,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.Instant;
 
 /**
  * Stores metadata for driver documents (NIDA, License, etc.).
@@ -27,6 +26,7 @@ public class DriverDocument {
 
     @Indexed
     private String driverId;
+
     private String documentType; // NIDA, LICENSE
     private String fileName;
     private String fileUrl;

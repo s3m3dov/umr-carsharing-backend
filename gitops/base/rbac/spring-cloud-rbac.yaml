@@ -1,28 +1,36 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: spring-cloud
-  namespace: carsharing
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: "v1"
+kind: "ServiceAccount"
 metadata:
-  name: spring-cloud-discovery
-  namespace: carsharing
+  name: "spring-cloud"
+  namespace: "carsharing"
+---
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "Role"
+metadata:
+  name: "spring-cloud-discovery"
+  namespace: "carsharing"
 rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "endpoints"]
-  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - ""
+  resources:
+  - "pods"
+  - "services"
+  - "endpoints"
+  verbs:
+  - "get"
+  - "list"
+  - "watch"
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+apiVersion: "rbac.authorization.k8s.io/v1"
+kind: "RoleBinding"
 metadata:
-  name: spring-cloud-discovery-binding
-  namespace: carsharing
+  name: "spring-cloud-discovery-binding"
+  namespace: "carsharing"
 subjects:
-- kind: ServiceAccount
-  name: spring-cloud
+- kind: "ServiceAccount"
+  name: "spring-cloud"
 roleRef:
-  kind: Role
-  name: spring-cloud-discovery
-  apiGroup: rbac.authorization.k8s.io
+  kind: "Role"
+  name: "spring-cloud-discovery"
+  apiGroup: "rbac.authorization.k8s.io"

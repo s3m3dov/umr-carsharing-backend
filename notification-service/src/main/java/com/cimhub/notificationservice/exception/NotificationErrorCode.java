@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum NotificationErrorCode implements ServiceErrorCode {
-
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Notification not found", ErrorType.NOT_FOUND),
     UNAUTHORIZED_NOTIFICATION_ACCESS(HttpStatus.FORBIDDEN, "Unauthorized access to notification", ErrorType.AUTH_ERROR),
     INVALID_NOTIFICATION_SENDER(HttpStatus.BAD_REQUEST, "Invalid notification sender", ErrorType.VALIDATION_ERROR);

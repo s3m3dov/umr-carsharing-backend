@@ -35,25 +35,25 @@ public class AuthService {
         try {
             authenticationManager.authenticate(
                     new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            normalizedEmail,
-                            request.password()));
+                            normalizedEmail, request.password()));
         } catch (Exception e) {
             log.warn("Login failed for user: {}", normalizedEmail);
-            auditService.logLogin(EntityType.USER, normalizedEmail, normalizedEmail,
-                    "User login failed");
+            auditService.logLogin(EntityType.USER, normalizedEmail, normalizedEmail, "User login failed");
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        User authUserData = authUserRepository.findByEmail(normalizedEmail)
+        User authUserData = authUserRepository
+                .findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         UserDetails userDetails = UserDetailsBuilder.fromUserWithType(authUserData);
 
-        String token = jwtService.generateTokenWithRole(userDetails, authUserData.getUserType().name());
-        auditService.logLogin(EntityType.USER, authUserData.getUserId(), normalizedEmail,
-                "User login successful");
+        String token = jwtService.generateTokenWithRole(
+                userDetails, authUserData.getUserType().name());
+        auditService.logLogin(EntityType.USER, authUserData.getUserId(), normalizedEmail, "User login successful");
 
-        return new LoginResponse(token, authUserData.getEmail(), authUserData.getUserType().name());
+        return new LoginResponse(
+                token, authUserData.getEmail(), authUserData.getUserType().name());
     }
 
     public ValidateTokenResponse validateToken(ValidateTokenRequest request) {

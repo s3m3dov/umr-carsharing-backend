@@ -9,13 +9,12 @@ import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.PassengerRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -72,9 +71,10 @@ public class AdminPassengerService {
     }
 
     private PassengerResponse mapToResponse(Passenger passenger) {
-        String resolvedEmail = (passenger.getEmail() == null || passenger.getEmail().isBlank())
-                ? passenger.getUserId()
-                : passenger.getEmail();
+        String resolvedEmail =
+                (passenger.getEmail() == null || passenger.getEmail().isBlank())
+                        ? passenger.getUserId()
+                        : passenger.getEmail();
 
         return PassengerResponse.builder()
                 .userId(passenger.getUserId())

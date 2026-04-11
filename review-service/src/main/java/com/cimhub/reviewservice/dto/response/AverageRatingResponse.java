@@ -7,9 +7,7 @@ import lombok.Builder;
 @Schema(
         name = "AverageRatingResponse",
         description = "Average rating information for a driver",
-        example = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE
-)
-
+        example = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE)
 @Builder
 public record AverageRatingResponse(
         @Schema(description = "ID of the subject (driver or user)")
@@ -19,5 +17,4 @@ public record AverageRatingResponse(
         double averageRating,
 
         @Schema(description = "Total number of reviews for the subject")
-        long totalReviews) {
-}
+        long totalReviews) {}

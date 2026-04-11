@@ -5,14 +5,13 @@ import com.cimhub.common.model.Points;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.Instant;
 
 /**
  * Booking entity - represents a passenger's seat reservation on a trip.
@@ -34,21 +33,21 @@ public class Booking {
 
     @NotBlank
     private String tripId;
-    
+
     @NotBlank
     private String driverId;
-    
+
     private String vehicleNumber;
 
     @NotNull
     private Points pickupLocation;
-    
+
     @NotNull
     private Points dropoffLocation;
 
     @Min(1)
     private int requestedSeats;
-    
+
     @NotNull
     private BookingStatus status;
 

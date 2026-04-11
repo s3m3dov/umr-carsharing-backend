@@ -1,17 +1,18 @@
 package com.cimhub.tripservice.dto.response;
 
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
-import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.Builder;
 
 @Builder
-@Schema(name = "DriverTripResponse", description = "Trip details as seen by the driver, including passenger information")
+@Schema(
+        name = "DriverTripResponse",
+        description = "Trip details as seen by the driver, including passenger information")
 public record DriverTripResponse(
         @Schema(description = "Unique trip identifier", example = "trip_001")
         String tripId,
@@ -28,11 +29,9 @@ public record DriverTripResponse(
         @Schema(description = "Current trip status", example = "AVAILABLE")
         TripStatus tripStatus,
 
-        @Schema(description = "Trip starting location")
-        Points sourceAddress,
+        @Schema(description = "Trip starting location") Points sourceAddress,
 
-        @Schema(description = "Trip destination location")
-        Points destinationAddress,
+        @Schema(description = "Trip destination location") Points destinationAddress,
 
         @Schema(description = "Trip departure date and time", example = "2026-01-11T13:09:26Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -81,6 +80,5 @@ public record DriverTripResponse(
             Points pickupLocation,
 
             @Schema(description = "Passenger's drop-off location")
-            Points dropoffLocation) {
-    }
+            Points dropoffLocation) {}
 }

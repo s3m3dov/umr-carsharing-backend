@@ -1,14 +1,21 @@
 package com.cimhub.tripservice.controller;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
-import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.OperationMessage;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.service.booking.BookingService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;
@@ -18,13 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerIntegrationTest {
@@ -68,8 +68,7 @@ class BookingControllerIntegrationTest {
                 .bookingStatus(BookingStatus.COMPLETED)
                 .tripStatus(TripStatus.IN_PROGRESS)
                 .build();
-        when(completionService.completeRide("b-1", "driver-1"))
-                .thenReturn(response);
+        when(completionService.completeRide("b-1", "driver-1")).thenReturn(response);
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -84,7 +83,8 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenBookingNotFound_shouldReturn404() throws Exception {
         doThrow(new ResourceNotFoundException("Booking not found with id: b-99"))
-                .when(completionService).completeRide("b-99", "driver-1");
+                .when(completionService)
+                .completeRide("b-99", "driver-1");
 
         mockMvc.perform(post("/api/bookings/b-99/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -97,7 +97,8 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenDriverIsNotOwner_shouldReturn401() throws Exception {
         doThrow(new UnauthorizedException("You are not authorized to complete this ride"))
-                .when(completionService).completeRide("b-1", "intruder");
+                .when(completionService)
+                .completeRide("b-1", "intruder");
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
                         .header(HeaderConstants.X_USER_ID, "intruder")
@@ -110,7 +111,8 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenRideNotCompletable_shouldReturn409() throws Exception {
         doThrow(new RideNotCompletableException("Ride b-1 cannot be completed — current status: COMPLETED"))
-                .when(completionService).completeRide("b-1", "driver-1");
+                .when(completionService)
+                .completeRide("b-1", "driver-1");
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")

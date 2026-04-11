@@ -10,8 +10,10 @@ import com.cimhub.userservice.dto.response.DriverDocumentResponse;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.DriverDocument;
-import com.cimhub.userservice.repository.DriverRepository;
 import com.cimhub.userservice.repository.DriverDocumentRepository;
+import com.cimhub.userservice.repository.DriverRepository;
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,9 +21,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -35,7 +34,8 @@ public class AdminDriverService {
     public Page<DriverResponse> listDrivers(DriverStatus status, Pageable pageable) {
         if (status != null) {
             Page<Driver> drivers = driverRepository.findByDriverStatus(status, pageable);
-            List<DriverResponse> responses = drivers.stream().map(this::mapToDriverResponse).toList();
+            List<DriverResponse> responses =
+                    drivers.stream().map(this::mapToDriverResponse).toList();
             return new PageImpl<>(responses, pageable, drivers.getTotalElements());
         }
         return driverRepository.findAll(pageable).map(this::mapToDriverResponse);
@@ -140,9 +140,8 @@ public class AdminDriverService {
     }
 
     private DriverResponse mapToDriverResponse(Driver driver) {
-        String resolvedEmail = (driver.getEmail() == null || driver.getEmail().isBlank())
-                ? driver.getUserId()
-                : driver.getEmail();
+        String resolvedEmail =
+                (driver.getEmail() == null || driver.getEmail().isBlank()) ? driver.getUserId() : driver.getEmail();
 
         return DriverResponse.builder()
                 .userId(driver.getUserId())

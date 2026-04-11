@@ -4,13 +4,11 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
-
 import java.time.Instant;
 
 public final class ReviewFixtures {
 
-    private ReviewFixtures() {
-    }
+    private ReviewFixtures() {}
 
     public static ReviewResponse reviewResponse(String reviewId) {
         return ReviewResponse.builder()

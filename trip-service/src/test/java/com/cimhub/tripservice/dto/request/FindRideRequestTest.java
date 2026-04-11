@@ -1,11 +1,10 @@
 package com.cimhub.tripservice.dto.request;
 
+import static com.cimhub.common.testsupport.Points.of;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.common.model.Points;
 import org.junit.jupiter.api.Test;
-
-import static com.cimhub.common.testsupport.Points.of;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FindRideRequestTest {
 

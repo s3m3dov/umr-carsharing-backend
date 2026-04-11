@@ -23,8 +23,7 @@ public class InternalDriverController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> createDriverProfile(
-            @PathVariable String userId,
-            @Valid @RequestBody CreateDriverProfileRequest request) {
+            @PathVariable String userId, @Valid @RequestBody CreateDriverProfileRequest request) {
         log.info("Internal: create driver profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(driverService.createDriverProfile(userId, request)));

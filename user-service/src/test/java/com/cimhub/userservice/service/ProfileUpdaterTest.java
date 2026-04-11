@@ -1,10 +1,10 @@
 package com.cimhub.userservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProfileUpdaterTest {
 

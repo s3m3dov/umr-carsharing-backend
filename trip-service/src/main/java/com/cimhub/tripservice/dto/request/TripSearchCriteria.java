@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Schema(name = "TripSearchCriteria", description = "Parameters for searching trips matching a pickup and dropoff route")
 public record TripSearchCriteria(
-
         @Schema(description = "Latitude of pickup location", example = "50.8154")
         double sourceLatitude,
 
@@ -48,5 +47,4 @@ public record TripSearchCriteria(
         String carType,
 
         @Schema(description = "Minimum available seats on the trip", example = "2")
-        Integer minAvailableSeats
-) {}
+        Integer minAvailableSeats) {}

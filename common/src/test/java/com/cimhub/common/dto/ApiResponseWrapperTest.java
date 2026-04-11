@@ -1,11 +1,11 @@
 package com.cimhub.common.dto;
 
-import com.cimhub.common.dto.response.ApiError;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import com.cimhub.common.dto.response.ApiError;
+import org.junit.jupiter.api.Test;
 
 class ApiResponseWrapperTest {
 

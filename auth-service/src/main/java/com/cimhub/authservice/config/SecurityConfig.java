@@ -1,9 +1,11 @@
 package com.cimhub.authservice.config;
 
 import com.cimhub.authservice.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,9 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @EnableMethodSecurity
 @EnableWebSecurity
@@ -34,8 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
 
-        http
-                .cors(AbstractHttpConfigurer::disable)
+        http.cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(
@@ -44,22 +42,24 @@ public class SecurityConfig {
                 .authorizeHttpRequests(registry -> {
                     registry.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     // Actuator paths from configuration
-                    securityProperties.getActuatorPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+                    securityProperties.getActuatorPaths().forEach(path -> registry.requestMatchers(path)
+                            .permitAll());
                     // Public paths from configuration
-                    securityProperties.getPublicPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+                    securityProperties.getPublicPaths().forEach(path -> registry.requestMatchers(path)
+                            .permitAll());
                     // Docs paths from configuration
-                    securityProperties.getDocsPaths().forEach(path -> registry.requestMatchers(path).permitAll());
+                    securityProperties.getDocsPaths().forEach(path -> registry.requestMatchers(path)
+                            .permitAll());
 
                     registry.anyRequest().authenticated(); // require authentication for any other request
                 })
-                .exceptionHandling(eh -> eh
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setContentType("application/json");
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write(
+                .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter()
+                            .write(
                                     "{\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"Authentication required\"}");
-                        })
-                )
+                }))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

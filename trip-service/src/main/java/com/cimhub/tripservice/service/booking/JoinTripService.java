@@ -1,6 +1,8 @@
 package com.cimhub.tripservice.service.booking;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ConcurrencyConflictException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
@@ -12,19 +14,16 @@ import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
 import com.cimhub.tripservice.exception.InsufficientSeatsException;
 import com.cimhub.tripservice.exception.TripNotAvailableException;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +43,11 @@ public class JoinTripService {
      */
     @Transactional
     public String joinTrip(String passengerId, JoinTripRequest request) {
-        log.info("Processing auto-confirm join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
-                passengerId, request.tripId(), request.requestedSeats());
+        log.info(
+                "Processing auto-confirm join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
+                passengerId,
+                request.tripId(),
+                request.requestedSeats());
 
         Trip trip = validateAndFetchTrip(passengerId, request);
         int seatsToBook = request.requestedSeats();
@@ -56,7 +58,10 @@ public class JoinTripService {
                 Booking booking = buildBooking(passengerId, request, trip, BookingStatus.CONFIRMED);
 
                 bookingRepository.save(booking);
-                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), passengerId,
+                auditService.logBook(
+                        EntityType.BOOKING,
+                        booking.getBookingId(),
+                        passengerId,
                         "Booking auto-confirmed for passenger");
 
                 driverNotificationService.notifyBookingConfirmed(trip, booking);
@@ -65,19 +70,31 @@ public class JoinTripService {
                 trip.setUpdatedAt(Instant.now());
                 tripsRepository.save(trip);
 
-                log.info("Passenger {} joined trip {} (auto-confirmed). Seats: {}",
-                        passengerId, request.tripId(), seatsToBook);
+                log.info(
+                        "Passenger {} joined trip {} (auto-confirmed). Seats: {}",
+                        passengerId,
+                        request.tripId(),
+                        seatsToBook);
 
                 return "Ride booked successfully.";
             } catch (org.springframework.dao.OptimisticLockingFailureException e) {
                 attempt++;
                 if (attempt >= MAX_RETRIES) {
-                    log.error("Failed to book trip {} after {} retries due to concurrent modification", request.tripId(), MAX_RETRIES);
+                    log.error(
+                            "Failed to book trip {} after {} retries due to concurrent modification",
+                            request.tripId(),
+                            MAX_RETRIES);
                     throw new ConcurrencyConflictException("Seat booking conflict - please retry");
                 }
-                log.warn("Optimistic lock conflict on trip {}, retrying (attempt {}/{})", request.tripId(), attempt, MAX_RETRIES);
-                trip = tripsRepository.findById(request.tripId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
+                log.warn(
+                        "Optimistic lock conflict on trip {}, retrying (attempt {}/{})",
+                        request.tripId(),
+                        attempt,
+                        MAX_RETRIES);
+                trip = tripsRepository
+                        .findById(request.tripId())
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
             }
         }
         throw new ConcurrencyConflictException("Seat booking conflict - please retry");
@@ -89,8 +106,11 @@ public class JoinTripService {
      */
     @Transactional
     public String joinTripWithDriverAccept(String passengerId, JoinTripRequest request) {
-        log.info("Processing driver-accept join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
-                passengerId, request.tripId(), request.requestedSeats());
+        log.info(
+                "Processing driver-accept join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
+                passengerId,
+                request.tripId(),
+                request.requestedSeats());
 
         Trip trip = validateAndFetchTrip(passengerId, request);
         int seatsToBook = request.requestedSeats();
@@ -101,7 +121,10 @@ public class JoinTripService {
                 Booking booking = buildBooking(passengerId, request, trip, BookingStatus.REQUESTED);
 
                 bookingRepository.save(booking);
-                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), passengerId,
+                auditService.logBook(
+                        EntityType.BOOKING,
+                        booking.getBookingId(),
+                        passengerId,
                         "Booking request submitted by passenger");
 
                 driverNotificationService.notifyBookingRequested(trip, booking);
@@ -110,19 +133,31 @@ public class JoinTripService {
                 trip.setUpdatedAt(Instant.now());
                 tripsRepository.save(trip);
 
-                log.info("Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
-                        passengerId, request.tripId(), seatsToBook);
+                log.info(
+                        "Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
+                        passengerId,
+                        request.tripId(),
+                        seatsToBook);
 
                 return "Booking request submitted. Waiting for driver confirmation.";
             } catch (org.springframework.dao.OptimisticLockingFailureException e) {
                 attempt++;
                 if (attempt >= MAX_RETRIES) {
-                    log.error("Failed to request booking for trip {} after {} retries due to concurrent modification", request.tripId(), MAX_RETRIES);
+                    log.error(
+                            "Failed to request booking for trip {} after {} retries due to concurrent modification",
+                            request.tripId(),
+                            MAX_RETRIES);
                     throw new ConcurrencyConflictException("Seat booking conflict - please retry");
                 }
-                log.warn("Optimistic lock conflict on trip {}, retrying (attempt {}/{})", request.tripId(), attempt, MAX_RETRIES);
-                trip = tripsRepository.findById(request.tripId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
+                log.warn(
+                        "Optimistic lock conflict on trip {}, retrying (attempt {}/{})",
+                        request.tripId(),
+                        attempt,
+                        MAX_RETRIES);
+                trip = tripsRepository
+                        .findById(request.tripId())
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
             }
         }
         throw new ConcurrencyConflictException("Seat booking conflict - please retry");
@@ -132,9 +167,9 @@ public class JoinTripService {
     public String acceptBooking(String bookingId, String driverId) {
         log.info("Driver {} accepting booking: {}", driverId, bookingId);
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Booking not found with id: " + bookingId));
+        Booking booking = bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
         if (!driverId.equals(booking.getDriverId())) {
             throw new UnauthorizedException("You are not authorized to accept this booking");
@@ -163,9 +198,9 @@ public class JoinTripService {
     public String rejectBooking(String bookingId, String driverId) {
         log.info("Driver {} rejecting booking: {}", driverId, bookingId);
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Booking not found with id: " + bookingId));
+        Booking booking = bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
         if (!driverId.equals(booking.getDriverId())) {
             throw new UnauthorizedException("You are not authorized to reject this booking");
@@ -196,9 +231,9 @@ public class JoinTripService {
     // ── private helpers ───────────────────────────────────────────────────────
 
     private Trip validateAndFetchTrip(String passengerId, JoinTripRequest request) {
-        Trip trip = tripsRepository.findById(request.tripId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trip not found with id: " + request.tripId()));
+        Trip trip = tripsRepository
+                .findById(request.tripId())
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + request.tripId()));
 
         if (trip.getTripStatus() != TripStatus.CREATED && trip.getTripStatus() != TripStatus.AVAILABLE) {
             throw new TripNotAvailableException("Trip is not available for booking");
@@ -206,8 +241,7 @@ public class JoinTripService {
 
         List<Booking> existingBookings = bookingRepository.findByTripId(request.tripId());
         boolean alreadyBooked = existingBookings.stream()
-                .anyMatch(b -> b.getPassengerId().equals(passengerId) &&
-                        b.getStatus() != BookingStatus.CANCELLED);
+                .anyMatch(b -> b.getPassengerId().equals(passengerId) && b.getStatus() != BookingStatus.CANCELLED);
 
         if (alreadyBooked) {
             throw new AlreadyBookedException("You have already booked this trip");
@@ -215,9 +249,8 @@ public class JoinTripService {
 
         int availableSeats = trip.getTotalSeats() - trip.getBookedSeats();
         if (availableSeats < request.requestedSeats()) {
-            throw new InsufficientSeatsException(
-                    String.format("Only %d seats available, but %d requested", availableSeats,
-                            request.requestedSeats()));
+            throw new InsufficientSeatsException(String.format(
+                    "Only %d seats available, but %d requested", availableSeats, request.requestedSeats()));
         }
 
         return trip;
