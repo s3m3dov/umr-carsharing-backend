@@ -1,9 +1,11 @@
 package com.cimhub.userservice.vehicle.model;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -13,7 +15,8 @@ import java.time.Instant;
  * Uses MongoDB for persistence.
  * Stored in "vehicles" collection.
  */
-@Data
+@Getter
+@Setter
 @Document(collection = "vehicles")
 @NoArgsConstructor
 public class Vehicle {
@@ -24,6 +27,7 @@ public class Vehicle {
     private String userId;
 
     @NotBlank
+    @Indexed(unique = true)
     private String vehicleNumber;
 
     @NotBlank

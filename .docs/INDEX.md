@@ -6,31 +6,36 @@ Welcome to the Car Sharing Backend documentation.
 
 ## Technical Documentation
 
-### API Reference
-- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides, bookings, reviews, notifications
+### API Reference & Architecture
+- **[API Architecture Index](technical/api-architecture/INDEX.md)**: Central index for API design and endpoints
+- **[API Reference](technical/api-architecture/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips, rides, bookings, reviews, notifications
+
+### OpenAPI & Payloads
+- **[OpenAPI Index](technical/openapi/INDEX.md)**: Central index for schemas, validation, and documentation
 - **[OpenAPI Schemas](technical/openapi/openapi-schemas.md)**: All DTO schemas, validation rules, and field constraints
-- **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 - **[Request & Response Payloads](technical/openapi/request-response-payloads.md)**: Full payload map by service
 
 ### Testing
+- **[Testing Index](technical/testing/INDEX.md)**: Central index for testing guides
 - **[Testing Guide](technical/testing/testing.md)**: Comprehensive testing documentation — running tests, code coverage, test types
 - **[Testing Quick Reference](technical/testing/testing_quick_reference.md)**: Quick commands for running tests and viewing coverage
+- **[Integration Examples](technical/testing/integration-examples.md)**: cURL, JavaScript, Python, and Java code examples
 
 ### Architecture & Infrastructure
-- **[Architecture & Tech Stack](technical/crucial/architecture.md)**: System design, microservices, and technical capabilities
-- **[API Development Guide](technical/crucial/api-guide.md)**: Authentication, response formats, and implementation details
-- **[API Reference](technical/crucial/api-reference.md)**: Complete endpoint docs — auth, users, vehicles, trips
-- **[BlaBlaCar Architecture Overview](technical/crucial/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
+- **[Architecture & Tech Stack](technical/api-architecture/architecture.md)**: System design, microservices, and technical capabilities
+- **[API Development Guide](technical/api-architecture/api-guide.md)**: Authentication, response formats, and implementation details
+- **[BlaBlaCar Architecture Overview](technical/api-architecture/blablacar-architecture-overview.md)**: Deep dive into BlaBlaCar's cloud-native evolution
+- **[User & Profile Architecture](technical/services/user-service/user-profile-architecture.md)**: Ownership boundaries for auth users and driver/passenger profile collections
+
+### Services
+- **[Services Index](technical/services/INDEX.md)**: Central index for service-specific documentation
+
+### DevOps & Deployment
+- **[DevOps Index](technical/devops/INDEX.md)**: Central index for deployment and operations
 - **[GitOps Workflow](technical/devops/gitops.md)**: Deployment rules, scripts, and commands
 - **[GCP Initial Setup](technical/devops/gcp-initial-setup.md)**: First-time cloud setup guide (GKE, Artifact Registry, Static IP)
 - **[GCP Deployment](technical/devops/gcp-deployment.md)**: Cloud deployment guide
 - **[Monitoring & Logging](technical/devops/monitoring.md)**: Kubernetes Dashboard, Prometheus, Grafana, Loki
-
-### Documentation Internals
-- **[Documentation Approach](technical/openapi/documentation-approach.md)**: Clean code + comprehensive docs philosophy
-- **[Examples Import Approach](technical/openapi/examples-import-approach.md)**: How `ApiExamples.java` files work
-- **[Examples Location Guide](technical/openapi/examples-location-guide.md)**: Where all payload examples live
-- **[OpenAPI Summary](technical/openapi/openapi-summary.md)**: What was implemented in the OpenAPI pass
 
 ---
 

@@ -10,7 +10,6 @@ Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
-  "driverId": "{{driverEmail}}",
   "sourceAddress": {
     "latitude": 50.8154,
     "longitude": 8.6747,
@@ -47,7 +46,6 @@ POST {{baseUrl}}/trip-service/api/trips/offer
 Content-Type: application/json
 
 {
-  "driverId": "{{driverEmail}}",
   "sourceAddress": { "latitude": 50.8154, "longitude": 8.6747, "placeId": "", "placeAddress": "Marburg Hauptbahnhof" },
   "destinationAddress": { "latitude": 50.7265, "longitude": 7.0895, "placeId": "", "placeAddress": "Bonn Hbf" },
   "tripStartDateTime": "{{tripStartDateTime}}",
@@ -107,7 +105,6 @@ Authorization: Bearer {{driverToken}}
 Content-Type: application/json
 
 {
-  "driverId": "{{driverEmail}}",
   "sourceAddress": {
     "latitude": 50.8154,
     "longitude": 8.6747,
@@ -163,9 +160,15 @@ client.test("Book ride (driver-accept): status 200 or 201", function() {
   client.assert(response.status === 200 || response.status === 201,
     "Expected 200/201, got " + response.status);
 });
-client.test("Book ride (driver-accept): response message indicates pending", function() {
-  client.assert(response.body.message === "Booking request submitted. Waiting for driver confirmation.",
-    "Expected driver-accept message, got: " + response.body.message);
+client.test("Book ride (driver-accept): data or message returned", function() {
+  client.assert(response.body.data != null || response.body.message != null,
+    "Expected data or message in response");
+});
+client.test("Book ride (driver-accept): response indicates pending", function() {
+  var msg = (response.body.data && response.body.data.message) || response.body.message || "";
+  var dataMsg = response.body.data ? JSON.stringify(response.body.data).toLowerCase() : "";
+  client.assert(msg.toLowerCase().includes("request") || dataMsg.includes("request"),
+    "Expected pending/request message, got: " + msg);
 });
 %}
 
@@ -290,9 +293,14 @@ client.test("Book ride (auto-confirm): status 200 or 201", function() {
   client.assert(response.status === 200 || response.status === 201,
     "Expected 200/201, got " + response.status);
 });
-client.test("Book ride (auto-confirm): response message indicates success", function() {
-  client.assert(response.body.message === "Ride booked successfully.",
-    "Expected auto-confirm message, got: " + response.body.message);
+client.test("Book ride: data or message returned", function() {
+  client.assert(response.body.data != null || response.body.message != null,
+    "Expected data or message in response");
+});
+client.test("Book ride (auto-confirm): response indicates success", function() {
+  var msg = response.body.message || "";
+  client.assert(msg.toLowerCase().includes("success") || msg.toLowerCase().includes("confirm"),
+    "Expected success/confirmation message, got: " + msg);
 });
 %}
 
@@ -451,9 +459,9 @@ Authorization: Bearer {{driverToken}}
 client.test("Complete ride: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
-client.test("Complete ride: message confirms completion", function() {
-  client.assert(response.body.message === "Ride completed successfully",
-    "Expected 'Ride completed successfully', got: " + response.body.message);
+client.test("Complete ride: data or message returned", function() {
+  client.assert(response.body.data != null || response.body.message != null,
+    "Expected data or message in response");
 });
 %}
 

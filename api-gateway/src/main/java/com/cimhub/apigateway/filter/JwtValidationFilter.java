@@ -3,6 +3,7 @@ package com.cimhub.apigateway.filter;
 import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
 import com.cimhub.apigateway.constant.GatewayConstants;
+import com.cimhub.common.exception.DependencyUnavailableException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -45,6 +47,10 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 })
                 .build();
         ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
+
+        if (HttpMethod.OPTIONS.equals(sanitizedExchange.getRequest().getMethod())) {
+            return chain.filter(sanitizedExchange);
+        }
 
         // Skip JWT validation for public endpoints
         if (isPublicPath(path)) {
@@ -124,8 +130,23 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return error;
         }
 
+        if (isConnectionError(error)) {
+            log.error("Auth-service unavailable", error);
+            return new DependencyUnavailableException("Auth-service unavailable");
+        }
+
         log.error("Auth-service validation failed", error);
         return new UnauthorizedException("Token validation failed");
+    }
+
+    private boolean isConnectionError(Throwable error) {
+        String errorClass = error.getClass().getName();
+        return errorClass.contains("ConnectException")
+                || errorClass.contains("ReadTimeoutException")
+                || errorClass.contains("GatewayTimeoutException")
+                || (errorClass.contains("WebClientResponseException")
+                && error.getMessage() != null
+                && error.getMessage().contains("Connection"));
     }
 
     private boolean isPublicPath(String path) {

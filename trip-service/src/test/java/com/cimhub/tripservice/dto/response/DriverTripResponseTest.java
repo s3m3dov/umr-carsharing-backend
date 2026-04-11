@@ -1,25 +1,21 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.model.Points;
+import com.cimhub.common.enums.TripStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.cimhub.common.testsupport.Points.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DriverTripResponseTest {
 
     @Test
     void builder_shouldCreateResponseWithPassengerInfo() {
-        Points source = new Points();
-        source.setLatitude(52.5);
-        source.setLongitude(13.4);
-
-        Points destination = new Points();
-        destination.setLatitude(52.6);
-        destination.setLongitude(13.5);
+        Points source = of(52.5, 13.4, "Source");
+        Points destination = of(52.6, 13.5, "Destination");
 
         DriverTripResponse.PassengerInfo passengerInfo = DriverTripResponse.PassengerInfo.builder()
                 .userId("p-1")

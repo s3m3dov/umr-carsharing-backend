@@ -139,9 +139,11 @@ Each service has centralized example constants:
 
 **user-service/controller/UserApiExamples.java:**
 - GET_USER_RESPONSE
-- CREATE_PROFILE_RESPONSE
 - ERROR_USER_NOT_FOUND
-- ERROR_INVALID_DATA
+
+**Role profile APIs (controller level):**
+- `POST /api/drivers/{userId}` with `CreateDriverProfileRequest`
+- `POST /api/passengers/{userId}` (no body)
 
 **trip-service/controller/TripApiExamples.java:**
 - OFFER_TRIP_RESPONSE

@@ -1,13 +1,15 @@
 package com.cimhub.tripservice.controller;
 
+import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.model.OperationMessage;
-import com.cimhub.tripservice.service.BookingService;
-import com.cimhub.tripservice.service.CancellationService;
-import com.cimhub.tripservice.service.CompletionService;
-import com.cimhub.tripservice.service.JoinTripService;
+import com.cimhub.tripservice.service.booking.BookingService;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.CompletionService;
+import com.cimhub.tripservice.service.booking.JoinTripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -39,12 +41,12 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking details retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @GetMapping("/{bookingId}")
@@ -63,19 +65,23 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking accepted",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.JOIN_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.JOIN_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @PostMapping("/accept")
     public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
-            @RequestParam String bookingId) {
-        log.info("Driver accepting booking: {}", bookingId);
-        String response = joinTripService.acceptBooking(bookingId);
+            @RequestParam String bookingId,
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+        requireDriverRole(authenticatedUserRole);
+
+        log.info("Driver {} accepting booking: {}", authenticatedUserId, bookingId);
+        String response = joinTripService.acceptBooking(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -87,19 +93,23 @@ public class BookingController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Booking rejected",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.CANCEL_BOOKING_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.CANCEL_BOOKING_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Booking not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiExamples.ERROR_BOOKING_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND))
             )
     })
     @PostMapping("/reject")
     public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
-            @RequestParam String bookingId) {
-        log.info("Driver rejecting booking: {}", bookingId);
-        String response = joinTripService.rejectBooking(bookingId);
+            @RequestParam String bookingId,
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+        requireDriverRole(authenticatedUserRole);
+
+        log.info("Driver {} rejecting booking: {}", authenticatedUserId, bookingId);
+        String response = joinTripService.rejectBooking(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -124,9 +134,21 @@ public class BookingController {
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
-            @RequestParam String driverId) {
-        log.info("Driver {} completing ride: {}", driverId, bookingId);
-        CompleteRideResponse response = completionService.completeRide(bookingId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} completing ride: {}", authenticatedUserId, bookingId);
+        CompleteRideResponse response = completionService.completeRide(bookingId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.RIDE_COMPLETED_SUCCESS.text()));
+    }
+
+    private void requireDriverRole(String userRole) {
+        AuthorizationHelper.requireDriverRole(userRole);
     }
 }

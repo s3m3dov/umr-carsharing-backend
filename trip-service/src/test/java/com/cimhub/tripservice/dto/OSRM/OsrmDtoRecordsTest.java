@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.dto.OSRM;
+package com.cimhub.tripservice.dto.osrm;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

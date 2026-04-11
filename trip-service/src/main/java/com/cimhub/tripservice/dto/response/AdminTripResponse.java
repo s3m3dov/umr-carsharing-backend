@@ -1,7 +1,8 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
+import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -54,6 +55,8 @@ public record AdminTripResponse(
         double pricePerSeat,
         double routeDistance,
         double routeDuration,
+        @Schema(description = "Route geometry as GeoJSON LineString (lon,lat pairs)")
+        Geometry routeGeometry,
         Instant tripStartDateTimeUTC,
         String tripTimezone,
         @Schema(description = "Timestamp when trip was created (UTC)", example = "2026-03-30T12:00:00.000Z")

@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.ServerWebExchange;
@@ -44,12 +45,22 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
             return Mono.error(ex);
         }
 
+        // Connection errors to downstream services
+        if (ex instanceof WebClientRequestException) {
+            return handleServiceUnavailable(exchange, ex);
+        }
+
         // Downstream service errors - forward response as-is
         if (ex instanceof WebClientResponseException webClientEx) {
             return forwardDownstreamError(exchange, webClientEx);
         }
 
         // Gateway-level errors - create standardized response
+        return handleGatewayError(exchange, ex);
+    }
+
+    private Mono<Void> handleServiceUnavailable(ServerWebExchange exchange, Throwable ex) {
+        log.error("Downstream service unavailable", ex);
         return handleGatewayError(exchange, ex);
     }
 

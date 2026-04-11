@@ -9,7 +9,7 @@ import com.cimhub.tripservice.dto.response.BookingSummaryReport;
 import com.cimhub.tripservice.dto.response.DriverPerformanceReport;
 import com.cimhub.tripservice.dto.response.PassengerActivityReport;
 import com.cimhub.tripservice.dto.response.RevenueReport;
-import com.cimhub.tripservice.service.ReportsService;
+import com.cimhub.tripservice.service.report.ReportsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.dto.OSRM;
+package com.cimhub.tripservice.dto.osrm;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

@@ -2,7 +2,10 @@ package com.cimhub.authservice.exception;
 
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.dto.response.ErrorBody;
+import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ErrorCode;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.filter.RequestIdFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -23,18 +26,64 @@ public class AuthExceptionHandler {
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
         log.warn("Bad credentials: {}", ex.getMessage());
 
-        String path = resolvePath(request);
-
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .code(ErrorCode.UNAUTHORIZED.code())
                 .message("Invalid credentials")
-                .error(ErrorBody.of(path))
+                .error(ErrorBody.of(resolvePath(request)))
                 .timestamp(Instant.now())
                 .requestId(resolveRequestId(request))
                 .build();
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException ex, WebRequest request) {
+        log.warn("Unauthorized: {}", ex.getMessage());
+
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .code(ErrorCode.UNAUTHORIZED.code())
+                .message(ex.getMessage())
+                .error(ErrorBody.of(resolvePath(request)))
+                .timestamp(Instant.now())
+                .requestId(resolveRequestId(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleUserAlreadyExists(UserAlreadyExistsException ex, WebRequest request) {
+        log.warn("User already exists: {}", ex.getMessage());
+
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .code(ErrorCode.USER_ALREADY_EXISTS.code())
+                .message(ex.getMessage())
+                .error(ErrorBody.of(resolvePath(request)))
+                .timestamp(Instant.now())
+                .requestId(resolveRequestId(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex, WebRequest request) {
+        log.warn("Bad request: {}", ex.getMessage());
+
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code(ErrorCode.BAD_REQUEST.code())
+                .message(ex.getMessage())
+                .error(ErrorBody.of(resolvePath(request)))
+                .timestamp(Instant.now())
+                .requestId(resolveRequestId(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
     private String resolvePath(WebRequest request) {

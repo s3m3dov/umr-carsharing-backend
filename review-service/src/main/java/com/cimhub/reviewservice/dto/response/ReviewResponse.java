@@ -1,7 +1,7 @@
 package com.cimhub.reviewservice.dto.response;
 
 import com.cimhub.common.enums.UserType;
-import com.cimhub.reviewservice.controller.ReviewApiExamples;
+import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +12,7 @@ import java.time.Instant;
 @Schema(
         name = "ReviewResponse",
         description = "Response containing review details",
-        example = ReviewApiExamples.SUBMIT_DRIVER_REVIEW_RESPONSE
+        example = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE
 )
 
 @Builder

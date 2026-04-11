@@ -1,6 +1,6 @@
 package com.cimhub.authservice.dto.request;
 
-import com.cimhub.authservice.controller.AuthApiExamples;
+import com.cimhub.authservice.dto.examples.AuthApiDoc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(
         name = "LoginRequest",
         description = "User login credentials",
-        example = AuthApiExamples.LOGIN_REQUEST
+        example = AuthApiDoc.LOGIN_REQUEST
 )
 public record LoginRequest(
         @Schema(description = "User's email address", example = "john.driver@example.com")

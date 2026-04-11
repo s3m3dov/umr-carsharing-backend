@@ -9,9 +9,6 @@ Authorization: Bearer {{admin_driver_token}}
 Content-Type: application/json
 
 {
-  "driverId": "{{admin_driver_id}}",
-  "vehicleNumber": "{{admin_driver_vehicle_number}}",
-  "carType": "SEDAN",
   "sourceAddress": {
     "latitude": 50.8154,
     "longitude": 8.6747,
@@ -25,7 +22,8 @@ Content-Type: application/json
     "placeAddress": "Bonn Hbf"
   },
   "tripStartDateTime": "{{admin_trip_start}}",
-  "totalSeats": 3
+  "totalSeats": 3,
+  "pricePerSeat": 5.0
 }
 
 > {%
@@ -33,9 +31,11 @@ client.test("Driver offer trip: status 200 or 201", function() {
   client.assert(response.status === 200 || response.status === 201,
     "Expected 200/201, got " + response.status);
 });
+client.test("Driver offer trip: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
 client.test("Driver offer trip: tripId returned", function() {
-  client.assert(response.body.data != null && response.body.data.tripId != null,
-    "Expected tripId in response");
+  client.assert(response.body.data.tripId != null, "Expected tripId in data");
 });
 if (response.body && response.body.data && response.body.data.tripId) {
   client.global.set("admin_trip_id", response.body.data.tripId);
@@ -101,9 +101,11 @@ Accept: application/json
 client.test("Admin list trips: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
-client.test("Admin list trips: paginated data", function() {
-  client.assert(response.body.data != null && response.body.data.content != null,
-    "Expected paginated content");
+client.test("Admin list trips: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+client.test("Admin list trips: paginated content present", function() {
+  client.assert(response.body.data.content != null, "Expected paginated content");
 });
 %}
 

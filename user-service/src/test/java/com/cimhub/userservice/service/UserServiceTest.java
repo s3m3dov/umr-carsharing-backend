@@ -1,38 +1,28 @@
 package com.cimhub.userservice.service;
 
-import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.exception.UserAlreadyExistsException;
-import com.cimhub.common.service.AuditService;
-import com.cimhub.userservice.dto.request.CreateProfileRequest;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.DriverRepository;
 import com.cimhub.userservice.repository.PassengerRepository;
-import com.cimhub.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private DriverRepository driverRepository;
@@ -40,129 +30,79 @@ class UserServiceTest {
     @Mock
     private PassengerRepository passengerRepository;
 
-    @Mock
-    private AuditService auditService;
-
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, driverRepository, passengerRepository, auditService);
+        userService = new UserService(driverRepository, passengerRepository);
     }
 
     @Test
-    void createProfile_whenExistingUser_shouldThrowUserAlreadyExists() {
-        CreateProfileRequest request = new CreateProfileRequest(
-                "user-1",
-                "user@example.com",
-                UserType.PASSENGER,
-                "John",
-                "Doe",
-                "+123",
-                30,
-                null);
+    void getUserInfo_whenDriverExists_returnsDriverResponse() {
+        String userId = "driver@example.com";
+        Driver driver = new Driver();
+        driver.setUserId(userId);
+        driver.setEmail(userId);
+        driver.setFirstName("John");
+        driver.setLastName("Doe");
+        driver.setPhoneNumber("+1234567890");
+        driver.setAge(25);
+        driver.setLicenseNumber("DL123456");
+        driver.setUserType(UserType.DRIVER);
+        driver.setCreatedAt(Instant.now());
+        driver.setUpdatedAt(Instant.now());
 
-        when(userRepository.findByUserId("user-1")).thenReturn(new com.cimhub.userservice.model.User());
+        when(driverRepository.findByUserId(userId)).thenReturn(Optional.of(driver));
 
-        assertThrows(UserAlreadyExistsException.class, () -> userService.createProfile(request));
-        verify(userRepository, never()).save(any(com.cimhub.userservice.model.User.class));
-    }
+        UserResponse response = userService.getUserInfo(userId);
 
-    @Test
-    void createProfile_forDriver_shouldCreateDriverProfileAndAudit() {
-        CreateProfileRequest request = new CreateProfileRequest(
-                "driver-1",
-                "driver@example.com",
-                UserType.DRIVER,
-                "Jane",
-                "Driver",
-                "+998",
-                28,
-                "LIC-123");
-
-        when(userRepository.findByUserId("driver-1")).thenReturn(null);
-        when(driverRepository.findByUserId("driver-1")).thenReturn(Optional.of(new Driver()));
-
-        UserResponse response = userService.createProfile(request);
-
-        assertEquals("driver-1", response.userId());
+        assertNotNull(response);
+        assertEquals(userId, response.userId());
+        assertEquals("John", response.firstName());
+        assertEquals("Doe", response.lastName());
         assertEquals(UserType.DRIVER, response.userType());
-
-        ArgumentCaptor<Driver> driverCaptor = ArgumentCaptor.forClass(Driver.class);
-        verify(driverRepository).save(driverCaptor.capture());
-        assertEquals("LIC-123", driverCaptor.getValue().getLicenseNumber());
-
-        verify(auditService).logCreate(EntityType.DRIVER, "driver-1", "driver@example.com", "User profile created");
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(25, response.age());
+        assertEquals("DL123456", response.licenseNumber());
     }
 
     @Test
-    void createProfile_forPassenger_shouldCreatePassengerProfileAndAudit() {
-        CreateProfileRequest request = new CreateProfileRequest(
-                "passenger-1",
-                "passenger@example.com",
-                UserType.PASSENGER,
-                "Alex",
-                "Passenger",
-                "+100",
-                26,
-                null);
+    void getUserInfo_whenPassengerExists_returnsPassengerResponse() {
+        String userId = "passenger@example.com";
+        Passenger passenger = new Passenger();
+        passenger.setUserId(userId);
+        passenger.setEmail(userId);
+        passenger.setFirstName("Jane");
+        passenger.setLastName("Doe");
+        passenger.setPhoneNumber("+1234567890");
+        passenger.setAge(30);
+        passenger.setUserType(UserType.PASSENGER);
+        passenger.setCreatedAt(Instant.now());
+        passenger.setUpdatedAt(Instant.now());
 
-        when(userRepository.findByUserId("passenger-1")).thenReturn(null);
+        when(driverRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(passengerRepository.findByUserId(userId)).thenReturn(Optional.of(passenger));
 
-        UserResponse response = userService.createProfile(request);
+        UserResponse response = userService.getUserInfo(userId);
 
-        assertEquals("passenger-1", response.userId());
+        assertNotNull(response);
+        assertEquals(userId, response.userId());
+        assertEquals("Jane", response.firstName());
+        assertEquals("Doe", response.lastName());
         assertEquals(UserType.PASSENGER, response.userType());
-
-        ArgumentCaptor<Passenger> passengerCaptor = ArgumentCaptor.forClass(Passenger.class);
-        verify(passengerRepository).save(passengerCaptor.capture());
-        assertEquals("passenger-1", passengerCaptor.getValue().getUserId());
-
-        verify(auditService).logCreate(EntityType.PASSENGER, "passenger-1", "passenger@example.com", "User profile created");
+        assertEquals("+1234567890", response.phoneNumber());
+        assertEquals(30, response.age());
+        assertEquals(null, response.licenseNumber());
     }
 
     @Test
-    void getUserInfo_whenMissingUser_shouldThrowNotFound() {
-        when(userRepository.findByUserId("missing-user")).thenReturn(null);
+    void getUserInfo_whenNeitherExists_throwsResourceNotFound() {
+        String userId = "nonexistent@example.com";
 
-        assertThrows(ResourceNotFoundException.class, () -> userService.getUserInfo("missing-user"));
-    }
+        when(driverRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(passengerRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
-    @Test
-    void getUserInfo_whenUserExists_shouldReturnMappedResponse() {
-        com.cimhub.userservice.model.User user = new com.cimhub.userservice.model.User();
-        user.setUserId("user-1");
-        user.setEmail("user@example.com");
-        user.setFirstName("Alice");
-        user.setLastName("Smith");
-        user.setUserType(UserType.PASSENGER);
-
-        when(userRepository.findByUserId("user-1")).thenReturn(user);
-
-        UserResponse response = userService.getUserInfo("user-1");
-
-        assertEquals("user-1", response.userId());
-        assertEquals("user@example.com", response.email());
-        assertEquals(UserType.PASSENGER, response.userType());
-    }
-
-    @Test
-    void createProfile_forDriver_shouldNotCreatePassengerRecord() {
-        CreateProfileRequest request = new CreateProfileRequest(
-                "driver-2",
-                "driver2@example.com",
-                UserType.DRIVER,
-                "Bob",
-                "Driver",
-                "+1",
-                35,
-                "LIC-999");
-
-        when(userRepository.findByUserId("driver-2")).thenReturn(null);
-        when(driverRepository.findByUserId("driver-2")).thenReturn(Optional.of(new com.cimhub.userservice.model.Driver()));
-
-        userService.createProfile(request);
-
-        verify(passengerRepository, never()).save(any());
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.getUserInfo(userId));
     }
 }

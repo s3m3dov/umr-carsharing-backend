@@ -1,7 +1,9 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.model.Points;
 import org.junit.jupiter.api.Test;
+
+import static com.cimhub.common.testsupport.Points.of;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -9,14 +11,8 @@ class FindRideRequestTest {
 
     @Test
     void builder_shouldPopulateAllFields() {
-        Points pickup = new Points();
-        pickup.setLatitude(52.5);
-        pickup.setLongitude(13.4);
-        pickup.setPlaceAddress("Pickup");
-        Points destination = new Points();
-        destination.setLatitude(52.6);
-        destination.setLongitude(13.5);
-        destination.setPlaceAddress("Destination");
+        Points pickup = of(52.5, 13.4, "Pickup");
+        Points destination = of(52.6, 13.5, "Destination");
 
         FindRideRequest request = FindRideRequest.builder()
                 .pickupPoint(pickup)
