@@ -8,6 +8,7 @@ import com.cimhub.notificationservice.dto.response.NotificationResponse;
 import com.cimhub.notificationservice.dto.response.NotificationStatsResponse;
 import com.cimhub.notificationservice.exception.UnauthorizedNotificationAccessException;
 import com.cimhub.notificationservice.service.NotificationService;
+import com.cimhub.notificationservice.testsupport.NotificationFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +49,7 @@ class NotificationControllerTest {
                 .type(NotificationType.BOOKING_REQUESTED)
                 .metadata(Map.of("k", "v"))
                 .build();
-        NotificationResponse created = sampleNotification("not-1", "user-2", "user-1");
+        NotificationResponse created = NotificationFixtures.notificationResponse("not-1", "user-2", "user-1");
         when(notificationService.createNotification(CreateNotificationRequest.builder()
                 .recipientId("user-2")
                 .senderId("user-1")
@@ -91,7 +91,7 @@ class NotificationControllerTest {
                 .message("Message")
                 .type(NotificationType.BOOKING_REQUESTED)
                 .build();
-        when(notificationService.createNotification(request)).thenReturn(sampleNotification("n-1", "user-2", "other-user"));
+        when(notificationService.createNotification(request)).thenReturn(NotificationFixtures.notificationResponse("n-1", "user-2", "other-user"));
 
         ResponseEntity<?> response = notificationController.createNotification("admin-1", UserType.ADMIN.name(), request);
 
@@ -102,7 +102,7 @@ class NotificationControllerTest {
     @Test
     void listNotifications_whenOwner_shouldReturnOk() {
         when(notificationService.listNotifications("user-1", PageRequest.of(0, 10)))
-                .thenReturn(new PageImpl<>(List.of(sampleNotification("n-1", "user-1", "sender"))));
+                .thenReturn(new PageImpl<>(List.of(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"))));
 
         ResponseEntity<?> response = notificationController.listNotifications(
                 "user-1",
@@ -144,7 +144,7 @@ class NotificationControllerTest {
     @Test
     void markAsRead_shouldValidateRecipientAccessAndDelegate() {
         MarkNotificationReadRequest request = MarkNotificationReadRequest.builder().recipientId("user-1").build();
-        when(notificationService.markAsRead("n-1", "user-1")).thenReturn(sampleNotification("n-1", "user-1", "sender"));
+        when(notificationService.markAsRead("n-1", "user-1")).thenReturn(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"));
 
         ResponseEntity<?> response = notificationController.markAsRead("n-1", "user-1", UserType.DRIVER.name(), request);
 
@@ -178,21 +178,5 @@ class NotificationControllerTest {
     void getStats_whenInvalidRoleString_shouldTreatAsNonAdminAndDenyAccess() {
         assertThrows(UnauthorizedNotificationAccessException.class,
                 () -> notificationController.getStats("user-2", "user-1", "not-a-role"));
-    }
-
-    private NotificationResponse sampleNotification(String id, String recipientId, String senderId) {
-        return NotificationResponse.builder()
-                .notificationId(id)
-                .recipientId(recipientId)
-                .senderId(senderId)
-                .title("Title")
-                .message("Message")
-                .type(NotificationType.BOOKING_REQUESTED)
-                .relatedEntityId("entity-1")
-                .metadata(Map.of("k", "v"))
-                .read(false)
-                .createdAt(Instant.parse("2030-01-01T00:00:00Z"))
-                .updatedAt(Instant.parse("2030-01-01T00:00:00Z"))
-                .build();
     }
 }

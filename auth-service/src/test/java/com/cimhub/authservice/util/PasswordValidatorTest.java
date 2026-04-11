@@ -1,6 +1,9 @@
 package com.cimhub.authservice.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,13 +17,10 @@ class PasswordValidatorTest {
         assertTrue(result.valid());
     }
 
-    @Test
-    void validate_shouldFailForMissingRequirements() {
-        assertFalse(PasswordValidator.validate(null).valid());
-        assertFalse(PasswordValidator.validate("short").valid());
-        assertFalse(PasswordValidator.validate("lowercase1!").valid());
-        assertFalse(PasswordValidator.validate("UPPERCASE1!").valid());
-        assertFalse(PasswordValidator.validate("NoDigit!").valid());
-        assertFalse(PasswordValidator.validate("NoSpecial1").valid());
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"short", "lowercase1!", "UPPERCASE1!", "NoDigit!", "NoSpecial1"})
+    void validate_shouldFailForMissingRequirements(String password) {
+        assertFalse(PasswordValidator.validate(password).valid());
     }
 }

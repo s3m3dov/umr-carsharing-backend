@@ -1,6 +1,9 @@
 package com.cimhub.authservice.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,10 +27,10 @@ class EmailNormalizerTest {
         assertTrue(EmailNormalizer.isValid("user.name+tag@example.co"));
     }
 
-    @Test
-    void isValid_shouldReturnFalseForBlankOrMalformedEmail() {
-        assertFalse(EmailNormalizer.isValid(""));
-        assertFalse(EmailNormalizer.isValid("invalid-email"));
-        assertFalse(EmailNormalizer.isValid(null));
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "invalid-email"})
+    void isValid_shouldReturnFalseForBlankOrMalformedEmail(String email) {
+        assertFalse(EmailNormalizer.isValid(email));
     }
 }

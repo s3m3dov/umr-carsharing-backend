@@ -1,7 +1,6 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.route;
 
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
-import com.cimhub.tripservice.service.route.OsrmRouteClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,7 +53,7 @@ class OsrmRouteClientTest {
                 })
                 .build();
 
-        OsrmRouteClient osmRoute = new OsrmRouteClient(webClient);
+        OsrmRouteClient osmRoute = new OsrmRouteClient(webClient, 5, 3, 500);
 
         OsrmResponseDTO response = osmRoute.getRoute(52.5, 13.4, 52.6, 13.5).block();
 
