@@ -10,8 +10,6 @@ public final class ReviewApiDoc {
 
     public static final String SUBMIT_REVIEW_REQUEST = """
             {
-              "userId": "jane.passenger@example.com",
-              "userRole": "PASSENGER",
               "tripId": "trip_001",
               "bookingId": "booking_001",
               "rating": 5,
