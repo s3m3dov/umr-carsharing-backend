@@ -18,10 +18,6 @@ public record JoinTripRequest(
         @NotNull(message = "Trip ID is required")
         String tripId,
 
-        @Schema(description = "Passenger's user ID", example = "jane.passenger@example.com")
-        @NotNull(message = "Passenger ID is required")
-        String passengerId,
-
         @Schema(description = "Driver's user ID for the trip", example = "john.driver@example.com")
         @NotNull(message = "Driver ID is required")
         String driverId,
