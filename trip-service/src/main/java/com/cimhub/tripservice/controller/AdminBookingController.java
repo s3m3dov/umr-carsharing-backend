@@ -42,7 +42,7 @@ public class AdminBookingController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> listBookings(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.listBookings(pageable)));
@@ -55,7 +55,7 @@ public class AdminBookingController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.getBooking(id)));
@@ -68,8 +68,8 @@ public class AdminBookingController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<BookingResponse>> updateBooking(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Email", required = false) String adminEmail,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id,
             @RequestBody UpdateBookingRequest request) {
         AdminGuard.requireAdmin(userRole);
@@ -84,8 +84,8 @@ public class AdminBookingController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> cancelBooking(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Email", required = false) String adminEmail,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminBookingService.cancelBooking(id, adminEmail);
@@ -99,7 +99,7 @@ public class AdminBookingController {
     })
     @GetMapping("/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> getPassengerBookings(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @Parameter(description = "Passenger ID", example = "jane.passenger@example.com") @PathVariable String passengerId,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);

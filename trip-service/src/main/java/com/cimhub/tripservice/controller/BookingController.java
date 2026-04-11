@@ -11,6 +11,7 @@ import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;
 import com.cimhub.tripservice.service.booking.JoinTripService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -76,9 +77,10 @@ public class BookingController {
     @PostMapping("/accept")
     public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
             @RequestParam String bookingId,
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
+        requireAuthenticatedUser(authenticatedUserId);
 
         log.info("Driver {} accepting booking: {}", authenticatedUserId, bookingId);
         String response = joinTripService.acceptBooking(bookingId, authenticatedUserId);
@@ -104,9 +106,10 @@ public class BookingController {
     @PostMapping("/reject")
     public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
             @RequestParam String bookingId,
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
+        requireAuthenticatedUser(authenticatedUserId);
 
         log.info("Driver {} rejecting booking: {}", authenticatedUserId, bookingId);
         String response = joinTripService.rejectBooking(bookingId, authenticatedUserId);
@@ -134,10 +137,11 @@ public class BookingController {
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @RequestParam(required = false) String driverId) {
         requireDriverRole(authenticatedUserRole);
+        requireAuthenticatedUser(authenticatedUserId);
 
         if (driverId != null && !driverId.equals(authenticatedUserId)) {
             throw new UnauthorizedException("Driver identity mismatch");
@@ -150,5 +154,11 @@ public class BookingController {
 
     private void requireDriverRole(String userRole) {
         AuthorizationHelper.requireDriverRole(userRole);
+    }
+
+    private void requireAuthenticatedUser(String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
+            throw new UnauthorizedException("Missing X-User-Id header");
+        }
     }
 }

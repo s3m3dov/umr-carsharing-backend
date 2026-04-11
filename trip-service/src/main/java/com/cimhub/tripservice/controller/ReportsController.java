@@ -44,7 +44,7 @@ public class ReportsController {
     })
     @GetMapping("/drivers")
     public ResponseEntity<ApiResponseWrapper<DriverPerformanceReport>> driverReport(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getDriverPerformanceReport()));
     }
@@ -56,7 +56,7 @@ public class ReportsController {
     })
     @GetMapping("/bookings")
     public ResponseEntity<ApiResponseWrapper<BookingSummaryReport>> bookingsReport(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getBookingSummaryReport()));
     }
@@ -68,7 +68,7 @@ public class ReportsController {
     })
     @GetMapping("/revenue")
     public ResponseEntity<ApiResponseWrapper<RevenueReport>> revenueReport(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getRevenueReport()));
     }
@@ -80,7 +80,7 @@ public class ReportsController {
     })
     @GetMapping("/passengers")
     public ResponseEntity<ApiResponseWrapper<PassengerActivityReport>> passengerReport(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getPassengerActivityReport()));
     }
@@ -92,7 +92,7 @@ public class ReportsController {
     })
     @GetMapping("/audit-logs")
     public ResponseEntity<ApiResponseWrapper<Page<AuditLogResponse>>> listAuditLogs(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @Parameter(description = "Filter by action") @RequestParam(required = false) AuditAction action,
             @Parameter(description = "Filter by entity type") @RequestParam(required = false) EntityType entityType,
             @Parameter(description = "Filter by actor") @RequestParam(required = false) String performedBy,
@@ -114,7 +114,7 @@ public class ReportsController {
     })
     @GetMapping("/audit-logs/{id}")
     public ResponseEntity<ApiResponseWrapper<AuditLogResponse>> getAuditLog(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @Parameter(description = "Audit log id", example = "audit_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getAuditLog(id)));
