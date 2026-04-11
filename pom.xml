@@ -25,6 +25,7 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<logstash-encoder.version>7.4</logstash-encoder.version>
 		<jacoco.version>0.8.13</jacoco.version>
+		<spotless.version>2.45.0</spotless.version>
 	</properties>
 
 	<modules>
@@ -207,6 +208,38 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>${spotless.version}</version>
+				<configuration>
+					<java>
+						<removeUnusedImports />
+						<importOrder>
+							<order>java,javax,jakarta,com.cimhub</order>
+						</importOrder>
+						<googleJavaFormat>
+							<style>AOSP</style>
+						</googleJavaFormat>
+						<trimTrailingWhitespace />
+						<endWithNewline />
+					</java>
+					<yaml>
+						<includes>
+							<include>gitops/**/*.yaml</include>
+						</includes>
+						<jackson />
+					</yaml>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
