@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Service
@@ -39,9 +40,9 @@ public class ReviewService {
     private final AuditService auditService;
 
     @Transactional
-    public ReviewResponse submitDriverReview(SubmitReviewRequest request) {
+    public ReviewResponse submitDriverReview(String userId, UserType userRole, SubmitReviewRequest request) {
         return submitReview(
-                request,
+                userId, userRole, request,
                 UserType.PASSENGER,
                 UserType.DRIVER,
                 "Only passengers can review drivers",
@@ -52,9 +53,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReviewResponse submitPassengerReview(SubmitReviewRequest request) {
+    public ReviewResponse submitPassengerReview(String userId, UserType userRole, SubmitReviewRequest request) {
         return submitReview(
-                request,
+                userId, userRole, request,
                 UserType.DRIVER,
                 UserType.PASSENGER,
                 "Only drivers can review passengers",
@@ -89,51 +90,53 @@ public class ReviewService {
     }
 
     private ReviewResponse submitReview(
+            String userId,
+            UserType userRole,
             SubmitReviewRequest request,
             UserType expectedReviewerRole,
             UserType revieweeType,
             String roleValidationError,
             Function<String, RuntimeException> reviewerNotFoundFactory,
-            Function<SubmitReviewRequest, String> revieweeIdResolver,
+            BiFunction<String, SubmitReviewRequest, String> revieweeIdResolver,
             String auditMessage) {
-        log.info("Submitting {} review from user: {} for trip: {}", revieweeType.name().toLowerCase(), request.userId(), request.tripId());
+        log.info("Submitting {} review from user: {} for trip: {}", revieweeType.name().toLowerCase(), userId, request.tripId());
 
         validateRatingRange(request.rating());
-        validateUserRole(request.userRole(), expectedReviewerRole, roleValidationError);
-        ensureUserExists(request.userId(), reviewerNotFoundFactory);
+        validateUserRole(userRole, expectedReviewerRole, roleValidationError);
+        ensureUserExists(userId, reviewerNotFoundFactory);
         validateTripAndBookingCompleted(request.tripId(), request.bookingId());
-        ensureReviewDoesNotExist(request.userId(), request.tripId(), request.bookingId());
+        ensureReviewDoesNotExist(userId, request.tripId(), request.bookingId());
 
-        String revieweeId = revieweeIdResolver.apply(request);
-        Review review = buildReview(request, expectedReviewerRole, revieweeId, revieweeType);
+        String revieweeId = revieweeIdResolver.apply(userId, request);
+        Review review = buildReview(userId, expectedReviewerRole, request, revieweeId, revieweeType);
 
         Review savedReview = reviewRepository.save(review);
-        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), request.userId(), auditMessage);
+        auditService.logCreate(EntityType.REVIEW, savedReview.getReviewId(), userId, auditMessage);
         log.info("Review saved with ID: {}", savedReview.getReviewId());
 
         return ReviewMapper.toResponse(savedReview);
     }
 
-    private String resolveDriverRevieweeId(SubmitReviewRequest request) {
+    private String resolveDriverRevieweeId(String userId, SubmitReviewRequest request) {
         String driverId = tripServiceClient.getTripDriverId(request.tripId());
         if (driverId == null) {
             throw new DriverNotFoundException("Driver not found for trip: " + request.tripId());
         }
 
         String bookingPassengerId = tripServiceClient.getBookingPassengerId(request.bookingId());
-        if (!request.userId().equals(bookingPassengerId)) {
+        if (!userId.equals(bookingPassengerId)) {
             throw new UnauthorizedReviewerException("You are not the passenger of this booking");
         }
 
         return driverId;
     }
 
-    private String resolvePassengerRevieweeId(SubmitReviewRequest request) {
+    private String resolvePassengerRevieweeId(String userId, SubmitReviewRequest request) {
         String driverId = tripServiceClient.getTripDriverId(request.tripId());
         if (driverId == null) {
             throw new DriverNotFoundException("Driver not found for trip: " + request.tripId());
         }
-        if (!request.userId().equals(driverId)) {
+        if (!userId.equals(driverId)) {
             throw new UnauthorizedReviewerException("Only the driver of this trip can review passengers");
         }
 
@@ -145,12 +148,12 @@ public class ReviewService {
         return passengerId;
     }
 
-    private Review buildReview(SubmitReviewRequest request, UserType reviewerType, String revieweeId, UserType revieweeType) {
+    private Review buildReview(String userId, UserType reviewerType, SubmitReviewRequest request, String revieweeId, UserType revieweeType) {
         Instant now = Instant.now();
         return Review.builder()
                 .tripId(request.tripId())
                 .bookingId(request.bookingId())
-                .reviewerId(request.userId())
+                .reviewerId(userId)
                 .reviewerType(reviewerType)
                 .revieweeId(revieweeId)
                 .revieweeType(revieweeType)
