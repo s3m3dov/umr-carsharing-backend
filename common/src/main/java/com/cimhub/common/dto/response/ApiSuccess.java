@@ -47,10 +47,7 @@ public class ApiSuccess<T> {
      * Create a successful response with message
      */
     public static <T> ApiSuccess<T> success(String message) {
-        return ApiSuccess.<T>builder()
-                .message(message)
-                .timestamp(Instant.now())
-                .build();
+        return ApiSuccess.<T>builder().message(message).timestamp(Instant.now()).build();
     }
 
     /**

@@ -119,8 +119,7 @@ public class AdminBookingController {
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id,
             @RequestBody UpdateBookingRequest request) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(
-                ApiSuccess.success(adminBookingService.updateBooking(id, request, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.updateBooking(id, request, adminEmail)));
     }
 
     @Operation(summary = "Cancel booking", description = "Cancel a booking")
@@ -175,7 +174,6 @@ public class AdminBookingController {
                     String passengerId,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(
-                ApiSuccess.success(adminBookingService.getPassengerBookings(passengerId, pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.getPassengerBookings(passengerId, pageable)));
     }
 }

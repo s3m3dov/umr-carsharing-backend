@@ -65,8 +65,7 @@ class BookingControllerTest {
     void acceptBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.acceptBooking("b-1", "driver-1")).thenReturn("Booking accepted");
 
-        ResponseEntity<ApiSuccess<String>> response =
-                bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
+        ResponseEntity<ApiSuccess<String>> response = bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
 
         assertEquals("Booking accepted", response.getBody().getMessage());
         verify(joinTripService).acceptBooking("b-1", "driver-1");
@@ -76,8 +75,7 @@ class BookingControllerTest {
     void rejectBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.rejectBooking("b-2", "driver-1")).thenReturn("Booking rejected");
 
-        ResponseEntity<ApiSuccess<String>> response =
-                bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
+        ResponseEntity<ApiSuccess<String>> response = bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
 
         assertEquals("Booking rejected", response.getBody().getMessage());
         verify(joinTripService).rejectBooking("b-2", "driver-1");

@@ -42,8 +42,7 @@ class AdminTripControllerTest {
         Page<AdminTripResponse> page = new PageImpl<>(List.of(trip), pageable, 1);
         when(adminTripService.listTrips(pageable)).thenReturn(page);
 
-        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> response =
-                adminTripController.listTrips("ADMIN", pageable);
+        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> response = adminTripController.listTrips("ADMIN", pageable);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().getData().getTotalElements());

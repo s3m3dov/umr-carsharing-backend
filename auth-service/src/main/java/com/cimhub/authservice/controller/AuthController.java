@@ -82,8 +82,7 @@ public class AuthController {
             value = "/signup",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiSuccess<SignUpResponse>> registerUser(
-            @Valid @RequestBody RegisterUserRequest request) {
+    public ResponseEntity<ApiSuccess<SignUpResponse>> registerUser(@Valid @RequestBody RegisterUserRequest request) {
         log.info("Signup request for user: {}", request.email());
         SignUpResponse response = registrationService.registerUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));

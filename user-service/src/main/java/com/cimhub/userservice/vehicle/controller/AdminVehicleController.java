@@ -153,8 +153,7 @@ public class AdminVehicleController {
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id,
             @RequestBody UpdateVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(
-                ApiSuccess.success(adminVehicleService.updateVehicle(id, request, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminVehicleService.updateVehicle(id, request, adminEmail)));
     }
 
     @Operation(summary = "Delete vehicle", description = "Delete a vehicle from the system")

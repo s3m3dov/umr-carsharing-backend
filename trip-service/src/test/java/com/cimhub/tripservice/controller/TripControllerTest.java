@@ -121,8 +121,7 @@ class TripControllerTest {
         when(geoService.findTripsMatchingRoute(any(TripSearchCriteria.class))).thenReturn(List.of(trip));
 
         ResponseEntity<ApiSuccess<List<Trip>>> source = tripController.searchNearSource(1.1, 2.2, 5.0);
-        ResponseEntity<ApiSuccess<List<Trip>>> destination =
-                tripController.searchNearDestination(3.3, 4.4, 6.0);
+        ResponseEntity<ApiSuccess<List<Trip>>> destination = tripController.searchNearDestination(3.3, 4.4, 6.0);
         ResponseEntity<ApiSuccess<List<Trip>>> route = tripController.searchMatchingRoute(
                 "user-1",
                 "PASSENGER",

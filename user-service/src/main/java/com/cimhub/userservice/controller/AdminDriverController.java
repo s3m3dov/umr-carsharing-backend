@@ -245,8 +245,7 @@ public class AdminDriverController {
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId,
             @RequestBody UpdateDriverRequest request) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(
-                ApiSuccess.success(adminDriverService.updateDriver(userId, request, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminDriverService.updateDriver(userId, request, adminEmail)));
     }
 
     @Operation(summary = "Delete driver", description = "Delete a driver and all associated data")
