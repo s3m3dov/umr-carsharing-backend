@@ -102,7 +102,7 @@ client.test("Duplicate signup: error field set", function() {
   client.assert(response.body.error != null, "Expected error field in response");
 });
 client.test("Duplicate signup: error code returned", function() {
-  client.assert(response.body.error.code != null, "Expected error code");
+  client.assert(response.body.code != null, "Expected error code");
 });
 %}
 
