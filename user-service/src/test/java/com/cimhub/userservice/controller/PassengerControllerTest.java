@@ -2,7 +2,6 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
-import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.service.PassengerService;
@@ -50,25 +49,6 @@ class PassengerControllerTest {
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("passenger@example.com", response.getBody().getData().userId());
-    }
-
-    @Test
-    void createPassengerProfile_shouldReturnCreatedStatus() {
-        CreatePassengerProfileRequest request = new CreatePassengerProfileRequest("Jane", "Doe", "+123", 28);
-        PassengerResponse passengerResponse = PassengerResponse.builder()
-                .userId("passenger@example.com")
-                .userType(UserType.PASSENGER)
-                .build();
-        when(passengerService.createPassengerProfile("passenger@example.com", request)).thenReturn(passengerResponse);
-
-        var response = passengerController.createPassengerProfile(
-                "passenger@example.com",
-                UserType.PASSENGER,
-                "passenger@example.com",
-                request);
-
-        assertEquals(201, response.getStatusCode().value());
-        verify(passengerService).createPassengerProfile("passenger@example.com", request);
     }
 
     @Test

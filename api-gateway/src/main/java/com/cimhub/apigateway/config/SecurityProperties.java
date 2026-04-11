@@ -16,4 +16,5 @@ public class SecurityProperties {
     private List<String> publicPaths = List.of();
     private List<String> docsPaths = List.of();
     private List<String> adminPaths = List.of();
+    private List<String> internalPaths = List.of();
 }

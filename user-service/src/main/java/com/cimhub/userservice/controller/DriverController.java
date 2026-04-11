@@ -4,7 +4,6 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.constant.HeaderNames;
 import com.cimhub.common.util.OwnershipGuard;
-import com.cimhub.userservice.dto.request.CreateDriverProfileRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.service.DriverService;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,26 +41,6 @@ public class DriverController {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Get driver profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(driverService.getDriverProfile(userId)));
-    }
-
-    @Operation(summary = "Create driver profile", description = "Initialises the driver sub-profile for a registered driver user. Requires license number. Call once after signup.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Driver profile created"),
-            @ApiResponse(responseCode = "400", description = "License number is required"),
-            @ApiResponse(responseCode = "404", description = "User not found or not a driver"),
-            @ApiResponse(responseCode = "409", description = "Driver profile already exists")
-    })
-    @PostMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> createDriverProfile(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId,
-            @Valid @RequestBody CreateDriverProfileRequest request) {
-        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
-        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
-        log.info("Create driver profile for userId: {}", userId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(driverService.createDriverProfile(userId, request)));
     }
 
     @Operation(summary = "Update driver profile", description = "Updates personal info and/or license number for the driver. All fields are optional (partial update).")

@@ -29,7 +29,7 @@ public class UserServiceClient {
                                           int age) {
         try {
             restClient.post()
-                    .uri(userServiceBaseUrl + "/api/passengers/{userId}", userId)
+                    .uri(userServiceBaseUrl + "/api/internal/passengers/{userId}", userId)
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .body(buildPassengerBody(firstName, lastName, phoneNumber, age))
                     .retrieve()
@@ -61,7 +61,7 @@ public class UserServiceClient {
                                        String licenseNumber) {
         try {
             restClient.post()
-                    .uri(userServiceBaseUrl + "/api/drivers/{userId}", userId)
+                    .uri(userServiceBaseUrl + "/api/internal/drivers/{userId}", userId)
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .body(buildDriverBody(firstName, lastName, phoneNumber, age, licenseNumber))
                     .retrieve()
