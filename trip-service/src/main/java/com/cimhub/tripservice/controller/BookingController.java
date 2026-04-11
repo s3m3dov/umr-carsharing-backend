@@ -2,6 +2,7 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
@@ -77,8 +78,8 @@ public class BookingController {
     @PostMapping("/accept")
     public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
             @RequestParam String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 
@@ -106,8 +107,8 @@ public class BookingController {
     @PostMapping("/reject")
     public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
             @RequestParam String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 
@@ -137,8 +138,8 @@ public class BookingController {
     @PostMapping("/{bookingId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
 

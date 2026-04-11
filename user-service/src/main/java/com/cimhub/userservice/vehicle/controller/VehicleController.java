@@ -2,7 +2,7 @@ package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
@@ -57,8 +57,8 @@ public class VehicleController {
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
@@ -89,8 +89,8 @@ public class VehicleController {
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Valid @RequestBody RegisterVehicleRequest request) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());

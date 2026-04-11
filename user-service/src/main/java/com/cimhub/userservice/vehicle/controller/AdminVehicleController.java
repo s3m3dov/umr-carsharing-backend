@@ -1,7 +1,7 @@
 package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
@@ -47,7 +47,7 @@ public class AdminVehicleController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<AdminVehicleResponse>>> listVehicles(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.listVehicles(pageable)));
@@ -60,7 +60,7 @@ public class AdminVehicleController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> getVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.getVehicle(id)));
@@ -73,8 +73,8 @@ public class AdminVehicleController {
     })
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> createVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Valid @RequestBody RegisterVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         AdminVehicleResponse response = adminVehicleService.createVehicle(request, adminEmail);
@@ -88,8 +88,8 @@ public class AdminVehicleController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> updateVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id,
             @RequestBody UpdateVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
@@ -104,8 +104,8 @@ public class AdminVehicleController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> deleteVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminVehicleService.deleteVehicle(id, adminEmail);

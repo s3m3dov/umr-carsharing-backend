@@ -2,7 +2,7 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
-import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.service.UserService;
@@ -54,7 +54,7 @@ public class UserController {
     })
     @GetMapping(value = "/{userId}")
     public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         OwnershipGuard.requireOwner(authenticatedUserId, userId);
