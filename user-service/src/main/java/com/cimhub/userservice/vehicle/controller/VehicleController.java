@@ -57,8 +57,8 @@ public class VehicleController {
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
@@ -89,8 +89,8 @@ public class VehicleController {
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Valid @RequestBody RegisterVehicleRequest request) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());

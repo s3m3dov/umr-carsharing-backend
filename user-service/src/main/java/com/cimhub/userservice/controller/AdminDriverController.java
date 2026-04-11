@@ -50,7 +50,7 @@ public class AdminDriverController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<DriverResponse>>> listDrivers(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "Filter by driver status") @RequestParam(required = false) DriverStatus status,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
@@ -65,7 +65,7 @@ public class AdminDriverController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriver(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriver(userId)));
@@ -78,8 +78,8 @@ public class AdminDriverController {
     })
     @PostMapping("/{userId}/approve")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> approveDriver(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.approveDriver(userId, adminEmail)));
@@ -92,8 +92,8 @@ public class AdminDriverController {
     })
     @PostMapping("/{userId}/reject")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> rejectDriver(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.rejectDriver(userId, adminEmail)));
@@ -106,8 +106,8 @@ public class AdminDriverController {
     })
     @PostMapping("/bulk-approve")
     public ResponseEntity<ApiResponseWrapper<String>> bulkApprove(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Valid @RequestBody BulkDriverActionRequest request) {
         AdminGuard.requireAdmin(userRole);
         int count = adminDriverService.bulkApprove(request, adminEmail);
@@ -121,8 +121,8 @@ public class AdminDriverController {
     })
     @PostMapping("/bulk-reject")
     public ResponseEntity<ApiResponseWrapper<String>> bulkReject(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Valid @RequestBody BulkDriverActionRequest request) {
         AdminGuard.requireAdmin(userRole);
         int count = adminDriverService.bulkReject(request, adminEmail);
@@ -136,8 +136,8 @@ public class AdminDriverController {
     })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriver(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId,
             @RequestBody UpdateDriverRequest request) {
         AdminGuard.requireAdmin(userRole);
@@ -151,8 +151,8 @@ public class AdminDriverController {
     })
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<String>> deleteDriver(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         adminDriverService.deleteDriver(userId, adminEmail);
@@ -166,7 +166,7 @@ public class AdminDriverController {
     })
     @GetMapping("/{userId}/documents")
     public ResponseEntity<ApiResponseWrapper<List<DriverDocumentResponse>>> getDriverDocuments(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriverDocuments(userId)));

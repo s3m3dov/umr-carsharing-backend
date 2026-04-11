@@ -40,8 +40,8 @@ public class AdminController {
     })
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseWrapper<AdminProfileResponse>> getAdminProfile(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
-            @Parameter(description = "Admin email from JWT token", required = true) @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail) {
         AdminGuard.requireAdmin(userRole);
         if (adminEmail == null || adminEmail.isBlank()) {
             throw new BadRequestException("Admin email is required");

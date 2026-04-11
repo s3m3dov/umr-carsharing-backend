@@ -34,8 +34,8 @@ public class DriverController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriverProfile(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
@@ -50,8 +50,8 @@ public class DriverController {
     })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriverProfile(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Parameter(description = "Driver user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody UpdateDriverRequest request) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
