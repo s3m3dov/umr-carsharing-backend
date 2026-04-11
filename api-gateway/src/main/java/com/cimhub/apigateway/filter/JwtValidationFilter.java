@@ -3,6 +3,7 @@ package com.cimhub.apigateway.filter;
 import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
 import com.cimhub.apigateway.constant.GatewayConstants;
+import com.cimhub.common.exception.DependencyUnavailableException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
@@ -129,8 +130,23 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return error;
         }
 
+        if (isConnectionError(error)) {
+            log.error("Auth-service unavailable", error);
+            return new DependencyUnavailableException("Auth-service unavailable");
+        }
+
         log.error("Auth-service validation failed", error);
         return new UnauthorizedException("Token validation failed");
+    }
+
+    private boolean isConnectionError(Throwable error) {
+        String errorClass = error.getClass().getName();
+        return errorClass.contains("ConnectException")
+                || errorClass.contains("ReadTimeoutException")
+                || errorClass.contains("GatewayTimeoutException")
+                || (errorClass.contains("WebClientResponseException")
+                && error.getMessage() != null
+                && error.getMessage().contains("Connection"));
     }
 
     private boolean isPublicPath(String path) {
