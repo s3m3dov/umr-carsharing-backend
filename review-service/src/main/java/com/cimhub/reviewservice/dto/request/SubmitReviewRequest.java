@@ -1,12 +1,10 @@
 package com.cimhub.reviewservice.dto.request;
 
-import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Schema(
@@ -14,17 +12,8 @@ import lombok.Builder;
         description = "Request to submit a review for a completed trip",
         example = ReviewApiDoc.SUBMIT_REVIEW_REQUEST
 )
-
 @Builder
 public record SubmitReviewRequest(
-        @NotBlank(message = "userId is required")
-        @Schema(description = "The ID of the user submitting the review", example = "jane.passenger@example.com")
-        String userId,
-
-        @NotNull(message = "userRole is required")
-        @Schema(description = "The role of the reviewer", example = "PASSENGER")
-        UserType userRole,
-
         @NotBlank(message = "tripId is required")
         @Schema(description = "The ID of the trip being reviewed")
         String tripId,
