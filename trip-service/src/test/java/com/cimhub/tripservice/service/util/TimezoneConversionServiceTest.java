@@ -1,6 +1,5 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.util;
 
-import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

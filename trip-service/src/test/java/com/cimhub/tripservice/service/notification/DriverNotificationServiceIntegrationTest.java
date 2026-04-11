@@ -1,9 +1,8 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.notification;
 
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

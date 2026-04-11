@@ -1,11 +1,10 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.geo;
 
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.dto.osrm.Route;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.dto.request.TripSearchCriteria;
-import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
