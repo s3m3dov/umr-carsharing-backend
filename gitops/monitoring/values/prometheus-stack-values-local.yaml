@@ -3,3 +3,17 @@ grafana:
   env:
     GF_SERVER_ROOT_URL: "http://localhost:8888/grafana/"
     GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheus-node-exporter:
+  enabled: false
+kube-state-metrics:
+  enabled: true
