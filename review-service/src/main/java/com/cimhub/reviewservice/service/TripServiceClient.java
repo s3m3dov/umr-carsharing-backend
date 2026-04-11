@@ -1,8 +1,8 @@
 package com.cimhub.reviewservice.service;
 
 import com.cimhub.common.exception.DependencyUnavailableException;
-import com.cimhub.tripservice.model.BookingStatus;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

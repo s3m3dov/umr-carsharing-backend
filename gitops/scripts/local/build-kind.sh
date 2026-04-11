@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to build Docker images and load them into Kind cluster
-# Usage: ./build-kind.sh [tag]
+# Usage: ./build-kind.sh [tag] [service1 service2 ...]
 
 set -e
 
@@ -10,7 +10,32 @@ source "$SCRIPT_DIR/../common.sh"
 PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
 
 TAG="${1:-local}"
+shift || true
 CLUSTER_NAME="carsharing-local"
+
+# Determine which services to build
+if [ $# -eq 0 ]; then
+    SERVICES_TO_BUILD=("${ALL_SERVICES[@]}")
+    echo "📦 Building all services..."
+else
+    SERVICES_TO_BUILD=()
+    for service in "$@"; do
+        if [[ " ${ALL_SERVICES[*]} " =~ " ${service} " ]]; then
+            SERVICES_TO_BUILD+=("$service")
+        else
+            echo "⚠️  Warning: Unknown service '$service', skipping..."
+            echo "   Available services: ${ALL_SERVICES[*]}"
+        fi
+    done
+
+    if [ ${#SERVICES_TO_BUILD[@]} -eq 0 ]; then
+        echo "❌ Error: No valid services specified"
+        echo "   Available services: ${ALL_SERVICES[*]}"
+        exit 1
+    fi
+
+    echo "📦 Building selected services: ${SERVICES_TO_BUILD[*]}"
+fi
 
 echo "🐳 Building Docker images for Kind..."
 echo "   Tag: $TAG"
@@ -25,13 +50,14 @@ if ! kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
 fi
 
 # Build and load each service
-for service in "${ALL_SERVICES[@]}"; do
+for service in "${SERVICES_TO_BUILD[@]}"; do
     echo ""
     echo "📦 Building $service..."
     
     IMAGE_NAME="$service:$TAG"
     
     docker build \
+        --pull \
         -f "./$service/Dockerfile" \
         -t "$IMAGE_NAME" \
         .
@@ -46,7 +72,7 @@ echo ""
 echo "🎉 All images built and loaded into Kind!"
 echo ""
 echo "Images in cluster:"
-for service in "${ALL_SERVICES[@]}"; do
+for service in "${SERVICES_TO_BUILD[@]}"; do
     echo "  - $service:$TAG"
 done
 echo ""
