@@ -1,7 +1,8 @@
 package com.cimhub.tripservice.service.trip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.BadRequestException;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
@@ -89,7 +92,7 @@ class OfferRideServiceTest {
 
         OfferRideResponse response = offerRideService.offerRide("driver-1", request);
 
-        assertTrue(response.tripCreated());
+        assertNotNull(response.tripId());
         assertEquals("trip-42", response.tripId());
         assertEquals(12000.0, response.routeDistanceInMeters());
         assertEquals(12.0, response.routeDistanceInKm());
@@ -115,34 +118,34 @@ class OfferRideServiceTest {
     }
 
     @Test
-    void offerRide_whenRouteClientReturnsNull_shouldReturnFailureResponse() {
+    void offerRide_whenRouteClientReturnsNull_shouldThrowBadRequestException() {
         OfferRideRequest request = TripFixtures.offerRideRequest();
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.empty());
 
-        OfferRideResponse response = offerRideService.offerRide("driver-1", request);
+        BadRequestException ex = assertThrows(BadRequestException.class, () ->
+                offerRideService.offerRide("driver-1", request));
 
-        assertFalse(response.tripCreated());
-        assertEquals("Could not calculate route for provided coordinates", response.errorMessage());
+        assertEquals("Could not calculate route for provided coordinates", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));
         verifyNoInteractions(tripGeospatialService, auditService);
     }
 
     @Test
-    void offerRide_whenRouteClientReturnsEmptyRoutes_shouldReturnFailureResponse() {
+    void offerRide_whenRouteClientReturnsEmptyRoutes_shouldThrowBadRequestException() {
         OfferRideRequest request = TripFixtures.offerRideRequest();
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(), List.of());
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
 
-        OfferRideResponse response = offerRideService.offerRide("driver-1", request);
+        BadRequestException ex = assertThrows(BadRequestException.class, () ->
+                offerRideService.offerRide("driver-1", request));
 
-        assertFalse(response.tripCreated());
-        assertEquals("Could not calculate route for provided coordinates", response.errorMessage());
+        assertEquals("Could not calculate route for provided coordinates", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));
         verifyNoInteractions(tripGeospatialService, auditService);
     }
 
     @Test
-    void offerRide_whenVehicleNotFound_shouldReturnFailureResponse() {
+    void offerRide_whenVehicleNotFound_shouldThrowResourceNotFoundException() {
         OfferRideRequest request = TripFixtures.offerRideRequest();
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO(
                 "Ok",
@@ -152,10 +155,10 @@ class OfferRideServiceTest {
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
         when(vehicleDocumentRepository.findByUserId("driver-1")).thenReturn(Optional.empty());
 
-        OfferRideResponse response = offerRideService.offerRide("driver-1", request);
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+                offerRideService.offerRide("driver-1", request));
 
-        assertFalse(response.tripCreated());
-        assertEquals("Vehicle not found or does not belong to driver", response.errorMessage());
+        assertEquals("Vehicle not found or does not belong to driver", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));
         verifyNoInteractions(tripGeospatialService, auditService);
     }
@@ -177,11 +180,15 @@ class OfferRideServiceTest {
 
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
         when(vehicleDocumentRepository.findByUserId("driver-1")).thenReturn(Optional.of(vehicleDoc));
-        when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(tripsRepository.save(any(Trip.class))).thenAnswer(invocation -> {
+            Trip saved = invocation.getArgument(0);
+            saved.setTripId("trip-free");
+            return saved;
+        });
 
         OfferRideResponse response = offerRideService.offerRide("driver-1", request);
 
-        assertTrue(response.tripCreated());
+        assertNotNull(response.tripId());
         assertEquals(0.0, response.pricePerSeat());
     }
 }
