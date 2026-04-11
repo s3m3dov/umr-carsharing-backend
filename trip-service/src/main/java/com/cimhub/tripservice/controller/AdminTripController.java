@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
@@ -41,7 +42,7 @@ public class AdminTripController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> listTrips(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.listTrips(pageable)));
@@ -54,7 +55,7 @@ public class AdminTripController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminTripResponse>> getTrip(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getTrip(id)));
@@ -67,7 +68,7 @@ public class AdminTripController {
     })
     @GetMapping("/upcoming")
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getUpcomingTrips(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getUpcomingTrips(pageable)));
@@ -80,7 +81,7 @@ public class AdminTripController {
     })
     @GetMapping("/history")
     public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getTripHistory(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getTripHistory(pageable)));
@@ -95,8 +96,8 @@ public class AdminTripController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Email", required = false) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Email", required = true) String adminEmail,
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminTripService.cancelTrip(id, adminEmail);

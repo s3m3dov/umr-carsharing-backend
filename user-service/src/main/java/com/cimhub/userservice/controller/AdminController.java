@@ -2,7 +2,7 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
-import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.examples.UserApiDoc;
@@ -40,8 +40,8 @@ public class AdminController {
     })
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseWrapper<AdminProfileResponse>> getAdminProfile(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_EMAIL, required = false) String adminEmail) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail) {
         AdminGuard.requireAdmin(userRole);
         if (adminEmail == null || adminEmail.isBlank()) {
             throw new BadRequestException("Admin email is required");

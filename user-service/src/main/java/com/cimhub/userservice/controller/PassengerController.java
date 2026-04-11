@@ -2,7 +2,7 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
-import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -34,8 +34,8 @@ public class PassengerController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassengerProfile(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
@@ -50,8 +50,8 @@ public class PassengerController {
     })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassengerProfile(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody UpdatePassengerRequest request) {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
