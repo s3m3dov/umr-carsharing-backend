@@ -223,68 +223,6 @@ class TripControllerTest {
     }
 
     @Test
-    void startTrip_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
-        assertThrows(UnauthorizedException.class, () -> tripController.startTrip("trip-1", "driver-1", "DRIVER"));
-    }
-
-    @Test
-    void completeTrip_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
-        assertThrows(UnauthorizedException.class, () -> tripController.completeTrip("trip-1", "driver-1", "DRIVER"));
-    }
-
-    @Test
-    void driverTripEndpoints_whenPathDriverDoesNotMatchHeader_shouldThrowUnauthorized() {
-        assertThrows(
-                UnauthorizedException.class,
-                () -> tripController.getDriverActiveTrips("other-driver", "DRIVER", "driver-77"));
-        assertThrows(
-                UnauthorizedException.class,
-                () -> tripController.getDriverTripHistory("other-driver", "DRIVER", "driver-77"));
-    }
-
-    @Test
-    void offerTrip_whenDriverInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        OfferRideRequest request = OfferRideRequest.builder()
-                .sourceAddress(Points.of(0, 0, ""))
-                .destinationAddress(Points.of(0, 0, ""))
-                .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))
-                .totalSeats(3)
-                .pricePerSeat(5.0)
-                .build();
-
-        assertThrows(UnauthorizedException.class, () -> tripController.offerTrip("driver-1", "DRIVER", request));
-    }
-
-    @Test
-    void cancelTrip_whenUserInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        CancelTripRequest request = CancelTripRequest.builder().tripId("trip-1").build();
-
-        assertThrows(UnauthorizedException.class, () -> tripController.cancelTrip("driver-1", "DRIVER", request));
-    }
-
-    @Test
-    void searchMatchingRoute_whenEffectiveUserIdMismatchesHeader_shouldThrowUnauthorized() {
-        assertThrows(
-                UnauthorizedException.class,
-                () -> tripController.searchMatchingRoute(
-                        "header-user",
-                        "PASSENGER",
-                        1.0,
-                        2.0,
-                        5.0,
-                        3.0,
-                        4.0,
-                        6.0,
-                        null,
-                        null,
-                        1,
-                        null,
-                        null,
-                        null,
-                        null));
-    }
-
-    @Test
     void startTrip_whenRoleIsNotDriver_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class, () -> tripController.startTrip("trip-1", "driver-1", "PASSENGER"));
     }

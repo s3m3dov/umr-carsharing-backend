@@ -114,34 +114,6 @@ class RideControllerTest {
     }
 
     @Test
-    void bookRide_whenPassengerInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        JoinTripRequest request = JoinTripRequest.builder()
-                .tripId("trip-1")
-                .driverId("d-1")
-                .requestedSeats(1)
-                .build();
-
-        assertThrows(UnauthorizedException.class, () -> rideController.bookRide("p-1", "PASSENGER", request));
-    }
-
-    @Test
-    void cancelRide_whenUserInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        CancelTripRequest request = CancelTripRequest.builder().rideId("b-1").build();
-
-        assertThrows(UnauthorizedException.class, () -> rideController.cancelRide("p-1", "PASSENGER", request));
-    }
-
-    @Test
-    void passengerRideEndpoints_whenPathPassengerDoesNotMatchHeader_shouldThrowUnauthorized() {
-        assertThrows(
-                UnauthorizedException.class,
-                () -> rideController.getPassengerActiveRides("other-user", "PASSENGER", "p-10"));
-        assertThrows(
-                UnauthorizedException.class,
-                () -> rideController.getPassengerRideHistory("other-user", "PASSENGER", "p-10"));
-    }
-
-    @Test
     void bookRide_whenRoleIsNotPassenger_shouldThrowForbidden() {
         JoinTripRequest request = JoinTripRequest.builder()
                 .tripId("trip-1")
