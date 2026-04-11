@@ -12,8 +12,10 @@ Accept: application/json
 client.test("Admin list drivers: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
-client.test("Admin list drivers: paginated", function() {
-  client.assert(response.body.data != null, "Expected data");
+client.test("Admin list drivers: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+client.test("Admin list drivers: paginated content present", function() {
   client.assert(response.body.data.content != null, "Expected paginated content");
 });
 %}

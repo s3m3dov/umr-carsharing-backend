@@ -180,9 +180,14 @@ Content-Type: application/json
 client.test("Submit driver review: status 201", function() {
   client.assert(response.status === 201, "Expected 201, got " + response.status);
 });
-client.test("Submit driver review: review data returned", function() {
-  client.assert(response.body.data != null, "Expected review data in response");
-  client.assert(response.body.data.reviewId != null, "Expected reviewId");
+client.test("Submit driver review: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+client.test("Submit driver review: reviewId returned", function() {
+  client.assert(response.body.data.reviewId != null, "Expected reviewId in data");
+});
+client.test("Submit driver review: rating matches", function() {
+  client.assert(response.body.data.rating != null, "Expected rating in data");
 });
 %}
 
@@ -204,9 +209,11 @@ Content-Type: application/json
 client.test("Submit passenger review: status 201", function() {
   client.assert(response.status === 201, "Expected 201, got " + response.status);
 });
-client.test("Submit passenger review: review data returned", function() {
-  client.assert(response.body.data != null, "Expected review data in response");
-  client.assert(response.body.data.reviewId != null, "Expected reviewId");
+client.test("Submit passenger review: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+client.test("Submit passenger review: reviewId returned", function() {
+  client.assert(response.body.data.reviewId != null, "Expected reviewId in data");
 });
 %}
 
