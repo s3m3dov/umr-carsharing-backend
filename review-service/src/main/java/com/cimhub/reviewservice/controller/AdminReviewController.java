@@ -1,7 +1,7 @@
 package com.cimhub.reviewservice.controller;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -43,7 +43,7 @@ public class AdminReviewController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<ReviewResponse>>> listReviews(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             @Parameter(description = "Filter by review status") @RequestParam(required = false) ReviewStatus status,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
@@ -57,7 +57,7 @@ public class AdminReviewController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> getReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.getReview(id)));
@@ -70,8 +70,8 @@ public class AdminReviewController {
     })
     @PostMapping("/{id}/flag")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> flagReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.flagReview(id, adminEmail)));
@@ -84,8 +84,8 @@ public class AdminReviewController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> removeReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminReviewService.removeReview(id, adminEmail);
@@ -99,8 +99,8 @@ public class AdminReviewController {
     })
     @PostMapping("/{id}/publish")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> publishReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.publishReview(id, adminEmail)));

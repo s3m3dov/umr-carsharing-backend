@@ -1,9 +1,9 @@
 package com.cimhub.userservice.controller;
 
-import com.cimhub.userservice.dto.examples.UserApiDoc;
-import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.OwnershipGuard;
+import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,11 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -54,7 +50,7 @@ public class UserController {
     })
     @GetMapping(value = "/{userId}")
     public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         OwnershipGuard.requireOwner(authenticatedUserId, userId);
