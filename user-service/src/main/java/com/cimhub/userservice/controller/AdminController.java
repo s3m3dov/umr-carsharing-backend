@@ -4,12 +4,14 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.util.AdminGuard;
+import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.userservice.dto.response.AdminProfileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +24,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin")
 @Tag(name = "Admin - Profile", description = "Admin self profile endpoints")
-@ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
+@ApiResponses({
+    @ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.ERROR_ADMIN_UNAUTHORIZED))),
+    @ApiResponse(responseCode = "400", description = "Missing or invalid admin email",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.ERROR_INVALID_REQUEST)))
+})
 public class AdminController {
 
     @Operation(summary = "Get admin profile", description = "Returns the authenticated admin profile derived from gateway headers")
-    @ApiResponse(responseCode = "200", description = "Admin profile returned")
-    @ApiResponse(responseCode = "400", description = "Missing or invalid admin email", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Admin profile returned",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.ADMIN_PROFILE_RESPONSE)))
+    })
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseWrapper<AdminProfileResponse>> getAdminProfile(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
