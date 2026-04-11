@@ -4,13 +4,15 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
 import com.cimhub.userservice.dto.response.AdminVehicleResponse;
+import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.service.AdminVehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +28,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin/vehicles")
 @RequiredArgsConstructor
 @Tag(name = "Admin - Vehicle Management", description = "Admin endpoints for managing vehicles")
-@ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
-@ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
-@ApiResponse(responseCode = "404", description = "Resource not found", content = @Content(schema = @Schema(implementation = ApiResponseWrapper.class)))
+@ApiResponses({
+    @ApiResponse(responseCode = "403", description = "Forbidden - User is not an admin",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_ADMIN_UNAUTHORIZED))),
+    @ApiResponse(responseCode = "404", description = "Resource not found",
+        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_VEHICLE_NOT_FOUND)))
+})
 public class AdminVehicleController {
 
     private final AdminVehicleService adminVehicleService;
 
     @Operation(summary = "List all vehicles", description = "Paginated list of all vehicles")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Vehicles retrieved successfully",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ADMIN_LIST_VEHICLES_RESPONSE)))
+    })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<AdminVehicleResponse>>> listVehicles(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
@@ -43,19 +52,27 @@ public class AdminVehicleController {
     }
 
     @Operation(summary = "Get vehicle detail", description = "Retrieve detailed information about a specific vehicle")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Vehicle retrieved successfully",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ADMIN_GET_VEHICLE_RESPONSE)))
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> getVehicle(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Vehicle ID") @PathVariable String id) {
+            @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.getVehicle(id)));
     }
 
     @Operation(summary = "Add vehicle", description = "Register a new vehicle in the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Vehicle created successfully",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ADMIN_CREATE_VEHICLE_RESPONSE)))
+    })
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> createVehicle(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
             @Valid @RequestBody RegisterVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         AdminVehicleResponse response = adminVehicleService.createVehicle(request, adminEmail);
@@ -63,11 +80,15 @@ public class AdminVehicleController {
     }
 
     @Operation(summary = "Update vehicle", description = "Update vehicle information")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Vehicle updated successfully",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ADMIN_UPDATE_VEHICLE_RESPONSE)))
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> updateVehicle(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Vehicle ID") @PathVariable String id,
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id,
             @RequestBody UpdateVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(
@@ -75,11 +96,15 @@ public class AdminVehicleController {
     }
 
     @Operation(summary = "Delete vehicle", description = "Delete a vehicle from the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Vehicle deleted successfully",
+            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ADMIN_DELETE_VEHICLE_RESPONSE)))
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> deleteVehicle(
             @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email performing the action") @RequestHeader("X-User-Email") String adminEmail,
-            @Parameter(description = "Vehicle ID") @PathVariable String id) {
+            @Parameter(description = "Admin email performing the action", example = "admin@example.com") @RequestHeader("X-User-Email") String adminEmail,
+            @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminVehicleService.deleteVehicle(id, adminEmail);
         return ResponseEntity.ok(ApiResponseWrapper.success("Vehicle deleted"));

@@ -196,4 +196,128 @@ public final class ReviewApiDoc {
               "timestamp": "2026-03-25T15:22:46.870Z",
               "requestId": "req_12357"
             }""";
+
+    // ---- Admin Responses ----
+
+    public static final String ADMIN_LIST_REVIEWS_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "content": [
+                  {
+                    "reviewId": "review_001",
+                    "tripId": "trip_001",
+                    "bookingId": "booking_001",
+                    "reviewerId": "jane.passenger@example.com",
+                    "reviewerType": "PASSENGER",
+                    "revieweeId": "john.driver@example.com",
+                    "revieweeType": "DRIVER",
+                    "rating": 5,
+                    "comment": "Great driver!",
+                    "status": "PUBLISHED",
+                    "createdAt": "2026-03-25T10:00:00.000Z",
+                    "updatedAt": "2026-03-25T10:00:00.000Z"
+                  }
+                ],
+                "page": 0,
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "last": true
+              },
+              "message": "Reviews retrieved successfully"
+            }""";
+
+    public static final String ADMIN_GET_REVIEW_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "reviewId": "review_001",
+                "tripId": "trip_001",
+                "bookingId": "booking_001",
+                "reviewerId": "jane.passenger@example.com",
+                "reviewerType": "PASSENGER",
+                "revieweeId": "john.driver@example.com",
+                "revieweeType": "DRIVER",
+                "rating": 5,
+                "comment": "Great driver!",
+                "status": "PUBLISHED",
+                "createdAt": "2026-03-25T10:00:00.000Z",
+                "updatedAt": "2026-03-25T10:00:00.000Z"
+              },
+              "message": "Review retrieved successfully"
+            }""";
+
+    public static final String ADMIN_FLAG_REVIEW_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "reviewId": "review_001",
+                "tripId": "trip_001",
+                "bookingId": "booking_001",
+                "reviewerId": "jane.passenger@example.com",
+                "reviewerType": "PASSENGER",
+                "revieweeId": "john.driver@example.com",
+                "revieweeType": "DRIVER",
+                "rating": 5,
+                "comment": "Great driver!",
+                "status": "FLAGGED",
+                "createdAt": "2026-03-25T10:00:00.000Z",
+                "updatedAt": "2026-03-25T14:00:00.000Z"
+              },
+              "message": "Review flagged successfully"
+            }""";
+
+    public static final String ADMIN_REMOVE_REVIEW_RESPONSE = """
+            {
+              "success": true,
+              "data": "Review removed successfully",
+              "message": "Review removed"
+            }""";
+
+    public static final String ADMIN_PUBLISH_REVIEW_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "reviewId": "review_001",
+                "tripId": "trip_001",
+                "bookingId": "booking_001",
+                "reviewerId": "jane.passenger@example.com",
+                "reviewerType": "PASSENGER",
+                "revieweeId": "john.driver@example.com",
+                "revieweeType": "DRIVER",
+                "rating": 5,
+                "comment": "Great driver!",
+                "status": "PUBLISHED",
+                "createdAt": "2026-03-25T10:00:00.000Z",
+                "updatedAt": "2026-03-25T15:00:00.000Z"
+              },
+              "message": "Review published successfully"
+            }""";
+
+    public static final String ERROR_REVIEW_NOT_FOUND = """
+            {
+              "status": 404,
+              "code": "REVIEW_NOT_FOUND",
+              "message": "Review review_001 not found",
+              "error": {
+                "path": "/api/admin/reviews/review_001",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12380"
+            }""";
+
+    public static final String ERROR_ADMIN_UNAUTHORIZED = """
+            {
+              "status": 403,
+              "code": "UNAUTHORIZED",
+              "message": "Authentication required",
+              "error": {
+                "path": "/api/admin/reviews",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12381"
+            }""";
 }
