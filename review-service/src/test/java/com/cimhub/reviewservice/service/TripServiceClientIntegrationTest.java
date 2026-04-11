@@ -1,8 +1,8 @@
 package com.cimhub.reviewservice.service;
 
 import com.cimhub.common.exception.DependencyUnavailableException;
-import com.cimhub.tripservice.model.BookingStatus;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
