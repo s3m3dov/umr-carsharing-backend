@@ -12,7 +12,6 @@ public final class TripApiDoc {
 
     public static final String OFFER_TRIP_REQUEST = """
             {
-              "driverId": "john.driver@example.com",
               "sourceAddress": {
                 "latitude": 50.8154,
                 "longitude": 8.6747
@@ -29,8 +28,7 @@ public final class TripApiDoc {
     public static final String CANCEL_TRIP_REQUEST = """
             {
               "tripId": "trip_001",
-              "userId": "john.driver@example.com",
-              "reason": "Change of plans"
+              "cancellationReason": "Change of plans"
             }""";
 
     // ---- Responses ----
