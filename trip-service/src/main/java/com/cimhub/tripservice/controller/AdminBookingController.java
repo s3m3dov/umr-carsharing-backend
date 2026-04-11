@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
@@ -57,7 +57,7 @@ public class AdminBookingController {
                                 examples = @ExampleObject(value = BookingApiDoc.ADMIN_LIST_BOOKINGS_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> listBookings(
+    public ResponseEntity<ApiSuccess<Page<BookingResponse>>> listBookings(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -66,7 +66,7 @@ public class AdminBookingController {
                     String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.listBookings(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.listBookings(pageable)));
     }
 
     @Operation(summary = "Get booking detail", description = "Retrieve detailed information about a specific booking")
@@ -80,7 +80,7 @@ public class AdminBookingController {
                                 examples = @ExampleObject(value = BookingApiDoc.ADMIN_GET_BOOKING_RESPONSE)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(
+    public ResponseEntity<ApiSuccess<BookingResponse>> getBooking(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -89,7 +89,7 @@ public class AdminBookingController {
                     String userRole,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.getBooking(id)));
+        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.getBooking(id)));
     }
 
     @Operation(summary = "Update booking", description = "Update booking information")
@@ -103,7 +103,7 @@ public class AdminBookingController {
                                 examples = @ExampleObject(value = BookingApiDoc.ADMIN_UPDATE_BOOKING_RESPONSE)))
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<BookingResponse>> updateBooking(
+    public ResponseEntity<ApiSuccess<BookingResponse>> updateBooking(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -120,7 +120,7 @@ public class AdminBookingController {
             @RequestBody UpdateBookingRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(adminBookingService.updateBooking(id, request, adminEmail)));
+                ApiSuccess.success(adminBookingService.updateBooking(id, request, adminEmail)));
     }
 
     @Operation(summary = "Cancel booking", description = "Cancel a booking")
@@ -134,7 +134,7 @@ public class AdminBookingController {
                                 examples = @ExampleObject(value = BookingApiDoc.ADMIN_CANCEL_BOOKING_RESPONSE)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<String>> cancelBooking(
+    public ResponseEntity<ApiSuccess<String>> cancelBooking(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -150,7 +150,7 @@ public class AdminBookingController {
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminBookingService.cancelBooking(id, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Booking cancelled"));
+        return ResponseEntity.ok(ApiSuccess.success("Booking cancelled"));
     }
 
     @Operation(summary = "Get bookings by passenger", description = "Retrieve all bookings for a specific passenger")
@@ -164,7 +164,7 @@ public class AdminBookingController {
                                 examples = @ExampleObject(value = BookingApiDoc.ADMIN_LIST_BOOKINGS_RESPONSE)))
     })
     @GetMapping("/passenger/{passengerId}")
-    public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> getPassengerBookings(
+    public ResponseEntity<ApiSuccess<Page<BookingResponse>>> getPassengerBookings(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -176,6 +176,6 @@ public class AdminBookingController {
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(adminBookingService.getPassengerBookings(passengerId, pageable)));
+                ApiSuccess.success(adminBookingService.getPassengerBookings(passengerId, pageable)));
     }
 }

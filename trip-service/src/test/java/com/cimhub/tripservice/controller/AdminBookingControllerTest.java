@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
@@ -45,9 +45,9 @@ class AdminBookingControllerTest {
         when(adminBookingService.listBookings(pageable)).thenReturn(page);
         when(adminBookingService.getBooking("b-1")).thenReturn(booking);
 
-        ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> listResponse =
+        ResponseEntity<ApiSuccess<Page<BookingResponse>>> listResponse =
                 adminBookingController.listBookings("ADMIN", pageable);
-        ResponseEntity<ApiResponseWrapper<BookingResponse>> getResponse =
+        ResponseEntity<ApiSuccess<BookingResponse>> getResponse =
                 adminBookingController.getBooking("ADMIN", "b-1");
 
         assertEquals(HttpStatus.OK, listResponse.getStatusCode());
@@ -66,9 +66,9 @@ class AdminBookingControllerTest {
         when(adminBookingService.updateBooking("b-2", request, "admin@example.com"))
                 .thenReturn(updated);
 
-        ResponseEntity<ApiResponseWrapper<BookingResponse>> updateResponse =
+        ResponseEntity<ApiSuccess<BookingResponse>> updateResponse =
                 adminBookingController.updateBooking("ADMIN", "admin@example.com", "b-2", request);
-        ResponseEntity<ApiResponseWrapper<String>> cancelResponse =
+        ResponseEntity<ApiSuccess<String>> cancelResponse =
                 adminBookingController.cancelBooking("admin", "admin@example.com", "b-3");
 
         assertEquals(HttpStatus.OK, updateResponse.getStatusCode());
@@ -86,7 +86,7 @@ class AdminBookingControllerTest {
         Page<BookingResponse> page = new PageImpl<>(List.of(), pageable, 0);
         when(adminBookingService.getPassengerBookings("p-1", pageable)).thenReturn(page);
 
-        ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> response =
+        ResponseEntity<ApiSuccess<Page<BookingResponse>>> response =
                 adminBookingController.getPassengerBookings("ADMIN", "p-1", pageable);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());

@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
@@ -50,7 +50,7 @@ class RideControllerTest {
                 .build();
         when(joinTripService.joinTrip("p-1", request)).thenReturn("Ride booked");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = rideController.bookRide("p-1", "PASSENGER", request);
+        ResponseEntity<ApiSuccess<String>> response = rideController.bookRide("p-1", "PASSENGER", request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("Ride booked", response.getBody().getMessage());
@@ -66,7 +66,7 @@ class RideControllerTest {
                 .build();
         when(joinTripService.joinTripWithDriverAccept("p-2", request)).thenReturn("Booking requested");
 
-        ResponseEntity<ApiResponseWrapper<String>> response =
+        ResponseEntity<ApiSuccess<String>> response =
                 rideController.bookRideWithDriverAccept("p-2", "PASSENGER", request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -79,7 +79,7 @@ class RideControllerTest {
         CancelTripRequest request = CancelTripRequest.builder().rideId("b-1").build();
         when(cancellationService.cancelRide("p-1", request)).thenReturn("Cancelled");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = rideController.cancelRide("p-1", "PASSENGER", request);
+        ResponseEntity<ApiSuccess<String>> response = rideController.cancelRide("p-1", "PASSENGER", request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Cancelled", response.getBody().getMessage());
@@ -95,9 +95,9 @@ class RideControllerTest {
         when(activeRidesService.findPassengerActiveRides("p-10")).thenReturn(List.of(active));
         when(activeRidesService.findPassengerRideHistory("p-10")).thenReturn(List.of(history));
 
-        ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> activeResponse =
+        ResponseEntity<ApiSuccess<List<PassengerRideResponse>>> activeResponse =
                 rideController.getPassengerActiveRides("p-10", "PASSENGER", "p-10");
-        ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> historyResponse =
+        ResponseEntity<ApiSuccess<List<PassengerRideResponse>>> historyResponse =
                 rideController.getPassengerRideHistory("p-10", "PASSENGER", "p-10");
 
         assertEquals(HttpStatus.OK, activeResponse.getStatusCode());

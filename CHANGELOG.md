@@ -235,7 +235,7 @@ and this project adheres to **Semantic Versioning**
 
 ### Changed
 
-- Renamed `ApiResponse` → `ApiResponseWrapper` for clarity
+- Renamed `ApiResponse` → `ApiSuccess` for clarity
 - Renamed `licensePlate` → `licenseNumber` across all services and documentation
 - Renamed `OFFERED` trip status → `CREATED` across trip-service
 - Renamed `driverId` → `subjectId` in review-service assertions for model consistency

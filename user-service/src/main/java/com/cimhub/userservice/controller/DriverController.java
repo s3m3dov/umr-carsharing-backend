@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
@@ -36,7 +36,7 @@ public class DriverController {
                 @ApiResponse(responseCode = "404", description = "Driver not found")
             })
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriverProfile(
+    public ResponseEntity<ApiSuccess<DriverResponse>> getDriverProfile(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -53,7 +53,7 @@ public class DriverController {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Get driver profile for userId: {}", userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(driverService.getDriverProfile(userId)));
+        return ResponseEntity.ok(ApiSuccess.success(driverService.getDriverProfile(userId)));
     }
 
     @Operation(
@@ -66,7 +66,7 @@ public class DriverController {
                 @ApiResponse(responseCode = "404", description = "Driver not found")
             })
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriverProfile(
+    public ResponseEntity<ApiSuccess<DriverResponse>> updateDriverProfile(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -84,6 +84,6 @@ public class DriverController {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.DRIVER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Update driver profile for userId: {}", userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(driverService.updateDriverProfile(userId, request)));
+        return ResponseEntity.ok(ApiSuccess.success(driverService.updateDriverProfile(userId, request)));
     }
 }

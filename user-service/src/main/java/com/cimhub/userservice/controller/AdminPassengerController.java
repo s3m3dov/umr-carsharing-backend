@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.examples.UserApiDoc;
@@ -61,7 +61,7 @@ public class AdminPassengerController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_LIST_PASSENGERS_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<PassengerResponse>>> listPassengers(
+    public ResponseEntity<ApiSuccess<Page<PassengerResponse>>> listPassengers(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -70,7 +70,7 @@ public class AdminPassengerController {
                     UserType userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminPassengerService.listPassengers(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminPassengerService.listPassengers(pageable)));
     }
 
     @Operation(
@@ -86,7 +86,7 @@ public class AdminPassengerController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_GET_PASSENGER_RESPONSE)))
     })
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassenger(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> getPassenger(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -96,7 +96,7 @@ public class AdminPassengerController {
             @Parameter(description = "Passenger ID", example = "jane.passenger@example.com") @PathVariable
                     String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminPassengerService.getPassenger(userId)));
+        return ResponseEntity.ok(ApiSuccess.success(adminPassengerService.getPassenger(userId)));
     }
 
     @Operation(
@@ -112,7 +112,7 @@ public class AdminPassengerController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_CREATE_PASSENGER_RESPONSE)))
     })
     @PostMapping
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> createPassenger(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> createPassenger(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -128,7 +128,7 @@ public class AdminPassengerController {
             @Valid @RequestBody CreatePassengerRequest request) {
         AdminGuard.requireAdmin(userRole);
         PassengerResponse response = adminPassengerService.createPassenger(request, adminEmail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Edit passenger", description = "Update passenger information")
@@ -142,7 +142,7 @@ public class AdminPassengerController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_UPDATE_PASSENGER_RESPONSE)))
     })
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassenger(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> updatePassenger(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -160,7 +160,7 @@ public class AdminPassengerController {
             @RequestBody UpdatePassengerRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(adminPassengerService.updatePassenger(userId, request, adminEmail)));
+                ApiSuccess.success(adminPassengerService.updatePassenger(userId, request, adminEmail)));
     }
 
     @Operation(summary = "Delete passenger", description = "Delete a passenger account")
@@ -174,7 +174,7 @@ public class AdminPassengerController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_DELETE_PASSENGER_RESPONSE)))
     })
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<String>> deletePassenger(
+    public ResponseEntity<ApiSuccess<String>> deletePassenger(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -191,6 +191,6 @@ public class AdminPassengerController {
                     String userId) {
         AdminGuard.requireAdmin(userRole);
         adminPassengerService.deletePassenger(userId, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Passenger deleted"));
+        return ResponseEntity.ok(ApiSuccess.success("Passenger deleted"));
     }
 }

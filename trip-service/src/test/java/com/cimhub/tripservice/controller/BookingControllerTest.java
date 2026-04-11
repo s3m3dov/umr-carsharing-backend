@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ForbiddenException;
@@ -54,7 +54,7 @@ class BookingControllerTest {
                 .build();
         when(bookingService.getBooking("b-0")).thenReturn(bookingResponse);
 
-        ResponseEntity<ApiResponseWrapper<BookingResponse>> response = bookingController.getBooking("b-0");
+        ResponseEntity<ApiSuccess<BookingResponse>> response = bookingController.getBooking("b-0");
 
         assertEquals("b-0", response.getBody().getData().bookingId());
         assertEquals(BookingStatus.COMPLETED, response.getBody().getData().status());
@@ -65,7 +65,7 @@ class BookingControllerTest {
     void acceptBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.acceptBooking("b-1", "driver-1")).thenReturn("Booking accepted");
 
-        ResponseEntity<ApiResponseWrapper<String>> response =
+        ResponseEntity<ApiSuccess<String>> response =
                 bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
 
         assertEquals("Booking accepted", response.getBody().getMessage());
@@ -76,7 +76,7 @@ class BookingControllerTest {
     void rejectBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.rejectBooking("b-2", "driver-1")).thenReturn("Booking rejected");
 
-        ResponseEntity<ApiResponseWrapper<String>> response =
+        ResponseEntity<ApiSuccess<String>> response =
                 bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
 
         assertEquals("Booking rejected", response.getBody().getMessage());
@@ -100,7 +100,7 @@ class BookingControllerTest {
                 .build();
         when(completionService.completeRide("b-3", "driver-1")).thenReturn(completeRideResponse);
 
-        ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> response =
+        ResponseEntity<ApiSuccess<CompleteRideResponse>> response =
                 bookingController.completeRide("b-3", "driver-1", "DRIVER");
 
         assertEquals(

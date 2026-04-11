@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.tripservice.dto.response.BookingResponse;
@@ -60,10 +60,10 @@ public class BookingController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
             })
     @GetMapping("/{bookingId}")
-    public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(@PathVariable String bookingId) {
+    public ResponseEntity<ApiSuccess<BookingResponse>> getBooking(@PathVariable String bookingId) {
         log.info("Fetching booking details for bookingId: {}", bookingId);
         BookingResponse response = bookingService.getBooking(bookingId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -87,7 +87,7 @@ public class BookingController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
             })
     @PostMapping("/accept")
-    public ResponseEntity<ApiResponseWrapper<String>> acceptBooking(
+    public ResponseEntity<ApiSuccess<String>> acceptBooking(
             @RequestParam String bookingId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -106,7 +106,7 @@ public class BookingController {
 
         log.info("Driver {} accepting booking: {}", authenticatedUserId, bookingId);
         String response = joinTripService.acceptBooking(bookingId, authenticatedUserId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Reject a booking request", description = "Driver rejects a passenger's booking request.")
@@ -128,7 +128,7 @@ public class BookingController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
             })
     @PostMapping("/reject")
-    public ResponseEntity<ApiResponseWrapper<String>> rejectBooking(
+    public ResponseEntity<ApiSuccess<String>> rejectBooking(
             @RequestParam String bookingId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -147,7 +147,7 @@ public class BookingController {
 
         log.info("Driver {} rejecting booking: {}", authenticatedUserId, bookingId);
         String response = joinTripService.rejectBooking(bookingId, authenticatedUserId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -161,7 +161,7 @@ public class BookingController {
                 @ApiResponse(responseCode = "409", description = "Ride is not in a completable state")
             })
     @PostMapping("/{bookingId}/complete")
-    public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
+    public ResponseEntity<ApiSuccess<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -180,7 +180,7 @@ public class BookingController {
 
         log.info("Driver {} completing ride: {}", authenticatedUserId, bookingId);
         CompleteRideResponse response = completionService.completeRide(bookingId, authenticatedUserId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.RIDE_COMPLETED_SUCCESS.text()));
+        return ResponseEntity.ok(ApiSuccess.success(response, OperationMessage.RIDE_COMPLETED_SUCCESS.text()));
     }
 
     private void requireDriverRole(String userRole) {

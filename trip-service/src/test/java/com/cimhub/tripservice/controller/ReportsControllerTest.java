@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ForbiddenException;
@@ -57,10 +57,10 @@ class ReportsControllerTest {
         when(reportsService.getRevenueReport()).thenReturn(revenue);
         when(reportsService.getPassengerActivityReport()).thenReturn(passengers);
 
-        ResponseEntity<ApiResponseWrapper<DriverPerformanceReport>> r1 = reportsController.driverReport("ADMIN");
-        ResponseEntity<ApiResponseWrapper<BookingSummaryReport>> r2 = reportsController.bookingsReport("admin");
-        ResponseEntity<ApiResponseWrapper<RevenueReport>> r3 = reportsController.revenueReport("ADMIN");
-        ResponseEntity<ApiResponseWrapper<PassengerActivityReport>> r4 = reportsController.passengerReport("ADMIN");
+        ResponseEntity<ApiSuccess<DriverPerformanceReport>> r1 = reportsController.driverReport("ADMIN");
+        ResponseEntity<ApiSuccess<BookingSummaryReport>> r2 = reportsController.bookingsReport("admin");
+        ResponseEntity<ApiSuccess<RevenueReport>> r3 = reportsController.revenueReport("ADMIN");
+        ResponseEntity<ApiSuccess<PassengerActivityReport>> r4 = reportsController.passengerReport("ADMIN");
 
         assertEquals(HttpStatus.OK, r1.getStatusCode());
         assertEquals(5, r1.getBody().getData().totalDrivers());
@@ -86,7 +86,7 @@ class ReportsControllerTest {
                 .thenReturn(page);
         when(reportsService.getAuditLog("a-1")).thenReturn(log);
 
-        ResponseEntity<ApiResponseWrapper<Page<AuditLogResponse>>> listResponse = reportsController.listAuditLogs(
+        ResponseEntity<ApiSuccess<Page<AuditLogResponse>>> listResponse = reportsController.listAuditLogs(
                 "ADMIN",
                 AuditAction.BOOK,
                 EntityType.BOOKING,
@@ -94,7 +94,7 @@ class ReportsControllerTest {
                 Instant.parse("2026-01-01T00:00:00Z"),
                 Instant.parse("2026-01-02T00:00:00Z"),
                 pageable);
-        ResponseEntity<ApiResponseWrapper<AuditLogResponse>> getResponse =
+        ResponseEntity<ApiSuccess<AuditLogResponse>> getResponse =
                 reportsController.getAuditLog("ADMIN", "a-1");
 
         assertEquals(HttpStatus.OK, listResponse.getStatusCode());

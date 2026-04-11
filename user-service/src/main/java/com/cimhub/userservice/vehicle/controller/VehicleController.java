@@ -1,7 +1,7 @@
 package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
@@ -37,8 +37,8 @@ public class VehicleController {
     private final VehicleService vehicleService;
 
     @GetMapping("/health")
-    public ResponseEntity<ApiResponseWrapper<String>> healthCheck() {
-        return ResponseEntity.ok(ApiResponseWrapper.success("Vehicle Service is alive"));
+    public ResponseEntity<ApiSuccess<String>> healthCheck() {
+        return ResponseEntity.ok(ApiSuccess.success("Vehicle Service is alive"));
     }
 
     @Operation(
@@ -62,7 +62,7 @@ public class VehicleController {
                                         examples = @ExampleObject(value = VehicleApiDoc.ERROR_NO_VEHICLES)))
             })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
+    public ResponseEntity<ApiSuccess<List<VehicleResponse>>> getUserVehicles(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -81,7 +81,7 @@ public class VehicleController {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Getting vehicles for userId: {}", userId);
         List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(resultList));
+        return ResponseEntity.ok(ApiSuccess.success(resultList));
     }
 
     @Operation(
@@ -119,7 +119,7 @@ public class VehicleController {
             value = "/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
+    public ResponseEntity<ApiSuccess<VehicleResponse>> registerVehicle(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -136,6 +136,6 @@ public class VehicleController {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());
         VehicleResponse registeredVehicle = vehicleService.registerVehicle(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(registeredVehicle));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(registeredVehicle));
     }
 }

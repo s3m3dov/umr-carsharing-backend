@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.util.AdminGuard;
@@ -44,7 +44,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.DRIVER_PERFORMANCE_REPORT)))
     })
     @GetMapping("/drivers")
-    public ResponseEntity<ApiResponseWrapper<DriverPerformanceReport>> driverReport(
+    public ResponseEntity<ApiSuccess<DriverPerformanceReport>> driverReport(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -52,7 +52,7 @@ public class ReportsController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getDriverPerformanceReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getDriverPerformanceReport()));
     }
 
     @Operation(summary = "Bookings summary report", description = "Generate bookings summary report")
@@ -66,7 +66,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.BOOKING_SUMMARY_REPORT)))
     })
     @GetMapping("/bookings")
-    public ResponseEntity<ApiResponseWrapper<BookingSummaryReport>> bookingsReport(
+    public ResponseEntity<ApiSuccess<BookingSummaryReport>> bookingsReport(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -74,7 +74,7 @@ public class ReportsController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getBookingSummaryReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getBookingSummaryReport()));
     }
 
     @Operation(summary = "Revenue report", description = "Generate revenue report")
@@ -88,7 +88,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.REVENUE_REPORT)))
     })
     @GetMapping("/revenue")
-    public ResponseEntity<ApiResponseWrapper<RevenueReport>> revenueReport(
+    public ResponseEntity<ApiSuccess<RevenueReport>> revenueReport(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -96,7 +96,7 @@ public class ReportsController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getRevenueReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getRevenueReport()));
     }
 
     @Operation(summary = "Passenger activity report", description = "Generate passenger activity report")
@@ -110,7 +110,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.PASSENGER_ACTIVITY_REPORT)))
     })
     @GetMapping("/passengers")
-    public ResponseEntity<ApiResponseWrapper<PassengerActivityReport>> passengerReport(
+    public ResponseEntity<ApiSuccess<PassengerActivityReport>> passengerReport(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -118,7 +118,7 @@ public class ReportsController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getPassengerActivityReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getPassengerActivityReport()));
     }
 
     @Operation(summary = "List audit logs", description = "Get paginated audit logs with optional filters")
@@ -132,7 +132,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.AUDIT_LOGS_RESPONSE)))
     })
     @GetMapping("/audit-logs")
-    public ResponseEntity<ApiResponseWrapper<Page<AuditLogResponse>>> listAuditLogs(
+    public ResponseEntity<ApiSuccess<Page<AuditLogResponse>>> listAuditLogs(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -146,7 +146,7 @@ public class ReportsController {
             @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(
+        return ResponseEntity.ok(ApiSuccess.success(
                 reportsService.getAuditLogs(action, entityType, performedBy, from, to, pageable)));
     }
 
@@ -168,7 +168,7 @@ public class ReportsController {
                                 examples = @ExampleObject(value = ReportsApiDoc.ERROR_AUDIT_LOG_NOT_FOUND)))
     })
     @GetMapping("/audit-logs/{id}")
-    public ResponseEntity<ApiResponseWrapper<AuditLogResponse>> getAuditLog(
+    public ResponseEntity<ApiSuccess<AuditLogResponse>> getAuditLog(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -177,6 +177,6 @@ public class ReportsController {
                     String userRole,
             @Parameter(description = "Audit log id", example = "audit_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reportsService.getAuditLog(id)));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getAuditLog(id)));
     }
 }

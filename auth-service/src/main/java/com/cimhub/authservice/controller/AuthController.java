@@ -14,7 +14,7 @@ import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
 import com.cimhub.authservice.service.PasswordManagementService;
 import com.cimhub.authservice.service.RegistrationService;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -82,11 +82,11 @@ public class AuthController {
             value = "/signup",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<SignUpResponse>> registerUser(
+    public ResponseEntity<ApiSuccess<SignUpResponse>> registerUser(
             @Valid @RequestBody RegisterUserRequest request) {
         log.info("Signup request for user: {}", request.email());
         SignUpResponse response = registrationService.registerUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -120,10 +120,10 @@ public class AuthController {
             value = "/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiSuccess<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         log.info("Login request for user: {}", request.email());
         LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -157,14 +157,14 @@ public class AuthController {
             value = "/validate",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<ValidateTokenResponse>> validateToken(
+    public ResponseEntity<ApiSuccess<ValidateTokenResponse>> validateToken(
             @Valid @RequestBody ValidateTokenRequest request) {
         log.info("Token validation request");
         ValidateTokenResponse response = authService.validateToken(request);
         if (!response.isValid()) {
             throw new UnauthorizedException("Invalid or expired token");
         }
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Initiate password reset", description = "Sends a password reset token to the user's email")
@@ -177,11 +177,11 @@ public class AuthController {
             value = "/reset-password",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> resetPassword(
+    public ResponseEntity<ApiSuccess<ResetPasswordResponse>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {
         log.info("Password reset request for user: {}", request.email());
         ResetPasswordResponse response = passwordManagementService.initiatePasswordReset(request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Confirm password reset", description = "Resets the user's password using the reset token")
@@ -195,11 +195,11 @@ public class AuthController {
             value = "/reset-password/confirm",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> confirmResetPassword(
+    public ResponseEntity<ApiSuccess<ResetPasswordResponse>> confirmResetPassword(
             @Valid @RequestBody ConfirmResetPasswordRequest request) {
         log.info("Password reset confirmation request");
         ResetPasswordResponse response = passwordManagementService.confirmPasswordReset(request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -218,10 +218,10 @@ public class AuthController {
             value = "/change-password",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> changePassword(
+    public ResponseEntity<ApiSuccess<ResetPasswordResponse>> changePassword(
             @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
         log.info("Password change request for user: {}", userDetails.getUsername());
         ResetPasswordResponse response = passwordManagementService.changePassword(userDetails.getUsername(), request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 }
