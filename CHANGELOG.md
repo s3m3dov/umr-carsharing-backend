@@ -40,6 +40,8 @@ and this project adheres to **Semantic Versioning**
 - **Signup flow** is fully server-side: auth-service creates auth user then role profile (`passenger` or `driver`) during `POST /api/auth/signup`; the Flutter client receives a JWT and is done — no follow-up calls required
 - `licenseNumber` is stored exclusively in the `drivers` collection. `GET /api/users/{userId}` aggregates role profile data from `drivers`/`passengers`
 - `POST /api/users/profile` removed; role profile creation uses `POST /api/passengers/{userId}` and `POST /api/drivers/{userId}`
+- Refactored profile management to internal user-service controllers (`InternalPassengerController` / `InternalDriverController`) and removed direct external profile controllers
+- Simplified ownership validation with `OwnershipGuard` and removed unused `UserType` handling from `UserController`
 - Reorganized service classes into domain-specific packages
 - Reorganized service tests by domain packages
 - Removed duplicated trip status enums in trip-service
@@ -70,8 +72,10 @@ and this project adheres to **Semantic Versioning**
 - Focused tests for low-coverage services
 - Controller and config coverage tests for user-service
 - Unit tests for `DriverService`, `PassengerService`, and `UserService`
+- Unit tests for `InternalDriverController` and `InternalPassengerController`
 - Test coverage improvements with fixtures and parameterized test methods
 - Testing documentation with 89 test files
+- REST-client test updates for non-existent user and driver vehicle status assertions
 - Fixed request paths with response validation in HTTP tests
 - `GET  /api/passengers/{userId}` — retrieve passenger profile
 - `POST /api/passengers/{userId}` — initialize passenger sub-profile (called automatically during signup; also idempotent for manual use)
@@ -86,6 +90,7 @@ and this project adheres to **Semantic Versioning**
 ### Security
 
 - Admin signup hardening with expanded analysis
+- API gateway internal-path blocking filter for passenger/driver profile routes to prevent direct external access
 
 ### Documentation
 
