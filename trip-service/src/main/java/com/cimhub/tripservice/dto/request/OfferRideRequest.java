@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.dto.request;
 
-import com.cimhub.tripservice.controller.TripApiExamples;
-import com.cimhub.common.models.Points;
+import com.cimhub.tripservice.dto.examples.TripApiDoc;
+import com.cimhub.common.model.Points;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 @Schema(
         name = "OfferRideRequest",
         description = "Request to create a new trip",
-        example = TripApiExamples.OFFER_TRIP_REQUEST
+        example = TripApiDoc.OFFER_TRIP_REQUEST
 )
 @Builder
 public record OfferRideRequest(

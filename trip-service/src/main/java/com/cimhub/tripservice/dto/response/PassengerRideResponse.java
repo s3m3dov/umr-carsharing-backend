@@ -1,7 +1,8 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
+import com.cimhub.common.enums.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -50,6 +51,9 @@ public record PassengerRideResponse(
 
         @Schema(description = "Estimated duration of the ride segment in minutes", example = "35.0")
         Double rideDurationInMinutes,
+
+        @Schema(description = "Route geometry as GeoJSON LineString (lon,lat pairs)")
+        Geometry routeGeometry,
 
         @Schema(description = "Price per seat for this ride in EUR", example = "15.50")
         Double pricePerSeat,

@@ -486,7 +486,7 @@ Dependency versions are defined either explicitly in module `pom.xml` files or i
 |---|---|---|
 | `api-gateway` | `spring-cloud-starter-gateway`, `springdoc-openapi-starter-webflux-ui`, `spring-cloud-starter-kubernetes-fabric8`, `spring-cloud-starter-loadbalancer` | Managed by parent BOMs: `pom.xml`, `api-gateway/pom.xml` |
 | `auth-service` | `jjwt-api`, `jjwt-impl`, `jjwt-jackson` | Explicit `0.11.5`: `auth-service/pom.xml` |
-| `trip-service` | route calculation via OSRM (`WebClient`) | Implementation in `trip-service/src/main/java/com/cimhub/tripservice/service/routes/OSMRoute.java` |
+| `trip-service` | route calculation via OSRM (`WebClient`) | Implementation in `trip-service/src/main/java/com/cimhub/tripservice/service/route/OsrmRouteClient.java` |
 | `notification-service` | `firebase-admin` | Explicit `9.2.0`: `notification-service/pom.xml` |
 | `user-service` | `spring-boot-starter-web`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-validation` | Managed by Spring Boot parent: `user-service/pom.xml`, parent `pom.xml` |
 | `review-service` | `spring-boot-starter-web`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-validation` | Managed by Spring Boot parent: `review-service/pom.xml`, parent `pom.xml` |
@@ -532,7 +532,7 @@ Design notes:
 * The codebase contains a token blacklist model (`BlacklistedToken`) but validation does not consult it; treat logout/blacklisting as not implemented end-to-end.
   * Evidence: `auth-service/.../model/BlacklistedToken.java`, `.../repository/BlacklistedTokenRepository.java`, and `AuthService.validateToken(...)`.
 
-#### D3.2 Auth-Service: Signup Creates Profile in User-Service
+#### D3.2 Auth-Service: Signup Creates Base + Role Profiles in User-Service
 
 Signup is cross-service and attempts to keep data consistent by rolling back the auth user record if profile creation fails.
 
@@ -545,12 +545,12 @@ sequenceDiagram
   participant M as MongoDB
 
   C->>A: POST /api/auth/signup
-  A->>M: Insert auth-service users document
-  A->>U: POST /api/users/profile
+  A->>M: Insert auth user in users
+  A->>U: POST /api/passengers/{userId} or /api/drivers/{userId}
   alt Profile created
     U-->>A: 201
     A-->>C: 201 + JWT
-  else Profile creation failed
+  else Any profile step failed
     A->>M: Delete auth user (rollback)
     A-->>C: 5xx (registration failed)
   end
@@ -590,7 +590,7 @@ Notes:
 Evidence:
 
 * Offer ride orchestration: `trip-service/.../OfferRideService.java`.
-* OSRM client: `trip-service/.../service/routes/OSMRoute.java`, `trip-service/.../config/OSMClientConfig.java`.
+* OSRM client: `trip-service/.../service/route/OsrmRouteClient.java`, `trip-service/.../config/OSMClientConfig.java`.
 * Geospatial enrichment and query logic: `trip-service/.../TripGeospatialService.java`.
 
 #### D3.4 Trip-Service: Matching-Route Search Strategy

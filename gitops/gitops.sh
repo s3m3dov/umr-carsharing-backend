@@ -455,7 +455,7 @@ if [ "$TARGET" == "local" ]; then
         build)
             switch_context "local"
             echo "Building images for local cluster..."
-            ./gitops/scripts/local/build-kind.sh "local"
+            ./gitops/scripts/local/build-kind.sh "local" "$@"
             ;;
         
         deploy)

@@ -8,13 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.Date;
 
 /**
- * Auth User model - stores authentication credentials.
+ * Auth User model - stores authentication credentials and auth metadata.
  * Uses MongoDB for persistence.
  * Stored in "users" collection.
  */
@@ -29,6 +30,7 @@ public class User {
 
     @NotBlank
     @Email
+    @Indexed(unique = true)
     private String email;
 
     @NotBlank
@@ -41,6 +43,8 @@ public class User {
 
     private Instant updatedAt = Instant.now();
 
+    @Indexed(sparse = true)
     private String resetToken;
+    private String resetTokenHash;
     private Date resetTokenExpiry;
 }

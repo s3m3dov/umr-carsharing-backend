@@ -1,6 +1,10 @@
 package com.cimhub.userservice.vehicle.controller;
 
+import com.cimhub.userservice.vehicle.dto.examples.VehicleApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.service.VehicleService;
@@ -43,18 +47,21 @@ public class VehicleController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Vehicles retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.GET_VEHICLES_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.GET_VEHICLES_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "No vehicles found for user",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_NO_VEHICLES))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_NO_VEHICLES))
             )
     })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Getting vehicles for userId: {}", userId);
         List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(resultList));
@@ -62,38 +69,34 @@ public class VehicleController {
 
     @Operation(
             summary = "Register vehicle",
-            description = "Registers a new vehicle for a driver. Validates license plate uniqueness. Maximum 5 vehicles per driver."
+            description = "Registers a new vehicle for a driver. Rejects duplicate registrations for the same driver or license plate."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
                     description = "Vehicle registered successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.REGISTER_VEHICLE_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.REGISTER_VEHICLE_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid input",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_INVALID_VEHICLE_DATA))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Vehicle already exists or limit exceeded",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiExamples.ERROR_VEHICLE_LIMIT))
+                    description = "Invalid input or duplicate vehicle registration",
+                    content = @Content(mediaType = "application/json", examples = {
+                            @ExampleObject(name = "validation_error", value = VehicleApiDoc.ERROR_INVALID_VEHICLE_DATA),
+                            @ExampleObject(name = "vehicle_exists", value = VehicleApiDoc.ERROR_VEHICLE_EXISTS),
+                            @ExampleObject(name = "driver_has_vehicle", value = VehicleApiDoc.ERROR_DRIVER_HAS_VEHICLE)
+                    })
             )
     })
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Valid @RequestBody RegisterVehicleRequest request) {
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());
         VehicleResponse registeredVehicle = vehicleService.registerVehicle(request);
-        if (registeredVehicle != null) {
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(ApiResponseWrapper.success(registeredVehicle));
-        } else {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(ApiResponseWrapper.error("VEHICLE_ALREADY_EXISTS", "Vehicle already registered"));
-        }
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponseWrapper.success(registeredVehicle));
     }
 }

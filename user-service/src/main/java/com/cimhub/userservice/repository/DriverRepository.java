@@ -14,7 +14,11 @@ import java.util.Optional;
 public interface DriverRepository extends MongoRepository<Driver, String> {
     Optional<Driver> findByUserId(String userId);
 
+    Optional<Driver> findByEmail(String email);
+
     List<Driver> findByUserIdIn(List<String> userIds);
+
+    Page<Driver> findByEmailContainingIgnoreCase(String email, Pageable pageable);
 
     Page<Driver> findByDriverStatus(DriverStatus driverStatus, Pageable pageable);
 

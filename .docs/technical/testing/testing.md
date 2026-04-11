@@ -14,13 +14,15 @@
 
 ## Overview
 
-The Car Sharing Backend project uses a comprehensive testing strategy focused on unit testing with Mockito. The project currently has **20 test files** across **7 modules**, providing extensive coverage of business logic and service layer operations.
+The Car Sharing Backend project uses a comprehensive testing strategy with unit tests (Mockito), controller tests (@WebMvcTest), and integration tests. The project currently has **83 test files** across **7 modules**, providing extensive coverage of business logic, service layer operations, REST controllers, and more.
 
 ### Technology Stack
 - **JUnit 5** - Testing framework
 - **Mockito** - Mocking framework
-- **JaCoCo 0.8.12** - Code coverage analysis
+- **JaCoCo** - Code coverage analysis
 - **Maven Surefire** - Test execution
+- **MockMvc** - Controller testing
+- **Testcontainers** - Integration testing with containers
 
 ---
 
@@ -30,46 +32,126 @@ The Car Sharing Backend project uses a comprehensive testing strategy focused on
 
 ```
 carsharing-backend/
-├── auth-service/          (3 test files)
+├── auth-service/          (16 test files)
 │   └── src/test/java/com/cimhub/authservice/
+│       ├── controller/AuthControllerTest.java
+│       ├── exception/AuthExceptionHandlerTest.java
 │       ├── security/JwtServiceTest.java
+│       ├── security/TokenHasherTest.java
+│       ├── security/UserDetailsBuilderTest.java
 │       ├── service/AuthServiceTest.java
-│       └── service/AuthServiceResetPasswordTest.java
+│       ├── service/CustomUserDetailServiceTest.java
+│       ├── service/PasswordManagementServiceTest.java
+│       ├── service/RegistrationServiceTest.java
+│       ├── service/UserServiceClientIntegrationTest.java
+│       ├── util/EmailNormalizerTest.java
+│       ├── util/PasswordValidatorTest.java
+│       └── testsupport/AuthFixtures.java
 │
-├── user-service/          (5 test files)
+├── user-service/          (22 test files)
 │   └── src/test/java/com/cimhub/userservice/
-│       ├── service/UserServiceTest.java
-│       ├── service/AdminDriverServiceTest.java
-│       ├── service/AdminPassengerServiceTest.java
-│       ├── vehicle/service/VehicleServiceTest.java
-│       └── vehicle/service/AdminVehicleServiceTest.java
+│       ├── config/OpenApiConfigTest.java
+│       ├── controller/
+│       │   ├── AdminControllerTest.java
+│       │   ├── AdminDriverControllerTest.java
+│       │   ├── AdminPassengerControllerTest.java
+│       │   ├── DriverControllerTest.java
+│       │   ├── PassengerControllerTest.java
+│       │   ├── UserControllerTest.java
+│       │   └── VehicleControllerTest.java
+│       ├── service/
+│       │   ├── AdminDriverServiceTest.java
+│       │   ├── AdminPassengerServiceTest.java
+│       │   ├── DriverServiceTest.java
+│       │   ├── PassengerServiceTest.java
+│       │   ├── ProfileUpdaterTest.java
+│       │   └── UserServiceTest.java
+│       └── vehicle/
+│           ├── controller/AdminVehicleControllerTest.java
+│           └── service/AdminVehicleServiceTest.java
+│           └── service/VehicleServiceTest.java
 │
-├── trip-service/          (4 test files)
-│   └── src/test/java/com/cimhub/tripservice/service/
-│       ├── JoinTripServiceTest.java
-│       ├── CancellationServiceTest.java
-│       ├── AdminTripServiceTest.java
-│       └── AdminBookingServiceTest.java
+├── trip-service/          (24 test files)
+│   └── src/test/java/com/cimhub/tripservice/
+│       ├── config/OSMClientConfigTest.java
+│       ├── config/OpenApiConfigTest.java
+│       ├── controller/
+│       │   ├── AdminBookingControllerTest.java
+│       │   ├── AdminTripControllerTest.java
+│       │   ├── BookingControllerIntegrationTest.java
+│       │   ├── BookingControllerTest.java
+│       │   ├── ReportsControllerTest.java
+│       │   ├── RideControllerTest.java
+│       │   ├── TripControllerIntegrationTest.java
+│       │   └── TripControllerTest.java
+│       ├── dto/
+│       │   ├── osrm/OsrmDtoRecordsTest.java
+│       │   ├── request/FindRideRequestTest.java
+│       │   └── response/DriverTripResponseTest.java
+│       │   └── response/PassengerRideResponseTest.java
+│       ├── model/GeoJsonPointTest.java
+│       ├── service/
+│       │   ├── booking/AdminBookingServiceTest.java
+│       │   ├── booking/CancellationServiceTest.java
+│       │   ├── booking/CompletionServiceTest.java
+│       │   ├── booking/JoinTripServiceTest.java
+│       │   ├── geo/TripGeospatialServiceTest.java
+│       │   ├── notification/DriverNotificationServiceIntegrationTest.java
+│       │   ├── notification/DriverNotificationServiceTest.java
+│       │   ├── report/ReportsServiceTest.java
+│       │   ├── route/OsrmRouteClientTest.java
+│       │   ├── trip/ActiveRidesServiceTest.java
+│       │   ├── trip/AdminTripServiceTest.java
+│       │   ├── trip/OfferRideServiceTest.java
+│       │   ├── trip/TripSearchServiceTest.java
+│       │   ├── trip/TripServiceTest.java
+│       │   └── util/TimezoneConversionServiceTest.java
+│       └── testsupport/TripFixtures.java
 │
-├── review-service/        (2 test files)
-│   └── src/test/java/com/cimhub/reviewservice/service/
-│       ├── ReviewServiceTest.java
-│       └── AdminReviewServiceTest.java
+├── review-service/        (10 test files)
+│   └── src/test/java/com/cimhub/reviewservice/
+│       ├── controller/
+│       │   ├── AdminReviewControllerTest.java
+│       │   └── ReviewControllerTest.java
+│       ├── mapper/ReviewMapperTest.java
+│       ├── model/ReviewStatusTest.java
+│       ├── service/
+│       │   ├── AdminReviewServiceTest.java
+│       │   ├── ReviewServiceTest.java
+│       │   └──/TripServiceClientIntegrationTest.java
+│       └── testsupport/ReviewFixtures.java
 │
-├── notification-service/  (1 test file)
-│   └── src/test/java/com/cimhub/notificationservice/service/
-│       └── NotificationServiceTest.java
+├── notification-service/  (5 test files)
+│   └── src/test/java/com/cimhub/notificationservice/
+│       ├── controller/NotificationControllerTest.java
+│       ├── mapper/NotificationMapperTest.java
+│       ├── service/
+│       │   ├── NotificationServiceTest.java
+│       │   └── WebSocketNotificationPublisherTest.java
+│       └── testsupport/NotificationFixtures.java
 │
 ├── api-gateway/           (4 test files)
 │   └── src/test/java/com/cimhub/apigateway/
-│       ├── filter/JwtValidationFilterTest.java
-│       ├── filter/AdminAuthorizationFilterTest.java
-│       ├── filter/RequestIdGatewayFilterTest.java
-│       └── exception/GatewayExceptionHandlerTest.java
+│       ├── exception/GatewayExceptionHandlerTest.java
+│       └── filter/
+│           ├── AdminAuthorizationFilterTest.java
+│           ├── JwtValidationFilterTest.java
+│           └── RequestIdGatewayFilterTest.java
 │
-└── common/                (1 test file)
-    └── src/test/java/com/cimhub/common/util/
-        └── AdminGuardTest.java
+└── common/                (10 test files)
+    └── src/test/java/com/cimhub/common/
+        ├── dto/ApiResponseWrapperTest.java
+        ├── dto/response/ApiErrorTest.java
+        ├── dto/response/ErrorBodyAndDetailTest.java
+        ├── exception/
+        │   ├── BasicExceptionTest.java
+        │   └── GlobalExceptionHandlerTest.java
+        ├── filter/RequestIdFilterTest.java
+        ├── service/AuditServiceTest.java
+        └── testsupport/
+            ├── ApiResponses.java
+            ├── Points.java
+            └── WebRequests.java
 ```
 
 ---
@@ -152,7 +234,7 @@ mvn clean test -X -pl auth-service
 
 JaCoCo is configured to generate coverage reports for all modules with the following settings:
 
-- **Version**: 0.8.12 (Java 21 compatible)
+- **Version**: Latest (Java 21 compatible)
 - **Exclusions**: Mockito mocks, ByteBuddy classes, JDK internals
 - **Minimum Coverage**: 0% (configurable)
 
@@ -244,10 +326,10 @@ Build will fail if coverage is below the threshold.
 
 | Test Type | Coverage | Count | Status |
 |-----------|----------|-------|--------|
-| Unit Tests (Mockito) | ✅ 100% | 20 files | Implemented |
-| Integration Tests | ❌ 0% | 0 files | Not Implemented |
-| HTTP/API Tests | ❌ 0% | 0 files | Not Implemented |
-| Database Tests | ❌ 0% | 0 files | Not Implemented |
+| Unit Tests (Mockito) | ✅ 100% | 60+ files | Implemented |
+| Controller Tests (@WebMvcTest) | ✅ 100% | 20+ files | Implemented |
+| Integration Tests | ✅ Partial | 5+ files | Implemented |
+| Mapper/Util Tests | ✅ 100% | 10+ files | Implemented |
 
 ### 1. Unit Tests (Current Implementation)
 
@@ -308,69 +390,11 @@ class AuthServiceTest {
 - ✅ Audit logging
 - ✅ Gateway filters
 
-### 2. Integration Tests (Recommended - Not Implemented)
+### 2. Controller Tests (Implemented)
 
-**Purpose**: Test complete flows with real components
+**Purpose**: Test REST controllers with MockMvc
 
-**Recommended Pattern**:
-```java
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
-class AuthServiceIntegrationTest {
-    
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-        .withDatabaseName("testdb")
-        .withUsername("test")
-        .withPassword("test");
-    
-    @Autowired
-    private AuthService authService;
-    
-    @Autowired
-    private AuthUserRepository authUserRepository;
-    
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-    
-    @Test
-    void shouldRegisterUserEndToEnd() {
-        // Test with real database
-        RegisterRequest request = RegisterRequest.builder()
-            .email("integration@test.com")
-            .password("password123")
-            .build();
-            
-        authService.registerUser(request);
-        
-        assertTrue(authUserRepository.existsByEmail("integration@test.com"));
-    }
-}
-```
-
-**Dependencies Needed**:
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>postgresql</artifactId>
-    <scope>test</scope>
-</dependency>
-```
-
-### 3. HTTP/API Tests (Recommended - Not Implemented)
-
-**Purpose**: Test REST endpoints with HTTP requests
-
-**Recommended Pattern**:
+**Pattern**:
 ```java
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
@@ -400,62 +424,77 @@ class AuthControllerTest {
 }
 ```
 
-### 4. Database/Repository Tests (Recommended - Not Implemented)
+**Coverage Areas**:
+- ✅ HTTP request/response handling
+- ✅ Request validation
+- ✅ Exception mapping
+- ✅ Security integration
+- ✅ Response formatting
 
-**Purpose**: Test JPA repositories with actual database
+### 3. Integration Tests (Implemented)
 
-**Recommended Pattern**:
+**Purpose**: Test complete flows with real components
+
+**Pattern**:
 ```java
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class AuthUserRepositoryTest {
+class TripControllerIntegrationTest {
     
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
+    static MongoDBContainer mongo = new MongoDBContainer("mongo:7")
+        .withDatabaseName("testdb");
     
     @Autowired
-    private AuthUserRepository repository;
+    private TripService tripService;
+    
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongo::getReplicaSetUrl);
+    }
     
     @Test
-    void findByEmail_shouldReturnUser() {
-        AuthUser user = new AuthUser();
-        user.setEmail("test@example.com");
-        user.setPasswordHash("hash");
-        repository.save(user);
-        
-        Optional<AuthUser> found = repository.findByEmail("test@example.com");
-        
-        assertTrue(found.isPresent());
-        assertEquals("test@example.com", found.get().getEmail());
+    void shouldCreateAndRetrieveTrip() {
+        // Test with real database
     }
 }
 ```
+
+**Coverage Areas**:
+- ✅ Service-to-service communication
+- ✅ Database operations
+- ✅ Real component integration
 
 ---
 
 ## Module-Specific Tests
 
-### Auth Service (3 test files, 26 tests)
+### Auth Service (16 test files)
 
-**AuthServiceTest.java** - Core authentication
-- ✅ User registration with email normalization
-- ✅ Login with credential validation
-- ✅ Password change
-- ✅ Token validation (valid/expired/malformed)
-- ✅ Profile creation rollback on failure
+**Controller Tests**
+- `AuthControllerTest.java` - HTTP endpoint testing
+- `AuthExceptionHandlerTest.java` - Exception handling
 
-**AuthServiceResetPasswordTest.java** - Password reset
-- ✅ Initiate password reset
-- ✅ Confirm password reset with token validation
-- ✅ Token expiry handling
-- ✅ Invalid token rejection
+**Security Tests**
+- `JwtServiceTest.java` - JWT token generation/validation
+- `TokenHasherTest.java` - Token hashing
+- `UserDetailsBuilderTest.java` - User details construction
 
-**JwtServiceTest.java** - JWT operations
-- ✅ Token generation with roles
-- ✅ Token validation
-- ✅ Username extraction
-- ✅ Role extraction
+**Service Tests**
+- `AuthServiceTest.java` - Core authentication
+- `RegistrationServiceTest.java` - User registration flow
+- `PasswordManagementServiceTest.java` - Password reset/change
+- `CustomUserDetailServiceTest.java` - User details loading
+
+**Integration Tests**
+- `UserServiceClientIntegrationTest.java` - Inter-service calls
+
+**Utility Tests**
+- `EmailNormalizerTest.java` - Email normalization
+- `PasswordValidatorTest.java` - Password validation
+
+**Test Fixtures**
+- `AuthFixtures.java` - Reusable test data
 
 **Run Auth Service Tests**:
 ```bash
@@ -467,49 +506,90 @@ open auth-service/target/site/jacoco/index.html
 
 ---
 
-### User Service (5 test files)
+### User Service (22 test files)
 
-**UserServiceTest.java** - Profile management
-- ✅ Create driver/passenger profiles
-- ✅ Retrieve user information
-- ✅ Check user existence
+**Controller Tests**
+- `UserControllerTest.java` - User profile endpoints
+- `DriverControllerTest.java` - Driver profile endpoints
+- `PassengerControllerTest.java` - Passenger profile endpoints
+- `AdminControllerTest.java` - Admin user management
+- `AdminDriverControllerTest.java` - Admin driver management
+- `AdminPassengerControllerTest.java` - Admin passenger management
+- `VehicleControllerTest.java` - Vehicle endpoints
+- `AdminVehicleControllerTest.java` - Admin vehicle management
 
-**VehicleServiceTest.java** - Vehicle operations
-- ✅ Register vehicle with plate normalization
-- ✅ Duplicate plate checking
-- ✅ Retrieve user vehicles
+**Service Tests**
+- `UserServiceTest.java` - User profile management
+- `DriverServiceTest.java` - Driver operations
+- `PassengerServiceTest.java` - Passenger operations
+- `ProfileUpdaterTest.java` - Profile updates
+- `AdminDriverServiceTest.java` - Admin driver operations
+- `AdminPassengerServiceTest.java` - Admin passenger operations
+- `AdminVehicleServiceTest.java` - Admin vehicle operations
 
-**AdminDriverServiceTest.java** - Admin driver management
-**AdminPassengerServiceTest.java** - Admin passenger management
-**AdminVehicleServiceTest.java** - Admin vehicle management
+**Vehicle Service Tests**
+- `VehicleServiceTest.java` - Vehicle registration/retrieval
+
+**Config Tests**
+- `OpenApiConfigTest.java` - OpenAPI configuration
 
 **Run User Service Tests**:
 ```bash
 mvn clean test -pl user-service
-
-# Note: Current compilation errors need fixing before tests can run
-# Requires missing common module classes
 ```
 
 ---
 
-### Trip Service (4 test files)
+### Trip Service (24 test files)
 
-**JoinTripServiceTest.java** - Booking flows (479 lines)
-- ✅ Auto-confirm booking (auto_confirm=true)
-- ✅ Driver-accept booking (auto_confirm=false)
-- ✅ Seat availability validation
-- ✅ Duplicate booking prevention
-- ✅ Accept/reject booking operations
+**Controller Tests**
+- `TripControllerTest.java` - Trip CRUD operations
+- `TripControllerIntegrationTest.java` - Trip integration flows
+- `RideControllerTest.java` - Passenger ride management
+- `BookingControllerTest.java` - Booking operations
+- `BookingControllerIntegrationTest.java` - Booking integration flows
+- `AdminTripControllerTest.java` - Admin trip management
+- `AdminBookingControllerTest.java` - Admin booking management
+- `ReportsControllerTest.java` - Reporting endpoints
 
-**CancellationServiceTest.java** - Cancellation
-- ✅ Passenger cancels booking
-- ✅ Driver cancels trip (cascade to bookings)
-- ✅ Seat release on cancellation
-- ✅ Authorization checks
+**Service Tests - Booking**
+- `JoinTripServiceTest.java` - Booking flows (auto-confirm, driver-accept)
+- `CancellationServiceTest.java` - Cancellation logic
+- `CompletionServiceTest.java` - Trip completion
+- `AdminBookingServiceTest.java` - Admin booking operations
 
-**AdminTripServiceTest.java** - Admin trip operations
-**AdminBookingServiceTest.java** - Admin booking operations
+**Service Tests - Trip**
+- `TripServiceTest.java` - Trip core operations
+- `OfferRideServiceTest.java` - Ride offering
+- `ActiveRidesServiceTest.java` - Active rides retrieval
+- `TripSearchServiceTest.java` - Trip search/filtering
+- `AdminTripServiceTest.java` - Admin trip operations
+- `ReportsServiceTest.java` - Reporting service
+
+**Service Tests - Geo/Route**
+- `TripGeospatialServiceTest.java` - Geospatial operations
+- `OsrmRouteClientTest.java` - OSRM routing client
+- `TimezoneConversionServiceTest.java` - Timezone handling
+
+**Service Tests - Notifications**
+- `DriverNotificationServiceTest.java` - Driver notifications
+- `DriverNotificationServiceIntegrationTest.java` - Notification integration
+
+**DTO Tests**
+- `FindRideRequestTest.java` - Request validation
+- `DriverTripResponseTest.java` - Response mapping
+- `PassengerRideResponseTest.java` - Response mapping
+- `OsrmDtoRecordsTest.java` - OSRM DTO mapping
+
+**Model Tests**
+- `GeoJsonPointTest.java` - GeoJSON point operations
+
+**Config Tests**
+- `OpenApiConfigTest.java` - OpenAPI configuration
+- `OSMClientConfigTest.java` - OSM client configuration
+
+**Test Fixtures**
+- `TripFixtures.java` - Reusable test data
 
 **Run Trip Service Tests**:
 ```bash
@@ -518,17 +598,25 @@ mvn clean test -pl trip-service
 
 ---
 
-### Review Service (2 test files)
+### Review Service (10 test files)
 
-**ReviewServiceTest.java** - Review management
-- ✅ Submit driver reviews (by passengers)
-- ✅ Submit passenger reviews (by drivers)
-- ✅ Authorization validation
-- ✅ Average rating calculation
-- ✅ Duplicate review prevention
-- ✅ Trip completion validation
+**Controller Tests**
+- `ReviewControllerTest.java` - Review endpoints
+- `AdminReviewControllerTest.java` - Admin review management
 
-**AdminReviewServiceTest.java** - Admin review operations
+**Service Tests**
+- `ReviewServiceTest.java` - Review operations
+- `AdminReviewServiceTest.java` - Admin review operations
+- `TripServiceClientIntegrationTest.java` - Inter-service integration
+
+**Mapper Tests**
+- `ReviewMapperTest.java` - DTO mapping
+
+**Model Tests**
+- `ReviewStatusTest.java` - Status enum handling
+
+**Test Fixtures**
+- `ReviewFixtures.java` - Reusable test data
 
 **Run Review Service Tests**:
 ```bash
@@ -537,14 +625,20 @@ mvn clean test -pl review-service
 
 ---
 
-### Notification Service (1 test file, 9 tests)
+### Notification Service (5 test files)
 
-**NotificationServiceTest.java**
-- ✅ Create notification with realtime publishing
-- ✅ Mark as read (single and bulk)
-- ✅ Unread count tracking
-- ✅ Recipient authorization
-- ✅ Sender/recipient validation
+**Controller Tests**
+- `NotificationControllerTest.java` - Notification endpoints
+
+**Service Tests**
+- `NotificationServiceTest.java` - Notification operations
+- `WebSocketNotificationPublisherTest.java` - WebSocket publishing
+
+**Mapper Tests**
+- `NotificationMapperTest.java` - DTO mapping
+
+**Test Fixtures**
+- `NotificationFixtures.java` - Reusable test data
 
 **Run Notification Service Tests**:
 ```bash
@@ -555,19 +649,22 @@ mvn clean test -pl notification-service
 
 ### API Gateway (4 test files)
 
-**JwtValidationFilterTest.java** - JWT validation
-- ✅ Public path bypass with header sanitization
-- ✅ Authorization header validation
-- ✅ Malformed token handling
-- ✅ Auth service failure mapping
+**Filter Tests**
+- `JwtValidationFilterTest.java` - JWT validation
+  - ✅ Public path bypass with header sanitization
+  - ✅ Authorization header validation
+  - ✅ Malformed token handling
+  - ✅ Auth service failure mapping
+  
+- `AdminAuthorizationFilterTest.java` - Admin protection
+  - ✅ Admin-only path enforcement
+  - ✅ Role validation
+  - ✅ Non-admin rejection (403 FORBIDDEN)
+  
+- `RequestIdGatewayFilterTest.java` - Request tracking
 
-**AdminAuthorizationFilterTest.java** - Admin protection
-- ✅ Admin-only path enforcement
-- ✅ Role validation
-- ✅ Non-admin rejection (403 FORBIDDEN)
-
-**RequestIdGatewayFilterTest.java** - Request tracking
-**GatewayExceptionHandlerTest.java** - Error handling
+**Exception Tests**
+- `GatewayExceptionHandlerTest.java` - Error handling
 
 **Run API Gateway Tests**:
 ```bash
@@ -576,12 +673,27 @@ mvn clean test -pl api-gateway
 
 ---
 
-### Common Module (1 test file)
+### Common Module (10 test files)
 
-**AdminGuardTest.java** - Authorization utility
-- ✅ ADMIN role validation (case-insensitive)
-- ✅ Non-admin rejection
-- ✅ Null/empty role handling
+**DTO Tests**
+- `ApiResponseWrapperTest.java` - Response wrapper
+- `ApiErrorTest.java` - Error response
+- `ErrorBodyAndDetailTest.java` - Error body/details
+
+**Exception Tests**
+- `BasicExceptionTest.java` - Base exception
+- `GlobalExceptionHandlerTest.java` - Global exception handling
+
+**Filter Tests**
+- `RequestIdFilterTest.java` - Request ID propagation
+
+**Service Tests**
+- `AuditServiceTest.java` - Audit logging
+
+**Test Support**
+- `ApiResponses.java` - Response helpers
+- `Points.java` - Test utilities
+- `WebRequests.java` - Web request helpers
 
 **Run Common Tests**:
 ```bash
@@ -651,6 +763,32 @@ class YourServiceTest {
 }
 ```
 
+### Controller Test Template
+
+```java
+@WebMvcTest(YourController.class)
+class YourControllerTest {
+    
+    @Autowired
+    private MockMvc mockMvc;
+    
+    @MockBean
+    private YourService yourService;
+    
+    @Test
+    void getById_shouldReturn200_whenFound() throws Exception {
+        YourDTO dto = new YourDTO();
+        dto.setId("123");
+        when(yourService.getById("123")).thenReturn(dto);
+        
+        mockMvc.perform(get("/api/v1/yours/123")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.id").value("123"));
+    }
+}
+```
+
 ### Test Naming Convention
 
 Use descriptive names following this pattern:
@@ -690,10 +828,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up JDK 21
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -703,14 +841,14 @@ jobs:
       run: mvn clean verify
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: ./coverage-report/target/site/jacoco-aggregate/jacoco.xml
         flags: unittests
         name: codecov-umbrella
     
     - name: Archive coverage reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-reports
         path: |
@@ -801,37 +939,17 @@ mvn clean test -pl auth-service
 
 ### Recommended Additions
 
-1. **Integration Tests**
-   - Add `@SpringBootTest` tests
-   - Use Testcontainers for databases
-   - Test complete flows end-to-end
-
-2. **HTTP/API Tests**
-   - Add `@WebMvcTest` for controllers
-   - Test REST endpoints
-   - Validate request/response formats
-
-3. **Database Tests**
-   - Add `@DataJpaTest` for repositories
-   - Test custom queries
-   - Validate constraints
-
-4. **Test Configuration**
-   - Create `application-test.yml`
-   - Add test-specific properties
-   - Configure in-memory databases
-
-5. **Contract Tests**
+1. **Contract Tests**
    - Add Spring Cloud Contract
    - Test inter-service communication
    - Validate API contracts
 
-6. **Performance Tests**
+2. **Performance Tests**
    - Add JMeter tests
    - Load testing scenarios
    - Stress testing
 
-7. **Security Tests**
+3. **Security Tests**
    - Authentication flow tests
    - Authorization tests
    - Input validation tests
@@ -852,17 +970,16 @@ mvn clean test -pl auth-service
 | Skip tests | `mvn clean install -DskipTests` |
 
 ### Current State
-- ✅ 20 unit test files
-- ✅ Comprehensive service layer coverage
+- ✅ 83 test files across all modules
+- ✅ Comprehensive service layer coverage (unit tests)
+- ✅ Comprehensive controller layer coverage (@WebMvcTest)
+- ✅ Integration tests for critical flows
+- ✅ Mapper and utility tests
 - ✅ JaCoCo code coverage configured
-- ✅ Mockito best practices
-- ❌ No integration tests
-- ❌ No HTTP/API tests
-- ❌ No database tests
+- ✅ Mockito and MockMvc best practices
 
 ### Next Steps
-1. Fix compilation errors in user-service and notification-service
-2. Add integration tests with Testcontainers
-3. Add HTTP/API tests with `@WebMvcTest`
-4. Create test configuration files
-5. Add CI/CD pipeline with coverage reporting
+1. Add more contract tests for inter-service communication
+2. Add performance/load testing
+3. Add security-focused integration tests
+4. Consider adding mutation testing for test quality

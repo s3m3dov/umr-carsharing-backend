@@ -1,7 +1,7 @@
 package com.cimhub.reviewservice.dto.request;
 
 import com.cimhub.common.enums.UserType;
-import com.cimhub.reviewservice.controller.ReviewApiExamples;
+import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,7 +12,7 @@ import lombok.Builder;
 @Schema(
         name = "SubmitReviewRequest",
         description = "Request to submit a review for a completed trip",
-        example = ReviewApiExamples.SUBMIT_REVIEW_REQUEST
+        example = ReviewApiDoc.SUBMIT_REVIEW_REQUEST
 )
 
 @Builder

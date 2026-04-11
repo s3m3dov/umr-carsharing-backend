@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.repository;
 
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.enums.BookingStatus;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;

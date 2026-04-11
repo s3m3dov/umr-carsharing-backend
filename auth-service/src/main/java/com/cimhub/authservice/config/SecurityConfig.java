@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -41,6 +42,7 @@ public class SecurityConfig {
                         org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .securityMatcher("/**")
                 .authorizeHttpRequests(registry -> {
+                    registry.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     // Actuator paths from configuration
                     securityProperties.getActuatorPaths().forEach(path -> registry.requestMatchers(path).permitAll());
                     // Public paths from configuration

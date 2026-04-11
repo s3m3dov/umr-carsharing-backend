@@ -13,6 +13,81 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.9.3] – User Registration, Test Coverage & Refactoring (2026-04-11)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Fixed
+
+- `GET /api/users/{userId}` returning null `firstName`, `lastName`, `phoneNumber` after signup — root cause was auth-service and user-service both writing to the same `users` MongoDB collection; auth-service saved a credentials-only document first, user-service found it and threw 409, auth-service silently ignored the conflict, leaving the null-field document in place forever
+- Added classifier to spring-boot-maven-plugin to produce plain jar for dependencies
+- Expanded actuator path exclusions to match wildcard patterns
+- Removed redundant actuator path exclusions in API gateway
+- Resolved compilation and test failures due to missing imports and constructor changes
+- Improved validation annotations on DTOs and entities
+- Added optimistic locking for seat booking concurrency
+- Enforced identity and role-based access control
+- Enforced vehicle uniqueness with exception-based flows
+- Tightened profile validation and admin endpoint consistency
+- Added default actuator path to `SecurityProperties`
+- Adjusted actuator path configuration and cleaned up `SecurityProperties`
+- Improved validation and exception handling in auth-service
+
+### Changed
+
+- **auth-service** credentials are stored in `users` and user-service is profile-only (`drivers`/`passengers`)
+- **Signup flow** is fully server-side: auth-service creates auth user then role profile (`passenger` or `driver`) during `POST /api/auth/signup`; the Flutter client receives a JWT and is done — no follow-up calls required
+- `licenseNumber` is stored exclusively in the `drivers` collection. `GET /api/users/{userId}` aggregates role profile data from `drivers`/`passengers`
+- `POST /api/users/profile` removed; role profile creation uses `POST /api/passengers/{userId}` and `POST /api/drivers/{userId}`
+- Reorganized service classes into domain-specific packages
+- Reorganized service tests by domain packages
+- Replaced OSM route service with configurable OSRM client
+- Centralized trip and ride response mapping with `BookingMapper` and `TripMapper`
+- Centralized controller role checks
+- Validated and encapsulated route search inputs
+- Improved notification wiring and configurability
+- Split `AuthService` into focused services with utility classes for reusable functionality
+- Migrated user-service to separate `Driver`/`Passenger` models
+- Replaced Lombok `@Data` on persistence models with explicit accessors
+- Extracted reusable profile update contracts
+- Refactored review-service to reduce duplication and harden validation
+- Standardized package naming conventions
+- Moved OpenAPI example classes to `dto.examples` package
+- Removed unused `Points` model from common module
+- Updated references after package and class renames
+- Refactored tests to use `Points.of()` factory method across trip-service
+
+### Added
+
+- Route geometry to trip, ride, and booking responses
+- Service integration tests with grouped trip test structure
+- Admin self profile endpoint in user-service
+- Focused tests for low-coverage services
+- Controller and config coverage tests for user-service
+- Unit tests for `DriverService`, `PassengerService`, and `UserService`
+- Test coverage improvements with fixtures and parameterized test methods
+- Testing documentation with 89 test files
+- Fixed request paths with response validation in HTTP tests
+- `GET  /api/passengers/{userId}` — retrieve passenger profile
+- `POST /api/passengers/{userId}` — initialize passenger sub-profile (called automatically during signup; also idempotent for manual use)
+- `PUT  /api/passengers/{userId}` — update passenger name / phone / age
+- `GET  /api/drivers/{userId}` — retrieve driver profile including `licenseNumber` and `driverStatus`
+- `POST /api/drivers/{userId}` — initialize driver sub-profile with `licenseNumber` (called automatically during signup)
+- `PUT  /api/drivers/{userId}` — update driver name / phone / age / license number
+- Driver sub-profile auto-created on first GET if missing (lazy creation fallback)
+- Auth-service rolls back the auth `users` document if user-service profile creation fails, keeping both stores consistent
+
+### Security
+
+- Admin signup hardening with expanded analysis
+
+### Documentation
+
+- Updated references after package and class renames
+- Noted admin role signup hardening analysis
+
+---
+
 ## [v0.9.2] – Trip Start, Retrieval & Test Coverage (2026-04-06)
 
 **Author:** s3m3dov (Hikmat Samadov)

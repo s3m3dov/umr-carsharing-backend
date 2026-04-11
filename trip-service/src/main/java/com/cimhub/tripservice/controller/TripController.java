@@ -1,8 +1,11 @@
 package com.cimhub.tripservice.controller;
 
+import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
+import com.cimhub.tripservice.dto.request.TripSearchCriteria;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
@@ -10,12 +13,12 @@ import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.service.CancellationService;
-import com.cimhub.tripservice.service.CompletionService;
-import com.cimhub.tripservice.service.OfferRideService;
-import com.cimhub.tripservice.service.TripGeospatialService;
-import com.cimhub.tripservice.service.TripService;
-import com.cimhub.tripservice.service.ActiveRidesService;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.CompletionService;
+import com.cimhub.tripservice.service.trip.OfferRideService;
+import com.cimhub.tripservice.service.geo.TripGeospatialService;
+import com.cimhub.tripservice.service.trip.TripService;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +27,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
@@ -54,24 +61,40 @@ public class TripController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Trip created successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.OFFER_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.OFFER_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid trip data",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_TRIP_DATA))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_TRIP_DATA))
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthorized",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_UNAUTHORIZED))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_UNAUTHORIZED))
             )
     })
     @PostMapping("/offer")
     public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Valid @RequestBody OfferRideRequest request) {
-        log.info("Offering trip for driver: {}", request.driverId());
-        OfferRideResponse response = offerRideService.offerRide(request);
+        requireDriverRole(authenticatedUserRole);
+        if (request.driverId() != null && !request.driverId().equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        OfferRideRequest effectiveRequest = OfferRideRequest.builder()
+                .driverId(authenticatedUserId)
+                .sourceAddress(request.sourceAddress())
+                .destinationAddress(request.destinationAddress())
+                .tripStartDateTime(request.tripStartDateTime())
+                .totalSeats(request.totalSeats())
+                .pricePerSeat(request.pricePerSeat())
+                .build();
+
+        log.info("Offering trip for driver: {}", authenticatedUserId);
+        OfferRideResponse response = offerRideService.offerRide(effectiveRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
@@ -85,24 +108,38 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Cancelled successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.CANCEL_TRIP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.CANCEL_TRIP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Cannot cancel (already in progress)",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_IN_PROGRESS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_IN_PROGRESS))
             )
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
-        log.info("Cancelling trip: {} for user: {}", request.tripId(), request.userId());
-        String response = cancellationService.cancelTrip(request);
+        AuthorizationHelper.requireDriverOrPassengerRole(authenticatedUserRole);
+        if (request.userId() != null && !request.userId().equals(authenticatedUserId)) {
+            throw new UnauthorizedException("User identity mismatch");
+        }
+
+        CancelTripRequest effectiveRequest = CancelTripRequest.builder()
+                .userId(authenticatedUserId)
+                .tripId(request.tripId())
+                .rideId(request.rideId())
+                .cancellationReason(request.cancellationReason())
+                .build();
+
+        log.info("Cancelling trip: {} for user: {}", request.tripId(), authenticatedUserId);
+        String response = cancellationService.cancelTrip(effectiveRequest);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -114,12 +151,12 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Trip details retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
             )
     })
     @GetMapping("/{tripId}")
@@ -139,19 +176,19 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Matching trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid search parameters",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
             )
     })
     @GetMapping("/search/near-source")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearSource(
-            @Parameter(description = "Latitude of the pickup location", example = "50.8154") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the pickup location", example = "8.6747") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
+            @Parameter(description = "Longitude of the pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
         log.info("Searching for trips near source: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
@@ -166,19 +203,19 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid coordinates or radius",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
             )
     })
     @GetMapping("/search/near-destination")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearDestination(
-            @Parameter(description = "Latitude of the dropoff location", example = "50.7265") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the dropoff location", example = "7.0895") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
+            @Parameter(description = "Longitude of the dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
         log.info("Searching for trips near destination: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
@@ -193,53 +230,48 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.SEARCH_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid coordinates or radius",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_INVALID_COORDINATES))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
             )
     })
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
-            @Parameter(description = "Latitude of pickup location", example = "50.8154") @RequestParam double sourceLatitude,
-            @Parameter(description = "Longitude of pickup location", example = "8.6747") @RequestParam double sourceLongitude,
-            @Parameter(description = "Radius around pickup in km", example = "5.0") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
-            @Parameter(description = "Latitude of dropoff location", example = "50.7265") @RequestParam double destinationLatitude,
-            @Parameter(description = "Longitude of dropoff location", example = "7.0895") @RequestParam double destinationLongitude,
-            @Parameter(description = "Radius around dropoff in km", example = "5.0") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Latitude of pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double sourceLatitude,
+            @Parameter(description = "Longitude of pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double sourceLongitude,
+            @Parameter(description = "Radius around pickup in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
+            @Parameter(description = "Latitude of dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double destinationLatitude,
+            @Parameter(description = "Longitude of dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double destinationLongitude,
+            @Parameter(description = "Radius around dropoff in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
             @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
-            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam String effectiveUserId,
+            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam(required = false) String effectiveUserId,
             @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
             @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
             @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
             @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
-        log.info("Searching for matching route trips");
+        requirePassengerRole(authenticatedUserRole);
 
-        if (earliestDepartureTime != null && latestDepartureTime != null) {
-            log.info("Using time range: {} to {}", earliestDepartureTime, latestDepartureTime);
-        } else {
-            log.info("No time range specified, searching all available trips");
+        if (effectiveUserId != null && !effectiveUserId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("User identity mismatch");
         }
 
-        List<Trip> trips = geoService.findTripsMatchingRoute(
-                sourceLatitude,
-                sourceLongitude,
-                sourceRadiusKm,
-                destinationLatitude,
-                destinationLongitude,
-                destinationRadiusKm,
-                earliestDepartureTime,
-                latestDepartureTime,
-                requestedSeats,
-                effectiveUserId,
-                minPrice,
-                maxPrice,
-                carType,
-                minAvailableSeats);
+        log.info("Searching for matching route trips");
+
+        TripSearchCriteria criteria = new TripSearchCriteria(
+                sourceLatitude, sourceLongitude, sourceRadiusKm,
+                destinationLatitude, destinationLongitude, destinationRadiusKm,
+                earliestDepartureTime, latestDepartureTime,
+                requestedSeats, authenticatedUserId,
+                minPrice, maxPrice, carType, minAvailableSeats);
+
+        List<Trip> trips = geoService.findTripsMatchingRoute(criteria);
 
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
@@ -252,17 +284,24 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Active trips retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ACTIVE_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
             )
     })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+        requireDriverRole(authenticatedUserRole);
+        if (!driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("You are not authorized to view these trips");
+        }
+
         log.info("Fetching active trips for driver: {}", driverId);
         List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(activeTrips));
@@ -276,17 +315,24 @@ public class TripController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Trip history retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ACTIVE_TRIPS_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiExamples.ERROR_TRIP_NOT_FOUND))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
             )
     })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+        requireDriverRole(authenticatedUserRole);
+        if (!driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("You are not authorized to view this trip history");
+        }
+
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
         return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
@@ -317,9 +363,17 @@ public class TripController {
     @PostMapping("/{tripId}/start")
     public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
-        log.info("Driver {} starting trip: {}", driverId, tripId);
-        StartTripResponse response = tripService.startTrip(tripId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} starting trip: {}", authenticatedUserId, tripId);
+        StartTripResponse response = tripService.startTrip(tripId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
     }
 
@@ -344,11 +398,27 @@ public class TripController {
     @PostMapping("/{tripId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Driver's user ID") @RequestParam String driverId) {
-        log.info("Driver {} completing trip: {}", driverId, tripId);
-        CompleteTripResponse response = completionService.completeTrip(tripId, driverId);
+            @RequestHeader("X-User-Id") String authenticatedUserId,
+            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+        requireDriverRole(authenticatedUserRole);
+
+        if (driverId != null && !driverId.equals(authenticatedUserId)) {
+            throw new UnauthorizedException("Driver identity mismatch");
+        }
+
+        log.info("Driver {} completing trip: {}", authenticatedUserId, tripId);
+        CompleteTripResponse response = completionService.completeTrip(tripId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(
                 response,
                 OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
+    }
+
+    private void requireDriverRole(String userRole) {
+        AuthorizationHelper.requireDriverRole(userRole);
+    }
+
+    private void requirePassengerRole(String userRole) {
+        AuthorizationHelper.requirePassengerRole(userRole);
     }
 }

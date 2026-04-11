@@ -3,7 +3,7 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
-import com.cimhub.tripservice.service.AdminTripService;
+import com.cimhub.tripservice.service.trip.AdminTripService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

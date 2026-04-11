@@ -1,7 +1,10 @@
 package com.cimhub.tripservice.model;
 
-import com.cimhub.common.models.Points;
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.model.Points;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,17 +29,27 @@ public class Booking {
     @Id
     private String bookingId;
 
+    @NotBlank
     private String passengerId;
 
+    @NotBlank
     private String tripId;
+    
+    @NotBlank
     private String driverId;
+    
     private String vehicleNumber;
 
+    @NotNull
     private Points pickupLocation;
+    
+    @NotNull
     private Points dropoffLocation;
 
     @Min(1)
     private int requestedSeats;
+    
+    @NotNull
     private BookingStatus status;
 
     private Instant rideStartTimeUTC;

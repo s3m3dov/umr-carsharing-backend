@@ -1,6 +1,8 @@
 package com.cimhub.userservice.vehicle.service;
 
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.exception.BadRequestException;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
@@ -25,7 +27,11 @@ public class VehicleService {
 
     public List<VehicleResponse> findUserVehicles(String userId) {
         log.info("Fetching vehicles for userId: {}", userId);
-        return vehicleRepository.findByUserId(userId).stream()
+        List<Vehicle> vehicles = vehicleRepository.findByUserId(userId);
+        if (vehicles.isEmpty()) {
+            throw new ResourceNotFoundException("No vehicles found for user: " + userId);
+        }
+        return vehicles.stream()
                 .map(this::toVehicleResponse)
                 .collect(Collectors.toList());
     }
@@ -35,14 +41,14 @@ public class VehicleService {
 
         if (vehicleRepository.existsByUserId(request.userId())) {
             log.warn("Driver {} already has a vehicle registered", request.userId());
-            return null;
+            throw new BadRequestException("Driver already has a vehicle registered");
         }
 
         String normalizedVehicleNumber = request.vehicleNumber().toUpperCase(Locale.ROOT);
 
         if (vehicleRepository.existsByVehicleNumber(normalizedVehicleNumber)) {
             log.warn("Vehicle with number {} already exists", request.vehicleNumber());
-            return null;
+            throw new BadRequestException("Vehicle already registered");
         }
 
         Vehicle newVehicle = new Vehicle();

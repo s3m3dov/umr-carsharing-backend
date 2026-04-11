@@ -1,9 +1,10 @@
 package com.cimhub.tripservice.model;
 
-import com.cimhub.common.models.Points;
-import com.cimhub.tripservice.dto.OSRM.Geometry;
+import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,22 +36,22 @@ public class Trip {
     @Id
     private String tripId;
 
-    @NotBlank
+    @NotNull
     private TripStatus tripStatus;
 
-    @NotBlank
+    @NotNull
     private String vehicleNumber;
 
-    @NotBlank
+    @NotNull
     private String carType;
 
-    @NotBlank
+    @NotNull
     private String driverId;
 
-    @NotBlank
+    @NotNull
     private Points sourceAddress;
 
-    @NotBlank
+    @NotNull
     private Points destinationAddress;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
@@ -78,6 +80,9 @@ public class Trip {
     private List<ObjectId> joinedBookingIds;
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    @Version
+    private Long version;
 
     @Builder.Default
     private Instant updatedAt = Instant.now();

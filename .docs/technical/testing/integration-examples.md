@@ -74,19 +74,34 @@ curl -X GET http://localhost:8082/user-service/api/users/john.driver@example.com
   -H "Authorization: Bearer $TOKEN"
 ```
 
-#### Create User Profile
+#### Create Driver Profile
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X POST http://localhost:8082/user-service/api/users/profile \
+curl -X POST http://localhost:8082/user-service/api/drivers/john.driver@example.com \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "userId": "john.driver@example.com",
     "firstName": "John",
     "lastName": "Driver",
+    "phoneNumber": "+49 123 456789",
     "age": 32,
-    "phoneNumber": "+49 123 456789"
+    "licenseNumber": "LD-123456789"
+  }'
+```
+
+#### Create Passenger Profile
+```bash
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+curl -X POST http://localhost:8082/user-service/api/passengers/jane.passenger@example.com \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "firstName": "Jane",
+    "lastName": "Passenger",
+    "phoneNumber": "+49 111 222333",
+    "age": 27
   }'
 ```
 
@@ -308,8 +323,12 @@ class CarSharingAPI {
     return this.request(`/user-service/api/users/${userId}`);
   }
 
-  async createUserProfile(profileData) {
-    return this.request('/user-service/api/users/profile', 'POST', profileData);
+  async createDriverProfile(userId, profileData) {
+    return this.request(`/user-service/api/drivers/${userId}`, 'POST', profileData);
+  }
+
+  async createPassengerProfile(userId, profileData) {
+    return this.request(`/user-service/api/passengers/${userId}`, 'POST', profileData);
   }
 
   // Vehicle endpoints (User Service)

@@ -1,13 +1,13 @@
 package com.cimhub.reviewservice.dto.response;
 
-import com.cimhub.reviewservice.controller.ReviewApiExamples;
+import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Schema(
         name = "AverageRatingResponse",
         description = "Average rating information for a driver",
-        example = ReviewApiExamples.GET_AVERAGE_RATING_RESPONSE
+        example = ReviewApiDoc.GET_AVERAGE_RATING_RESPONSE
 )
 
 @Builder

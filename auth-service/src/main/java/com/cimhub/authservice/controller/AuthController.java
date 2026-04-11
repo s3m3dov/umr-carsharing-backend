@@ -1,5 +1,6 @@
 package com.cimhub.authservice.controller;
 
+import com.cimhub.authservice.dto.examples.AuthApiDoc;
 import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
 import com.cimhub.authservice.dto.request.LoginRequest;
@@ -11,6 +12,8 @@ import com.cimhub.authservice.dto.response.ResetPasswordResponse;
 import com.cimhub.authservice.dto.response.SignUpResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
 import com.cimhub.authservice.service.AuthService;
+import com.cimhub.authservice.service.PasswordManagementService;
+import com.cimhub.authservice.service.RegistrationService;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final RegistrationService registrationService;
+    private final PasswordManagementService passwordManagementService;
 
     @Operation(
             summary = "Register new user",
@@ -50,24 +55,24 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "201",
                     description = "User successfully registered",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.SIGNUP_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.SIGNUP_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input - missing fields or invalid email",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "User with this email already exists",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_USER_EXISTS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_USER_EXISTS))
             )
     })
     @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<SignUpResponse>> registerUser(
             @Valid @RequestBody RegisterUserRequest request) {
         log.info("Signup request for user: {}", request.email());
-        SignUpResponse response = authService.registerUser(request);
+        SignUpResponse response = registrationService.registerUser(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
@@ -81,17 +86,17 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Login successful",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.LOGIN_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.LOGIN_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Invalid email or password",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_CREDENTIALS))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_INVALID_CREDENTIALS))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Missing required fields",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             )
     })
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,17 +115,17 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Token is valid",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.VALIDATE_TOKEN_RESPONSE))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.VALIDATE_TOKEN_RESPONSE))
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Token is invalid or expired",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_INVALID_TOKEN))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_INVALID_TOKEN))
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Token field missing",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiExamples.ERROR_VALIDATION))
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = AuthApiDoc.ERROR_VALIDATION))
             )
     })
     @PostMapping(value = "/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -152,7 +157,7 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {
         log.info("Password reset request for user: {}", request.email());
-        ResetPasswordResponse response = authService.initiatePasswordReset(request);
+        ResetPasswordResponse response = passwordManagementService.initiatePasswordReset(request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -178,7 +183,7 @@ public class AuthController {
     public ResponseEntity<ApiResponseWrapper<ResetPasswordResponse>> confirmResetPassword(
             @Valid @RequestBody ConfirmResetPasswordRequest request) {
         log.info("Password reset confirmation request");
-        ResetPasswordResponse response = authService.confirmPasswordReset(request);
+        ResetPasswordResponse response = passwordManagementService.confirmPasswordReset(request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -205,7 +210,7 @@ public class AuthController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody ChangePasswordRequest request) {
         log.info("Password change request for user: {}", userDetails.getUsername());
-        ResetPasswordResponse response = authService.changePassword(userDetails.getUsername(), request);
+        ResetPasswordResponse response = passwordManagementService.changePassword(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 }

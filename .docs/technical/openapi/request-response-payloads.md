@@ -120,28 +120,30 @@ GET /api/users/john.driver@example.com
     "email": "john.driver@example.com",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "role": "DRIVER",
-    "profileCompletedAt": "2024-01-15T10:30:00Z"
+    "userType": "DRIVER",
+    "licenseNumber": "LD-123456789",
+    "createdAt": "2026-03-30T16:48:24.233Z",
+    "updatedAt": "2026-03-30T16:48:24.233Z"
   },
-  "message": "User profile retrieved successfully"
+  "message": "Operation successful"
 }
 ```
 Source: `ApiExamples.GET_USER_RESPONSE` → imported in `UserController` annotation
 
 ---
 
-### Create Profile
+### Create Driver Profile
 **REQUEST** - What to send:
 ```json
 {
-  "userId": "john.driver@example.com",
   "firstName": "John",
   "lastName": "Driver",
   "phoneNumber": "+49 123 456789",
-  "age": 32
+  "age": 32,
+  "licenseNumber": "LD-123456789"
 }
 ```
-Source: `ApiExamples.CREATE_PROFILE_REQUEST` → imported in `CreateProfileRequest.java` DTO
+Source: `CreateDriverProfileRequest` DTO
 
 **RESPONSE** - What you get back:
 ```json
@@ -154,13 +156,47 @@ Source: `ApiExamples.CREATE_PROFILE_REQUEST` → imported in `CreateProfileReque
     "email": "john.driver@example.com",
     "phoneNumber": "+49 123 456789",
     "age": 32,
-    "role": "DRIVER",
-    "profileCompletedAt": "2024-01-15T10:35:00Z"
+    "userType": "DRIVER",
+    "licenseNumber": "LD-123456789",
+    "driverStatus": "PENDING",
+    "createdAt": "2026-04-09T10:15:01.000Z",
+    "updatedAt": "2026-04-09T10:15:01.000Z"
   },
-  "message": "User profile created successfully"
+  "message": "Operation successful"
 }
 ```
-Source: `ApiExamples.CREATE_PROFILE_RESPONSE` → imported in `UserController` annotation
+Source: `DriverController` + `DriverResponse`
+
+### Create Passenger Profile
+**REQUEST** - What to send:
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Passenger",
+  "phoneNumber": "+49 111 222333",
+  "age": 27
+}
+```
+
+**RESPONSE** - What you get back:
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "jane.passenger@example.com",
+    "firstName": "Jane",
+    "lastName": "Passenger",
+    "email": "jane.passenger@example.com",
+    "userType": "PASSENGER",
+    "phoneNumber": "+49 555 000111",
+    "age": 27,
+    "createdAt": "2026-04-09T10:15:01.000Z",
+    "updatedAt": "2026-04-09T10:15:01.000Z"
+  },
+  "message": "Operation successful"
+}
+```
+Source: `PassengerController` + `PassengerResponse`
 
 ---
 
@@ -465,7 +501,6 @@ Located in each service's `ApiExamples.java`:
 - ✅ `ApiExamples.LOGIN_REQUEST`
 - ✅ `ApiExamples.SIGNUP_REQUEST`
 - ✅ `ApiExamples.VALIDATE_TOKEN_REQUEST`
-- ✅ `ApiExamples.CREATE_PROFILE_REQUEST`
 - ✅ `ApiExamples.REGISTER_VEHICLE_REQUEST`
 - ✅ `ApiExamples.OFFER_TRIP_REQUEST`
 - ✅ `ApiExamples.CANCEL_TRIP_REQUEST`
@@ -479,7 +514,6 @@ Located in each service's `ApiExamples.java`:
 - ✅ `ApiExamples.SIGNUP_RESPONSE`
 - ✅ `ApiExamples.VALIDATE_TOKEN_RESPONSE`
 - ✅ `ApiExamples.GET_USER_RESPONSE`
-- ✅ `ApiExamples.CREATE_PROFILE_RESPONSE`
 - ✅ `ApiExamples.GET_VEHICLES_RESPONSE`
 - ✅ `ApiExamples.REGISTER_VEHICLE_RESPONSE`
 - ✅ `ApiExamples.OFFER_TRIP_RESPONSE`

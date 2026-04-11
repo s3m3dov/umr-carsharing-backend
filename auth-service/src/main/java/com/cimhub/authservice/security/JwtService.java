@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class JwtService {
+
+    private static final String ROLE_CLAIM = "role";
 
     private final String secretKey;
     private final long expirationMs;
@@ -21,9 +24,12 @@ public class JwtService {
         this.secretKey = secretKey;
         this.expirationMs = expirationMs;
     }
-    public boolean isTokenValid(String Token, String username) {
-        final String extractedUsername = extractUsername(Token);
-        return (extractedUsername.equals(username)) && !isTokenExpired(Token);
+
+    public boolean isTokenValid(String token, String username) {
+        String extractedUsername = extractUsername(token);
+        return extractedUsername != null 
+                && extractedUsername.equals(username) 
+                && !isTokenExpired(token);
     }
 
     public boolean isTokenExpired(String token) {
@@ -39,11 +45,11 @@ public class JwtService {
     }
 
     public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class));
+        return extractClaim(token, claims -> claims.get(ROLE_CLAIM, String.class));
     }
 
-    private  <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
+    private <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
+        Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
@@ -59,23 +65,33 @@ public class JwtService {
             return e.getClaims();
         }
     }
+
     private java.security.Key getSignInKey() {
         byte[] keyBytes = java.util.Base64.getDecoder().decode(secretKey);
         return io.jsonwebtoken.security.Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateTokenForUser(UserDetails userDetails) {
+        return generateTokenWithRole(userDetails, null);
     }
 
-    public String generateToken(UserDetails userDetails, String role){
-        HashMap<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
+    public String generateTokenWithRole(UserDetails userDetails, String role) {
+        Map<String, Object> claims = new HashMap<>();
+        if (role != null && !role.isBlank()) {
+            claims.put(ROLE_CLAIM, role);
+        }
         return generateToken(claims, userDetails);
     }
 
-    public String generateToken(
-            HashMap<String, Object> extraClaims,
+    public String generateTokenWithExtraClaims(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails
+    ) {
+        return generateToken(extraClaims, userDetails);
+    }
+
+    private String generateToken(
+            Map<String, Object> extraClaims,
             UserDetails userDetails
     ) {
         return io.jsonwebtoken.Jwts
