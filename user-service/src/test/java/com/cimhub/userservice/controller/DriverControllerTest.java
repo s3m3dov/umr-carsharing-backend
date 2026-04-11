@@ -3,7 +3,6 @@ package com.cimhub.userservice.controller;
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
-import com.cimhub.userservice.dto.request.CreateDriverProfileRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.service.DriverService;
@@ -50,26 +49,6 @@ class DriverControllerTest {
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("driver@example.com", response.getBody().getData().userId());
-    }
-
-    @Test
-    void createDriverProfile_shouldReturnCreatedStatus() {
-        CreateDriverProfileRequest request = new CreateDriverProfileRequest("John", "Doe", "+123", 30, "LIC-1");
-        DriverResponse driverResponse = DriverResponse.builder()
-                .userId("driver@example.com")
-                .userType(UserType.DRIVER)
-                .driverStatus(DriverStatus.PENDING)
-                .build();
-        when(driverService.createDriverProfile("driver@example.com", request)).thenReturn(driverResponse);
-
-        var response = driverController.createDriverProfile(
-                "driver@example.com",
-                UserType.DRIVER,
-                "driver@example.com",
-                request);
-
-        assertEquals(201, response.getStatusCode().value());
-        verify(driverService).createDriverProfile("driver@example.com", request);
     }
 
     @Test

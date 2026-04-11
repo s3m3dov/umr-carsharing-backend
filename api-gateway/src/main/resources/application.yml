@@ -128,6 +128,8 @@ gateway:
     admin-paths:
       - /api/admin/**
       - /**/api/admin/**
+    internal-paths:
+      - /**/api/internal/**
   services:
     auth:
       base-url: http://auth-service:8080
