@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.model.Points;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.enums.BookingStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;

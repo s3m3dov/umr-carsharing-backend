@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.model.Points;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.enums.BookingStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

@@ -8,7 +8,7 @@ import com.cimhub.tripservice.dto.osrm.Route;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.response.OfferRideResponse;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.model.VehicleDocument;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;

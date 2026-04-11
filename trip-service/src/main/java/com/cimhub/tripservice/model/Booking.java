@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.model;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.model.Points;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

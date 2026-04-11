@@ -7,7 +7,7 @@ import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.InvalidTripStateException;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

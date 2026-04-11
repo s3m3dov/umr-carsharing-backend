@@ -2,7 +2,7 @@ package com.cimhub.tripservice.service.trip;
 
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.mapper.TripMapper;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

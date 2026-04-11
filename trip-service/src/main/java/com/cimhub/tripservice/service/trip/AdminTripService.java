@@ -7,7 +7,7 @@ import com.cimhub.tripservice.exception.AlreadyCancelledException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
