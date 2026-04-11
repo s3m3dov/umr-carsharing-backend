@@ -2,6 +2,7 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
@@ -71,8 +72,8 @@ class BookingControllerIntegrationTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(OperationMessage.RIDE_COMPLETED_SUCCESS.text()))
@@ -86,8 +87,8 @@ class BookingControllerIntegrationTest {
                 .when(completionService).completeRide("b-99", "driver-1");
 
         mockMvc.perform(post("/api/bookings/b-99/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Booking not found with id: b-99"));
@@ -99,8 +100,8 @@ class BookingControllerIntegrationTest {
                 .when(completionService).completeRide("b-1", "intruder");
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "intruder")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "intruder")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "intruder"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("You are not authorized to complete this ride"));
@@ -112,8 +113,8 @@ class BookingControllerIntegrationTest {
                 .when(completionService).completeRide("b-1", "driver-1");
 
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("RIDE_NOT_COMPLETABLE"));
@@ -122,7 +123,7 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenUserHeaderMissing_shouldReturn400() throws Exception {
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isBadRequest());
     }
@@ -130,8 +131,8 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenDriverIdParamMismatchesHeader_shouldReturn401() throws Exception {
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "other-driver"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Driver identity mismatch"));
@@ -140,7 +141,7 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenRoleHeaderMissing_shouldReturn400() throws Exception {
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "driver-1")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isBadRequest());
     }
@@ -148,8 +149,8 @@ class BookingControllerIntegrationTest {
     @Test
     void completeRide_whenRoleIsNotDriver_shouldReturn403() throws Exception {
         mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "PASSENGER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "PASSENGER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Driver access required"));

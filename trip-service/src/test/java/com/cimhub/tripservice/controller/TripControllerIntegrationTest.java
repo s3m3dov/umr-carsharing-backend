@@ -2,6 +2,7 @@ package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
@@ -76,8 +77,8 @@ class TripControllerIntegrationTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(OperationMessage.TRIP_COMPLETED_SUCCESS.format(2)))
@@ -91,8 +92,8 @@ class TripControllerIntegrationTest {
                 .when(completionService).completeTrip("trip-99", "driver-1");
 
         mockMvc.perform(post("/api/trips/trip-99/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Trip not found with id: trip-99"));
@@ -104,8 +105,8 @@ class TripControllerIntegrationTest {
                 .when(completionService).completeTrip("trip-1", "intruder");
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "intruder")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "intruder")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "intruder"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("You are not authorized to complete this trip"));
@@ -117,8 +118,8 @@ class TripControllerIntegrationTest {
                 .when(completionService).completeTrip("trip-1", "driver-1");
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("TRIP_NOT_IN_PROGRESS"));
@@ -127,7 +128,7 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenUserHeaderMissing_shouldReturn400() throws Exception {
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isBadRequest());
     }
@@ -144,8 +145,8 @@ class TripControllerIntegrationTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-2/complete")
-                        .header("X-User-Id", "driver-2")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-2")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(OperationMessage.TRIP_COMPLETED_SUCCESS.format(0)))
@@ -156,8 +157,8 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenDriverIdParamMismatchesHeader_shouldReturn401() throws Exception {
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "DRIVER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "other-driver"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Driver identity mismatch"));
@@ -166,7 +167,7 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenRoleHeaderMissing_shouldReturn400() throws Exception {
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "driver-1")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isBadRequest());
     }
@@ -174,8 +175,8 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenRoleIsNotDriver_shouldReturn403() throws Exception {
         mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header("X-User-Id", "driver-1")
-                        .header("X-User-Role", "PASSENGER")
+                        .header(HeaderConstants.X_USER_ID, "driver-1")
+                        .header(HeaderConstants.X_USER_ROLE, "PASSENGER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Driver access required"));
@@ -184,8 +185,8 @@ class TripControllerIntegrationTest {
     @Test
     void searchMatchingRoute_whenEffectiveUserIdMismatchesHeader_shouldReturn401() throws Exception {
         mockMvc.perform(get("/api/trips/search/matching-route")
-                        .header("X-User-Id", "header-user")
-                        .header("X-User-Role", "PASSENGER")
+                        .header(HeaderConstants.X_USER_ID, "header-user")
+                        .header(HeaderConstants.X_USER_ROLE, "PASSENGER")
                         .param("sourceLatitude", "50.8154")
                         .param("sourceLongitude", "8.6747")
                         .param("destinationLatitude", "50.7265")

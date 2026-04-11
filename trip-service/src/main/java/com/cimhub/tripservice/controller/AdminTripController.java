@@ -97,7 +97,7 @@ public class AdminTripController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
             @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Email", required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminTripService.cancelTrip(id, adminEmail);
