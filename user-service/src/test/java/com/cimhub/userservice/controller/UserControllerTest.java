@@ -48,7 +48,7 @@ class UserControllerTest {
                 Instant.parse("2026-01-01T10:05:00Z"));
         when(userService.getUserInfo("driver@example.com")).thenReturn(userResponse);
 
-        var response = userController.getUserInfo("driver@example.com", UserType.DRIVER, "driver@example.com");
+        var response = userController.getUserInfo("driver@example.com", "driver@example.com");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("driver@example.com", response.getBody().getData().userId());
@@ -58,6 +58,12 @@ class UserControllerTest {
     @Test
     void getUserInfo_withMismatchedOwner_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class,
-                () -> userController.getUserInfo("other@example.com", UserType.DRIVER, "driver@example.com"));
+                () -> userController.getUserInfo("other@example.com", "driver@example.com"));
+    }
+
+    @Test
+    void getUserInfo_adminAccessingOtherUser_shouldThrowForbidden() {
+        assertThrows(ForbiddenException.class,
+                () -> userController.getUserInfo("admin@example.com", "driver@example.com"));
     }
 }
