@@ -44,6 +44,8 @@ class TripServiceTest {
         tripService = new TripService(tripsRepository, tripMapper);
     }
 
+    // ── updateStatus ─────────────────────────────────────────────────────────
+
     @Test
     void updateStatus_whenValidTransition_shouldPersistNewStatus() {
         Trip trip = new Trip();
@@ -112,6 +114,8 @@ class TripServiceTest {
         assertTrue(ex.getMessage().contains("Cannot transition trip"));
         verify(tripsRepository, never()).save(any());
     }
+
+    // ── startTrip ────────────────────────────────────────────────────────────
 
     @Test
     void startTrip_whenAvailable_shouldStartSuccessfully() {
