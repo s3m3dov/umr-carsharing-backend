@@ -1,9 +1,9 @@
 package com.cimhub.reviewservice.controller;
 
-import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
+import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -66,8 +66,8 @@ public class ReviewController {
     })
     @PostMapping("/driver")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitDriverReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting driver review from user: {}", userId);
         ReviewResponse response = reviewService.submitDriverReview(userId, userRole, request);
@@ -109,8 +109,8 @@ public class ReviewController {
     })
     @PostMapping("/passenger")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitPassengerReview(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String userId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting passenger review from user: {}", userId);
         ReviewResponse response = reviewService.submitPassengerReview(userId, userRole, request);

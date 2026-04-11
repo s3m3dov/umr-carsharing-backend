@@ -1,9 +1,9 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.tripservice.dto.examples.BookingApiDoc;
-import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
@@ -65,8 +65,8 @@ public class RideController {
     })
     @PostMapping("/book")
     public ResponseEntity<ApiResponseWrapper<String>> bookRide(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Valid @RequestBody JoinTripRequest request) {
         requirePassengerRole(authenticatedUserRole);
 
@@ -105,8 +105,8 @@ public class RideController {
     })
     @PostMapping("/book/new")
     public ResponseEntity<ApiResponseWrapper<String>> bookRideWithDriverAccept(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Valid @RequestBody JoinTripRequest request) {
         requirePassengerRole(authenticatedUserRole);
 
@@ -140,8 +140,8 @@ public class RideController {
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelRide(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
         requirePassengerRole(authenticatedUserRole);
 
@@ -168,8 +168,8 @@ public class RideController {
     })
     @GetMapping("/active/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerActiveRides(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Parameter(description = "Passenger's user ID", example = "jane.passenger@example.com") @PathVariable String passengerId) {
         requirePassengerRole(authenticatedUserRole);
 
@@ -200,8 +200,8 @@ public class RideController {
     })
     @GetMapping("/history/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerRideHistory(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Parameter(description = "Passenger's user ID", example = "jane.passenger@example.com") @PathVariable String passengerId) {
         requirePassengerRole(authenticatedUserRole);
 

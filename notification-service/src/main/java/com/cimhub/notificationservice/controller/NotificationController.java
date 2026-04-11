@@ -1,9 +1,9 @@
 package com.cimhub.notificationservice.controller;
 
-import com.cimhub.notificationservice.dto.examples.NotificationApiDoc;
-import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
+import com.cimhub.notificationservice.dto.examples.NotificationApiDoc;
 import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
 import com.cimhub.notificationservice.dto.request.MarkNotificationReadRequest;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
@@ -47,9 +47,9 @@ public class NotificationController {
     })
     @PostMapping
     public ResponseEntity<ApiResponseWrapper<NotificationResponse>> createNotification(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Valid @RequestBody CreateNotificationRequest request) {
         validateCreatePermission(authenticatedUserId, authenticatedUserRole, request.senderId());
@@ -75,9 +75,9 @@ public class NotificationController {
     @GetMapping("/{recipientId}")
     public ResponseEntity<ApiResponseWrapper<Page<NotificationResponse>>> listNotifications(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             Pageable pageable) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
@@ -93,9 +93,9 @@ public class NotificationController {
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<ApiResponseWrapper<NotificationResponse>> markAsRead(
             @Parameter(description = "Notification ID", required = true) @PathVariable String notificationId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
             @Valid @RequestBody MarkNotificationReadRequest request) {
         validateRecipientAccess(request.recipientId(), authenticatedUserId, authenticatedUserRole);
@@ -107,9 +107,9 @@ public class NotificationController {
     @PatchMapping("/{recipientId}/read-all")
     public ResponseEntity<ApiResponseWrapper<NotificationStatsResponse>> markAllAsRead(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(notificationService.markAllAsRead(recipientId)));
@@ -123,9 +123,9 @@ public class NotificationController {
     @GetMapping("/{recipientId}/stats")
     public ResponseEntity<ApiResponseWrapper<NotificationStatsResponse>> getStats(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false)
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true)
             @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(notificationService.getStats(recipientId)));

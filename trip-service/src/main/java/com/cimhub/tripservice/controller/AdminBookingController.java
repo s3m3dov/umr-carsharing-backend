@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
@@ -43,7 +43,7 @@ public class AdminBookingController {
     })
     @GetMapping
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> listBookings(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.listBookings(pageable)));
@@ -56,7 +56,7 @@ public class AdminBookingController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<BookingResponse>> getBooking(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(ApiResponseWrapper.success(adminBookingService.getBooking(id)));
@@ -69,8 +69,8 @@ public class AdminBookingController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<BookingResponse>> updateBooking(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id,
             @RequestBody UpdateBookingRequest request) {
         AdminGuard.requireAdmin(userRole);
@@ -85,8 +85,8 @@ public class AdminBookingController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseWrapper<String>> cancelBooking(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_EMAIL, required = true) String adminEmail,
             @Parameter(description = "Booking ID", example = "ride_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminBookingService.cancelBooking(id, adminEmail);
@@ -100,7 +100,7 @@ public class AdminBookingController {
     })
     @GetMapping("/passenger/{passengerId}")
     public ResponseEntity<ApiResponseWrapper<Page<BookingResponse>>> getPassengerBookings(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String userRole,
             @Parameter(description = "Passenger ID", example = "jane.passenger@example.com") @PathVariable String passengerId,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
