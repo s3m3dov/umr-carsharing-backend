@@ -40,6 +40,21 @@ After validation, the API Gateway injects trusted identity headers (`X-User-Id`,
 Clients must not send `X-User-*` headers manually.
 
 For trip/ride caller-owned operations, user identity is derived from JWT (`X-User-Id`) instead of request body fields.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant Service
+
+    Client->>Gateway: POST /api/trips (body: request data, NO driverId)
+    Note over Gateway: Extracts userId from JWT
+    Gateway->>Service: Forward + X-User-Id: "user-123"
+    Note over Service: Service uses "user-123" as driverId
+    Service-->>Gateway: 201 Created
+    Gateway-->>Client: 201 Created
+```
+
 Examples:
 - Offering a trip: driver identity comes from `X-User-Id`.
 - Booking/canceling a ride: passenger identity comes from `X-User-Id`.

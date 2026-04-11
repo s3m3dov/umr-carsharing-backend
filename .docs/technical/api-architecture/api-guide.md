@@ -14,6 +14,22 @@ Authorization: Bearer <your_jwt_token>
 - **Service Identity**: The API Gateway validates the JWT, extracts the identity, and passes it to internal services via the `X-User-Id` and `X-User-Role` headers.
 - **Note to Mobile Developers**: Do not use the Firebase Flutter SDK for authentication. Call the backend APIs directly to manage user sessions.
 
+### Identity Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway as API Gateway
+    participant Service as Internal Service (e.g., Trip Service)
+
+    Client->>Gateway: Request (JWT in Authorization header)
+    Note over Gateway: 1. Validate JWT<br/>2. Strip incoming X-User-* headers<br/>3. Extract Identity (userId, role)
+    Gateway->>Service: Forward Request + X-User-Id + X-User-Role
+    Note over Service: 1. Read identity from headers<br/>2. Authorize action<br/>3. Create records using X-User-Id
+    Service-->>Gateway: Response
+    Gateway-->>Client: Response
+```
+
 ## 📡 Common Response Format
 
 All API responses follow a standard envelope:
