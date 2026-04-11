@@ -8,16 +8,20 @@ public final class OwnershipGuard {
     private OwnershipGuard() {
     }
 
-    public static void requireOwnerOrAdmin(String authenticatedUserId, String targetUserId, UserType userRole) {
-        if (isAdmin(userRole)) {
-            return;
-        }
+    public static void requireOwner(String authenticatedUserId, String targetUserId) {
         if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ForbiddenException("Authenticated user id is required");
         }
         if (!authenticatedUserId.equalsIgnoreCase(targetUserId)) {
             throw new ForbiddenException("Access denied for requested user");
         }
+    }
+
+    public static void requireOwnerOrAdmin(String authenticatedUserId, String targetUserId, UserType userRole) {
+        if (isAdmin(userRole)) {
+            return;
+        }
+        requireOwner(authenticatedUserId, targetUserId);
     }
 
     public static void requireRoleOrAdmin(UserType userRole, UserType requiredRole) {

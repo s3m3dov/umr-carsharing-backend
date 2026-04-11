@@ -3,7 +3,6 @@ package com.cimhub.userservice.controller;
 import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.constant.HeaderNames;
-import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.response.UserResponse;
 import com.cimhub.userservice.service.UserService;
@@ -56,10 +55,9 @@ public class UserController {
     @GetMapping(value = "/{userId}")
     public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
             @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
-            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
-        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
+        OwnershipGuard.requireOwner(authenticatedUserId, userId);
         log.info("Get user info for userId: {}", userId);
         UserResponse userInfo = userService.getUserInfo(userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(userInfo));
