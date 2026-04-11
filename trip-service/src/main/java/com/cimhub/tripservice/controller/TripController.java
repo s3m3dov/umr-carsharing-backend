@@ -76,25 +76,13 @@ public class TripController {
     })
     @PostMapping("/offer")
     public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Valid @RequestBody OfferRideRequest request) {
         requireDriverRole(authenticatedUserRole);
-        if (request.driverId() != null && !request.driverId().equals(authenticatedUserId)) {
-            throw new UnauthorizedException("Driver identity mismatch");
-        }
-
-        OfferRideRequest effectiveRequest = OfferRideRequest.builder()
-                .driverId(authenticatedUserId)
-                .sourceAddress(request.sourceAddress())
-                .destinationAddress(request.destinationAddress())
-                .tripStartDateTime(request.tripStartDateTime())
-                .totalSeats(request.totalSeats())
-                .pricePerSeat(request.pricePerSeat())
-                .build();
 
         log.info("Offering trip for driver: {}", authenticatedUserId);
-        OfferRideResponse response = offerRideService.offerRide(effectiveRequest);
+        OfferRideResponse response = offerRideService.offerRide(authenticatedUserId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
@@ -123,23 +111,13 @@ public class TripController {
     })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
         AuthorizationHelper.requireDriverOrPassengerRole(authenticatedUserRole);
-        if (request.userId() != null && !request.userId().equals(authenticatedUserId)) {
-            throw new UnauthorizedException("User identity mismatch");
-        }
-
-        CancelTripRequest effectiveRequest = CancelTripRequest.builder()
-                .userId(authenticatedUserId)
-                .tripId(request.tripId())
-                .rideId(request.rideId())
-                .cancellationReason(request.cancellationReason())
-                .build();
 
         log.info("Cancelling trip: {} for user: {}", request.tripId(), authenticatedUserId);
-        String response = cancellationService.cancelTrip(effectiveRequest);
+        String response = cancellationService.cancelTrip(authenticatedUserId, request);
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
@@ -240,8 +218,8 @@ public class TripController {
     })
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Parameter(description = "Latitude of pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double sourceLatitude,
             @Parameter(description = "Longitude of pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double sourceLongitude,
             @Parameter(description = "Radius around pickup in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
@@ -294,8 +272,8 @@ public class TripController {
     })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
         requireDriverRole(authenticatedUserRole);
         if (!driverId.equals(authenticatedUserId)) {
@@ -325,8 +303,8 @@ public class TripController {
     })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
         requireDriverRole(authenticatedUserRole);
         if (!driverId.equals(authenticatedUserId)) {
@@ -363,8 +341,8 @@ public class TripController {
     @PostMapping("/{tripId}/start")
     public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
         requireDriverRole(authenticatedUserRole);
 
@@ -398,8 +376,8 @@ public class TripController {
     @PostMapping("/{tripId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @RequestHeader("X-User-Id") String authenticatedUserId,
-            @RequestHeader("X-User-Role") String authenticatedUserRole,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
             @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
         requireDriverRole(authenticatedUserRole);
 
