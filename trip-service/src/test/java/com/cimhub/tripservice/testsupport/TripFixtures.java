@@ -4,9 +4,9 @@ import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;

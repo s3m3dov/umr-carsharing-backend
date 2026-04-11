@@ -3,7 +3,7 @@ package com.cimhub.tripservice.service.geo;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.dto.request.TripSearchCriteria;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;

@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.model;
 
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import jakarta.validation.constraints.Min;

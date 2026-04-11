@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.model.Points;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

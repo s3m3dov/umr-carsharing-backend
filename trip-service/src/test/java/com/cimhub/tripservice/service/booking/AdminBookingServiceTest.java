@@ -6,7 +6,7 @@ import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;

@@ -14,7 +14,7 @@ import com.cimhub.tripservice.dto.response.StartTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.OperationMessage;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;

@@ -3,7 +3,7 @@ package com.cimhub.tripservice.service.trip;
 import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.tripservice.model.TripStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
