@@ -3,7 +3,7 @@ package com.cimhub.tripservice.controller;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
-import com.cimhub.common.model.Points;
+import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
 import com.cimhub.tripservice.dto.request.TripSearchCriteria;
@@ -69,8 +69,8 @@ class TripControllerTest {
     void offerTrip_shouldReturnCreatedResponse() {
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("driver-1")
-                .sourceAddress(new Points())
-                .destinationAddress(new Points())
+                .sourceAddress(Points.of(0, 0, ""))
+                .destinationAddress(Points.of(0, 0, ""))
                 .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))
                 .totalSeats(3)
                 .pricePerSeat(5.0)
@@ -234,8 +234,8 @@ class TripControllerTest {
     void offerTrip_whenDriverInPayloadMismatchesHeader_shouldThrowUnauthorized() {
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("other-driver")
-                .sourceAddress(new Points())
-                .destinationAddress(new Points())
+                .sourceAddress(Points.of(0, 0, ""))
+                .destinationAddress(Points.of(0, 0, ""))
                 .tripStartDateTime(ZonedDateTime.parse("2026-04-01T12:00:00Z"))
                 .totalSeats(3)
                 .pricePerSeat(5.0)

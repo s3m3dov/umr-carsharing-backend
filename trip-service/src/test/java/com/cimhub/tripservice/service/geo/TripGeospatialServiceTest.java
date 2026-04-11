@@ -43,12 +43,8 @@ class TripGeospatialServiceTest {
     @Test
     void enrichTripWithGeospatialData_shouldSetRouteAndGeoPoints() {
         Trip trip = new Trip();
-        Points source = new Points();
-        source.setLatitude(52.5);
-        source.setLongitude(13.4);
-        Points destination = new Points();
-        destination.setLatitude(52.6);
-        destination.setLongitude(13.5);
+        Points source = com.cimhub.common.testsupport.Points.of(52.5, 13.4, "Source");
+        Points destination = com.cimhub.common.testsupport.Points.of(52.6, 13.5, "Destination");
         trip.setSourceAddress(source);
         trip.setDestinationAddress(destination);
 

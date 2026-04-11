@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service.trip;
 
-import com.cimhub.common.model.Points;
+import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.model.Booking;
@@ -161,8 +161,8 @@ class ActiveRidesServiceTest {
         trip.setTripStartDateTimeUTC(Instant.parse("2026-03-01T10:00:00Z"));
         trip.setRouteDistance(12000.0);
         trip.setRouteDuration(1800.0);
-        trip.setSourceAddress(new Points());
-        trip.setDestinationAddress(new Points());
+        trip.setSourceAddress(Points.of(0, 0, ""));
+        trip.setDestinationAddress(Points.of(0, 0, ""));
         return trip;
     }
 
@@ -179,8 +179,8 @@ class ActiveRidesServiceTest {
         booking.setRideStartTimeUTC(ZonedDateTime.of(2026, 3, 1, 10, 0, 0, 0, ZoneId.of("UTC")).toInstant());
         booking.setPricePerSeat(12.5);
         booking.setEstimatedPrice(25.0);
-        booking.setPickupLocation(new Points());
-        booking.setDropoffLocation(new Points());
+        booking.setPickupLocation(Points.of(0, 0, ""));
+        booking.setDropoffLocation(Points.of(0, 0, ""));
         return booking;
     }
 }
