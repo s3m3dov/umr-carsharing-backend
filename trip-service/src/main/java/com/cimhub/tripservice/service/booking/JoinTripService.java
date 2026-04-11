@@ -43,20 +43,20 @@ public class JoinTripService {
      * immediately without requiring driver approval.
      */
     @Transactional
-    public String joinTrip(JoinTripRequest request) {
+    public String joinTrip(String passengerId, JoinTripRequest request) {
         log.info("Processing auto-confirm join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
-                request.passengerId(), request.tripId(), request.requestedSeats());
+                passengerId, request.tripId(), request.requestedSeats());
 
-        Trip trip = validateAndFetchTrip(request);
+        Trip trip = validateAndFetchTrip(passengerId, request);
         int seatsToBook = request.requestedSeats();
 
         int attempt = 0;
         while (attempt < MAX_RETRIES) {
             try {
-                Booking booking = buildBooking(request, trip, BookingStatus.CONFIRMED);
+                Booking booking = buildBooking(passengerId, request, trip, BookingStatus.CONFIRMED);
 
                 bookingRepository.save(booking);
-                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), passengerId,
                         "Booking auto-confirmed for passenger");
 
                 driverNotificationService.notifyBookingConfirmed(trip, booking);
@@ -66,7 +66,7 @@ public class JoinTripService {
                 tripsRepository.save(trip);
 
                 log.info("Passenger {} joined trip {} (auto-confirmed). Seats: {}",
-                        request.passengerId(), request.tripId(), seatsToBook);
+                        passengerId, request.tripId(), seatsToBook);
 
                 return "Ride booked successfully.";
             } catch (org.springframework.dao.OptimisticLockingFailureException e) {
@@ -88,20 +88,20 @@ public class JoinTripService {
      * REQUESTED state and the driver must explicitly accept or reject it.
      */
     @Transactional
-    public String joinTripWithDriverAccept(JoinTripRequest request) {
+    public String joinTripWithDriverAccept(String passengerId, JoinTripRequest request) {
         log.info("Processing driver-accept join trip request for passenger: {}, tripId: {}, requestedSeats: {}",
-                request.passengerId(), request.tripId(), request.requestedSeats());
+                passengerId, request.tripId(), request.requestedSeats());
 
-        Trip trip = validateAndFetchTrip(request);
+        Trip trip = validateAndFetchTrip(passengerId, request);
         int seatsToBook = request.requestedSeats();
 
         int attempt = 0;
         while (attempt < MAX_RETRIES) {
             try {
-                Booking booking = buildBooking(request, trip, BookingStatus.REQUESTED);
+                Booking booking = buildBooking(passengerId, request, trip, BookingStatus.REQUESTED);
 
                 bookingRepository.save(booking);
-                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), request.passengerId(),
+                auditService.logBook(EntityType.BOOKING, booking.getBookingId(), passengerId,
                         "Booking request submitted by passenger");
 
                 driverNotificationService.notifyBookingRequested(trip, booking);
@@ -111,7 +111,7 @@ public class JoinTripService {
                 tripsRepository.save(trip);
 
                 log.info("Passenger {} requested to join trip {} (awaiting driver accept). Seats requested: {}",
-                        request.passengerId(), request.tripId(), seatsToBook);
+                        passengerId, request.tripId(), seatsToBook);
 
                 return "Booking request submitted. Waiting for driver confirmation.";
             } catch (org.springframework.dao.OptimisticLockingFailureException e) {
@@ -195,7 +195,7 @@ public class JoinTripService {
 
     // ── private helpers ───────────────────────────────────────────────────────
 
-    private Trip validateAndFetchTrip(JoinTripRequest request) {
+    private Trip validateAndFetchTrip(String passengerId, JoinTripRequest request) {
         Trip trip = tripsRepository.findById(request.tripId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Trip not found with id: " + request.tripId()));
@@ -206,7 +206,7 @@ public class JoinTripService {
 
         List<Booking> existingBookings = bookingRepository.findByTripId(request.tripId());
         boolean alreadyBooked = existingBookings.stream()
-                .anyMatch(b -> b.getPassengerId().equals(request.passengerId()) &&
+                .anyMatch(b -> b.getPassengerId().equals(passengerId) &&
                         b.getStatus() != BookingStatus.CANCELLED);
 
         if (alreadyBooked) {
@@ -223,7 +223,7 @@ public class JoinTripService {
         return trip;
     }
 
-    private Booking buildBooking(JoinTripRequest request, Trip trip, BookingStatus status) {
+    private Booking buildBooking(String passengerId, JoinTripRequest request, Trip trip, BookingStatus status) {
         Points pickupPoints = new Points();
         pickupPoints.setLatitude(request.pickupPoint().getLatitude());
         pickupPoints.setLongitude(request.pickupPoint().getLongitude());
@@ -236,7 +236,7 @@ public class JoinTripService {
 
         return Booking.builder()
                 .tripId(request.tripId())
-                .passengerId(request.passengerId())
+                .passengerId(passengerId)
                 .driverId(trip.getDriverId())
                 .vehicleNumber(trip.getVehicleNumber())
                 .pickupLocation(pickupPoints)
