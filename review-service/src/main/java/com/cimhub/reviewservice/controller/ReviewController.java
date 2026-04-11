@@ -1,7 +1,9 @@
 package com.cimhub.reviewservice.controller;
 
 import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
+import com.cimhub.common.constant.HeaderNames;
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -64,9 +66,11 @@ public class ReviewController {
     })
     @PostMapping("/driver")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitDriverReview(
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String userId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
-        log.info("Submitting driver review from user: {}", request.userId());
-        ReviewResponse response = reviewService.submitDriverReview(request);
+        log.info("Submitting driver review from user: {}", userId);
+        ReviewResponse response = reviewService.submitDriverReview(userId, userRole, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
@@ -105,9 +109,11 @@ public class ReviewController {
     })
     @PostMapping("/passenger")
     public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitPassengerReview(
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String userId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ROLE, required = false) UserType userRole,
             @Valid @RequestBody SubmitReviewRequest request) {
-        log.info("Submitting passenger review from user: {}", request.userId());
-        ReviewResponse response = reviewService.submitPassengerReview(request);
+        log.info("Submitting passenger review from user: {}", userId);
+        ReviewResponse response = reviewService.submitPassengerReview(userId, userRole, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(response));
