@@ -113,6 +113,7 @@
 				<configuration>
 					<argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
 					<excludes>
+						<exclude>**/*IntegrationTest.java</exclude>
 						<exclude>**/*IT.java</exclude>
 					</excludes>
 				</configuration>
@@ -122,6 +123,10 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
+					<includes>
+						<include>**/*IntegrationTest.java</include>
+						<include>**/*IT.java</include>
+					</includes>
 				</configuration>
 				<executions>
 					<execution>

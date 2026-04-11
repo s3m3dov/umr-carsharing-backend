@@ -3,7 +3,6 @@ package com.cimhub.tripservice.service;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
-import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.exception.AlreadyBookedException;
 import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
@@ -17,6 +16,7 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.booking.JoinTripService;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
+import com.cimhub.tripservice.testsupport.TripFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,8 +61,8 @@ class JoinTripServiceTest {
 
     @Test
     void joinTrip_withAvailableSeats_shouldCreateConfirmedBookingAndIncrementBookedSeats() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 2);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 2);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
@@ -96,8 +96,8 @@ class JoinTripServiceTest {
 
     @Test
     void joinTrip_withCreatedStatus_shouldAlsoBeAllowed() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CREATED, 3, 0);
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.CREATED, 3, 0);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
@@ -112,7 +112,7 @@ class JoinTripServiceTest {
     void joinTrip_whenTripNotFound_shouldThrowResourceNotFoundException() {
         when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
 
-        JoinTripRequest request = buildRequest("missing-trip", "passenger-1", 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("missing-trip", "passenger-1", 1);
 
         assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTrip(request));
         verify(bookingRepository, never()).save(any());
@@ -120,10 +120,10 @@ class JoinTripServiceTest {
 
     @Test
     void joinTrip_whenTripNotAvailable_shouldThrowTripNotAvailableException() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
         assertThrows(TripNotAvailableException.class, () -> joinTripService.joinTrip(request));
         verify(bookingRepository, never()).save(any());
@@ -131,7 +131,7 @@ class JoinTripServiceTest {
 
     @Test
     void joinTrip_whenPassengerAlreadyHasActiveBooking_shouldThrowAlreadyBookedException() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
         Booking existing = Booking.builder()
                 .bookingId("b-existing")
                 .tripId("trip-1")
@@ -142,7 +142,7 @@ class JoinTripServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(existing));
 
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
         assertThrows(AlreadyBookedException.class, () -> joinTripService.joinTrip(request));
         verify(bookingRepository, never()).save(any());
@@ -150,7 +150,7 @@ class JoinTripServiceTest {
 
     @Test
     void joinTrip_whenPassengerHasOnlyCancelledBooking_shouldAllowRebook() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 0);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 0);
         Booking cancelled = Booking.builder()
                 .bookingId("b-old")
                 .tripId("trip-1")
@@ -162,7 +162,7 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTrip(buildRequest("trip-1", "passenger-1", 1));
+        String result = joinTripService.joinTrip(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
 
         assertEquals("Ride booked successfully.", result);
     }
@@ -170,12 +170,12 @@ class JoinTripServiceTest {
     @Test
     void joinTrip_whenInsufficientSeats_shouldThrowInsufficientSeatsException() {
         // totalSeats=3, bookedSeats=2 → only 1 available, requesting 2
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 2);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 2);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
 
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 2);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 2);
 
         assertThrows(InsufficientSeatsException.class, () -> joinTripService.joinTrip(request));
         verify(bookingRepository, never()).save(any());
@@ -184,13 +184,13 @@ class JoinTripServiceTest {
     @Test
     void joinTrip_whenExactlyEnoughSeats_shouldSucceed() {
         // totalSeats=3, bookedSeats=1 → exactly 2 available, requesting 2
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 1);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTrip(buildRequest("trip-1", "passenger-1", 2));
+        String result = joinTripService.joinTrip(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
 
         assertEquals("Ride booked successfully.", result);
     }
@@ -199,8 +199,8 @@ class JoinTripServiceTest {
 
     @Test
     void joinTripWithDriverAccept_withAvailableSeats_shouldCreateRequestedBookingAndIncrementBookedSeats() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 2);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 2);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
@@ -234,8 +234,8 @@ class JoinTripServiceTest {
 
     @Test
     void joinTripWithDriverAccept_withCreatedStatus_shouldAlsoBeAllowed() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CREATED, 3, 0);
-        JoinTripRequest request = buildRequest("trip-1", "passenger-1", 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.CREATED, 3, 0);
+        JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
@@ -250,7 +250,7 @@ class JoinTripServiceTest {
     void joinTripWithDriverAccept_whenTripNotFound_shouldThrowResourceNotFoundException() {
         when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
 
-        JoinTripRequest request = buildRequest("missing-trip", "passenger-1", 1);
+        JoinTripRequest request = TripFixtures.joinTripRequest("missing-trip", "passenger-1", 1);
 
         assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTripWithDriverAccept(request));
         verify(bookingRepository, never()).save(any());
@@ -258,17 +258,17 @@ class JoinTripServiceTest {
 
     @Test
     void joinTripWithDriverAccept_whenTripNotAvailable_shouldThrowTripNotAvailableException() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
         assertThrows(TripNotAvailableException.class,
-                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1)));
+                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
         verify(bookingRepository, never()).save(any());
     }
 
     @Test
     void joinTripWithDriverAccept_whenPassengerAlreadyHasActiveBooking_shouldThrowAlreadyBookedException() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 1);
         Booking existing = Booking.builder()
                 .bookingId("b-existing")
                 .tripId("trip-1")
@@ -280,25 +280,25 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(existing));
 
         assertThrows(AlreadyBookedException.class,
-                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1)));
+                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
         verify(bookingRepository, never()).save(any());
     }
 
     @Test
     void joinTripWithDriverAccept_whenInsufficientSeats_shouldThrowInsufficientSeatsException() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 2);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 2);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
 
         assertThrows(InsufficientSeatsException.class,
-                () -> joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 2)));
+                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2)));
         verify(bookingRepository, never()).save(any());
     }
 
     @Test
     void joinTripWithDriverAccept_whenPassengerHasOnlyCancelledBooking_shouldAllowRebook() {
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 0);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 0);
         Booking cancelled = Booking.builder()
                 .bookingId("b-old")
                 .tripId("trip-1")
@@ -310,7 +310,7 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 1));
+        String result = joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
     }
@@ -318,13 +318,13 @@ class JoinTripServiceTest {
     @Test
     void joinTripWithDriverAccept_whenExactlyEnoughSeats_shouldSucceed() {
         // totalSeats=3, bookedSeats=1 → exactly 2 available, requesting 2
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 1);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 3, 1);
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTripWithDriverAccept(buildRequest("trip-1", "passenger-1", 2));
+        String result = joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
     }
@@ -417,7 +417,7 @@ class JoinTripServiceTest {
                 .status(BookingStatus.REQUESTED)
                 .build();
 
-        Trip trip = buildTrip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 3);
+        Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.AVAILABLE, 4, 3);
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -493,34 +493,4 @@ class JoinTripServiceTest {
         verify(bookingRepository, never()).save(any());
     }
 
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    private Trip buildTrip(String tripId, String driverId, TripStatus status, int totalSeats, int bookedSeats) {
-        Trip trip = new Trip();
-        trip.setTripId(tripId);
-        trip.setDriverId(driverId);
-        trip.setTripStatus(status);
-        trip.setTotalSeats(totalSeats);
-        trip.setBookedSeats(bookedSeats);
-        trip.setPricePerSeat(10.0);
-        return trip;
-    }
-
-    private JoinTripRequest buildRequest(String tripId, String passengerId, int seats) {
-        Points pickup = new Points();
-        pickup.setLatitude(50.8154);
-        pickup.setLongitude(8.6747);
-        pickup.setPlaceAddress("Marburg");
-        Points dropoff = new Points();
-        dropoff.setLatitude(50.7265);
-        dropoff.setLongitude(7.0895);
-        dropoff.setPlaceAddress("Frankfurt");
-        return JoinTripRequest.builder()
-                .tripId(tripId)
-                .passengerId(passengerId)
-                .requestedSeats(seats)
-                .pickupPoint(pickup)
-                .destinationPoint(dropoff)
-                .build();
-    }
 }

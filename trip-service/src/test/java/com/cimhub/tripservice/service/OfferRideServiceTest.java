@@ -1,7 +1,6 @@
 package com.cimhub.tripservice.service;
 
 import com.cimhub.common.enums.EntityType;
-import com.cimhub.common.model.Points;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
@@ -16,6 +15,7 @@ import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import com.cimhub.tripservice.service.route.OsrmRouteClient;
 import com.cimhub.tripservice.service.trip.OfferRideService;
+import com.cimhub.tripservice.testsupport.TripFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,7 +66,7 @@ class OfferRideServiceTest {
 
     @Test
     void offerRide_whenRouteResolved_shouldCreateTripAndReturnResponse() {
-        OfferRideRequest request = buildRequest();
+        OfferRideRequest request = TripFixtures.offerRideRequest();
         Route route = new Route(
                 new Geometry("LineString", List.of(List.of(13.4, 52.5), List.of(13.5, 52.6))),
                 List.of(),
@@ -118,7 +118,7 @@ class OfferRideServiceTest {
 
     @Test
     void offerRide_whenRouteClientReturnsNull_shouldReturnFailureResponse() {
-        OfferRideRequest request = buildRequest();
+        OfferRideRequest request = TripFixtures.offerRideRequest();
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.empty());
 
         OfferRideResponse response = offerRideService.offerRide(request);
@@ -131,7 +131,7 @@ class OfferRideServiceTest {
 
     @Test
     void offerRide_whenRouteClientReturnsEmptyRoutes_shouldReturnFailureResponse() {
-        OfferRideRequest request = buildRequest();
+        OfferRideRequest request = TripFixtures.offerRideRequest();
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(), List.of());
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
 
@@ -145,7 +145,7 @@ class OfferRideServiceTest {
 
     @Test
     void offerRide_whenVehicleNotFound_shouldReturnFailureResponse() {
-        OfferRideRequest request = buildRequest();
+        OfferRideRequest request = TripFixtures.offerRideRequest();
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(
                 new Route(new Geometry("LineString", List.of()), List.of(), 1000.0, 60.0, "routability", 1.0)),
                 List.of());
@@ -164,10 +164,11 @@ class OfferRideServiceTest {
 
     @Test
     void offerRide_withZeroPricePerSeat_shouldCreateFreeRide() {
+        OfferRideRequest baseRequest = TripFixtures.offerRideRequest();
         OfferRideRequest request = OfferRideRequest.builder()
                 .driverId("driver-1")
-                .sourceAddress(buildRequest().sourceAddress())
-                .destinationAddress(buildRequest().destinationAddress())
+                .sourceAddress(baseRequest.sourceAddress())
+                .destinationAddress(baseRequest.destinationAddress())
                 .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
                 .totalSeats(3)
                 .pricePerSeat(0.0)
@@ -188,24 +189,5 @@ class OfferRideServiceTest {
 
         assertTrue(response.tripCreated());
         assertEquals(0.0, response.pricePerSeat());
-    }
-
-    private OfferRideRequest buildRequest() {
-        Points source = new Points();
-        source.setLatitude(52.5);
-        source.setLongitude(13.4);
-
-        Points destination = new Points();
-        destination.setLatitude(52.6);
-        destination.setLongitude(13.5);
-
-        return OfferRideRequest.builder()
-                .driverId("driver-1")
-.sourceAddress(source)
-                .destinationAddress(destination)
-                .tripStartDateTime(ZonedDateTime.parse("2026-05-01T10:15:30.987Z"))
-                .totalSeats(3)
-                .pricePerSeat(5.0)
-                .build();
     }
 }

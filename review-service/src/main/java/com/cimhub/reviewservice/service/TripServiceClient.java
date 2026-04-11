@@ -1,6 +1,8 @@
 package com.cimhub.reviewservice.service;
 
 import com.cimhub.common.exception.DependencyUnavailableException;
+import com.cimhub.tripservice.model.BookingStatus;
+import com.cimhub.tripservice.model.TripStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,13 @@ public class TripServiceClient {
         if (tripData == null) {
             return false;
         }
-        return "COMPLETED".equals(tripData.path("tripStatus").asText(null));
+        TripStatus tripStatus = readRequiredEnum(
+                tripData,
+                "tripStatus",
+                TripStatus.class,
+                "trip",
+                tripId);
+        return tripStatus == TripStatus.COMPLETED;
     }
 
     /**
@@ -49,7 +57,13 @@ public class TripServiceClient {
         if (bookingData == null) {
             return false;
         }
-        return "COMPLETED".equals(bookingData.path("status").asText(null));
+        BookingStatus bookingStatus = readRequiredEnum(
+                bookingData,
+                "status",
+                BookingStatus.class,
+                "booking",
+                bookingId);
+        return bookingStatus == BookingStatus.COMPLETED;
     }
 
     /**
@@ -63,8 +77,7 @@ public class TripServiceClient {
         if (tripData == null) {
             return null;
         }
-        String driverId = tripData.path("driverId").asText(null);
-        return StringUtils.hasText(driverId) ? driverId : null;
+        return readRequiredText(tripData, "driverId", "trip", tripId);
     }
 
     /**
@@ -78,8 +91,7 @@ public class TripServiceClient {
         if (bookingData == null) {
             return null;
         }
-        String passengerId = bookingData.path("passengerId").asText(null);
-        return StringUtils.hasText(passengerId) ? passengerId : null;
+        return readRequiredText(bookingData, "passengerId", "booking", bookingId);
     }
 
     private JsonNode fetchTripData(String tripId) {
@@ -108,10 +120,15 @@ public class TripServiceClient {
                     .body(JsonNode.class);
 
             if (response == null) {
-                return null;
+                throw new DependencyUnavailableException(
+                        "Trip service returned empty response while fetching " + resourceType + ": " + resourceId);
             }
             JsonNode data = response.get("data");
-            return data != null && data.isObject() ? data : null;
+            if (data != null && data.isObject()) {
+                return data;
+            }
+            throw new DependencyUnavailableException(
+                    "Trip service returned malformed payload while fetching " + resourceType + ": " + resourceId);
         } catch (HttpClientErrorException.NotFound ex) {
             return null;
         } catch (RestClientException e) {
@@ -119,4 +136,29 @@ public class TripServiceClient {
             throw e;
         }
     }
+
+    private String readRequiredText(JsonNode data, String field, String resourceType, String resourceId) {
+        String value = data.path(field).asText(null);
+        if (!StringUtils.hasText(value)) {
+            throw new DependencyUnavailableException(
+                    "Trip service returned malformed " + resourceType + " payload for id: " + resourceId);
+        }
+        return value;
+    }
+
+    private <T extends Enum<T>> T readRequiredEnum(JsonNode data,
+                                                   String field,
+                                                   Class<T> enumType,
+                                                   String resourceType,
+                                                   String resourceId) {
+        String value = readRequiredText(data, field, resourceType, resourceId);
+        try {
+            return Enum.valueOf(enumType, value);
+        } catch (IllegalArgumentException ex) {
+            throw new DependencyUnavailableException(
+                    "Trip service returned unsupported " + field + " value '" + value + "' for "
+                            + resourceType + " id: " + resourceId);
+        }
+    }
+
 }

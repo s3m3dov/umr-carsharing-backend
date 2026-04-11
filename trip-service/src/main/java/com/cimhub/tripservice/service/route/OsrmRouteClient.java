@@ -1,7 +1,6 @@
 package com.cimhub.tripservice.service.route;
 
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,19 +12,22 @@ import java.time.Duration;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OsrmRouteClient {
 
     private final WebClient webClient;
+    private final int timeoutSeconds;
+    private final int retryMaxAttempts;
+    private final long retryBackoffMillis;
 
-    @Value("${osrm.timeout-seconds:5}")
-    private int timeoutSeconds;
-
-    @Value("${osrm.retry.max-attempts:3}")
-    private int retryMaxAttempts;
-
-    @Value("${osrm.retry.backoff-millis:500}")
-    private long retryBackoffMillis;
+    public OsrmRouteClient(WebClient webClient,
+                           @Value("${osrm.timeout-seconds:5}") int timeoutSeconds,
+                           @Value("${osrm.retry.max-attempts:3}") int retryMaxAttempts,
+                           @Value("${osrm.retry.backoff-millis:500}") long retryBackoffMillis) {
+        this.webClient = webClient;
+        this.timeoutSeconds = timeoutSeconds;
+        this.retryMaxAttempts = retryMaxAttempts;
+        this.retryBackoffMillis = retryBackoffMillis;
+    }
 
     public Mono<OsrmResponseDTO> getRoute(double startLat, double startLon, double endLat, double endLon) {
         String coordinates = startLon + "," + startLat + ";" + endLon + "," + endLat;

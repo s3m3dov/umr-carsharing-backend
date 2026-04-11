@@ -4,9 +4,9 @@ import com.cimhub.authservice.dto.request.LoginRequest;
 import com.cimhub.authservice.dto.request.ValidateTokenRequest;
 import com.cimhub.authservice.dto.response.LoginResponse;
 import com.cimhub.authservice.dto.response.ValidateTokenResponse;
-import com.cimhub.authservice.model.User;
 import com.cimhub.authservice.repository.AuthUserRepository;
 import com.cimhub.authservice.security.JwtService;
+import com.cimhub.authservice.testsupport.AuthFixtures;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
@@ -48,10 +48,7 @@ class AuthServiceTest {
 
     @Test
     void login_withValidCredentials_shouldReturnToken() {
-        User user = new User();
-        user.setEmail("driver@example.com");
-        user.setPassword("hashed");
-        user.setUserType(UserType.DRIVER);
+        var user = AuthFixtures.user("driver@example.com", UserType.DRIVER);
 
         when(authUserRepository.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
         when(jwtService.generateTokenWithRole(any(), anyString())).thenReturn("valid-token");
@@ -65,10 +62,7 @@ class AuthServiceTest {
 
     @Test
     void login_emailIsNormalizedToLowercase() {
-        User user = new User();
-        user.setEmail("driver@example.com");
-        user.setPassword("hashed");
-        user.setUserType(UserType.DRIVER);
+        var user = AuthFixtures.user("driver@example.com", UserType.DRIVER);
 
         when(authUserRepository.findByEmail("driver@example.com")).thenReturn(Optional.of(user));
         when(jwtService.generateTokenWithRole(any(), anyString())).thenReturn("token");

@@ -3,9 +3,8 @@ package com.cimhub.reviewservice.controller;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
 import com.cimhub.reviewservice.dto.response.AverageRatingResponse;
-import com.cimhub.reviewservice.dto.response.ReviewResponse;
-import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.service.ReviewService;
+import com.cimhub.reviewservice.testsupport.ReviewFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +42,7 @@ class ReviewControllerTest {
                 .rating(5)
                 .comment("Great")
                 .build();
-        ReviewResponse responseBody = sampleReview("review-1");
+        var responseBody = ReviewFixtures.reviewResponse("review-1");
         when(reviewService.submitDriverReview(request)).thenReturn(responseBody);
 
         ResponseEntity<?> response = reviewController.submitDriverReview(request);
@@ -63,7 +61,7 @@ class ReviewControllerTest {
                 .rating(5)
                 .comment("Great")
                 .build();
-        ReviewResponse responseBody = sampleReview("review-2");
+        var responseBody = ReviewFixtures.reviewResponse("review-2");
         when(reviewService.submitPassengerReview(request)).thenReturn(responseBody);
 
         ResponseEntity<?> response = reviewController.submitPassengerReview(request);
@@ -74,7 +72,7 @@ class ReviewControllerTest {
 
     @Test
     void getDriverReviews_shouldReturnOkResponse() {
-        when(reviewService.getDriverReviews("driver-1")).thenReturn(List.of(sampleReview("review-1")));
+        when(reviewService.getDriverReviews("driver-1")).thenReturn(List.of(ReviewFixtures.reviewResponse("review-1")));
 
         ResponseEntity<?> response = reviewController.getDriverReviews("driver-1");
 
@@ -84,7 +82,7 @@ class ReviewControllerTest {
 
     @Test
     void getPassengerReviews_shouldReturnOkResponse() {
-        when(reviewService.getPassengerReviews("passenger-1")).thenReturn(List.of(sampleReview("review-3")));
+        when(reviewService.getPassengerReviews("passenger-1")).thenReturn(List.of(ReviewFixtures.reviewResponse("review-3")));
 
         ResponseEntity<?> response = reviewController.getPassengerReviews("passenger-1");
 
@@ -120,22 +118,5 @@ class ReviewControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(reviewService).getPassengerAverageRating("passenger-1");
-    }
-
-    private ReviewResponse sampleReview(String reviewId) {
-        return ReviewResponse.builder()
-                .reviewId(reviewId)
-                .tripId("trip-1")
-                .bookingId("booking-1")
-                .reviewerId("reviewer")
-                .reviewerType(UserType.PASSENGER)
-                .revieweeId("reviewee")
-                .revieweeType(UserType.DRIVER)
-                .rating(5)
-                .comment("Great")
-                .status(ReviewStatus.PUBLISHED)
-                .createdAt(Instant.parse("2030-01-01T00:00:00Z"))
-                .updatedAt(Instant.parse("2030-01-01T00:00:00Z"))
-                .build();
     }
 }
