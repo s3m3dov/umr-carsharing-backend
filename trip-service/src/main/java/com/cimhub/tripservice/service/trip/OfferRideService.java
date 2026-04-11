@@ -31,8 +31,8 @@ public class OfferRideService {
         private final TripGeospatialService tripGeospatialService;
         private final AuditService auditService;
 
-        public OfferRideResponse offerRide(OfferRideRequest request) {
-                log.info("Offering ride for driver: {}", request.driverId());
+        public OfferRideResponse offerRide(String driverId, OfferRideRequest request) {
+                log.info("Offering ride for driver: {}", driverId);
 
                 OsrmResponseDTO routeDetails = osmRoute.getRoute(
                                 request.sourceAddress().getLatitude(),
@@ -49,7 +49,7 @@ public class OfferRideService {
                 }
 
                 VehicleDocument vehicle = vehicleDocumentRepository
-                                .findByUserId(request.driverId())
+                                .findByUserId(driverId)
                                 .orElse(null);
                 if (vehicle == null) {
                         return OfferRideResponse.builder()
@@ -64,7 +64,7 @@ public class OfferRideService {
                                 request.sourceAddress().getLongitude());
 
                 Trip newTrip = new Trip();
-                newTrip.setDriverId(request.driverId());
+                newTrip.setDriverId(driverId);
                 newTrip.setVehicleNumber(vehicle.getVehicleNumber());
                 newTrip.setCarType(vehicle.getVehicleType());
                 newTrip.setSourceAddress(request.sourceAddress());
@@ -83,7 +83,7 @@ public class OfferRideService {
                 tripGeospatialService.enrichTripWithGeospatialData(newTrip, mainRoute);
 
                 tripsRepository.save(newTrip);
-                auditService.logCreate(EntityType.TRIP, newTrip.getTripId(), request.driverId(), "Trip created by driver");
+                auditService.logCreate(EntityType.TRIP, newTrip.getTripId(), driverId, "Trip created by driver");
                 log.info("Trip created successfully with ID: {}", newTrip.getTripId());
 
                 return OfferRideResponse.builder()

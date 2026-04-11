@@ -35,8 +35,8 @@ public class CancellationService {
         private final DriverNotificationService driverNotificationService;
 
         @Transactional
-        public String cancelRide(CancelTripRequest request) {
-                String passengerId = request.userId();
+        public String cancelRide(String userId, CancelTripRequest request) {
+                String passengerId = userId;
                 String bookingId = request.rideId();
 
                 log.info("Processing booking cancellation for passenger: {}, bookingId: {}",
@@ -81,8 +81,8 @@ public class CancellationService {
         }
 
         @Transactional
-        public String cancelTrip(CancelTripRequest request) {
-                String driverId = request.userId();
+        public String cancelTrip(String userId, CancelTripRequest request) {
+                String driverId = userId;
                 String tripId = request.tripId();
 
                 log.info("Processing trip cancellation for driver: {}, tripId: {}", driverId, tripId);
