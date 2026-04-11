@@ -1,7 +1,7 @@
 package com.cimhub.reviewservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.dto.request.SubmitReviewRequest;
@@ -75,7 +75,7 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER)))
             })
     @PostMapping("/driver")
-    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitDriverReview(
+    public ResponseEntity<ApiSuccess<ReviewResponse>> submitDriverReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -91,7 +91,7 @@ public class ReviewController {
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting driver review from user: {}", userId);
         ReviewResponse response = reviewService.submitDriverReview(userId, userRole, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -137,7 +137,7 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_UNAUTHORIZED_REVIEWER)))
             })
     @PostMapping("/passenger")
-    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> submitPassengerReview(
+    public ResponseEntity<ApiSuccess<ReviewResponse>> submitPassengerReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -153,7 +153,7 @@ public class ReviewController {
             @Valid @RequestBody SubmitReviewRequest request) {
         log.info("Submitting passenger review from user: {}", userId);
         ReviewResponse response = reviewService.submitPassengerReview(userId, userRole, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -177,13 +177,13 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND)))
             })
     @GetMapping("/driver/{driverId}")
-    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getDriverReviews(
+    public ResponseEntity<ApiSuccess<List<ReviewResponse>>> getDriverReviews(
             @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
                     @PathVariable
                     String driverId) {
         log.info("Fetching reviews for driver: {}", driverId);
         List<ReviewResponse> reviews = reviewService.getDriverReviews(driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
+        return ResponseEntity.ok(ApiSuccess.success(reviews));
     }
 
     @Operation(
@@ -208,7 +208,7 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND)))
             })
     @GetMapping("/passenger/{passengerId}")
-    public ResponseEntity<ApiResponseWrapper<List<ReviewResponse>>> getPassengerReviews(
+    public ResponseEntity<ApiSuccess<List<ReviewResponse>>> getPassengerReviews(
             @Parameter(
                             description = "Passenger's unique identifier",
                             required = true,
@@ -217,7 +217,7 @@ public class ReviewController {
                     String passengerId) {
         log.info("Fetching reviews for passenger: {}", passengerId);
         List<ReviewResponse> reviews = reviewService.getPassengerReviews(passengerId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(reviews));
+        return ResponseEntity.ok(ApiSuccess.success(reviews));
     }
 
     @Operation(
@@ -241,13 +241,13 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_DRIVER_NOT_FOUND)))
             })
     @GetMapping("/driver/{driverId}/average-rating")
-    public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getDriverAverageRating(
+    public ResponseEntity<ApiSuccess<AverageRatingResponse>> getDriverAverageRating(
             @Parameter(description = "Driver's unique identifier", required = true, example = "john.driver@example.com")
                     @PathVariable
                     String driverId) {
         log.info("Fetching average rating for driver: {}", driverId);
         AverageRatingResponse response = reviewService.getDriverAverageRating(driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -271,7 +271,7 @@ public class ReviewController {
                                         examples = @ExampleObject(value = ReviewApiDoc.ERROR_PASSENGER_NOT_FOUND)))
             })
     @GetMapping("/passenger/{passengerId}/average-rating")
-    public ResponseEntity<ApiResponseWrapper<AverageRatingResponse>> getPassengerAverageRating(
+    public ResponseEntity<ApiSuccess<AverageRatingResponse>> getPassengerAverageRating(
             @Parameter(
                             description = "Passenger's unique identifier",
                             required = true,
@@ -280,6 +280,6 @@ public class ReviewController {
                     String passengerId) {
         log.info("Fetching average rating for passenger: {}", passengerId);
         AverageRatingResponse response = reviewService.getPassengerAverageRating(passengerId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 }

@@ -1,6 +1,6 @@
 package com.cimhub.userservice.controller;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.userservice.dto.request.CreateDriverProfileRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.service.DriverService;
@@ -22,10 +22,10 @@ public class InternalDriverController {
     private final DriverService driverService;
 
     @PostMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> createDriverProfile(
+    public ResponseEntity<ApiSuccess<DriverResponse>> createDriverProfile(
             @PathVariable String userId, @Valid @RequestBody CreateDriverProfileRequest request) {
         log.info("Internal: create driver profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(driverService.createDriverProfile(userId, request)));
+                .body(ApiSuccess.success(driverService.createDriverProfile(userId, request)));
     }
 }

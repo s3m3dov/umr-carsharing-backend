@@ -6,7 +6,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.testsupport.Points;
@@ -78,7 +78,7 @@ class TripControllerTest {
                 OfferRideResponse.builder().tripId("trip-1").build();
         when(offerRideService.offerRide("driver-1", request)).thenReturn(offerResponse);
 
-        ResponseEntity<ApiResponseWrapper<OfferRideResponse>> response =
+        ResponseEntity<ApiSuccess<OfferRideResponse>> response =
                 tripController.offerTrip("driver-1", "DRIVER", request);
 
         assertEquals("trip-1", response.getBody().getData().tripId());
@@ -90,7 +90,7 @@ class TripControllerTest {
         CancelTripRequest request = CancelTripRequest.builder().tripId("trip-1").build();
         when(cancellationService.cancelTrip("driver-1", request)).thenReturn("Cancelled");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = tripController.cancelTrip("driver-1", "DRIVER", request);
+        ResponseEntity<ApiSuccess<String>> response = tripController.cancelTrip("driver-1", "DRIVER", request);
 
         assertEquals("Cancelled", response.getBody().getMessage());
         verify(cancellationService).cancelTrip("driver-1", request);
@@ -104,7 +104,7 @@ class TripControllerTest {
                 .build();
         when(tripService.getTrip("trip-1")).thenReturn(tripResponse);
 
-        ResponseEntity<ApiResponseWrapper<TripResponse>> response = tripController.getTrip("trip-1");
+        ResponseEntity<ApiSuccess<TripResponse>> response = tripController.getTrip("trip-1");
 
         assertEquals("trip-1", response.getBody().getData().tripId());
         assertEquals(TripStatus.COMPLETED, response.getBody().getData().tripStatus());
@@ -120,10 +120,10 @@ class TripControllerTest {
         when(geoService.findTripsWithDestinationNear(3.3, 4.4, 6.0)).thenReturn(List.of(trip));
         when(geoService.findTripsMatchingRoute(any(TripSearchCriteria.class))).thenReturn(List.of(trip));
 
-        ResponseEntity<ApiResponseWrapper<List<Trip>>> source = tripController.searchNearSource(1.1, 2.2, 5.0);
-        ResponseEntity<ApiResponseWrapper<List<Trip>>> destination =
+        ResponseEntity<ApiSuccess<List<Trip>>> source = tripController.searchNearSource(1.1, 2.2, 5.0);
+        ResponseEntity<ApiSuccess<List<Trip>>> destination =
                 tripController.searchNearDestination(3.3, 4.4, 6.0);
-        ResponseEntity<ApiResponseWrapper<List<Trip>>> route = tripController.searchMatchingRoute(
+        ResponseEntity<ApiSuccess<List<Trip>>> route = tripController.searchMatchingRoute(
                 "user-1",
                 "PASSENGER",
                 1.0,
@@ -152,7 +152,7 @@ class TripControllerTest {
 
         when(geoService.findTripsMatchingRoute(any(TripSearchCriteria.class))).thenReturn(List.of(trip));
 
-        ResponseEntity<ApiResponseWrapper<List<Trip>>> response = tripController.searchMatchingRoute(
+        ResponseEntity<ApiSuccess<List<Trip>>> response = tripController.searchMatchingRoute(
                 "user-2", "PASSENGER", 1.0, 2.0, 5.0, 3.0, 4.0, 6.0, null, null, null, null, null, null, null);
 
         assertEquals("trip-no-time", response.getBody().getData().getFirst().getTripId());
@@ -168,7 +168,7 @@ class TripControllerTest {
                 .build();
         when(completionService.completeTrip("trip-1", "driver-1")).thenReturn(completeTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> response =
+        ResponseEntity<ApiSuccess<CompleteTripResponse>> response =
                 tripController.completeTrip("trip-1", "driver-1", "DRIVER");
 
         assertEquals(
@@ -189,9 +189,9 @@ class TripControllerTest {
         when(activeRidesService.findDriverActiveTrips("driver-77")).thenReturn(List.of(active));
         when(activeRidesService.findDriverTripHistory("driver-77")).thenReturn(List.of(history));
 
-        ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> activeResponse =
+        ResponseEntity<ApiSuccess<List<DriverTripResponse>>> activeResponse =
                 tripController.getDriverActiveTrips("driver-77", "DRIVER", "driver-77");
-        ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> historyResponse =
+        ResponseEntity<ApiSuccess<List<DriverTripResponse>>> historyResponse =
                 tripController.getDriverTripHistory("driver-77", "DRIVER", "driver-77");
 
         assertEquals(
@@ -212,7 +212,7 @@ class TripControllerTest {
                 .build();
         when(tripService.startTrip("trip-1", "driver-1")).thenReturn(startTripResponse);
 
-        ResponseEntity<ApiResponseWrapper<StartTripResponse>> response =
+        ResponseEntity<ApiSuccess<StartTripResponse>> response =
                 tripController.startTrip("trip-1", "driver-1", "DRIVER");
 
         assertEquals(

@@ -100,7 +100,7 @@ The project uses `ApiResponseWrapper<T>` (in `com.cimhub.common.dto`) as the uni
 
 ```java
 import io.swagger.v3.oas.annotations.responses.ApiResponse;        // Swagger annotation
-import com.cimhub.common.dto.ApiResponseWrapper;                  // Response DTO
+import com.cimhub.common.dto.response.ApiSuccess;                  // Response DTO
 ```
 
 ## DTO-Level Documentation

@@ -1,6 +1,6 @@
 package com.cimhub.userservice.controller;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.service.PassengerService;
@@ -22,10 +22,10 @@ public class InternalPassengerController {
     private final PassengerService passengerService;
 
     @PostMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> createPassengerProfile(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> createPassengerProfile(
             @PathVariable String userId, @Valid @RequestBody CreatePassengerProfileRequest request) {
         log.info("Internal: create passenger profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(passengerService.createPassengerProfile(userId, request)));
+                .body(ApiSuccess.success(passengerService.createPassengerProfile(userId, request)));
     }
 }

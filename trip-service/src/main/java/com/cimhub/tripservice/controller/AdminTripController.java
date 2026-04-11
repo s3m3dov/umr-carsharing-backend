@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
@@ -56,7 +56,7 @@ public class AdminTripController {
                                 examples = @ExampleObject(value = TripApiDoc.ADMIN_LIST_TRIPS_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> listTrips(
+    public ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> listTrips(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -65,7 +65,7 @@ public class AdminTripController {
                     String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.listTrips(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminTripService.listTrips(pageable)));
     }
 
     @Operation(summary = "Get trip detail", description = "Retrieve detailed information about a specific trip")
@@ -79,7 +79,7 @@ public class AdminTripController {
                                 examples = @ExampleObject(value = TripApiDoc.ADMIN_GET_TRIP_RESPONSE)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<AdminTripResponse>> getTrip(
+    public ResponseEntity<ApiSuccess<AdminTripResponse>> getTrip(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -88,7 +88,7 @@ public class AdminTripController {
                     String userRole,
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getTrip(id)));
+        return ResponseEntity.ok(ApiSuccess.success(adminTripService.getTrip(id)));
     }
 
     @Operation(summary = "Get upcoming trips", description = "Retrieve upcoming trips scheduled in the future")
@@ -102,7 +102,7 @@ public class AdminTripController {
                                 examples = @ExampleObject(value = TripApiDoc.ADMIN_LIST_TRIPS_RESPONSE)))
     })
     @GetMapping("/upcoming")
-    public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getUpcomingTrips(
+    public ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> getUpcomingTrips(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -111,7 +111,7 @@ public class AdminTripController {
                     String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getUpcomingTrips(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminTripService.getUpcomingTrips(pageable)));
     }
 
     @Operation(summary = "Get trip history", description = "Retrieve historical/completed trips")
@@ -125,7 +125,7 @@ public class AdminTripController {
                                 examples = @ExampleObject(value = TripApiDoc.ADMIN_LIST_TRIPS_RESPONSE)))
     })
     @GetMapping("/history")
-    public ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> getTripHistory(
+    public ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> getTripHistory(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -134,7 +134,7 @@ public class AdminTripController {
                     String userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminTripService.getTripHistory(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminTripService.getTripHistory(pageable)));
     }
 
     @Operation(summary = "Cancel/delete trip", description = "Cancel or delete a trip from the system")
@@ -155,7 +155,7 @@ public class AdminTripController {
                                 examples = @ExampleObject(value = TripApiDoc.ADMIN_CANCEL_TRIP_ALREADY_CANCELLED)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
+    public ResponseEntity<ApiSuccess<String>> cancelTrip(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -171,6 +171,6 @@ public class AdminTripController {
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminTripService.cancelTrip(id, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Trip cancelled"));
+        return ResponseEntity.ok(ApiSuccess.success("Trip cancelled"));
     }
 }

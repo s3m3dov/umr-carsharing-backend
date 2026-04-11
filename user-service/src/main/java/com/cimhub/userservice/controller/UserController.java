@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.examples.UserApiDoc;
 import com.cimhub.userservice.dto.response.UserResponse;
@@ -28,8 +28,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/health")
-    public ResponseEntity<ApiResponseWrapper<String>> healthCheck() {
-        return ResponseEntity.ok(ApiResponseWrapper.success("User Service is up and running!"));
+    public ResponseEntity<ApiSuccess<String>> healthCheck() {
+        return ResponseEntity.ok(ApiSuccess.success("User Service is up and running!"));
     }
 
     @Operation(
@@ -53,7 +53,7 @@ public class UserController {
                                         examples = @ExampleObject(value = UserApiDoc.ERROR_USER_NOT_FOUND)))
             })
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
+    public ResponseEntity<ApiSuccess<UserResponse>> getUserInfo(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -66,6 +66,6 @@ public class UserController {
         OwnershipGuard.requireOwner(authenticatedUserId, userId);
         log.info("Get user info for userId: {}", userId);
         UserResponse userInfo = userService.getUserInfo(userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(userInfo));
+        return ResponseEntity.ok(ApiSuccess.success(userInfo));
     }
 }

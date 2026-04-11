@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.examples.TripApiDoc;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
@@ -81,7 +81,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_UNAUTHORIZED)))
             })
     @PostMapping("/offer")
-    public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
+    public ResponseEntity<ApiSuccess<OfferRideResponse>> offerTrip(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -99,7 +99,7 @@ public class TripController {
 
         log.info("Offering trip for driver: {}", authenticatedUserId);
         OfferRideResponse response = offerRideService.offerRide(authenticatedUserId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -130,7 +130,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_IN_PROGRESS)))
             })
     @PostMapping("/cancel")
-    public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
+    public ResponseEntity<ApiSuccess<String>> cancelTrip(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -148,7 +148,7 @@ public class TripController {
 
         log.info("Cancelling trip: {} for user: {}", request.tripId(), authenticatedUserId);
         String response = cancellationService.cancelTrip(authenticatedUserId, request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -173,11 +173,11 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
             })
     @GetMapping("/{tripId}")
-    public ResponseEntity<ApiResponseWrapper<TripResponse>> getTrip(
+    public ResponseEntity<ApiSuccess<TripResponse>> getTrip(
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String tripId) {
         log.info("Fetching trip details for tripId: {}", tripId);
         TripResponse response = tripService.getTrip(tripId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Tag(
@@ -205,7 +205,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
             })
     @GetMapping("/search/near-source")
-    public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearSource(
+    public ResponseEntity<ApiSuccess<List<Trip>>> searchNearSource(
             @Parameter(description = "Latitude of the pickup location", example = "50.8154")
                     @DecimalMin("-90.0")
                     @DecimalMax("90.0")
@@ -222,7 +222,7 @@ public class TripController {
                     double radiusKm) {
         log.info("Searching for trips near source: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
-        return ResponseEntity.ok(ApiResponseWrapper.success(trips));
+        return ResponseEntity.ok(ApiSuccess.success(trips));
     }
 
     @Tag(
@@ -250,7 +250,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
             })
     @GetMapping("/search/near-destination")
-    public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearDestination(
+    public ResponseEntity<ApiSuccess<List<Trip>>> searchNearDestination(
             @Parameter(description = "Latitude of the dropoff location", example = "50.7265")
                     @DecimalMin("-90.0")
                     @DecimalMax("90.0")
@@ -267,7 +267,7 @@ public class TripController {
                     double radiusKm) {
         log.info("Searching for trips near destination: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
-        return ResponseEntity.ok(ApiResponseWrapper.success(trips));
+        return ResponseEntity.ok(ApiSuccess.success(trips));
     }
 
     @Tag(
@@ -295,7 +295,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
             })
     @GetMapping("/search/matching-route")
-    public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
+    public ResponseEntity<ApiSuccess<List<Trip>>> searchMatchingRoute(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -379,7 +379,7 @@ public class TripController {
 
         List<Trip> trips = geoService.findTripsMatchingRoute(criteria);
 
-        return ResponseEntity.ok(ApiResponseWrapper.success(trips));
+        return ResponseEntity.ok(ApiSuccess.success(trips));
     }
 
     @Operation(
@@ -403,7 +403,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
             })
     @GetMapping("/active/driver/{driverId}")
-    public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
+    public ResponseEntity<ApiSuccess<List<DriverTripResponse>>> getDriverActiveTrips(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -425,7 +425,7 @@ public class TripController {
 
         log.info("Fetching active trips for driver: {}", driverId);
         List<DriverTripResponse> activeTrips = activeRidesService.findDriverActiveTrips(driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(activeTrips));
+        return ResponseEntity.ok(ApiSuccess.success(activeTrips));
     }
 
     @Operation(
@@ -449,7 +449,7 @@ public class TripController {
                                         examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
             })
     @GetMapping("/history/driver/{driverId}")
-    public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
+    public ResponseEntity<ApiSuccess<List<DriverTripResponse>>> getDriverTripHistory(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -471,7 +471,7 @@ public class TripController {
 
         log.info("Fetching trip history for driver: {}", driverId);
         List<DriverTripResponse> tripHistory = activeRidesService.findDriverTripHistory(driverId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(tripHistory));
+        return ResponseEntity.ok(ApiSuccess.success(tripHistory));
     }
 
     @Operation(
@@ -485,7 +485,7 @@ public class TripController {
                 @ApiResponse(responseCode = "403", description = "Only the driver can start their own trip")
             })
     @PostMapping("/{tripId}/start")
-    public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
+    public ResponseEntity<ApiSuccess<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -503,7 +503,7 @@ public class TripController {
 
         log.info("Driver {} starting trip: {}", authenticatedUserId, tripId);
         StartTripResponse response = tripService.startTrip(tripId, authenticatedUserId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
+        return ResponseEntity.ok(ApiSuccess.success(response, OperationMessage.TRIP_STARTED_SUCCESS.text()));
     }
 
     @Operation(
@@ -517,7 +517,7 @@ public class TripController {
                 @ApiResponse(responseCode = "409", description = "Trip is not in progress")
             })
     @PostMapping("/{tripId}/complete")
-    public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
+    public ResponseEntity<ApiSuccess<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -535,7 +535,7 @@ public class TripController {
 
         log.info("Driver {} completing trip: {}", authenticatedUserId, tripId);
         CompleteTripResponse response = completionService.completeTrip(tripId, authenticatedUserId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(
+        return ResponseEntity.ok(ApiSuccess.success(
                 response, OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
     }
 

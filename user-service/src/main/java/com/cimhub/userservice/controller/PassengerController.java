@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
@@ -34,7 +34,7 @@ public class PassengerController {
                 @ApiResponse(responseCode = "404", description = "Passenger not found")
             })
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassengerProfile(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> getPassengerProfile(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -51,7 +51,7 @@ public class PassengerController {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Get passenger profile for userId: {}", userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.getPassengerProfile(userId)));
+        return ResponseEntity.ok(ApiSuccess.success(passengerService.getPassengerProfile(userId)));
     }
 
     @Operation(
@@ -63,7 +63,7 @@ public class PassengerController {
                 @ApiResponse(responseCode = "404", description = "Passenger not found")
             })
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassengerProfile(
+    public ResponseEntity<ApiSuccess<PassengerResponse>> updatePassengerProfile(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -81,6 +81,6 @@ public class PassengerController {
         OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Update passenger profile for userId: {}", userId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.updatePassengerProfile(userId, request)));
+        return ResponseEntity.ok(ApiSuccess.success(passengerService.updatePassengerProfile(userId, request)));
     }
 }

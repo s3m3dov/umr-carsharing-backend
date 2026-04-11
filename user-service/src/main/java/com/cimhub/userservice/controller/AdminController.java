@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.util.AdminGuard;
@@ -56,7 +56,7 @@ public class AdminController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_PROFILE_RESPONSE)))
     })
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponseWrapper<AdminProfileResponse>> getAdminProfile(
+    public ResponseEntity<ApiSuccess<AdminProfileResponse>> getAdminProfile(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -76,6 +76,6 @@ public class AdminController {
 
         log.info("Returning admin profile for: {}", adminEmail);
         AdminProfileResponse response = new AdminProfileResponse(adminEmail, UserType.ADMIN);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 }

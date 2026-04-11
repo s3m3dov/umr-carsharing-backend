@@ -45,7 +45,7 @@ Shared across all services via Maven dependency:
 
 ```
 common/src/main/java/com/cimhub/common/
-  dto/              # ApiResponseWrapper, ApiError, ErrorBody, ErrorDetail
+  dto/              # ApiSuccess, ApiError, ErrorBody, ErrorDetail
   enums/            # UserType, DriverStatus, NotificationType, AuditAction…
   exception/        # BusinessException, ErrorCode, GlobalExceptionHandler…
   filter/           # RequestIdFilter

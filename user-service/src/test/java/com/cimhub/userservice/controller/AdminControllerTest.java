@@ -3,7 +3,7 @@ package com.cimhub.userservice.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ForbiddenException;
@@ -18,7 +18,7 @@ class AdminControllerTest {
     void getAdminProfile_withAdminHeaders_shouldReturnProfile() {
         var response = adminController.getAdminProfile(UserType.ADMIN, "admin@example.com");
 
-        ApiResponseWrapper<AdminProfileResponse> body = response.getBody();
+        ApiSuccess<AdminProfileResponse> body = response.getBody();
         assertEquals(200, response.getStatusCode().value());
         assertEquals("admin@example.com", body.getData().adminEmail());
         assertEquals(UserType.ADMIN, body.getData().role());

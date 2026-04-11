@@ -1,7 +1,7 @@
 package com.cimhub.notificationservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.notificationservice.dto.examples.NotificationApiDoc;
 import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
@@ -66,7 +66,7 @@ public class NotificationController {
                                         examples = @ExampleObject(value = NotificationApiDoc.ERROR_UNAUTHORIZED)))
             })
     @PostMapping
-    public ResponseEntity<ApiResponseWrapper<NotificationResponse>> createNotification(
+    public ResponseEntity<ApiSuccess<NotificationResponse>> createNotification(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -96,14 +96,14 @@ public class NotificationController {
         }
 
         NotificationResponse created = notificationService.createNotification(effectiveRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(created));
     }
 
     @Operation(
             summary = "List recipient notifications",
             description = "Returns paginated notifications ordered by latest first")
     @GetMapping("/{recipientId}")
-    public ResponseEntity<ApiResponseWrapper<Page<NotificationResponse>>> listNotifications(
+    public ResponseEntity<ApiSuccess<Page<NotificationResponse>>> listNotifications(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -120,7 +120,7 @@ public class NotificationController {
             Pageable pageable) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(notificationService.listNotifications(recipientId, pageable)));
+                ApiSuccess.success(notificationService.listNotifications(recipientId, pageable)));
     }
 
     @Operation(summary = "Mark notification as read", description = "Marks a single notification as read")
@@ -138,7 +138,7 @@ public class NotificationController {
                                                         value = NotificationApiDoc.ERROR_NOTIFICATION_NOT_FOUND)))
             })
     @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<ApiResponseWrapper<NotificationResponse>> markAsRead(
+    public ResponseEntity<ApiSuccess<NotificationResponse>> markAsRead(
             @Parameter(description = "Notification ID", required = true) @PathVariable String notificationId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -155,14 +155,14 @@ public class NotificationController {
             @Valid @RequestBody MarkNotificationReadRequest request) {
         validateRecipientAccess(request.recipientId(), authenticatedUserId, authenticatedUserRole);
         NotificationResponse updated = notificationService.markAsRead(notificationId, request.recipientId());
-        return ResponseEntity.ok(ApiResponseWrapper.success(updated));
+        return ResponseEntity.ok(ApiSuccess.success(updated));
     }
 
     @Operation(
             summary = "Mark all notifications as read",
             description = "Marks all unread notifications for a recipient as read")
     @PatchMapping("/{recipientId}/read-all")
-    public ResponseEntity<ApiResponseWrapper<NotificationStatsResponse>> markAllAsRead(
+    public ResponseEntity<ApiSuccess<NotificationStatsResponse>> markAllAsRead(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -177,7 +177,7 @@ public class NotificationController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String authenticatedUserRole) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(notificationService.markAllAsRead(recipientId)));
+        return ResponseEntity.ok(ApiSuccess.success(notificationService.markAllAsRead(recipientId)));
     }
 
     @Operation(summary = "Get notification stats", description = "Returns aggregated notification counters")
@@ -193,7 +193,7 @@ public class NotificationController {
                                                 @ExampleObject(value = NotificationApiDoc.NOTIFICATION_STATS_RESPONSE)))
             })
     @GetMapping("/{recipientId}/stats")
-    public ResponseEntity<ApiResponseWrapper<NotificationStatsResponse>> getStats(
+    public ResponseEntity<ApiSuccess<NotificationStatsResponse>> getStats(
             @Parameter(description = "Recipient user ID", required = true) @PathVariable String recipientId,
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
@@ -208,7 +208,7 @@ public class NotificationController {
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String authenticatedUserRole) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(notificationService.getStats(recipientId)));
+        return ResponseEntity.ok(ApiSuccess.success(notificationService.getStats(recipientId)));
     }
 
     private void validateRecipientAccess(String recipientId, String authenticatedUserId, String authenticatedUserRole) {

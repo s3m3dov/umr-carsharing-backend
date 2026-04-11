@@ -1,7 +1,7 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.AdminGuard;
@@ -63,7 +63,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_LIST_DRIVERS_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<DriverResponse>>> listDrivers(
+    public ResponseEntity<ApiSuccess<Page<DriverResponse>>> listDrivers(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -74,7 +74,7 @@ public class AdminDriverController {
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
         Page<DriverResponse> drivers = adminDriverService.listDrivers(status, pageable);
-        return ResponseEntity.ok(ApiResponseWrapper.success(drivers));
+        return ResponseEntity.ok(ApiSuccess.success(drivers));
     }
 
     @Operation(summary = "Get driver detail", description = "Retrieve detailed information about a specific driver")
@@ -88,7 +88,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_GET_DRIVER_RESPONSE)))
     })
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> getDriver(
+    public ResponseEntity<ApiSuccess<DriverResponse>> getDriver(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -97,7 +97,7 @@ public class AdminDriverController {
                     UserType userRole,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriver(userId)));
+        return ResponseEntity.ok(ApiSuccess.success(adminDriverService.getDriver(userId)));
     }
 
     @Operation(summary = "Approve driver application", description = "Approve a pending driver application")
@@ -111,7 +111,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_APPROVE_DRIVER_RESPONSE)))
     })
     @PostMapping("/{userId}/approve")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> approveDriver(
+    public ResponseEntity<ApiSuccess<DriverResponse>> approveDriver(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -126,7 +126,7 @@ public class AdminDriverController {
                     String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.approveDriver(userId, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminDriverService.approveDriver(userId, adminEmail)));
     }
 
     @Operation(summary = "Reject driver application", description = "Reject a pending driver application")
@@ -140,7 +140,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_REJECT_DRIVER_RESPONSE)))
     })
     @PostMapping("/{userId}/reject")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> rejectDriver(
+    public ResponseEntity<ApiSuccess<DriverResponse>> rejectDriver(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -155,7 +155,7 @@ public class AdminDriverController {
                     String adminEmail,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.rejectDriver(userId, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminDriverService.rejectDriver(userId, adminEmail)));
     }
 
     @Operation(summary = "Bulk approve drivers", description = "Approve multiple driver applications at once")
@@ -169,7 +169,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.BULK_APPROVE_RESPONSE)))
     })
     @PostMapping("/bulk-approve")
-    public ResponseEntity<ApiResponseWrapper<String>> bulkApprove(
+    public ResponseEntity<ApiSuccess<String>> bulkApprove(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -185,7 +185,7 @@ public class AdminDriverController {
             @Valid @RequestBody BulkDriverActionRequest request) {
         AdminGuard.requireAdmin(userRole);
         int count = adminDriverService.bulkApprove(request, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success(count + " drivers approved"));
+        return ResponseEntity.ok(ApiSuccess.success(count + " drivers approved"));
     }
 
     @Operation(summary = "Bulk reject drivers", description = "Reject multiple driver applications at once")
@@ -199,7 +199,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.BULK_REJECT_RESPONSE)))
     })
     @PostMapping("/bulk-reject")
-    public ResponseEntity<ApiResponseWrapper<String>> bulkReject(
+    public ResponseEntity<ApiSuccess<String>> bulkReject(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -215,7 +215,7 @@ public class AdminDriverController {
             @Valid @RequestBody BulkDriverActionRequest request) {
         AdminGuard.requireAdmin(userRole);
         int count = adminDriverService.bulkReject(request, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success(count + " drivers rejected"));
+        return ResponseEntity.ok(ApiSuccess.success(count + " drivers rejected"));
     }
 
     @Operation(summary = "Edit driver info", description = "Update driver information")
@@ -229,7 +229,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_UPDATE_DRIVER_RESPONSE)))
     })
     @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<DriverResponse>> updateDriver(
+    public ResponseEntity<ApiSuccess<DriverResponse>> updateDriver(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -246,7 +246,7 @@ public class AdminDriverController {
             @RequestBody UpdateDriverRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(adminDriverService.updateDriver(userId, request, adminEmail)));
+                ApiSuccess.success(adminDriverService.updateDriver(userId, request, adminEmail)));
     }
 
     @Operation(summary = "Delete driver", description = "Delete a driver and all associated data")
@@ -260,7 +260,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_DELETE_DRIVER_RESPONSE)))
     })
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponseWrapper<String>> deleteDriver(
+    public ResponseEntity<ApiSuccess<String>> deleteDriver(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -276,7 +276,7 @@ public class AdminDriverController {
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
         adminDriverService.deleteDriver(userId, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Driver deleted"));
+        return ResponseEntity.ok(ApiSuccess.success("Driver deleted"));
     }
 
     @Operation(summary = "Get driver documents", description = "Retrieve driver documents (NIDA/License)")
@@ -290,7 +290,7 @@ public class AdminDriverController {
                                 examples = @ExampleObject(value = UserApiDoc.ADMIN_DRIVER_DOCUMENTS_RESPONSE)))
     })
     @GetMapping("/{userId}/documents")
-    public ResponseEntity<ApiResponseWrapper<List<DriverDocumentResponse>>> getDriverDocuments(
+    public ResponseEntity<ApiSuccess<List<DriverDocumentResponse>>> getDriverDocuments(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -299,6 +299,6 @@ public class AdminDriverController {
                     UserType userRole,
             @Parameter(description = "Driver ID", example = "john.driver@example.com") @PathVariable String userId) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminDriverService.getDriverDocuments(userId)));
+        return ResponseEntity.ok(ApiSuccess.success(adminDriverService.getDriverDocuments(userId)));
     }
 }

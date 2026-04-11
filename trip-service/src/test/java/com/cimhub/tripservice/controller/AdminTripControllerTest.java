@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.service.trip.AdminTripService;
@@ -42,7 +42,7 @@ class AdminTripControllerTest {
         Page<AdminTripResponse> page = new PageImpl<>(List.of(trip), pageable, 1);
         when(adminTripService.listTrips(pageable)).thenReturn(page);
 
-        ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> response =
+        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> response =
                 adminTripController.listTrips("ADMIN", pageable);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -55,7 +55,7 @@ class AdminTripControllerTest {
         AdminTripResponse trip = AdminTripResponse.builder().tripId("trip-1").build();
         when(adminTripService.getTrip("trip-1")).thenReturn(trip);
 
-        ResponseEntity<ApiResponseWrapper<AdminTripResponse>> response = adminTripController.getTrip("ADMIN", "trip-1");
+        ResponseEntity<ApiSuccess<AdminTripResponse>> response = adminTripController.getTrip("ADMIN", "trip-1");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("trip-1", response.getBody().getData().tripId());
@@ -69,9 +69,9 @@ class AdminTripControllerTest {
         when(adminTripService.getUpcomingTrips(pageable)).thenReturn(page);
         when(adminTripService.getTripHistory(pageable)).thenReturn(page);
 
-        ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> upcoming =
+        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> upcoming =
                 adminTripController.getUpcomingTrips("ADMIN", pageable);
-        ResponseEntity<ApiResponseWrapper<Page<AdminTripResponse>>> history =
+        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> history =
                 adminTripController.getTripHistory("admin", pageable);
 
         assertEquals(HttpStatus.OK, upcoming.getStatusCode());
@@ -82,7 +82,7 @@ class AdminTripControllerTest {
 
     @Test
     void cancelTrip_withAdminRole_shouldDelegateAndReturnMessage() {
-        ResponseEntity<ApiResponseWrapper<String>> response =
+        ResponseEntity<ApiSuccess<String>> response =
                 adminTripController.cancelTrip("ADMIN", "admin@example.com", "trip-9");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());

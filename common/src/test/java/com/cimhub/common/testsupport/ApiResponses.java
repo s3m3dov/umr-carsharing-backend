@@ -1,24 +1,25 @@
 package com.cimhub.common.testsupport;
 
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiError;
+import com.cimhub.common.dto.response.ApiSuccess;
 
 public final class ApiResponses {
 
     private ApiResponses() {}
 
-    public static <T> ApiResponseWrapper<T> ok(T data) {
-        return ApiResponseWrapper.success(data);
+    public static <T> ApiSuccess<T> ok(T data) {
+        return ApiSuccess.success(data);
     }
 
-    public static <T> ApiResponseWrapper<T> ok(T data, String message) {
-        return ApiResponseWrapper.success(data, message);
+    public static <T> ApiSuccess<T> ok(T data, String message) {
+        return ApiSuccess.success(data, message);
     }
 
-    public static <T> ApiResponseWrapper<T> error(String code, String message) {
-        return ApiResponseWrapper.error(code, message);
+    public static ApiError error(String code, String message) {
+        return ApiError.builder().code(code).message(message).build();
     }
 
-    public static <T> ApiResponseWrapper<T> error(String code, String message, String path) {
-        return ApiResponseWrapper.error(code, message, path);
+    public static ApiError error(String code, String message, String path) {
+        return ApiError.of(0, code, message, path);
     }
 }

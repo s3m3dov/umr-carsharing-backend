@@ -1,7 +1,7 @@
 package com.cimhub.tripservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.examples.BookingApiDoc;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
@@ -75,7 +75,7 @@ public class RideController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_FULL)))
             })
     @PostMapping("/book")
-    public ResponseEntity<ApiResponseWrapper<String>> bookRide(
+    public ResponseEntity<ApiSuccess<String>> bookRide(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -93,7 +93,7 @@ public class RideController {
 
         log.info("Passenger {} booking ride on trip: {}", authenticatedUserId, request.tripId());
         String response = joinTripService.joinTrip(authenticatedUserId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -132,7 +132,7 @@ public class RideController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_FULL)))
             })
     @PostMapping("/book/new")
-    public ResponseEntity<ApiResponseWrapper<String>> bookRideWithDriverAccept(
+    public ResponseEntity<ApiSuccess<String>> bookRideWithDriverAccept(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -150,7 +150,7 @@ public class RideController {
 
         log.info("Passenger {} requesting ride (driver-accept) on trip: {}", authenticatedUserId, request.tripId());
         String response = joinTripService.joinTripWithDriverAccept(authenticatedUserId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Cancel a ride", description = "Passenger cancels their ride on a trip.")
@@ -179,7 +179,7 @@ public class RideController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_TRIP_IN_PROGRESS)))
             })
     @PostMapping("/cancel")
-    public ResponseEntity<ApiResponseWrapper<String>> cancelRide(
+    public ResponseEntity<ApiSuccess<String>> cancelRide(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -197,7 +197,7 @@ public class RideController {
 
         log.info("Passenger {} cancelling ride: {}", authenticatedUserId, request.rideId());
         String response = cancellationService.cancelRide(authenticatedUserId, request);
-        return ResponseEntity.ok(ApiResponseWrapper.success(response));
+        return ResponseEntity.ok(ApiSuccess.success(response));
     }
 
     @Operation(
@@ -221,7 +221,7 @@ public class RideController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
             })
     @GetMapping("/active/passenger/{passengerId}")
-    public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerActiveRides(
+    public ResponseEntity<ApiSuccess<List<PassengerRideResponse>>> getPassengerActiveRides(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -244,7 +244,7 @@ public class RideController {
 
         log.info("Fetching active rides for passenger: {}", passengerId);
         List<PassengerRideResponse> activeRides = activeRidesService.findPassengerActiveRides(passengerId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(activeRides));
+        return ResponseEntity.ok(ApiSuccess.success(activeRides));
     }
 
     @Operation(
@@ -268,7 +268,7 @@ public class RideController {
                                         examples = @ExampleObject(value = BookingApiDoc.ERROR_BOOKING_NOT_FOUND)))
             })
     @GetMapping("/history/passenger/{passengerId}")
-    public ResponseEntity<ApiResponseWrapper<List<PassengerRideResponse>>> getPassengerRideHistory(
+    public ResponseEntity<ApiSuccess<List<PassengerRideResponse>>> getPassengerRideHistory(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -291,7 +291,7 @@ public class RideController {
 
         log.info("Fetching ride history for passenger: {}", passengerId);
         List<PassengerRideResponse> rideHistory = activeRidesService.findPassengerRideHistory(passengerId);
-        return ResponseEntity.ok(ApiResponseWrapper.success(rideHistory));
+        return ResponseEntity.ok(ApiSuccess.success(rideHistory));
     }
 
     private void requirePassengerRole(String userRole) {

@@ -1,7 +1,7 @@
 package com.cimhub.userservice.vehicle.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.request.UpdateVehicleRequest;
@@ -61,7 +61,7 @@ public class AdminVehicleController {
                                 examples = @ExampleObject(value = VehicleApiDoc.ADMIN_LIST_VEHICLES_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<AdminVehicleResponse>>> listVehicles(
+    public ResponseEntity<ApiSuccess<Page<AdminVehicleResponse>>> listVehicles(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -70,7 +70,7 @@ public class AdminVehicleController {
                     UserType userRole,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.listVehicles(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminVehicleService.listVehicles(pageable)));
     }
 
     @Operation(summary = "Get vehicle detail", description = "Retrieve detailed information about a specific vehicle")
@@ -84,7 +84,7 @@ public class AdminVehicleController {
                                 examples = @ExampleObject(value = VehicleApiDoc.ADMIN_GET_VEHICLE_RESPONSE)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> getVehicle(
+    public ResponseEntity<ApiSuccess<AdminVehicleResponse>> getVehicle(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -93,7 +93,7 @@ public class AdminVehicleController {
                     UserType userRole,
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminVehicleService.getVehicle(id)));
+        return ResponseEntity.ok(ApiSuccess.success(adminVehicleService.getVehicle(id)));
     }
 
     @Operation(summary = "Add vehicle", description = "Register a new vehicle in the system")
@@ -107,7 +107,7 @@ public class AdminVehicleController {
                                 examples = @ExampleObject(value = VehicleApiDoc.ADMIN_CREATE_VEHICLE_RESPONSE)))
     })
     @PostMapping
-    public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> createVehicle(
+    public ResponseEntity<ApiSuccess<AdminVehicleResponse>> createVehicle(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -123,7 +123,7 @@ public class AdminVehicleController {
             @Valid @RequestBody RegisterVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         AdminVehicleResponse response = adminVehicleService.createVehicle(request, adminEmail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccess.success(response));
     }
 
     @Operation(summary = "Update vehicle", description = "Update vehicle information")
@@ -137,7 +137,7 @@ public class AdminVehicleController {
                                 examples = @ExampleObject(value = VehicleApiDoc.ADMIN_UPDATE_VEHICLE_RESPONSE)))
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<AdminVehicleResponse>> updateVehicle(
+    public ResponseEntity<ApiSuccess<AdminVehicleResponse>> updateVehicle(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -154,7 +154,7 @@ public class AdminVehicleController {
             @RequestBody UpdateVehicleRequest request) {
         AdminGuard.requireAdmin(userRole);
         return ResponseEntity.ok(
-                ApiResponseWrapper.success(adminVehicleService.updateVehicle(id, request, adminEmail)));
+                ApiSuccess.success(adminVehicleService.updateVehicle(id, request, adminEmail)));
     }
 
     @Operation(summary = "Delete vehicle", description = "Delete a vehicle from the system")
@@ -168,7 +168,7 @@ public class AdminVehicleController {
                                 examples = @ExampleObject(value = VehicleApiDoc.ADMIN_DELETE_VEHICLE_RESPONSE)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<String>> deleteVehicle(
+    public ResponseEntity<ApiSuccess<String>> deleteVehicle(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -184,6 +184,6 @@ public class AdminVehicleController {
             @Parameter(description = "Vehicle ID", example = "vehicle_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminVehicleService.deleteVehicle(id, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Vehicle deleted"));
+        return ResponseEntity.ok(ApiSuccess.success("Vehicle deleted"));
     }
 }

@@ -1,7 +1,7 @@
 package com.cimhub.reviewservice.controller;
 
 import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.dto.response.ApiSuccess;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.dto.response.ReviewResponse;
@@ -57,7 +57,7 @@ public class AdminReviewController {
                                 examples = @ExampleObject(value = ReviewApiDoc.ADMIN_LIST_REVIEWS_RESPONSE)))
     })
     @GetMapping
-    public ResponseEntity<ApiResponseWrapper<Page<ReviewResponse>>> listReviews(
+    public ResponseEntity<ApiSuccess<Page<ReviewResponse>>> listReviews(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -67,7 +67,7 @@ public class AdminReviewController {
             @Parameter(description = "Filter by review status") @RequestParam(required = false) ReviewStatus status,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.listReviews(status, pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminReviewService.listReviews(status, pageable)));
     }
 
     @Operation(summary = "Get review detail", description = "Retrieve detailed information about a specific review")
@@ -81,7 +81,7 @@ public class AdminReviewController {
                                 examples = @ExampleObject(value = ReviewApiDoc.ADMIN_GET_REVIEW_RESPONSE)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> getReview(
+    public ResponseEntity<ApiSuccess<ReviewResponse>> getReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -90,7 +90,7 @@ public class AdminReviewController {
                     String userRole,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.getReview(id)));
+        return ResponseEntity.ok(ApiSuccess.success(adminReviewService.getReview(id)));
     }
 
     @Operation(summary = "Flag a review", description = "Flag a review for review by admin")
@@ -104,7 +104,7 @@ public class AdminReviewController {
                                 examples = @ExampleObject(value = ReviewApiDoc.ADMIN_FLAG_REVIEW_RESPONSE)))
     })
     @PostMapping("/{id}/flag")
-    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> flagReview(
+    public ResponseEntity<ApiSuccess<ReviewResponse>> flagReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -119,7 +119,7 @@ public class AdminReviewController {
                     String adminEmail,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.flagReview(id, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminReviewService.flagReview(id, adminEmail)));
     }
 
     @Operation(summary = "Remove a review", description = "Remove/hide a review from public view")
@@ -133,7 +133,7 @@ public class AdminReviewController {
                                 examples = @ExampleObject(value = ReviewApiDoc.ADMIN_REMOVE_REVIEW_RESPONSE)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponseWrapper<String>> removeReview(
+    public ResponseEntity<ApiSuccess<String>> removeReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -149,7 +149,7 @@ public class AdminReviewController {
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
         adminReviewService.removeReview(id, adminEmail);
-        return ResponseEntity.ok(ApiResponseWrapper.success("Review removed"));
+        return ResponseEntity.ok(ApiSuccess.success("Review removed"));
     }
 
     @Operation(summary = "Publish/restore a review", description = "Publish or restore a flagged review")
@@ -163,7 +163,7 @@ public class AdminReviewController {
                                 examples = @ExampleObject(value = ReviewApiDoc.ADMIN_PUBLISH_REVIEW_RESPONSE)))
     })
     @PostMapping("/{id}/publish")
-    public ResponseEntity<ApiResponseWrapper<ReviewResponse>> publishReview(
+    public ResponseEntity<ApiSuccess<ReviewResponse>> publishReview(
             @Parameter(
                             description = "Injected by the gateway from the JWT. Do not set manually.",
                             required = false,
@@ -178,6 +178,6 @@ public class AdminReviewController {
                     String adminEmail,
             @Parameter(description = "Review ID", example = "review_001") @PathVariable String id) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiResponseWrapper.success(adminReviewService.publishReview(id, adminEmail)));
+        return ResponseEntity.ok(ApiSuccess.success(adminReviewService.publishReview(id, adminEmail)));
     }
 }
