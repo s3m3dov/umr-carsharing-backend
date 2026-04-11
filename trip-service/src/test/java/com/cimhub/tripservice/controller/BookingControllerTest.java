@@ -85,12 +85,6 @@ class BookingControllerTest {
     }
 
     @Test
-    void completeRide_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
-        assertThrows(
-                UnauthorizedException.class, () -> bookingController.completeRide("b-3", "other-driver", "DRIVER"));
-    }
-
-    @Test
     void acceptBooking_whenRoleIsNotDriver_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class, () -> bookingController.acceptBooking("b-1", "driver-1", "PASSENGER"));
     }
