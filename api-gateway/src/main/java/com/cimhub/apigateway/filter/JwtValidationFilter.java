@@ -2,7 +2,8 @@ package com.cimhub.apigateway.filter;
 
 import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
-import com.cimhub.apigateway.constant.GatewayConstants;
+import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.enums.RequestHeaderName;
 import com.cimhub.common.exception.DependencyUnavailableException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,9 +42,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         // Strip any incoming X-User-* headers to prevent identity spoofing
         ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
                 .headers(headers -> {
-                    headers.remove(GatewayConstants.USER_ID_HEADER);
-                    headers.remove(GatewayConstants.USER_EMAIL_HEADER);
-                    headers.remove(GatewayConstants.USER_ROLE_HEADER);
+                    for (RequestHeaderName header : RequestHeaderName.values()) {
+                        headers.remove(header.getHeaderName());
+                    }
                 })
                 .build();
         ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
@@ -71,15 +72,18 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             ServerWebExchange exchange,
             GatewayFilterChain chain,
             TokenValidationResponse response) {
-        if (!response.valid()) {
-            return Mono.error(new UnauthorizedException("Invalid or expired token"));
+        if (!response.valid() || response.email() == null || response.role() == null) {
+            log.warn("Token validation failed or missing user info: valid={}, email={}, role={}",
+                    response.valid(), response.email(), response.role());
+            return Mono.error(new UnauthorizedException("Invalid or expired token, or missing user info"));
         }
 
+        String email = response.email().toLowerCase();
         ServerHttpRequest modifiedRequest = exchange.getRequest()
                 .mutate()
-                .header(GatewayConstants.USER_EMAIL_HEADER, response.email())
-                .header(GatewayConstants.USER_ID_HEADER, response.email().toLowerCase())
-                .header(GatewayConstants.USER_ROLE_HEADER, response.role())
+                .header(RequestHeaderName.USER_EMAIL.getHeaderName(), email)
+                .header(RequestHeaderName.USER_ID.getHeaderName(), email)
+                .header(RequestHeaderName.USER_ROLE.getHeaderName(), response.role())
                 .build();
 
         return chain.filter(
@@ -92,13 +96,13 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private Mono<String> extractToken(ServerHttpRequest request, String path) {
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null || !authHeader.startsWith(GatewayConstants.BEARER_PREFIX)) {
+        if (authHeader == null || !authHeader.startsWith(HeaderConstants.BEARER_PREFIX)) {
             log.warn("Missing Authorization header for path: {}", path);
             return Mono.error(new UnauthorizedException("Missing Authorization header"));
         }
 
         String token = authHeader
-                .substring(GatewayConstants.BEARER_PREFIX.length())
+                .substring(HeaderConstants.BEARER_PREFIX.length())
                 .trim();
 
         if (!isValidJwtFormat(token)) {

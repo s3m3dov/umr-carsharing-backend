@@ -1,7 +1,7 @@
 package com.cimhub.apigateway.filter;
 
 import com.cimhub.apigateway.config.SecurityProperties;
-import com.cimhub.apigateway.constant.GatewayConstants;
+import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class AdminAuthorizationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        String userRole = exchange.getRequest().getHeaders().getFirst(GatewayConstants.USER_ROLE_HEADER);
+        String userRole = exchange.getRequest().getHeaders().getFirst(HeaderConstants.X_USER_ROLE);
 
         if (userRole == null || !userRole.equalsIgnoreCase(ADMIN_ROLE)) {
             log.warn("Access denied: User with role '{}' attempted to access admin path: {}", userRole, path);
