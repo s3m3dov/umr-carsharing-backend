@@ -13,7 +13,6 @@ public final class BookingApiDoc {
     public static final String JOIN_TRIP_REQUEST = """
             {
               "tripId": "trip_001",
-              "passengerId": "jane.passenger@example.com",
               "driverId": "john.driver@example.com",
               "pickupPoint": {
                 "latitude": 50.8154,
@@ -30,7 +29,6 @@ public final class BookingApiDoc {
     public static final String CANCEL_BOOKING_REQUEST = """
             {
               "tripId": "trip_001",
-              "userId": "jane.passenger@example.com",
               "rideId": "ride_001",
               "cancellationReason": "Change of plans"
             }""";
