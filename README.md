@@ -144,6 +144,19 @@ Quick steps:
 
 ---
 
+## Development Workflow
+
+### Code Formatting
+To maintain consistent code style, we use the **Spotless** plugin. Before committing changes, run the following command to format your code:
+
+```bash
+./mvnw spotless:apply
+```
+
+This will automatically format Java files (Palantir 4-space style) and YAML files in the `gitops/` directory.
+
+---
+
 ## Key Documents
 
 | What | Where |

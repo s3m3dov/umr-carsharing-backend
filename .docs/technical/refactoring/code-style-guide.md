@@ -509,14 +509,31 @@ public class TripService {
 
 ## 8. Code Formatting Summary
 
+The project uses **Spotless** with **Palantir Java Format** to automatically enforce these standards.
+
 | Aspect | Standard |
 |--------|----------|
 | Indentation | 4 spaces |
 | Line length | 120 max |
 | Blank lines | 1 between methods, 2 between classes |
-| Import order | java → javax → internal → third-party |
+| Import order | java → javax → jakarta → com.cimhub |
 | Annotations | Before type, one per line |
-| Braces | Same line for classes, new line for methods |
+| Braces | Same line for classes, same line for methods |
+
+### Automated Formatting
+
+To format the entire project, run:
+```bash
+./mvnw spotless:apply
+```
+
+This command will:
+1. Reformat all `.java` files to the standard style.
+2. Remove unused imports.
+3. Organize imports into the specified order.
+4. Format `.yaml` files in the `gitops/` directory.
+
+The `spotless:check` goal is tied to the Maven `verify` phase, ensuring that unformatted code will fail the build in CI.
 
 ---
 
