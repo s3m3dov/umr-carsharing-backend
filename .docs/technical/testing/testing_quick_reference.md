@@ -113,14 +113,14 @@ mvn clean install -Dmaven.test.skip=true
 
 | Module | Test Files | Status |
 |--------|-----------|--------|
-| auth-service | 3 | ✅ Working |
-| user-service | 5 | ⚠️ Compilation errors |
-| trip-service | 4 | ✅ Working |
-| review-service | 2 | ✅ Working |
-| notification-service | 1 | ⚠️ Compilation errors |
+| auth-service | 16 | ✅ Working |
+| user-service | 22 | ✅ Working |
+| trip-service | 24 | ✅ Working |
+| review-service | 10 | ✅ Working |
+| notification-service | 5 | ✅ Working |
 | api-gateway | 4 | ✅ Working |
-| common | 1 | ✅ Working |
-| **TOTAL** | **20** | |
+| common | 8 | ✅ Working |
+| **TOTAL** | **89** | |
 
 ## Coverage Thresholds
 
