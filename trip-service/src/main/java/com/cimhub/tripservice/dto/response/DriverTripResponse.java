@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.model.Points;
+import com.cimhub.tripservice.dto.osrm.Geometry;
 import com.cimhub.tripservice.model.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -57,6 +58,9 @@ public record DriverTripResponse(
 
         @Schema(description = "Estimated route duration in minutes", example = "90.0")
         Double routeDurationInMinutes,
+
+        @Schema(description = "Route geometry as GeoJSON LineString (lon,lat pairs)")
+        Geometry routeGeometry,
 
         @Schema(description = "Price per seat in EUR", example = "15.50")
         Double pricePerSeat,

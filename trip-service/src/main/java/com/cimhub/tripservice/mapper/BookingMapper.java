@@ -59,6 +59,7 @@ public class BookingMapper {
                 .tripStartDateTime(rideStartInOriginalZone)
                 .tripTimezone(booking.getRideTimezone())
                 .bookedSeats(booking.getRequestedSeats())
+                .routeGeometry(trip != null ? trip.getRouteGeometry() : null)
                 .pricePerSeat(booking.getPricePerSeat())
                 .estimatedFare(booking.getEstimatedPrice())
                 .build();
