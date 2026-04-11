@@ -9,7 +9,6 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ForbiddenException;
-import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
 import com.cimhub.tripservice.model.OperationMessage;

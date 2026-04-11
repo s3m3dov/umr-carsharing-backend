@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ForbiddenException;
-import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;

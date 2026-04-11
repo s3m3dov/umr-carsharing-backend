@@ -23,7 +23,8 @@ import org.springframework.web.context.request.WebRequest;
 public class AuthExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponseWrapper<Object>> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleBadCredentials(
+            BadCredentialsException ex, WebRequest request) {
         log.warn("Bad credentials: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()
@@ -55,7 +56,8 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponseWrapper<Object>> handleUserAlreadyExists(UserAlreadyExistsException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleUserAlreadyExists(
+            UserAlreadyExistsException ex, WebRequest request) {
         log.warn("User already exists: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()

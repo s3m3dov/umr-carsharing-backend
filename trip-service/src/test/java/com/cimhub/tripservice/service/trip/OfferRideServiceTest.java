@@ -3,7 +3,6 @@ package com.cimhub.tripservice.service.trip;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -122,8 +121,8 @@ class OfferRideServiceTest {
         OfferRideRequest request = TripFixtures.offerRideRequest();
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.empty());
 
-        BadRequestException ex = assertThrows(BadRequestException.class, () ->
-                offerRideService.offerRide("driver-1", request));
+        BadRequestException ex =
+                assertThrows(BadRequestException.class, () -> offerRideService.offerRide("driver-1", request));
 
         assertEquals("Could not calculate route for provided coordinates", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));
@@ -136,8 +135,8 @@ class OfferRideServiceTest {
         OsrmResponseDTO osrmResponse = new OsrmResponseDTO("Ok", List.of(), List.of());
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
 
-        BadRequestException ex = assertThrows(BadRequestException.class, () ->
-                offerRideService.offerRide("driver-1", request));
+        BadRequestException ex =
+                assertThrows(BadRequestException.class, () -> offerRideService.offerRide("driver-1", request));
 
         assertEquals("Could not calculate route for provided coordinates", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));
@@ -155,8 +154,8 @@ class OfferRideServiceTest {
         when(osmRoute.getRoute(52.5, 13.4, 52.6, 13.5)).thenReturn(Mono.just(osrmResponse));
         when(vehicleDocumentRepository.findByUserId("driver-1")).thenReturn(Optional.empty());
 
-        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
-                offerRideService.offerRide("driver-1", request));
+        ResourceNotFoundException ex =
+                assertThrows(ResourceNotFoundException.class, () -> offerRideService.offerRide("driver-1", request));
 
         assertEquals("Vehicle not found or does not belong to driver", ex.getMessage());
         verify(tripsRepository, never()).save(any(Trip.class));

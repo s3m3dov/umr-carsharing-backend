@@ -46,9 +46,9 @@ public class OfferRideService {
             throw new BadRequestException("Could not calculate route for provided coordinates");
         }
 
-        VehicleDocument vehicle =
-                vehicleDocumentRepository.findByUserId(driverId).orElseThrow(() ->
-                        new ResourceNotFoundException("Vehicle not found or does not belong to driver"));
+        VehicleDocument vehicle = vehicleDocumentRepository
+                .findByUserId(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found or does not belong to driver"));
 
         var mainRoute = routeDetails.routes().get(0);
         String timezone = TimezoneConversionService.getTimeZoneId(
