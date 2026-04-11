@@ -54,7 +54,7 @@ public class UserController {
     })
     @GetMapping(value = "/{userId}")
     public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
-            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = HeaderNames.USER_ID, required = false) String authenticatedUserId,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
             @PathVariable String userId) {
         OwnershipGuard.requireOwner(authenticatedUserId, userId);
