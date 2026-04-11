@@ -119,8 +119,7 @@ public class NotificationController {
                     String authenticatedUserRole,
             Pageable pageable) {
         validateRecipientAccess(recipientId, authenticatedUserId, authenticatedUserRole);
-        return ResponseEntity.ok(
-                ApiSuccess.success(notificationService.listNotifications(recipientId, pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(notificationService.listNotifications(recipientId, pageable)));
     }
 
     @Operation(summary = "Mark notification as read", description = "Marks a single notification as read")

@@ -146,8 +146,8 @@ public class ReportsController {
             @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(
-                reportsService.getAuditLogs(action, entityType, performedBy, from, to, pageable)));
+        return ResponseEntity.ok(
+                ApiSuccess.success(reportsService.getAuditLogs(action, entityType, performedBy, from, to, pageable)));
     }
 
     @Operation(summary = "Get audit log", description = "Get a single audit log by id")

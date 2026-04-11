@@ -94,8 +94,7 @@ class ReportsControllerTest {
                 Instant.parse("2026-01-01T00:00:00Z"),
                 Instant.parse("2026-01-02T00:00:00Z"),
                 pageable);
-        ResponseEntity<ApiSuccess<AuditLogResponse>> getResponse =
-                reportsController.getAuditLog("ADMIN", "a-1");
+        ResponseEntity<ApiSuccess<AuditLogResponse>> getResponse = reportsController.getAuditLog("ADMIN", "a-1");
 
         assertEquals(HttpStatus.OK, listResponse.getStatusCode());
         assertEquals(1, listResponse.getBody().getData().getTotalElements());

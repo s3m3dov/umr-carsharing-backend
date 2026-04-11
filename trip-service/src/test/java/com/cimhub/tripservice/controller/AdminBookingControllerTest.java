@@ -47,8 +47,7 @@ class AdminBookingControllerTest {
 
         ResponseEntity<ApiSuccess<Page<BookingResponse>>> listResponse =
                 adminBookingController.listBookings("ADMIN", pageable);
-        ResponseEntity<ApiSuccess<BookingResponse>> getResponse =
-                adminBookingController.getBooking("ADMIN", "b-1");
+        ResponseEntity<ApiSuccess<BookingResponse>> getResponse = adminBookingController.getBooking("ADMIN", "b-1");
 
         assertEquals(HttpStatus.OK, listResponse.getStatusCode());
         assertEquals(1, listResponse.getBody().getData().getTotalElements());
