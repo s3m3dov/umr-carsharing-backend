@@ -13,12 +13,14 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.3] – User Registration, Test Coverage & Refactoring (2026-04-11)
+## [v0.9.3] – Registration, Identity Flow, Test Coverage & Code Formatting (2026-04-11)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
 ### Fixed
 
+- **Test alignment**: Updated integration and unit tests to match new service method signatures and header-based identity flows
+- Removed redundant header mismatch validation tests across services
 - `GET /api/users/{userId}` returning null `firstName`, `lastName`, `phoneNumber` after signup — root cause was auth-service and user-service both writing to the same `users` MongoDB collection; auth-service saved a credentials-only document first, user-service found it and threw 409, auth-service silently ignored the conflict, leaving the null-field document in place forever
 - Secured user profile flows and preserved email field consistency during updates
 - Added classifier to spring-boot-maven-plugin to produce plain jar for dependencies
@@ -36,6 +38,13 @@ and this project adheres to **Semantic Versioning**
 
 ### Changed
 
+- **Standardized identity propagation**: All microservices now retrieve user identity exclusively from gateway-injected headers (`X-User-Id`, `X-User-Role`, `X-User-Email`)
+- **Refactored Trip-Service**: Removed legacy `effectiveUserId` and `driverId` request parameters; user identity is now passed as service method parameters derived from headers
+- **Refactored Review-Service**: Removed `userId` and `userRole` from `SubmitReviewRequest` DTO; identity is now handled via secure headers
+- **OpenAPI documentation**: Marked gateway-injected headers as hidden in Swagger UI to clarify they are not intended for client-side submission
+- Simplified controllers across all services by removing redundant identity mismatch validation (now enforced at gateway)
+- Updated API documentation examples for review-service, trip-service, and user-service to align with new identity flow
+- Improved code readability with project-wide consistent formatting via Spotless
 - **auth-service** credentials are stored in `users` and user-service is profile-only (`drivers`/`passengers`)
 - **Signup flow** is fully server-side: auth-service creates auth user then role profile (`passenger` or `driver`) during `POST /api/auth/signup`; the Flutter client receives a JWT and is done — no follow-up calls required
 - `licenseNumber` is stored exclusively in the `drivers` collection. `GET /api/users/{userId}` aggregates role profile data from `drivers`/`passengers`
@@ -65,6 +74,10 @@ and this project adheres to **Semantic Versioning**
 
 ### Added
 
+- **Spotless code formatter** integration for automated Java and Maven XML formatting
+- **Identity flow diagrams** to `api-architecture` documentation illustrating gateway and service interactions
+- `HeaderConstants` in common module to centralize X-User-Id, X-User-Role, and X-User-Email header keys
+- Enforcement of validated and lowercased identity headers at API gateway level
 - Route geometry to trip, ride, and booking responses
 - OpenAPI response examples for user-service admin controllers
 - Service integration tests with grouped trip test structure
