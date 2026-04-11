@@ -36,6 +36,17 @@ Authorization: Bearer <JWT_TOKEN>
 
 The JWT token is obtained by logging in or signing up through the Auth Service.
 
+After validation, the API Gateway injects trusted identity headers (`X-User-Id`, `X-User-Role`, `X-User-Email`) for downstream services.
+Clients must not send `X-User-*` headers manually.
+
+For trip/ride caller-owned operations, user identity is derived from JWT (`X-User-Id`) instead of request body fields.
+Examples:
+- Offering a trip: driver identity comes from `X-User-Id`.
+- Booking/canceling a ride: passenger identity comes from `X-User-Id`.
+- Completing trips/rides: driver identity comes from `X-User-Id`.
+
+Some legacy query parameters (such as `effectiveUserId`/`driverId`) are still accepted as optional compatibility fields; when provided, they must match the authenticated user.
+
 ### Token Structure
 
 JWT tokens contain the following claims:
@@ -559,7 +570,6 @@ A driver creates a new trip offer.
 **Request:**
 ```json
 {
-  "driverId": "john.driver@example.com",
   "vehicleId": "vehicle_001",
   "sourceLatitude": 50.8154,
   "sourceLongitude": 8.6747,
@@ -571,6 +581,8 @@ A driver creates a new trip offer.
   "notes": "Morning commute to Frankfurt"
 }
 ```
+
+**Identity Note:** `driverId` is derived from `X-User-Id` and is not supplied in the request body.
 
 **Response (201 Created):**
 ```json
@@ -605,8 +617,7 @@ Cancels a trip (driver) or booking (passenger).
 ```json
 {
   "tripId": "trip_001",
-  "userId": "john.driver@example.com",
-  "reason": "Change of plans"
+  "cancellationReason": "Change of plans"
 }
 ```
 
@@ -697,11 +708,13 @@ Advanced search for trips matching a passenger's desired route.
 - `earliestDepartureTime` (optional): Earliest departure time (ISO 8601)
 - `latestDepartureTime` (optional): Latest departure time (ISO 8601)
 - `requestedSeats` (required): Number of seats needed
-- `effectiveUserId` (required): Passenger's user ID
+- `effectiveUserId` (optional, compatibility): Must match authenticated user when provided
 
 **Example Request:**
 ```
 GET /api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=jane.passenger@example.com&earliestDepartureTime=2024-03-25T07:00:00Z&latestDepartureTime=2024-03-25T09:00:00Z
+
+GET /api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&earliestDepartureTime=2024-03-25T07:00:00Z&latestDepartureTime=2024-03-25T09:00:00Z
 ```
 
 **Authentication:** Required
@@ -754,14 +767,14 @@ Retrieves completed and cancelled trips for a driver.
 
 #### 4.8 Complete a Trip
 
-**POST** `/api/trips/{tripId}/complete?driverId={driverId}`
+**POST** `/api/trips/{tripId}/complete`
 
 Driver ends the full trip at the final destination. All remaining active bookings (`CONFIRMED` / `IN_PROGRESS`) that passengers haven't individually completed yet are auto-completed.
 Trip moves from `IN_PROGRESS` → `COMPLETED`.
 
 **Parameters:**
 - `tripId` (path, required): Trip ID
-- `driverId` (query, required): Driver's user ID
+- `driverId` (query, optional, compatibility): Must match authenticated user when provided
 
 **Response (200 OK):**
 ```json
@@ -799,7 +812,6 @@ Passenger books a seat. Booking is immediately `CONFIRMED` — no driver action 
 ```json
 {
   "tripId": "trip_001",
-  "passengerId": "jane.passenger@example.com",
   "driverId": "john.driver@example.com",
   "pickupPoint": {
     "latitude": 50.8154,
@@ -814,6 +826,8 @@ Passenger books a seat. Booking is immediately `CONFIRMED` — no driver action 
   "requestedSeats": 1
 }
 ```
+
+**Identity Note:** `passengerId` is derived from `X-User-Id` and is not supplied in the request body.
 
 **Response (201 Created):**
 ```json
@@ -865,8 +879,9 @@ Passenger cancels their booked ride.
 **Request:**
 ```json
 {
+  "tripId": "trip_001",
   "rideId": "ride_001",
-  "userId": "jane.passenger@example.com"
+  "cancellationReason": "Change of plans"
 }
 ```
 
@@ -943,7 +958,7 @@ Driver rejects a passenger's booking request. Booking moves from `REQUESTED` →
 
 #### 5b.3 Complete a Passenger's Ride
 
-**POST** `/api/bookings/{bookingId}/complete?driverId={driverId}`
+**POST** `/api/bookings/{bookingId}/complete`
 
 Driver confirms a passenger's drop-off at their stop. The trip continues for remaining passengers.
 Booking moves from `CONFIRMED` or `IN_PROGRESS` → `COMPLETED`.
@@ -1343,7 +1358,6 @@ curl -X POST http://localhost:8080/trip-service/api/trips/offer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
-    "driverId": "john.driver@example.com",
     "vehicleId": "vehicle_001",
     "sourceLatitude": 50.8154,
     "sourceLongitude": 8.6747,
@@ -1376,7 +1390,7 @@ curl -X POST http://localhost:8080/auth-service/api/auth/signup \
 
 ### Step 2: Search for Matching Trips
 ```bash
-curl -X GET "http://localhost:8080/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2&effectiveUserId=jane.passenger@example.com" \
+curl -X GET "http://localhost:8080/trip-service/api/trips/search/matching-route?sourceLatitude=50.8150&sourceLongitude=8.6750&destinationLatitude=50.7260&destinationLongitude=7.0890&requestedSeats=2" \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -1386,9 +1400,19 @@ curl -X POST http://localhost:8080/trip-service/api/rides/book \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGc..." \
   -d '{
-    "passengerId": "jane.passenger@example.com",
     "tripId": "trip_001",
-    "numberOfSeats": 2
+    "driverId": "john.driver@example.com",
+    "pickupPoint": {
+      "latitude": 50.8150,
+      "longitude": 8.6750,
+      "placeAddress": "Marburg Hauptbahnhof"
+    },
+    "destinationPoint": {
+      "latitude": 50.7260,
+      "longitude": 7.0890,
+      "placeAddress": "Bonn Hbf"
+    },
+    "requestedSeats": 2
   }'
 ```
 
