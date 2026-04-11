@@ -1,6 +1,9 @@
 ---
 grafana:
   adminPassword: "admin"
+  persistence:
+    enabled: true
+    size: "500Mi"
   grafana.ini:
     server:
       root_url: "%(protocol)s://%(domain)s/grafana"
@@ -51,8 +54,15 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelector: {}
     serviceMonitorNamespaceSelector: {}
-    retention: "7d"
+    retention: "14d"
     enableRemoteWriteReceiver: true
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: "2Gi"
     resources:
       requests:
         memory: "128Mi"
