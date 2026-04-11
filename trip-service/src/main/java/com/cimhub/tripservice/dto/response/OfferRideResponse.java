@@ -47,10 +47,4 @@ public record OfferRideResponse(
         Double pricePerSeat,
 
         @Schema(description = "Current trip status", example = "AVAILABLE")
-        TripStatus tripStatus,
-
-        @Schema(description = "Whether the trip was successfully created", example = "true")
-        Boolean tripCreated,
-
-        @Schema(description = "Error message if trip creation failed", example = "null")
-        String errorMessage) {}
+        TripStatus tripStatus) {}

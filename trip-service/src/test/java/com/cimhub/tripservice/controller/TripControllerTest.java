@@ -76,7 +76,7 @@ class TripControllerTest {
                 .build();
 
         OfferRideResponse offerResponse =
-                OfferRideResponse.builder().tripId("trip-1").tripCreated(true).build();
+                OfferRideResponse.builder().tripId("trip-1").build();
         when(offerRideService.offerRide("driver-1", request)).thenReturn(offerResponse);
 
         ResponseEntity<ApiResponseWrapper<OfferRideResponse>> response =

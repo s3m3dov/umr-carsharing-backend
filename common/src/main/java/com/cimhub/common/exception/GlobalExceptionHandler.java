@@ -1,5 +1,6 @@
 package com.cimhub.common.exception;
 
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.dto.response.ErrorBody;
 import com.cimhub.common.dto.response.ErrorDetail;
@@ -168,7 +169,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .requestId(resolveRequestId(request))
                 .build();
 
-        return new ResponseEntity<>(apiError, status);
+        return new ResponseEntity<>(ApiResponseWrapper.error(apiError), status);
     }
 
     private String resolvePath(WebRequest request) {

@@ -1,5 +1,6 @@
 package com.cimhub.apigateway.exception;
 
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.dto.response.ErrorBody;
 import com.cimhub.common.exception.BusinessException;
@@ -170,8 +171,10 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
                 .requestId(requestId)
                 .build();
 
+        ApiResponseWrapper<Object> wrapper = ApiResponseWrapper.error(apiError);
+
         try {
-            byte[] body = objectMapper.writeValueAsBytes(apiError);
+            byte[] body = objectMapper.writeValueAsBytes(wrapper);
             DataBuffer buffer = response.bufferFactory().wrap(body);
             return response.writeWith(Mono.just(buffer));
         } catch (JsonProcessingException e) {

@@ -2,6 +2,8 @@ package com.cimhub.tripservice.service.trip;
 
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.BadRequestException;
+import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.osrm.OsrmResponseDTO;
 import com.cimhub.tripservice.dto.request.OfferRideRequest;
@@ -41,20 +43,12 @@ public class OfferRideService {
                 .block();
 
         if (routeDetails == null || routeDetails.routes().isEmpty()) {
-            return OfferRideResponse.builder()
-                    .tripCreated(false)
-                    .errorMessage("Could not calculate route for provided coordinates")
-                    .build();
+            throw new BadRequestException("Could not calculate route for provided coordinates");
         }
 
         VehicleDocument vehicle =
-                vehicleDocumentRepository.findByUserId(driverId).orElse(null);
-        if (vehicle == null) {
-            return OfferRideResponse.builder()
-                    .tripCreated(false)
-                    .errorMessage("Vehicle not found or does not belong to driver")
-                    .build();
-        }
+                vehicleDocumentRepository.findByUserId(driverId).orElseThrow(() ->
+                        new ResourceNotFoundException("Vehicle not found or does not belong to driver"));
 
         var mainRoute = routeDetails.routes().get(0);
         String timezone = TimezoneConversionService.getTimeZoneId(
@@ -97,7 +91,6 @@ public class OfferRideService {
                 .routeDurationInMinutes(mainRoute.duration() / 60.0)
                 .pricePerSeat(newTrip.getPricePerSeat())
                 .tripStatus(newTrip.getTripStatus())
-                .tripCreated(true)
                 .build();
     }
 }

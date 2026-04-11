@@ -1,5 +1,6 @@
 package com.cimhub.authservice.exception;
 
+import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.dto.response.ErrorBody;
 import com.cimhub.common.exception.BadRequestException;
@@ -22,7 +23,7 @@ import org.springframework.web.context.request.WebRequest;
 public class AuthExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
         log.warn("Bad credentials: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()
@@ -34,11 +35,11 @@ public class AuthExceptionHandler {
                 .requestId(resolveRequestId(request))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseWrapper.error(apiError));
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleUnauthorized(UnauthorizedException ex, WebRequest request) {
         log.warn("Unauthorized: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()
@@ -50,11 +51,11 @@ public class AuthExceptionHandler {
                 .requestId(resolveRequestId(request))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseWrapper.error(apiError));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiError> handleUserAlreadyExists(UserAlreadyExistsException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleUserAlreadyExists(UserAlreadyExistsException ex, WebRequest request) {
         log.warn("User already exists: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()
@@ -66,11 +67,11 @@ public class AuthExceptionHandler {
                 .requestId(resolveRequestId(request))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponseWrapper.error(apiError));
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex, WebRequest request) {
+    public ResponseEntity<ApiResponseWrapper<Object>> handleBadRequest(BadRequestException ex, WebRequest request) {
         log.warn("Bad request: {}", ex.getMessage());
 
         ApiError apiError = ApiError.builder()
@@ -82,7 +83,7 @@ public class AuthExceptionHandler {
                 .requestId(resolveRequestId(request))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseWrapper.error(apiError));
     }
 
     private String resolvePath(WebRequest request) {
