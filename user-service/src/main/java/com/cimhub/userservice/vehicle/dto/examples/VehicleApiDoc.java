@@ -105,4 +105,116 @@ public final class VehicleApiDoc {
               "timestamp": "2026-03-25T15:22:46.870Z",
               "requestId": "req_12364"
             }""";
+
+    // ---- Admin Responses ----
+
+    public static final String ADMIN_LIST_VEHICLES_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "content": [
+                  {
+                    "id": "vehicle_001",
+                    "userId": "john.driver@example.com",
+                    "vehicleNumber": "HE-XX-1234",
+                    "vehicleName": "Tesla Model 3",
+                    "vehicleType": "sedan",
+                    "vehicleColor": "white",
+                    "seatingCapacity": "5",
+                    "createdAt": "2026-03-30T12:00:00.000Z",
+                    "updatedAt": "2026-03-30T12:05:45.456Z"
+                  }
+                ],
+                "page": 0,
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "last": true
+              },
+              "message": "Vehicles retrieved successfully"
+            }""";
+
+    public static final String ADMIN_GET_VEHICLE_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "id": "vehicle_001",
+                "userId": "john.driver@example.com",
+                "vehicleNumber": "HE-XX-1234",
+                "vehicleName": "Tesla Model 3",
+                "vehicleType": "sedan",
+                "vehicleColor": "white",
+                "seatingCapacity": "5",
+                "createdAt": "2026-03-30T12:00:00.000Z",
+                "updatedAt": "2026-03-30T12:05:45.456Z"
+              },
+              "message": "Vehicle retrieved successfully"
+            }""";
+
+    public static final String ADMIN_CREATE_VEHICLE_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "id": "vehicle_001",
+                "userId": "john.driver@example.com",
+                "vehicleNumber": "HE-XX-1234",
+                "vehicleName": "Tesla Model 3",
+                "vehicleType": "sedan",
+                "vehicleColor": "white",
+                "seatingCapacity": "5",
+                "createdAt": "2026-03-30T12:00:00.000Z",
+                "updatedAt": "2026-03-30T12:00:00.000Z"
+              },
+              "message": "Vehicle created successfully"
+            }""";
+
+    public static final String ADMIN_UPDATE_VEHICLE_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "id": "vehicle_001",
+                "userId": "john.driver@example.com",
+                "vehicleNumber": "HE-XX-1234",
+                "vehicleName": "Tesla Model 3",
+                "vehicleType": "sedan",
+                "vehicleColor": "white",
+                "seatingCapacity": "5",
+                "createdAt": "2026-03-30T12:00:00.000Z",
+                "updatedAt": "2026-03-30T12:10:30.123Z"
+              },
+              "message": "Vehicle updated successfully"
+            }""";
+
+    public static final String ADMIN_DELETE_VEHICLE_RESPONSE = """
+            {
+              "success": true,
+              "data": "Vehicle deleted successfully",
+              "message": "Vehicle deleted"
+            }""";
+
+    public static final String ERROR_ADMIN_UNAUTHORIZED = """
+            {
+              "status": 403,
+              "code": "UNAUTHORIZED",
+              "message": "Authentication required",
+              "error": {
+                "path": "/api/admin/vehicles",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12390"
+            }""";
+
+    public static final String ERROR_VEHICLE_NOT_FOUND = """
+            {
+              "status": 404,
+              "code": "VEHICLE_NOT_FOUND",
+              "message": "Vehicle vehicle_001 not found",
+              "error": {
+                "path": "/api/admin/vehicles/vehicle_001",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12391"
+            }""";
 }

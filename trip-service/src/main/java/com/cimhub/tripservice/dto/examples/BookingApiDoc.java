@@ -141,4 +141,109 @@ public final class BookingApiDoc {
               "timestamp": "2026-03-25T15:22:46.870Z",
               "requestId": "req_12363"
             }""";
+
+    // ---- Admin Responses ----
+
+    public static final String ADMIN_LIST_BOOKINGS_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "content": [
+                  {
+                    "rideId": "ride_001",
+                    "tripId": "trip_001",
+                    "passengerId": "jane.passenger@example.com",
+                    "driverId": "john.driver@example.com",
+                    "pickupLocation": {
+                      "latitude": 50.8154,
+                      "longitude": 8.6747
+                    },
+                    "dropoffLocation": {
+                      "latitude": 50.7265,
+                      "longitude": 7.0895
+                    },
+                    "requestedSeats": 2,
+                    "fare": 31.00,
+                    "bookingStatus": "CONFIRMED",
+                    "createdAt": "2026-03-30T12:00:00.000Z"
+                  }
+                ],
+                "page": 0,
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "last": true
+              },
+              "message": "Bookings retrieved successfully"
+            }""";
+
+    public static final String ADMIN_GET_BOOKING_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "rideId": "ride_001",
+                "tripId": "trip_001",
+                "passengerId": "jane.passenger@example.com",
+                "driverId": "john.driver@example.com",
+                "pickupLocation": {
+                  "latitude": 50.8154,
+                  "longitude": 8.6747
+                },
+                "dropoffLocation": {
+                  "latitude": 50.7265,
+                  "longitude": 7.0895
+                },
+                "requestedSeats": 2,
+                "fare": 31.00,
+                "bookingStatus": "CONFIRMED",
+                "createdAt": "2026-03-30T12:00:00.000Z"
+              },
+              "message": "Booking retrieved successfully"
+            }""";
+
+    public static final String ADMIN_UPDATE_BOOKING_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "rideId": "ride_001",
+                "tripId": "trip_001",
+                "passengerId": "jane.passenger@example.com",
+                "driverId": "john.driver@example.com",
+                "pickupLocation": {
+                  "latitude": 50.8154,
+                  "longitude": 8.6747
+                },
+                "dropoffLocation": {
+                  "latitude": 50.7265,
+                  "longitude": 7.0895
+                },
+                "requestedSeats": 2,
+                "fare": 31.00,
+                "bookingStatus": "CONFIRMED",
+                "createdAt": "2026-03-30T12:00:00.000Z"
+              },
+              "message": "Booking updated successfully"
+            }""";
+
+    public static final String ADMIN_CANCEL_BOOKING_RESPONSE = """
+            {
+              "success": true,
+              "data": "Booking cancelled successfully",
+              "message": "Booking cancelled"
+            }""";
+
+    // ---- Errors ----
+
+    public static final String ERROR_UNAUTHORIZED = """
+            {
+              "status": 403,
+              "code": "UNAUTHORIZED",
+              "message": "Authentication required",
+              "error": {
+                "path": "/api/admin/bookings",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12380"
+            }""";
 }

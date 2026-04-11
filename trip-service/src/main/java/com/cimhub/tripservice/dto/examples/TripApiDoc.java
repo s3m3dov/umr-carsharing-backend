@@ -180,4 +180,81 @@ public final class TripApiDoc {
               "timestamp": "2026-03-25T15:22:46.870Z",
               "requestId": "req_12359"
             }""";
+
+    // ---- Admin Responses ----
+
+    public static final String ADMIN_LIST_TRIPS_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "content": [
+                  {
+                    "tripId": "trip_001",
+                    "driverId": "john.driver@example.com",
+                    "vehicleNumber": "HE-XX-1234",
+                    "carType": "SEDAN",
+                    "tripStatus": "SCHEDULED",
+                    "totalSeats": 4,
+                    "bookedSeats": 2,
+                    "availableSeats": 2,
+                    "pricePerSeat": 15.50,
+                    "routeDistance": 82.7,
+                    "routeDuration": 73.2,
+                    "tripStartDateTimeUTC": "2026-04-01T07:00:00Z",
+                    "tripTimezone": "Europe/Berlin",
+                    "createdAt": "2026-03-30T12:00:00.000Z",
+                    "updatedAt": "2026-03-30T12:10:30.123Z"
+                  }
+                ],
+                "page": 0,
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "last": true
+              },
+              "message": "Trips retrieved successfully"
+            }""";
+
+    public static final String ADMIN_GET_TRIP_RESPONSE = """
+            {
+              "success": true,
+              "data": {
+                "tripId": "trip_001",
+                "driverId": "john.driver@example.com",
+                "vehicleNumber": "HE-XX-1234",
+                "carType": "SEDAN",
+                "tripStatus": "SCHEDULED",
+                "totalSeats": 4,
+                "bookedSeats": 2,
+                "availableSeats": 2,
+                "pricePerSeat": 15.50,
+                "routeDistance": 82.7,
+                "routeDuration": 73.2,
+                "tripStartDateTimeUTC": "2026-04-01T07:00:00Z",
+                "tripTimezone": "Europe/Berlin",
+                "createdAt": "2026-03-30T12:00:00.000Z",
+                "updatedAt": "2026-03-30T12:10:30.123Z"
+              },
+              "message": "Trip retrieved successfully"
+            }""";
+
+    public static final String ADMIN_CANCEL_TRIP_RESPONSE = """
+            {
+              "success": true,
+              "data": "Trip cancelled successfully",
+              "message": "Trip cancelled"
+            }""";
+
+    public static final String ADMIN_CANCEL_TRIP_ALREADY_CANCELLED = """
+            {
+              "status": 409,
+              "code": "TRIP_ALREADY_CANCELLED",
+              "message": "Trip trip_001 is already cancelled",
+              "error": {
+                "path": "/api/admin/trips/trip_001",
+                "details": []
+              },
+              "timestamp": "2026-03-25T15:22:46.870Z",
+              "requestId": "req_12370"
+            }""";
 }

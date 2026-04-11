@@ -4,7 +4,7 @@
 
 | What You Need | Where to Find It |
 |---------------|-----------------|
-| **Endpoint response examples** | `*ApiExamples.java` in each service's `controller/` package |
+| **Endpoint response examples** | `*ApiDoc.java` in each service's `dto/examples/` package |
 | **DTO field examples** | `@Schema` annotations on request/response records |
 | **Full API docs with payloads** | `.docs/technical/api-reference.md` |
 | **cURL / JS / Python / Java** | `.docs/technical/integration-examples.md` |
@@ -47,7 +47,7 @@ Role profile request DTOs:
 - `user-service/.../dto/request/UpdatePassengerRequest.java`
 
 ### Trip Service
-**File:** `trip-service/.../controller/TripApiExamples.java`
+**File:** `trip-service/.../dto/examples/TripApiDoc.java`
 
 | Constant | Description |
 |----------|-------------|
@@ -59,9 +59,13 @@ Role profile request DTOs:
 | `CANCEL_TRIP_RESPONSE` | Trip cancelled |
 | `ERROR_TRIP_NOT_FOUND` | Trip doesn't exist |
 | `ERROR_TRIP_IN_PROGRESS` | Can't cancel active trip |
+| `ADMIN_LIST_TRIPS_RESPONSE` | Admin list all trips |
+| `ADMIN_GET_TRIP_RESPONSE` | Admin get trip detail |
+| `ADMIN_CANCEL_TRIP_RESPONSE` | Admin cancel trip |
+| `ADMIN_CANCEL_TRIP_ALREADY_CANCELLED` | Trip already cancelled |
 
 ### Booking (Trip Service)
-**File:** `trip-service/.../controller/BookingApiExamples.java`
+**File:** `trip-service/.../dto/examples/BookingApiDoc.java`
 
 | Constant | Description |
 |----------|-------------|
@@ -71,9 +75,26 @@ Role profile request DTOs:
 | `CANCEL_BOOKING_RESPONSE` | Booking cancelled |
 | `ACTIVE_BOOKINGS_RESPONSE` | Active bookings list |
 | `ERROR_TRIP_FULL` | No available seats |
+| `ADMIN_LIST_BOOKINGS_RESPONSE` | Admin list all bookings |
+| `ADMIN_GET_BOOKING_RESPONSE` | Admin get booking detail |
+| `ADMIN_UPDATE_BOOKING_RESPONSE` | Admin update booking |
+| `ADMIN_CANCEL_BOOKING_RESPONSE` | Admin cancel booking |
+
+### Reports (Trip Service)
+**File:** `trip-service/.../dto/examples/ReportsApiDoc.java`
+
+| Constant | Description |
+|----------|-------------|
+| `DRIVER_PERFORMANCE_REPORT` | Driver performance report |
+| `BOOKING_SUMMARY_REPORT` | Bookings summary |
+| `REVENUE_REPORT` | Revenue report |
+| `PASSENGER_ACTIVITY_REPORT` | Passenger activity |
+| `AUDIT_LOGS_RESPONSE` | Audit logs list |
+| `AUDIT_LOG_RESPONSE` | Single audit log |
+| ERROR_AUDIT_LOG_NOT_FOUND | Audit log not found |
 
 ### Review Service
-**File:** `review-service/.../controller/ReviewApiExamples.java`
+**File:** `review-service/.../dto/examples/ReviewApiDoc.java`
 
 | Constant | Description |
 |----------|-------------|
