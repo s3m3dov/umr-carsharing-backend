@@ -59,13 +59,16 @@ Content-Type: application/json
 client.test("Register vehicle: status 201", function() {
   client.assert(response.status === 201, "Expected 201, got " + response.status);
 });
-client.test("Register vehicle: success result", function() {
-  client.assert(response.body.data != null,
-    "Expected registered vehicle object in data");
+client.test("Register vehicle: data field present", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+});
+client.test("Register vehicle: value field present", function() {
   client.assert(response.body.data.value != null,
-    "Expected value (vehicleNumber) in returned vehicle object");
+    "Expected value (vehicleNumber) in returned data");
+});
+client.test("Register vehicle: text field present", function() {
   client.assert(response.body.data.text != null,
-    "Expected text (name | color) in returned vehicle object");
+    "Expected text (name | color) in returned data");
 });
 %}
 

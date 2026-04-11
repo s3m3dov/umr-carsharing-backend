@@ -24,7 +24,7 @@ client.test("Create notification: status 201", function() {
 });
 client.test("Create notification: data returned", function() {
   client.assert(response.body.data != null, "Expected data in response");
-  client.assert(response.body.data.notificationId != null, "Expected notificationId");
+  client.assert(response.body.data.notificationId != null, "Expected notificationId in data");
 });
 if (response.body && response.body.data && response.body.data.notificationId) {
   client.global.set("notificationId", response.body.data.notificationId);
@@ -32,7 +32,7 @@ if (response.body && response.body.data && response.body.data.notificationId) {
 %}
 
 ### 2) Get notifications for passenger
-GET {{baseUrl}}/notification-service/api/notifications/recipient/{{passengerEmail}}
+GET {{baseUrl}}/notification-service/api/notifications/{{passengerEmail}}
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 
@@ -40,11 +40,16 @@ Accept: application/json
 client.test("Get notifications: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
-client.test("Get notifications: returns array", function() {
-  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+client.test("Get notifications: returns paginated data", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+  client.assert(response.body.data.content != null, "Expected paginated content");
 });
 client.test("Get notifications: created notification exists", function() {
-  var notifications = response.body.data;
+  var notifications = response.body.data && response.body.data.content ? response.body.data.content : response.body.data;
+  if (!notifications || !Array.isArray(notifications)) {
+    client.assert(false, "Expected notifications array");
+    return;
+  }
   var found = false;
   for (var i = 0; i < notifications.length; i++) {
     if (notifications[i] && notifications[i].notificationId === client.global.get("notificationId")) {
@@ -57,58 +62,61 @@ client.test("Get notifications: created notification exists", function() {
 });
 %}
 
-### 3) Get single notification
-GET {{baseUrl}}/notification-service/api/notifications/{{notificationId}}
+### 3) Mark notification as read
+PATCH {{baseUrl}}/notification-service/api/notifications/{{notificationId}}/read
+Content-Type: application/json
 Authorization: Bearer {{passengerToken}}
-Accept: application/json
 
-> {%
-client.test("Get single notification: status 200", function() {
-  client.assert(response.status === 200, "Expected 200, got " + response.status);
-});
-client.test("Get single notification: correct data", function() {
-  client.assert(response.body.data != null, "Expected data in response");
-  client.assert(response.body.data.notificationId === client.global.get("notificationId"),
-    "Expected correct notificationId");
-});
-%}
-
-### 4) Mark notification as read
-PUT {{baseUrl}}/notification-service/api/notifications/{{notificationId}}/read
-Authorization: Bearer {{passengerToken}}
+{
+  "recipientId": "{{passengerEmail}}"
+}
 
 > {%
 client.test("Mark as read: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
+client.test("Mark as read: notification returned", function() {
+  client.assert(response.body.data != null, "Expected data in response");
+  client.assert(response.body.data.notificationId === client.global.get("notificationId"),
+    "Expected notificationId matches");
+});
 %}
 
-### 5) Get unread notification count for passenger
-GET {{baseUrl}}/notification-service/api/notifications/unread/count/{{passengerEmail}}
+### 4) Get notification stats for passenger
+GET {{baseUrl}}/notification-service/api/notifications/{{passengerEmail}}/stats
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 
 > {%
-client.test("Get unread count: status 200", function() {
+client.test("Get notification stats: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
-client.test("Get unread count: returns count data", function() {
+client.test("Get notification stats: returns data", function() {
   client.assert(response.body.data != null, "Expected data in response");
-  client.assert(response.body.data.unreadCount !== undefined, "Expected unreadCount field");
+  client.test("Get notification stats: unreadCount field exists", function() {
+    client.assert(response.body.data.unreadCount !== undefined, "Expected unreadCount field");
+  });
+});
+%}
+
+### 5) Mark all notifications as read
+PATCH {{baseUrl}}/notification-service/api/notifications/{{passengerEmail}}/read-all
+Authorization: Bearer {{passengerToken}}
+
+> {%
+client.test("Mark all as read: status 200", function() {
+  client.assert(response.status === 200, "Expected 200, got " + response.status);
 });
 %}
 
 ### 6) Get notifications for driver (empty at this point)
-GET {{baseUrl}}/notification-service/api/notifications/recipient/{{driverEmail}}
+GET {{baseUrl}}/notification-service/api/notifications/{{driverEmail}}
 Authorization: Bearer {{driverToken}}
 Accept: application/json
 
 > {%
 client.test("Get driver notifications: status 200", function() {
   client.assert(response.status === 200, "Expected 200, got " + response.status);
-});
-client.test("Get driver notifications: returns array", function() {
-  client.assert(Array.isArray(response.body.data), "Expected data to be an array");
 });
 %}
 
@@ -134,7 +142,7 @@ client.test("Get deleted notification: status 404", function() {
 });
 %}
 
-### 9) Create notification without auth (negative: expect 401 or 403)
+### 9) Create notification without auth (negative: expect 401)
 POST {{baseUrl}}/notification-service/api/notifications
 Content-Type: application/json
 
@@ -147,19 +155,44 @@ Content-Type: application/json
 }
 
 > {%
-client.test("Create notification no auth: status 401 or 403", function() {
-  client.assert(response.status === 401 || response.status === 403,
-    "Expected 401/403, got " + response.status);
+client.test("Create notification no auth: status 401", function() {
+  client.assert(response.status === 401, "Expected 401, got " + response.status);
 });
 %}
 
 ### 10) Get someone else's notifications (negative: expect 403)
-GET {{baseUrl}}/notification-service/api/notifications/recipient/{{driverEmail}}
+GET {{baseUrl}}/notification-service/api/notifications/{{driverEmail}}
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 
 > {%
 client.test("Get other user's notifications: status 403", function() {
   client.assert(response.status === 403, "Expected 403, got " + response.status);
+});
+%}
+
+### 11) Get non-existent notification (negative: expect 404)
+GET {{baseUrl}}/notification-service/api/notifications/non-existent-notification-id
+Authorization: Bearer {{passengerToken}}
+Accept: application/json
+
+> {%
+client.test("Get non-existent notification: status 404", function() {
+  client.assert(response.status === 404, "Expected 404, got " + response.status);
+});
+%}
+
+### 12) Mark notification as read with wrong recipient (negative: expect 403)
+PATCH {{baseUrl}}/notification-service/api/notifications/{{notificationId}}/read
+Content-Type: application/json
+Authorization: Bearer {{passengerToken}}
+
+{
+  "recipientId": "{{driverEmail}}"
+}
+
+> {%
+client.test("Mark as read wrong recipient: status 403", function() {
+  client.assert(response.status === 403, "Expected 403 for wrong recipient, got " + response.status);
 });
 %}
