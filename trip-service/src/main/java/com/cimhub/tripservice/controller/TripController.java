@@ -229,16 +229,11 @@ public class TripController {
             @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
             @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
             @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
-            @Parameter(description = "User ID of the passenger searching", example = "jane.passenger@example.com") @RequestParam(required = false) String effectiveUserId,
             @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
             @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
             @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
             @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
         requirePassengerRole(authenticatedUserRole);
-
-        if (effectiveUserId != null && !effectiveUserId.equals(authenticatedUserId)) {
-            throw new UnauthorizedException("User identity mismatch");
-        }
 
         log.info("Searching for matching route trips");
 
@@ -342,13 +337,8 @@ public class TripController {
     public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
-            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
-
-        if (driverId != null && !driverId.equals(authenticatedUserId)) {
-            throw new UnauthorizedException("Driver identity mismatch");
-        }
 
         log.info("Driver {} starting trip: {}", authenticatedUserId, tripId);
         StartTripResponse response = tripService.startTrip(tripId, authenticatedUserId);
@@ -377,13 +367,8 @@ public class TripController {
     public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
             @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
-            @Parameter(description = "Driver's user ID") @RequestParam(required = false) String driverId) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
-
-        if (driverId != null && !driverId.equals(authenticatedUserId)) {
-            throw new UnauthorizedException("Driver identity mismatch");
-        }
 
         log.info("Driver {} completing trip: {}", authenticatedUserId, tripId);
         CompleteTripResponse response = completionService.completeTrip(tripId, authenticatedUserId);
