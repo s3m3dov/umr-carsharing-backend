@@ -1,6 +1,6 @@
 package com.cimhub.tripservice.service.trip;
 
-import com.cimhub.common.model.Points;
+import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
@@ -72,8 +72,8 @@ class TripSearchServiceTest {
         trip.setDriverId("driver-1");
         trip.setVehicleNumber("HE-XX-1234");
         trip.setCarType("SEDAN");
-        trip.setSourceAddress(new Points());
-        trip.setDestinationAddress(new Points());
+        trip.setSourceAddress(Points.of(0, 0, ""));
+        trip.setDestinationAddress(Points.of(0, 0, ""));
         trip.setTripStatus(status);
         trip.setTripStartDateTimeUTC(Instant.parse("2026-02-01T12:00:00Z"));
         trip.setTripTimezone("UTC");

@@ -17,11 +17,7 @@ public final class TripFixtures {
     }
 
     public static Points point(double latitude, double longitude, String placeAddress) {
-        Points point = new Points();
-        point.setLatitude(latitude);
-        point.setLongitude(longitude);
-        point.setPlaceAddress(placeAddress);
-        return point;
+        return com.cimhub.common.testsupport.Points.of(latitude, longitude, placeAddress);
     }
 
     public static OfferRideRequest offerRideRequest() {

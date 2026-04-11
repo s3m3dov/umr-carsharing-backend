@@ -6,19 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
+import static com.cimhub.common.testsupport.Points.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PassengerRideResponseTest {
 
     @Test
     void builder_shouldCreateResponseWithDriverDetails() {
-        Points pickup = new Points();
-        pickup.setLatitude(52.5);
-        pickup.setLongitude(13.4);
-
-        Points dropoff = new Points();
-        dropoff.setLatitude(52.6);
-        dropoff.setLongitude(13.5);
+        Points pickup = of(52.5, 13.4, "Pickup");
+        Points dropoff = of(52.6, 13.5, "Destination");
 
         PassengerRideResponse.DriverDetails driverDetails = PassengerRideResponse.DriverDetails.builder()
                 .name("John D.")
