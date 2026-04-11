@@ -38,7 +38,7 @@ config:
         Name                tail
         Tag                 kube.*
         Path                /var/log/containers/*.log
-        multiline.parser    docker, cri
+        Parser              cri
         Mem_Buf_Limit       10MB
         Skip_Long_Lines     On
         Refresh_Interval    10
