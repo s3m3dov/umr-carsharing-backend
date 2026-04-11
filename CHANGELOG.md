@@ -20,6 +20,7 @@ and this project adheres to **Semantic Versioning**
 ### Fixed
 
 - `GET /api/users/{userId}` returning null `firstName`, `lastName`, `phoneNumber` after signup — root cause was auth-service and user-service both writing to the same `users` MongoDB collection; auth-service saved a credentials-only document first, user-service found it and threw 409, auth-service silently ignored the conflict, leaving the null-field document in place forever
+- Secured user profile flows and preserved email field consistency during updates
 - Added classifier to spring-boot-maven-plugin to produce plain jar for dependencies
 - Expanded actuator path exclusions to match wildcard patterns
 - Removed redundant actuator path exclusions in API gateway
@@ -41,6 +42,7 @@ and this project adheres to **Semantic Versioning**
 - `POST /api/users/profile` removed; role profile creation uses `POST /api/passengers/{userId}` and `POST /api/drivers/{userId}`
 - Reorganized service classes into domain-specific packages
 - Reorganized service tests by domain packages
+- Removed duplicated trip status enums in trip-service
 - Replaced OSM route service with configurable OSRM client
 - Centralized trip and ride response mapping with `BookingMapper` and `TripMapper`
 - Centralized controller role checks
@@ -51,15 +53,18 @@ and this project adheres to **Semantic Versioning**
 - Replaced Lombok `@Data` on persistence models with explicit accessors
 - Extracted reusable profile update contracts
 - Refactored review-service to reduce duplication and harden validation
+- Improved error handling in API gateway and review-service
 - Standardized package naming conventions
 - Moved OpenAPI example classes to `dto.examples` package
 - Removed unused `Points` model from common module
 - Updated references after package and class renames
 - Refactored tests to use `Points.of()` factory method across trip-service
+- Added API gateway component scanning for the common package
 
 ### Added
 
 - Route geometry to trip, ride, and booking responses
+- OpenAPI response examples for user-service admin controllers
 - Service integration tests with grouped trip test structure
 - Admin self profile endpoint in user-service
 - Focused tests for low-coverage services
@@ -76,6 +81,7 @@ and this project adheres to **Semantic Versioning**
 - `PUT  /api/drivers/{userId}` — update driver name / phone / age / license number
 - Driver sub-profile auto-created on first GET if missing (lazy creation fallback)
 - Auth-service rolls back the auth `users` document if user-service profile creation fails, keeping both stores consistent
+- Review-service Docker build pipeline now includes trip-service dependency artifacts
 
 ### Security
 
