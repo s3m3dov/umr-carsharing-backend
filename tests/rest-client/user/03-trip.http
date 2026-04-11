@@ -61,7 +61,7 @@ client.test("Offer trip no auth: status 401 or 403", function() {
 %}
 
 ### 3) Search matching route (passenger)
-GET {{baseUrl}}/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=1&effectiveUserId={{passengerEmail}}
+GET {{baseUrl}}/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=1
 Authorization: Bearer {{passengerToken}}
 Accept: application/json
 

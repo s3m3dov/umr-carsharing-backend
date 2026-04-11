@@ -138,14 +138,9 @@ public class BookingController {
     public ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> completeRide(
             @PathVariable String bookingId,
             @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Id", required = false) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole,
-            @RequestParam(required = false) String driverId) {
+            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false) @RequestHeader(value = "X-User-Role", required = false) String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
         requireAuthenticatedUser(authenticatedUserId);
-
-        if (driverId != null && !driverId.equals(authenticatedUserId)) {
-            throw new UnauthorizedException("Driver identity mismatch");
-        }
 
         log.info("Driver {} completing ride: {}", authenticatedUserId, bookingId);
         CompleteRideResponse response = completionService.completeRide(bookingId, authenticatedUserId);
