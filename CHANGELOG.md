@@ -71,6 +71,7 @@ and this project adheres to **Semantic Versioning**
 - Updated references after package and class renames
 - Refactored tests to use `Points.of()` factory method across trip-service
 - Added API gateway component scanning for the common package
+- **OfferRide Flow**: Removed unused fields and failure response handling for streamlined ride creation logic
 
 ### Added
 
@@ -99,6 +100,10 @@ and this project adheres to **Semantic Versioning**
 - Driver sub-profile auto-created on first GET if missing (lazy creation fallback)
 - Auth-service rolls back the auth `users` document if user-service profile creation fails, keeping both stores consistent
 - Review-service Docker build pipeline now includes trip-service dependency artifacts
+- **Monitoring refinements**: 
+  - Enabled kube-state-metrics and disabled unused Prometheus components
+  - Simplified Fluent Bit parser configuration and refined resource limits
+  - Configured Loki and Prometheus retention settings and enabled Grafana persistence
 
 ### Security
 
