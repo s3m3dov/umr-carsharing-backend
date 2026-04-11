@@ -7,6 +7,7 @@ WORKDIR /root
 COPY pom.xml .
 COPY common/pom.xml ./common/
 COPY review-service/pom.xml ./review-service/
+COPY trip-service/pom.xml ./trip-service/
 
 # Download dependencies (cached layer)
 RUN --mount=type=cache,target=/root/.m2 \
@@ -15,11 +16,13 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 # Copy source code
 COPY common/src ./common/src
+COPY trip-service/src ./trip-service/src
 COPY review-service/src ./review-service/src
 
 # Build with cached dependencies
 RUN --mount=type=cache,target=/root/.m2 \
   cd common && mvn clean install -DskipTests && \
+  cd ../trip-service && mvn clean install -DskipTests && \
   cd ../review-service && mvn clean package -DskipTests
 
 # Runtime stage
