@@ -64,6 +64,10 @@ curl -X POST http://localhost:8081/auth-service/api/auth/validate \
   }'
 ```
 
+**Identity propagation note:**
+- For protected APIs, the gateway derives identity from `Authorization: Bearer <JWT>` and injects `X-User-Id`.
+- Do not send caller identity fields such as `driverId`/`passengerId`/`userId` for caller-owned actions in request bodies.
+
 ### User Service
 
 #### Get User Profile
@@ -142,16 +146,19 @@ curl -X POST http://localhost:8084/trip-service/api/trips/offer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "driverId": "john.driver@example.com",
-    "vehicleId": "vehicle_001",
-    "sourceLatitude": 50.8154,
-    "sourceLongitude": 8.6747,
-    "destinationLatitude": 50.7265,
-    "destinationLongitude": 7.0895,
-    "departureTime": "2024-03-25T08:00:00Z",
-    "availableSeats": 3,
-    "pricePerSeat": 15.50,
-    "notes": "Morning commute"
+    "sourceAddress": {
+      "latitude": 50.8154,
+      "longitude": 8.6747,
+      "placeAddress": "Marburg Hauptbahnhof"
+    },
+    "destinationAddress": {
+      "latitude": 50.7265,
+      "longitude": 7.0895,
+      "placeAddress": "Bonn Hbf"
+    },
+    "tripStartDateTime": "2026-04-20T08:00:00Z",
+    "totalSeats": 3,
+    "pricePerSeat": 15.50
   }'
 ```
 
@@ -159,7 +166,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/offer \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2&effectiveUserId=jane.passenger@example.com" \
+curl -X GET "http://localhost:8084/trip-service/api/trips/search/matching-route?sourceLatitude=50.8154&sourceLongitude=8.6747&destinationLatitude=50.7265&destinationLongitude=7.0895&requestedSeats=2" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -180,8 +187,7 @@ curl -X POST http://localhost:8084/trip-service/api/trips/cancel \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "tripId": "trip_001",
-    "userId": "john.driver@example.com",
-    "reason": "Change of plans"
+    "cancellationReason": "Change of plans"
   }'
 ```
 
@@ -191,14 +197,23 @@ curl -X POST http://localhost:8084/trip-service/api/trips/cancel \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X POST http://localhost:8084/trip-service/api/bookings/join \
+curl -X POST http://localhost:8084/trip-service/api/rides/book \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "passengerId": "jane.passenger@example.com",
     "tripId": "trip_001",
-    "numberOfSeats": 2,
-    "specialRequests": "I have a large suitcase"
+    "driverId": "john.driver@example.com",
+    "pickupPoint": {
+      "latitude": 50.8154,
+      "longitude": 8.6747,
+      "placeAddress": "Marburg Hauptbahnhof"
+    },
+    "destinationPoint": {
+      "latitude": 50.7265,
+      "longitude": 7.0895,
+      "placeAddress": "Bonn Hbf"
+    },
+    "requestedSeats": 2
   }'
 ```
 
@@ -206,7 +221,7 @@ curl -X POST http://localhost:8084/trip-service/api/bookings/join \
 ```bash
 TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET http://localhost:8084/trip-service/api/bookings/active/passenger/jane.passenger@example.com \
+curl -X GET http://localhost:8084/trip-service/api/rides/active/passenger/jane.passenger@example.com \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -358,11 +373,11 @@ class CarSharingAPI {
 
   // Booking endpoints (Trip Service)
   async joinTrip(bookingData) {
-    return this.request('/trip-service/api/bookings/join', 'POST', bookingData);
+    return this.request('/trip-service/api/rides/book', 'POST', bookingData);
   }
 
   async getActiveBookings(passengerId) {
-    return this.request(`/trip-service/api/bookings/active/passenger/${passengerId}`);
+    return this.request(`/trip-service/api/rides/active/passenger/${passengerId}`);
   }
 }
 ```
@@ -380,14 +395,18 @@ console.log(profile);
 
 // Offer a trip
 const trip = await api.offerTrip({
-  driverId: 'john.driver@example.com',
-  vehicleId: 'vehicle_001',
-  sourceLatitude: 50.8154,
-  sourceLongitude: 8.6747,
-  destinationLatitude: 50.7265,
-  destinationLongitude: 7.0895,
-  departureTime: '2024-03-25T08:00:00Z',
-  availableSeats: 3,
+  sourceAddress: {
+    latitude: 50.8154,
+    longitude: 8.6747,
+    placeAddress: 'Marburg Hauptbahnhof'
+  },
+  destinationAddress: {
+    latitude: 50.7265,
+    longitude: 7.0895,
+    placeAddress: 'Bonn Hbf'
+  },
+  tripStartDateTime: '2026-04-20T08:00:00Z',
+  totalSeats: 3,
   pricePerSeat: 15.50
 });
 
@@ -548,7 +567,7 @@ class CarSharingAPI:
     def join_trip(self, booking_data: Dict[str, Any]) -> Dict[str, Any]:
         """Join a trip as passenger"""
         response = self.session.post(
-            f'{self.base_url}/trip-service/api/bookings/join',
+            f'{self.base_url}/trip-service/api/rides/book',
             json=booking_data,
             headers=self._get_headers()
         )
@@ -572,14 +591,18 @@ print(f"User: {profile['firstName']} {profile['lastName']}")
 
 # Offer a trip
 trip = api.offer_trip({
-    'driverId': 'john.driver@example.com',
-    'vehicleId': 'vehicle_001',
-    'sourceLatitude': 50.8154,
-    'sourceLongitude': 8.6747,
-    'destinationLatitude': 50.7265,
-    'destinationLongitude': 7.0895,
-    'departureTime': '2024-03-25T08:00:00Z',
-    'availableSeats': 3,
+    'sourceAddress': {
+        'latitude': 50.8154,
+        'longitude': 8.6747,
+        'placeAddress': 'Marburg Hauptbahnhof'
+    },
+    'destinationAddress': {
+        'latitude': 50.7265,
+        'longitude': 7.0895,
+        'placeAddress': 'Bonn Hbf'
+    },
+    'tripStartDateTime': '2026-04-20T08:00:00Z',
+    'totalSeats': 3,
     'pricePerSeat': 15.50
 })
 print(f"Trip created: {trip['tripId']}")
@@ -866,14 +889,18 @@ describe('Car Sharing API', () => {
     await api.login('driver@example.com', 'password');
 
     const trip = await api.offerTrip({
-      driverId: 'john.driver@example.com',
-      vehicleId: 'vehicle_001',
-      sourceLatitude: 50.8154,
-      sourceLongitude: 8.6747,
-      destinationLatitude: 50.7265,
-      destinationLongitude: 7.0895,
-      departureTime: '2024-03-25T08:00:00Z',
-      availableSeats: 3,
+      sourceAddress: {
+        latitude: 50.8154,
+        longitude: 8.6747,
+        placeAddress: 'Marburg Hauptbahnhof'
+      },
+      destinationAddress: {
+        latitude: 50.7265,
+        longitude: 7.0895,
+        placeAddress: 'Bonn Hbf'
+      },
+      tripStartDateTime: '2026-04-20T08:00:00Z',
+      totalSeats: 3,
       pricePerSeat: 15.50
     });
 
