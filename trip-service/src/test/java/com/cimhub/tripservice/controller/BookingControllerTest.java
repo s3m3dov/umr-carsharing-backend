@@ -1,13 +1,18 @@
 package com.cimhub.tripservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
 import com.cimhub.tripservice.dto.response.CompleteRideResponse;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.OperationMessage;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.service.booking.BookingService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;
@@ -18,11 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BookingControllerTest {
@@ -43,7 +43,8 @@ class BookingControllerTest {
 
     @BeforeEach
     void setUp() {
-        bookingController = new BookingController(joinTripService, bookingService, cancellationService, completionService);
+        bookingController =
+                new BookingController(joinTripService, bookingService, cancellationService, completionService);
     }
 
     @Test
@@ -65,7 +66,8 @@ class BookingControllerTest {
     void acceptBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.acceptBooking("b-1", "driver-1")).thenReturn("Booking accepted");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
+        ResponseEntity<ApiResponseWrapper<String>> response =
+                bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
 
         assertEquals("Booking accepted", response.getBody().getMessage());
         verify(joinTripService).acceptBooking("b-1", "driver-1");
@@ -75,7 +77,8 @@ class BookingControllerTest {
     void rejectBooking_shouldReturnOkWithServiceResult() {
         when(joinTripService.rejectBooking("b-2", "driver-1")).thenReturn("Booking rejected");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
+        ResponseEntity<ApiResponseWrapper<String>> response =
+                bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
 
         assertEquals("Booking rejected", response.getBody().getMessage());
         verify(joinTripService).rejectBooking("b-2", "driver-1");
@@ -83,14 +86,13 @@ class BookingControllerTest {
 
     @Test
     void completeRide_whenDriverParamMismatchesHeader_shouldThrowUnauthorized() {
-        assertThrows(UnauthorizedException.class,
-                () -> bookingController.completeRide("b-3", "driver-1", "DRIVER", "other-driver"));
+        assertThrows(
+                UnauthorizedException.class, () -> bookingController.completeRide("b-3", "other-driver", "DRIVER"));
     }
 
     @Test
     void acceptBooking_whenRoleIsNotDriver_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
-                () -> bookingController.acceptBooking("b-1", "driver-1", "PASSENGER"));
+        assertThrows(ForbiddenException.class, () -> bookingController.acceptBooking("b-1", "driver-1", "PASSENGER"));
     }
 
     @Test
@@ -105,9 +107,12 @@ class BookingControllerTest {
                 .build();
         when(completionService.completeRide("b-3", "driver-1")).thenReturn(completeRideResponse);
 
-        ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> response = bookingController.completeRide("b-3", "driver-1", "DRIVER", null);
+        ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> response =
+                bookingController.completeRide("b-3", "driver-1", "DRIVER");
 
-        assertEquals(OperationMessage.RIDE_COMPLETED_SUCCESS.text(), response.getBody().getMessage());
+        assertEquals(
+                OperationMessage.RIDE_COMPLETED_SUCCESS.text(),
+                response.getBody().getMessage());
         assertEquals(BookingStatus.COMPLETED, response.getBody().getData().bookingStatus());
         assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());
         verify(completionService).completeRide("b-3", "driver-1");

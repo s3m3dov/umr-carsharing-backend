@@ -1,5 +1,15 @@
 package com.cimhub.tripservice.service.booking;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
@@ -9,30 +19,19 @@ import com.cimhub.tripservice.exception.BookingAlreadyProcessedException;
 import com.cimhub.tripservice.exception.InsufficientSeatsException;
 import com.cimhub.tripservice.exception.TripNotAvailableException;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import com.cimhub.tripservice.testsupport.TripFixtures;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JoinTripServiceTest {
@@ -53,7 +52,8 @@ class JoinTripServiceTest {
 
     @BeforeEach
     void setUp() {
-        joinTripService = new JoinTripService(tripsRepository, bookingRepository, auditService, driverNotificationService);
+        joinTripService =
+                new JoinTripService(tripsRepository, bookingRepository, auditService, driverNotificationService);
     }
 
     // ── joinTrip (auto-confirm) ───────────────────────────────────────────────
@@ -71,7 +71,7 @@ class JoinTripServiceTest {
             return b;
         });
 
-        String result = joinTripService.joinTrip(request);
+        String result = joinTripService.joinTrip("passenger-1", request);
 
         assertEquals("Ride booked successfully.", result);
 
@@ -102,7 +102,7 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTrip(request);
+        String result = joinTripService.joinTrip("passenger-1", request);
 
         assertEquals("Ride booked successfully.", result);
     }
@@ -113,7 +113,7 @@ class JoinTripServiceTest {
 
         JoinTripRequest request = TripFixtures.joinTripRequest("missing-trip", "passenger-1", 1);
 
-        assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTrip(request));
+        assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTrip("passenger-1", request));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -124,7 +124,7 @@ class JoinTripServiceTest {
 
         JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
-        assertThrows(TripNotAvailableException.class, () -> joinTripService.joinTrip(request));
+        assertThrows(TripNotAvailableException.class, () -> joinTripService.joinTrip("passenger-1", request));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -143,7 +143,7 @@ class JoinTripServiceTest {
 
         JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 1);
 
-        assertThrows(AlreadyBookedException.class, () -> joinTripService.joinTrip(request));
+        assertThrows(AlreadyBookedException.class, () -> joinTripService.joinTrip("passenger-1", request));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -161,7 +161,8 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTrip(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
+        String result =
+                joinTripService.joinTrip("passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
 
         assertEquals("Ride booked successfully.", result);
     }
@@ -176,7 +177,7 @@ class JoinTripServiceTest {
 
         JoinTripRequest request = TripFixtures.joinTripRequest("trip-1", "passenger-1", 2);
 
-        assertThrows(InsufficientSeatsException.class, () -> joinTripService.joinTrip(request));
+        assertThrows(InsufficientSeatsException.class, () -> joinTripService.joinTrip("passenger-1", request));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -189,7 +190,8 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTrip(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
+        String result =
+                joinTripService.joinTrip("passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
 
         assertEquals("Ride booked successfully.", result);
     }
@@ -209,7 +211,7 @@ class JoinTripServiceTest {
             return b;
         });
 
-        String result = joinTripService.joinTripWithDriverAccept(request);
+        String result = joinTripService.joinTripWithDriverAccept("passenger-1", request);
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
 
@@ -240,7 +242,7 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTripWithDriverAccept(request);
+        String result = joinTripService.joinTripWithDriverAccept("passenger-1", request);
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
     }
@@ -251,7 +253,9 @@ class JoinTripServiceTest {
 
         JoinTripRequest request = TripFixtures.joinTripRequest("missing-trip", "passenger-1", 1);
 
-        assertThrows(ResourceNotFoundException.class, () -> joinTripService.joinTripWithDriverAccept(request));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> joinTripService.joinTripWithDriverAccept("passenger-1", request));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -260,8 +264,10 @@ class JoinTripServiceTest {
         Trip trip = TripFixtures.trip("trip-1", "driver-1", TripStatus.CANCELLED, 4, 0);
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(TripNotAvailableException.class,
-                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
+        assertThrows(
+                TripNotAvailableException.class,
+                () -> joinTripService.joinTripWithDriverAccept(
+                        "passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -278,8 +284,10 @@ class JoinTripServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(existing));
 
-        assertThrows(AlreadyBookedException.class,
-                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
+        assertThrows(
+                AlreadyBookedException.class,
+                () -> joinTripService.joinTripWithDriverAccept(
+                        "passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 1)));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -290,8 +298,10 @@ class JoinTripServiceTest {
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
 
-        assertThrows(InsufficientSeatsException.class,
-                () -> joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2)));
+        assertThrows(
+                InsufficientSeatsException.class,
+                () -> joinTripService.joinTripWithDriverAccept(
+                        "passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 2)));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -309,7 +319,8 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of(cancelled));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
+        String result = joinTripService.joinTripWithDriverAccept(
+                "passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 1));
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
     }
@@ -323,7 +334,8 @@ class JoinTripServiceTest {
         when(bookingRepository.findByTripId("trip-1")).thenReturn(List.of());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        String result = joinTripService.joinTripWithDriverAccept(TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
+        String result = joinTripService.joinTripWithDriverAccept(
+                "passenger-1", TripFixtures.joinTripRequest("trip-1", "passenger-1", 2));
 
         assertEquals("Booking request submitted. Waiting for driver confirmation.", result);
     }
@@ -370,7 +382,8 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
+        assertThrows(
+                BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -384,7 +397,8 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
+        assertThrows(
+                BookingAlreadyProcessedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-1"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -398,8 +412,7 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(UnauthorizedException.class,
-                () -> joinTripService.acceptBooking("booking-1", "driver-2"));
+        assertThrows(UnauthorizedException.class, () -> joinTripService.acceptBooking("booking-1", "driver-2"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -473,7 +486,8 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(BookingAlreadyProcessedException.class, () -> joinTripService.rejectBooking("booking-1", "driver-1"));
+        assertThrows(
+                BookingAlreadyProcessedException.class, () -> joinTripService.rejectBooking("booking-1", "driver-1"));
         verify(bookingRepository, never()).save(any());
     }
 
@@ -487,9 +501,7 @@ class JoinTripServiceTest {
 
         when(bookingRepository.findById("booking-1")).thenReturn(Optional.of(booking));
 
-        assertThrows(UnauthorizedException.class,
-                () -> joinTripService.rejectBooking("booking-1", "driver-2"));
+        assertThrows(UnauthorizedException.class, () -> joinTripService.rejectBooking("booking-1", "driver-2"));
         verify(bookingRepository, never()).save(any());
     }
-
 }

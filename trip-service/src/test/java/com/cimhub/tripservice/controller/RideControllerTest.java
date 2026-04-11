@@ -1,14 +1,20 @@
 package com.cimhub.tripservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.request.CancelTripRequest;
 import com.cimhub.tripservice.dto.request.JoinTripRequest;
 import com.cimhub.tripservice.dto.response.PassengerRideResponse;
-import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.JoinTripService;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,13 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RideControllerTest {
@@ -45,44 +44,55 @@ class RideControllerTest {
 
     @Test
     void bookRide_shouldReturnCreatedWithServiceMessage() {
-        JoinTripRequest request = JoinTripRequest.builder().tripId("trip-1").passengerId("p-1").requestedSeats(1).build();
-        when(joinTripService.joinTrip(request)).thenReturn("Ride booked");
+        JoinTripRequest request = JoinTripRequest.builder()
+                .tripId("trip-1")
+                .driverId("d-1")
+                .requestedSeats(1)
+                .build();
+        when(joinTripService.joinTrip("p-1", request)).thenReturn("Ride booked");
 
         ResponseEntity<ApiResponseWrapper<String>> response = rideController.bookRide("p-1", "PASSENGER", request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("Ride booked", response.getBody().getMessage());
-        verify(joinTripService).joinTrip(request);
+        verify(joinTripService).joinTrip("p-1", request);
     }
 
     @Test
     void bookRideWithDriverAccept_shouldReturnCreatedWithServiceMessage() {
-        JoinTripRequest request = JoinTripRequest.builder().tripId("trip-2").passengerId("p-2").requestedSeats(2).build();
-        when(joinTripService.joinTripWithDriverAccept(request)).thenReturn("Booking requested");
+        JoinTripRequest request = JoinTripRequest.builder()
+                .tripId("trip-2")
+                .driverId("d-2")
+                .requestedSeats(2)
+                .build();
+        when(joinTripService.joinTripWithDriverAccept("p-2", request)).thenReturn("Booking requested");
 
-        ResponseEntity<ApiResponseWrapper<String>> response = rideController.bookRideWithDriverAccept("p-2", "PASSENGER", request);
+        ResponseEntity<ApiResponseWrapper<String>> response =
+                rideController.bookRideWithDriverAccept("p-2", "PASSENGER", request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("Booking requested", response.getBody().getMessage());
-        verify(joinTripService).joinTripWithDriverAccept(request);
+        verify(joinTripService).joinTripWithDriverAccept("p-2", request);
     }
 
     @Test
     void cancelRide_shouldReturnOkWithServiceMessage() {
-        CancelTripRequest request = CancelTripRequest.builder().userId("p-1").rideId("b-1").build();
-        when(cancellationService.cancelRide(request)).thenReturn("Cancelled");
+        CancelTripRequest request = CancelTripRequest.builder().rideId("b-1").build();
+        when(cancellationService.cancelRide("p-1", request)).thenReturn("Cancelled");
 
         ResponseEntity<ApiResponseWrapper<String>> response = rideController.cancelRide("p-1", "PASSENGER", request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Cancelled", response.getBody().getMessage());
-        verify(cancellationService).cancelRide(request);
+        verify(cancellationService).cancelRide("p-1", request);
     }
 
     @Test
     void getPassengerActiveAndHistory_shouldReturnLists() {
-        PassengerRideResponse active = PassengerRideResponse.builder().rideId("active-1").build();
-        PassengerRideResponse history = PassengerRideResponse.builder().rideId("history-1").build();
+        PassengerRideResponse active =
+                PassengerRideResponse.builder().rideId("active-1").build();
+        PassengerRideResponse history =
+                PassengerRideResponse.builder().rideId("history-1").build();
         when(activeRidesService.findPassengerActiveRides("p-10")).thenReturn(List.of(active));
         when(activeRidesService.findPassengerRideHistory("p-10")).thenReturn(List.of(history));
 
@@ -105,33 +115,40 @@ class RideControllerTest {
 
     @Test
     void bookRide_whenPassengerInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        JoinTripRequest request = JoinTripRequest.builder().tripId("trip-1").passengerId("other-user").requestedSeats(1).build();
+        JoinTripRequest request = JoinTripRequest.builder()
+                .tripId("trip-1")
+                .driverId("d-1")
+                .requestedSeats(1)
+                .build();
 
-        assertThrows(UnauthorizedException.class,
-                () -> rideController.bookRide("p-1", "PASSENGER", request));
+        assertThrows(UnauthorizedException.class, () -> rideController.bookRide("p-1", "PASSENGER", request));
     }
 
     @Test
     void cancelRide_whenUserInPayloadMismatchesHeader_shouldThrowUnauthorized() {
-        CancelTripRequest request = CancelTripRequest.builder().userId("other-user").rideId("b-1").build();
+        CancelTripRequest request = CancelTripRequest.builder().rideId("b-1").build();
 
-        assertThrows(UnauthorizedException.class,
-                () -> rideController.cancelRide("p-1", "PASSENGER", request));
+        assertThrows(UnauthorizedException.class, () -> rideController.cancelRide("p-1", "PASSENGER", request));
     }
 
     @Test
     void passengerRideEndpoints_whenPathPassengerDoesNotMatchHeader_shouldThrowUnauthorized() {
-        assertThrows(UnauthorizedException.class,
+        assertThrows(
+                UnauthorizedException.class,
                 () -> rideController.getPassengerActiveRides("other-user", "PASSENGER", "p-10"));
-        assertThrows(UnauthorizedException.class,
+        assertThrows(
+                UnauthorizedException.class,
                 () -> rideController.getPassengerRideHistory("other-user", "PASSENGER", "p-10"));
     }
 
     @Test
     void bookRide_whenRoleIsNotPassenger_shouldThrowForbidden() {
-        JoinTripRequest request = JoinTripRequest.builder().tripId("trip-1").passengerId("p-1").requestedSeats(1).build();
+        JoinTripRequest request = JoinTripRequest.builder()
+                .tripId("trip-1")
+                .driverId("d-1")
+                .requestedSeats(1)
+                .build();
 
-        assertThrows(ForbiddenException.class,
-                () -> rideController.bookRide("p-1", "DRIVER", request));
+        assertThrows(ForbiddenException.class, () -> rideController.bookRide("p-1", "DRIVER", request));
     }
 }
