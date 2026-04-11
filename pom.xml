@@ -223,12 +223,6 @@
 						<trimTrailingWhitespace />
 						<endWithNewline />
 					</java>
-					<yaml>
-						<includes>
-							<include>gitops/**/*.yaml</include>
-						</includes>
-						<jackson />
-					</yaml>
 				</configuration>
 				<executions>
 					<execution>
