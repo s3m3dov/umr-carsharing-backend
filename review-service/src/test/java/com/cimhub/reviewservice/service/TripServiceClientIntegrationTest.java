@@ -1,21 +1,5 @@
 package com.cimhub.reviewservice.service;
 
-import com.cimhub.common.exception.DependencyUnavailableException;
-import com.cimhub.common.enums.BookingStatus;
-import com.cimhub.common.enums.TripStatus;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestClient;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -26,6 +10,21 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
+import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.DependencyUnavailableException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
 
 class TripServiceClientIntegrationTest {
 
@@ -43,9 +42,8 @@ class TripServiceClientIntegrationTest {
 
     @Test
     void isTripCompleted_shouldReturnTrueWhenTripStatusCompleted() throws Exception {
-        String payload = wrappedJson(Map.ofEntries(
-                Map.entry("tripStatus", TripStatus.COMPLETED.name()),
-                Map.entry("driverId", "driver-1")));
+        String payload = wrappedJson(
+                Map.ofEntries(Map.entry("tripStatus", TripStatus.COMPLETED.name()), Map.entry("driverId", "driver-1")));
         server.expect(requestTo("http://trip-service.test/api/trips/trip-1"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
@@ -66,9 +64,8 @@ class TripServiceClientIntegrationTest {
 
     @Test
     void isTripCompleted_shouldReturnFalseWhenTripNotCompleted() throws Exception {
-        String payload = wrappedJson(Map.ofEntries(
-                Map.entry("tripStatus", TripStatus.AVAILABLE.name()),
-                Map.entry("driverId", "driver-1")));
+        String payload = wrappedJson(
+                Map.ofEntries(Map.entry("tripStatus", TripStatus.AVAILABLE.name()), Map.entry("driverId", "driver-1")));
         server.expect(requestTo("http://trip-service.test/api/trips/trip-available"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
@@ -82,8 +79,7 @@ class TripServiceClientIntegrationTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withServerError());
 
-        assertThrows(DependencyUnavailableException.class,
-                () -> tripServiceClient.isTripCompleted("trip-2"));
+        assertThrows(DependencyUnavailableException.class, () -> tripServiceClient.isTripCompleted("trip-2"));
         server.verify();
     }
 
@@ -93,8 +89,7 @@ class TripServiceClientIntegrationTest {
         server.expect(requestTo("http://trip-service.test/api/trips/trip-3"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        assertThrows(DependencyUnavailableException.class,
-                () -> tripServiceClient.isTripCompleted("trip-3"));
+        assertThrows(DependencyUnavailableException.class, () -> tripServiceClient.isTripCompleted("trip-3"));
         server.verify();
     }
 
@@ -103,16 +98,14 @@ class TripServiceClientIntegrationTest {
         server.expect(requestTo("http://trip-service.test/api/trips/trip-4"))
                 .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
 
-        assertThrows(DependencyUnavailableException.class,
-                () -> tripServiceClient.isTripCompleted("trip-4"));
+        assertThrows(DependencyUnavailableException.class, () -> tripServiceClient.isTripCompleted("trip-4"));
         server.verify();
     }
 
     @Test
     void isBookingCompleted_shouldUseBookingStatusField() throws Exception {
         String payload = wrappedJson(Map.ofEntries(
-                Map.entry("status", BookingStatus.COMPLETED.name()),
-                Map.entry("passengerId", "passenger-1")));
+                Map.entry("status", BookingStatus.COMPLETED.name()), Map.entry("passengerId", "passenger-1")));
         server.expect(requestTo("http://trip-service.test/api/bookings/booking-1"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
@@ -122,9 +115,8 @@ class TripServiceClientIntegrationTest {
 
     @Test
     void getTripDriverId_shouldReturnDriverIdWhenPresent() throws Exception {
-        String payload = wrappedJson(Map.ofEntries(
-                Map.entry("tripStatus", TripStatus.COMPLETED.name()),
-                Map.entry("driverId", "driver-7")));
+        String payload = wrappedJson(
+                Map.ofEntries(Map.entry("tripStatus", TripStatus.COMPLETED.name()), Map.entry("driverId", "driver-7")));
         server.expect(requestTo("http://trip-service.test/api/trips/trip-7"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
@@ -147,16 +139,14 @@ class TripServiceClientIntegrationTest {
         server.expect(requestTo("http://trip-service.test/api/trips/trip-no-driver"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        assertThrows(DependencyUnavailableException.class,
-                () -> tripServiceClient.getTripDriverId("trip-no-driver"));
+        assertThrows(DependencyUnavailableException.class, () -> tripServiceClient.getTripDriverId("trip-no-driver"));
         server.verify();
     }
 
     @Test
     void getBookingPassengerId_shouldReturnPassengerIdWhenPresent() throws Exception {
         String payload = wrappedJson(Map.ofEntries(
-                Map.entry("status", BookingStatus.COMPLETED.name()),
-                Map.entry("passengerId", "passenger-7")));
+                Map.entry("status", BookingStatus.COMPLETED.name()), Map.entry("passengerId", "passenger-7")));
         server.expect(requestTo("http://trip-service.test/api/bookings/booking-7"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
@@ -170,7 +160,8 @@ class TripServiceClientIntegrationTest {
         server.expect(requestTo("http://trip-service.test/api/bookings/booking-no-passenger"))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        assertThrows(DependencyUnavailableException.class,
+        assertThrows(
+                DependencyUnavailableException.class,
                 () -> tripServiceClient.getBookingPassengerId("booking-no-passenger"));
         server.verify();
     }
@@ -180,8 +171,8 @@ class TripServiceClientIntegrationTest {
         server.expect(requestTo("http://trip-service.test/api/bookings/booking-500"))
                 .andRespond(withServerError());
 
-        assertThrows(DependencyUnavailableException.class,
-                () -> tripServiceClient.getBookingPassengerId("booking-500"));
+        assertThrows(
+                DependencyUnavailableException.class, () -> tripServiceClient.getBookingPassengerId("booking-500"));
         server.verify();
     }
 

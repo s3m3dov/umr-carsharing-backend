@@ -3,16 +3,15 @@ package com.cimhub.tripservice.service.notification;
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +29,7 @@ public class DriverNotificationService {
     public void notifyBookingRequested(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s requested %d seat(s) on your trip %s.",
-                booking.getPassengerId(),
-                booking.getRequestedSeats(),
-                booking.getTripId());
+                booking.getPassengerId(), booking.getRequestedSeats(), booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getDriverId(),
@@ -47,9 +44,7 @@ public class DriverNotificationService {
     public void notifyBookingConfirmed(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s confirmed %d seat(s) on your trip %s.",
-                booking.getPassengerId(),
-                booking.getRequestedSeats(),
-                booking.getTripId());
+                booking.getPassengerId(), booking.getRequestedSeats(), booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getDriverId(),
@@ -62,9 +57,8 @@ public class DriverNotificationService {
     }
 
     public void notifyRideCompleted(Trip trip, Booking booking) {
-        String message = String.format(
-                "Your ride on trip %s has been completed. Thank you for riding!",
-                booking.getTripId());
+        String message =
+                String.format("Your ride on trip %s has been completed. Thank you for riding!", booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getPassengerId(),
@@ -78,8 +72,7 @@ public class DriverNotificationService {
 
     public void notifyTripCompleted(Trip trip, Booking booking) {
         String message = String.format(
-                "Your ride on trip %s has been completed by the driver. Thank you for riding!",
-                booking.getTripId());
+                "Your ride on trip %s has been completed by the driver. Thank you for riding!", booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getPassengerId(),
@@ -94,9 +87,7 @@ public class DriverNotificationService {
     public void notifyBookingCancelledByPassenger(Trip trip, Booking booking) {
         String message = String.format(
                 "Passenger %s cancelled booking %s for trip %s.",
-                booking.getPassengerId(),
-                booking.getBookingId(),
-                booking.getTripId());
+                booking.getPassengerId(), booking.getBookingId(), booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getDriverId(),
@@ -109,9 +100,8 @@ public class DriverNotificationService {
     }
 
     public void notifyPassengerBookingAccepted(Trip trip, Booking booking) {
-        String message = String.format(
-                "Your booking for trip %s has been accepted by the driver.",
-                booking.getTripId());
+        String message =
+                String.format("Your booking for trip %s has been accepted by the driver.", booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getPassengerId(),
@@ -124,9 +114,8 @@ public class DriverNotificationService {
     }
 
     public void notifyPassengerBookingRejected(Trip trip, Booking booking) {
-        String message = String.format(
-                "Your booking for trip %s has been rejected by the driver.",
-                booking.getTripId());
+        String message =
+                String.format("Your booking for trip %s has been rejected by the driver.", booking.getTripId());
 
         sendNotification(new CreateNotificationRequest(
                 booking.getPassengerId(),
@@ -169,7 +158,8 @@ public class DriverNotificationService {
         } catch (Exception ex) {
             // Notification failures are non-fatal: the booking/trip operation has already
             // succeeded. Log as error so it is visible in monitoring but do not propagate.
-            log.error("Failed to send notification (type={}, recipient={}, url={}): {}",
+            log.error(
+                    "Failed to send notification (type={}, recipient={}, url={}): {}",
                     request.type(),
                     request.recipientId(),
                     notificationServiceBaseUrl,
@@ -199,6 +189,5 @@ public class DriverNotificationService {
             String message,
             NotificationType type,
             String relatedEntityId,
-            Map<String, Object> metadata) {
-    }
+            Map<String, Object> metadata) {}
 }

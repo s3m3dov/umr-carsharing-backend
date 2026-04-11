@@ -2,12 +2,11 @@ package com.cimhub.common.dto;
 
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.dto.response.ErrorBody;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
 
 /**
  * Unified API response wrapper for all endpoints
@@ -88,10 +87,7 @@ public class ApiResponseWrapper<T> {
      * Create an error response with code and message
      */
     public static <T> ApiResponseWrapper<T> error(String code, String message) {
-        return error(ApiError.builder()
-                .code(code)
-                .message(message)
-                .build());
+        return error(ApiError.builder().code(code).message(message).build());
     }
 
     /**

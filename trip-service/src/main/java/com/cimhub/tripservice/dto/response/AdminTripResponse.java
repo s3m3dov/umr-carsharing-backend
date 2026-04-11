@@ -1,13 +1,12 @@
 package com.cimhub.tripservice.dto.response;
 
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
-import com.cimhub.common.enums.TripStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 @Schema(
@@ -39,8 +38,7 @@ import java.time.Instant;
                   "createdAt": "2026-03-30T12:00:00.000Z",
                   "updatedAt": "2026-03-30T12:10:30.123Z"
                 }
-                """
-)
+                """)
 public record AdminTripResponse(
         String tripId,
         String driverId,
@@ -55,14 +53,17 @@ public record AdminTripResponse(
         double pricePerSeat,
         double routeDistance,
         double routeDuration,
+
         @Schema(description = "Route geometry as GeoJSON LineString (lon,lat pairs)")
         Geometry routeGeometry,
+
         Instant tripStartDateTimeUTC,
         String tripTimezone,
+
         @Schema(description = "Timestamp when trip was created (UTC)", example = "2026-03-30T12:00:00.000Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant createdAt,
+
         @Schema(description = "Timestamp when trip was last updated (UTC)", example = "2026-03-30T12:10:30.123Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

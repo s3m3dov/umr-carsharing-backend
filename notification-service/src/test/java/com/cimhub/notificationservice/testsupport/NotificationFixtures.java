@@ -2,14 +2,12 @@ package com.cimhub.notificationservice.testsupport;
 
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
-
 import java.time.Instant;
 import java.util.Map;
 
 public final class NotificationFixtures {
 
-    private NotificationFixtures() {
-    }
+    private NotificationFixtures() {}
 
     public static NotificationResponse notificationResponse(String id, String recipientId, String senderId) {
         return NotificationResponse.builder()

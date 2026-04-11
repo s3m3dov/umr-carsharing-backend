@@ -1,4 +1,4 @@
-# Local overrides: serve Grafana at /grafana subpath via NGINX ingress
+---
 grafana:
   env:
     GF_SERVER_ROOT_URL: "http://localhost:8888/grafana/"

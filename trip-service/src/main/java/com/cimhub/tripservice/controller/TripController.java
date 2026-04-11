@@ -26,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,14 +34,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Validated
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Trip Management", description = "APIs for drivers to create trips (offers), manage their trips, cancel trips, and view trip history.")
+@Tag(
+        name = "Trip Management",
+        description =
+                "APIs for drivers to create trips (offers), manage their trips, cancel trips, and view trip history.")
 public class TripController {
 
     private final OfferRideService offerRideService;
@@ -52,64 +54,95 @@ public class TripController {
 
     @Operation(
             summary = "Offer a new trip (driver creates a ride)",
-            description = "Driver creates a trip with locations, departure time, and available seats. Trip becomes searchable by passengers."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Trip created successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.OFFER_TRIP_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid trip data",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_TRIP_DATA))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_UNAUTHORIZED))
-            )
-    })
+            description =
+                    "Driver creates a trip with locations, departure time, and available seats. Trip becomes searchable by passengers.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Trip created successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.OFFER_TRIP_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid trip data",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_TRIP_DATA))),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Unauthorized",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_UNAUTHORIZED)))
+            })
     @PostMapping("/offer")
     public ResponseEntity<ApiResponseWrapper<OfferRideResponse>> offerTrip(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole,
             @Valid @RequestBody OfferRideRequest request) {
         requireDriverRole(authenticatedUserRole);
 
         log.info("Offering trip for driver: {}", authenticatedUserId);
         OfferRideResponse response = offerRideService.offerRide(authenticatedUserId, request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(response));
     }
 
     @Operation(
             summary = "Cancel a trip or booking",
-            description = "Driver cancels entire trip or passenger cancels their booking."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Cancelled successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.CANCEL_TRIP_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Cannot cancel (already in progress)",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_IN_PROGRESS))
-            )
-    })
+            description = "Driver cancels entire trip or passenger cancels their booking.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Cancelled successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.CANCEL_TRIP_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Trip not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))),
+                @ApiResponse(
+                        responseCode = "409",
+                        description = "Cannot cancel (already in progress)",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_IN_PROGRESS)))
+            })
     @PostMapping("/cancel")
     public ResponseEntity<ApiResponseWrapper<String>> cancelTrip(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole,
             @Valid @RequestBody CancelTripRequest request) {
         AuthorizationHelper.requireDriverOrPassengerRole(authenticatedUserRole);
 
@@ -120,20 +153,25 @@ public class TripController {
 
     @Operation(
             summary = "Get trip details",
-            description = "Retrieve detailed information about a specific trip by ID. Used for review validation and other purposes."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trip details retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Trip not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
-            )
-    })
+            description =
+                    "Retrieve detailed information about a specific trip by ID. Used for review validation and other purposes.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Trip details retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Trip not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
+            })
     @GetMapping("/{tripId}")
     public ResponseEntity<ApiResponseWrapper<TripResponse>> getTrip(
             @Parameter(description = "Trip ID", example = "trip_001") @PathVariable String tripId) {
@@ -142,104 +180,202 @@ public class TripController {
         return ResponseEntity.ok(ApiResponseWrapper.success(response));
     }
 
-    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
+    @Tag(
+            name = "Trip Search",
+            description =
+                    "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips near pickup location",
-            description = "Finds trips with pickup within radius. Default 5km."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Matching trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid search parameters",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
-            )
-    })
+            description = "Finds trips with pickup within radius. Default 5km.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Matching trips found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid search parameters",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
+            })
     @GetMapping("/search/near-source")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearSource(
-            @Parameter(description = "Latitude of the pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the pickup location", example = "50.8154")
+                    @DecimalMin("-90.0")
+                    @DecimalMax("90.0")
+                    @RequestParam
+                    double latitude,
+            @Parameter(description = "Longitude of the pickup location", example = "8.6747")
+                    @DecimalMin("-180.0")
+                    @DecimalMax("180.0")
+                    @RequestParam
+                    double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0")
+                    @DecimalMin("0.01")
+                    @RequestParam(defaultValue = "5.0")
+                    double radiusKm) {
         log.info("Searching for trips near source: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithSourceNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
 
-    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
+    @Tag(
+            name = "Trip Search",
+            description =
+                    "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips near dropoff location",
-            description = "Finds trips with dropoff within radius. Default 5km."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid coordinates or radius",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
-            )
-    })
+            description = "Finds trips with dropoff within radius. Default 5km.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Trips found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid coordinates or radius",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
+            })
     @GetMapping("/search/near-destination")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchNearDestination(
-            @Parameter(description = "Latitude of the dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double latitude,
-            @Parameter(description = "Longitude of the dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double longitude,
-            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double radiusKm) {
+            @Parameter(description = "Latitude of the dropoff location", example = "50.7265")
+                    @DecimalMin("-90.0")
+                    @DecimalMax("90.0")
+                    @RequestParam
+                    double latitude,
+            @Parameter(description = "Longitude of the dropoff location", example = "7.0895")
+                    @DecimalMin("-180.0")
+                    @DecimalMax("180.0")
+                    @RequestParam
+                    double longitude,
+            @Parameter(description = "Search radius in kilometers (default 5.0)", example = "5.0")
+                    @DecimalMin("0.01")
+                    @RequestParam(defaultValue = "5.0")
+                    double radiusKm) {
         log.info("Searching for trips near destination: ({}, {})", latitude, longitude);
         List<Trip> trips = geoService.findTripsWithDestinationNear(latitude, longitude, radiusKm);
         return ResponseEntity.ok(ApiResponseWrapper.success(trips));
     }
 
-    @Tag(name = "Trip Search", description = "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
+    @Tag(
+            name = "Trip Search",
+            description =
+                    "APIs for passengers to search for available trips based on location and route. Includes geospatial search capabilities.")
     @Operation(
             summary = "Search trips matching a route",
-            description = "Advanced search: finds trips matching pickup and dropoff with optional time filter."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trips found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid coordinates or radius",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES))
-            )
-    })
+            description = "Advanced search: finds trips matching pickup and dropoff with optional time filter.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Trips found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.SEARCH_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid coordinates or radius",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_INVALID_COORDINATES)))
+            })
     @GetMapping("/search/matching-route")
     public ResponseEntity<ApiResponseWrapper<List<Trip>>> searchMatchingRoute(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
-            @Parameter(description = "Latitude of pickup location", example = "50.8154") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double sourceLatitude,
-            @Parameter(description = "Longitude of pickup location", example = "8.6747") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double sourceLongitude,
-            @Parameter(description = "Radius around pickup in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double sourceRadiusKm,
-            @Parameter(description = "Latitude of dropoff location", example = "50.7265") @DecimalMin("-90.0") @DecimalMax("90.0") @RequestParam double destinationLatitude,
-            @Parameter(description = "Longitude of dropoff location", example = "7.0895") @DecimalMin("-180.0") @DecimalMax("180.0") @RequestParam double destinationLongitude,
-            @Parameter(description = "Radius around dropoff in km", example = "5.0") @DecimalMin("0.01") @RequestParam(defaultValue = "5.0") double destinationRadiusKm,
-            @Parameter(description = "Earliest departure time (ISO 8601 format, optional)", example = "2024-03-25T08:00:00Z") @RequestParam(required = false) String earliestDepartureTime,
-            @Parameter(description = "Latest departure time (ISO 8601 format, optional)", example = "2024-03-25T18:00:00Z") @RequestParam(required = false) String latestDepartureTime,
-            @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false) Integer requestedSeats,
-            @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false) Double minPrice,
-            @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false) Double maxPrice,
-            @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN") @RequestParam(required = false) String carType,
-            @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false) Integer minAvailableSeats) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole,
+            @Parameter(description = "Latitude of pickup location", example = "50.8154")
+                    @DecimalMin("-90.0")
+                    @DecimalMax("90.0")
+                    @RequestParam
+                    double sourceLatitude,
+            @Parameter(description = "Longitude of pickup location", example = "8.6747")
+                    @DecimalMin("-180.0")
+                    @DecimalMax("180.0")
+                    @RequestParam
+                    double sourceLongitude,
+            @Parameter(description = "Radius around pickup in km", example = "5.0")
+                    @DecimalMin("0.01")
+                    @RequestParam(defaultValue = "5.0")
+                    double sourceRadiusKm,
+            @Parameter(description = "Latitude of dropoff location", example = "50.7265")
+                    @DecimalMin("-90.0")
+                    @DecimalMax("90.0")
+                    @RequestParam
+                    double destinationLatitude,
+            @Parameter(description = "Longitude of dropoff location", example = "7.0895")
+                    @DecimalMin("-180.0")
+                    @DecimalMax("180.0")
+                    @RequestParam
+                    double destinationLongitude,
+            @Parameter(description = "Radius around dropoff in km", example = "5.0")
+                    @DecimalMin("0.01")
+                    @RequestParam(defaultValue = "5.0")
+                    double destinationRadiusKm,
+            @Parameter(
+                            description = "Earliest departure time (ISO 8601 format, optional)",
+                            example = "2024-03-25T08:00:00Z")
+                    @RequestParam(required = false)
+                    String earliestDepartureTime,
+            @Parameter(
+                            description = "Latest departure time (ISO 8601 format, optional)",
+                            example = "2024-03-25T18:00:00Z")
+                    @RequestParam(required = false)
+                    String latestDepartureTime,
+            @Parameter(description = "Number of seats required", example = "2") @RequestParam(required = false)
+                    Integer requestedSeats,
+            @Parameter(description = "Minimum price per seat", example = "5.0") @RequestParam(required = false)
+                    Double minPrice,
+            @Parameter(description = "Maximum price per seat", example = "20.0") @RequestParam(required = false)
+                    Double maxPrice,
+            @Parameter(description = "Car type filter (e.g., SEDAN, SUV)", example = "SEDAN")
+                    @RequestParam(required = false)
+                    String carType,
+            @Parameter(description = "Minimum available seats", example = "2") @RequestParam(required = false)
+                    Integer minAvailableSeats) {
         requirePassengerRole(authenticatedUserRole);
 
         log.info("Searching for matching route trips");
 
         TripSearchCriteria criteria = new TripSearchCriteria(
-                sourceLatitude, sourceLongitude, sourceRadiusKm,
-                destinationLatitude, destinationLongitude, destinationRadiusKm,
-                earliestDepartureTime, latestDepartureTime,
-                requestedSeats, authenticatedUserId,
-                minPrice, maxPrice, carType, minAvailableSeats);
+                sourceLatitude,
+                sourceLongitude,
+                sourceRadiusKm,
+                destinationLatitude,
+                destinationLongitude,
+                destinationRadiusKm,
+                earliestDepartureTime,
+                latestDepartureTime,
+                requestedSeats,
+                authenticatedUserId,
+                minPrice,
+                maxPrice,
+                carType,
+                minAvailableSeats);
 
         List<Trip> trips = geoService.findTripsMatchingRoute(criteria);
 
@@ -248,25 +384,40 @@ public class TripController {
 
     @Operation(
             summary = "Get driver's active trips",
-            description = "Retrieves active (scheduled or in-progress) trips for a driver."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Active trips retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
-            )
-    })
+            description = "Retrieves active (scheduled or in-progress) trips for a driver.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Active trips retrieved",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Driver not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
+            })
     @GetMapping("/active/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverActiveTrips(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
-            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable
+                    String driverId) {
         requireDriverRole(authenticatedUserRole);
         if (!driverId.equals(authenticatedUserId)) {
             throw new UnauthorizedException("You are not authorized to view these trips");
@@ -279,25 +430,40 @@ public class TripController {
 
     @Operation(
             summary = "Get driver's trip history",
-            description = "Retrieves completed and cancelled trips for a driver."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trip history retrieved",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Driver not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND))
-            )
-    })
+            description = "Retrieves completed and cancelled trips for a driver.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Trip history retrieved",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ACTIVE_TRIPS_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "Driver not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = TripApiDoc.ERROR_TRIP_NOT_FOUND)))
+            })
     @GetMapping("/history/driver/{driverId}")
     public ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> getDriverTripHistory(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole,
-            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable String driverId) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole,
+            @Parameter(description = "Driver's user ID", example = "john.driver@example.com") @PathVariable
+                    String driverId) {
         requireDriverRole(authenticatedUserRole);
         if (!driverId.equals(authenticatedUserId)) {
             throw new UnauthorizedException("You are not authorized to view this trip history");
@@ -310,31 +476,29 @@ public class TripController {
 
     @Operation(
             summary = "Start a trip",
-            description = "Driver starts the trip. Trip status changes from AVAILABLE to IN_PROGRESS."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trip started successfully"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Trip not found"
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Trip already in progress or completed"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Only the driver can start their own trip"
-            )
-    })
+            description = "Driver starts the trip. Trip status changes from AVAILABLE to IN_PROGRESS.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Trip started successfully"),
+                @ApiResponse(responseCode = "404", description = "Trip not found"),
+                @ApiResponse(responseCode = "409", description = "Trip already in progress or completed"),
+                @ApiResponse(responseCode = "403", description = "Only the driver can start their own trip")
+            })
     @PostMapping("/{tripId}/start")
     public ResponseEntity<ApiResponseWrapper<StartTripResponse>> startTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
 
         log.info("Driver {} starting trip: {}", authenticatedUserId, tripId);
@@ -344,34 +508,35 @@ public class TripController {
 
     @Operation(
             summary = "Complete a trip",
-            description = "Driver ends the trip at the final destination. All remaining active rides are auto-completed."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Trip completed successfully"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Trip not found"
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Trip is not in progress"
-            )
-    })
+            description =
+                    "Driver ends the trip at the final destination. All remaining active rides are auto-completed.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Trip completed successfully"),
+                @ApiResponse(responseCode = "404", description = "Trip not found"),
+                @ApiResponse(responseCode = "409", description = "Trip is not in progress")
+            })
     @PostMapping("/{tripId}/complete")
     public ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> completeTrip(
             @Parameter(description = "Trip ID") @PathVariable String tripId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) String authenticatedUserRole) {
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    String authenticatedUserRole) {
         requireDriverRole(authenticatedUserRole);
 
         log.info("Driver {} completing trip: {}", authenticatedUserId, tripId);
         CompleteTripResponse response = completionService.completeTrip(tripId, authenticatedUserId);
         return ResponseEntity.ok(ApiResponseWrapper.success(
-                response,
-                OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
+                response, OperationMessage.TRIP_COMPLETED_SUCCESS.format(response.autoCompletedRides())));
     }
 
     private void requireDriverRole(String userRole) {

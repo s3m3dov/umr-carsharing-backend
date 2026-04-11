@@ -32,7 +32,8 @@ public class AuditService {
      * @param performedBy Email/ID of who performed the action
      * @param details Additional context or reason
      */
-    private void logAction(AuditAction action, EntityType entityType, String entityId, String performedBy, String details) {
+    private void logAction(
+            AuditAction action, EntityType entityType, String entityId, String performedBy, String details) {
         try {
             AuditLog auditLog = AuditLog.builder()
                     .action(action)
@@ -44,8 +45,8 @@ public class AuditService {
                     .build();
 
             mongoTemplate.save(auditLog);
-            log.info("Audit: {} {} by {} on {}:{} - {}",
-                    action, entityType, performedBy, entityType, entityId, details);
+            log.info(
+                    "Audit: {} {} by {} on {}:{} - {}", action, entityType, performedBy, entityType, entityId, details);
         } catch (Exception e) {
             // Don't fail the operation if audit logging fails
             log.error("Failed to save audit log: {} {} on {}:{}", action, entityType, entityType, entityId, e);

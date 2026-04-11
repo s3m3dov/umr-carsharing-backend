@@ -4,15 +4,14 @@ import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.Instant;
-import java.util.Date;
 
 /**
  * Auth User model - stores authentication credentials and auth metadata.
@@ -45,6 +44,7 @@ public class User {
 
     @Indexed(sparse = true)
     private String resetToken;
+
     private String resetTokenHash;
     private Date resetTokenExpiry;
 }

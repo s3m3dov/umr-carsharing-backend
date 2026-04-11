@@ -1,8 +1,8 @@
 package com.cimhub.reviewservice.service;
 
-import com.cimhub.common.exception.DependencyUnavailableException;
 import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.DependencyUnavailableException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,12 +37,7 @@ public class TripServiceClient {
         if (tripData == null) {
             return false;
         }
-        TripStatus tripStatus = readRequiredEnum(
-                tripData,
-                "tripStatus",
-                TripStatus.class,
-                "trip",
-                tripId);
+        TripStatus tripStatus = readRequiredEnum(tripData, "tripStatus", TripStatus.class, "trip", tripId);
         return tripStatus == TripStatus.COMPLETED;
     }
 
@@ -57,12 +52,8 @@ public class TripServiceClient {
         if (bookingData == null) {
             return false;
         }
-        BookingStatus bookingStatus = readRequiredEnum(
-                bookingData,
-                "status",
-                BookingStatus.class,
-                "booking",
-                bookingId);
+        BookingStatus bookingStatus =
+                readRequiredEnum(bookingData, "status", BookingStatus.class, "booking", bookingId);
         return bookingStatus == BookingStatus.COMPLETED;
     }
 
@@ -114,10 +105,7 @@ public class TripServiceClient {
     private JsonNode executeRequest(String endpoint, String resourceType, String resourceId) {
         try {
             String url = tripServiceUrl + endpoint;
-            JsonNode response = restClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .body(JsonNode.class);
+            JsonNode response = restClient.get().uri(url).retrieve().body(JsonNode.class);
 
             if (response == null) {
                 throw new DependencyUnavailableException(
@@ -146,19 +134,14 @@ public class TripServiceClient {
         return value;
     }
 
-    private <T extends Enum<T>> T readRequiredEnum(JsonNode data,
-                                                   String field,
-                                                   Class<T> enumType,
-                                                   String resourceType,
-                                                   String resourceId) {
+    private <T extends Enum<T>> T readRequiredEnum(
+            JsonNode data, String field, Class<T> enumType, String resourceType, String resourceId) {
         String value = readRequiredText(data, field, resourceType, resourceId);
         try {
             return Enum.valueOf(enumType, value);
         } catch (IllegalArgumentException ex) {
-            throw new DependencyUnavailableException(
-                    "Trip service returned unsupported " + field + " value '" + value + "' for "
-                            + resourceType + " id: " + resourceId);
+            throw new DependencyUnavailableException("Trip service returned unsupported " + field + " value '" + value
+                    + "' for " + resourceType + " id: " + resourceId);
         }
     }
-
 }

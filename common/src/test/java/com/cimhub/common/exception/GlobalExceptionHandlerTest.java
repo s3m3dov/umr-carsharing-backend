@@ -1,10 +1,16 @@
 package com.cimhub.common.exception;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.dto.response.ApiError;
 import com.cimhub.common.filter.RequestIdFilter;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,14 +26,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.ServletWebRequest;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -93,11 +91,8 @@ class GlobalExceptionHandlerTest {
         MethodArgumentNotValidException ex = new MethodArgumentNotValidException(parameter, bindingResult);
         ServletWebRequest request = buildWebRequest("/api/users", "page=1", null);
 
-        ResponseEntity<Object> response = handler.handleMethodArgumentNotValid(
-                ex,
-                new HttpHeaders(),
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                request);
+        ResponseEntity<Object> response =
+                handler.handleMethodArgumentNotValid(ex, new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
 
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
         ApiError error = (ApiError) response.getBody();
@@ -109,16 +104,11 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleHttpMessageNotReadable_shouldMapDeserializeMessage() {
         HttpMessageNotReadableException ex = new HttpMessageNotReadableException(
-                "read failed",
-                new RuntimeException("Cannot deserialize value"),
-                null);
+                "read failed", new RuntimeException("Cannot deserialize value"), null);
         ServletWebRequest request = buildWebRequest("/api/trips", null, null);
 
-        ResponseEntity<Object> response = handler.handleHttpMessageNotReadable(
-                ex,
-                new HttpHeaders(),
-                HttpStatus.BAD_REQUEST,
-                request);
+        ResponseEntity<Object> response =
+                handler.handleHttpMessageNotReadable(ex, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ApiError error = (ApiError) response.getBody();
@@ -159,9 +149,7 @@ class GlobalExceptionHandlerTest {
 
     private MethodParameter buildDummyMethodParameter() {
         try {
-            return new MethodParameter(
-                    DummyController.class.getDeclaredMethod("dummy", String.class),
-                    0);
+            return new MethodParameter(DummyController.class.getDeclaredMethod("dummy", String.class), 0);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
@@ -169,8 +157,7 @@ class GlobalExceptionHandlerTest {
 
     @SuppressWarnings("unused")
     private static class DummyController {
-        void dummy(String value) {
-        }
+        void dummy(String value) {}
     }
 
     @SuppressWarnings("unused")

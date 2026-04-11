@@ -1,13 +1,12 @@
 package com.cimhub.tripservice.dto.response;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
-import com.cimhub.common.enums.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.ZonedDateTime;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "PassengerRideResponse", description = "Booking details as seen by the passenger")
@@ -30,8 +29,7 @@ public record PassengerRideResponse(
         @Schema(description = "Current booking status", example = "CONFIRMED")
         BookingStatus rideStatus,
 
-        @Schema(description = "Passenger's pickup location")
-        Points pickupLocation,
+        @Schema(description = "Passenger's pickup location") Points pickupLocation,
 
         @Schema(description = "Passenger's drop-off location")
         Points dropoffLocation,
@@ -61,8 +59,7 @@ public record PassengerRideResponse(
         @Schema(description = "Estimated fare for this ride in EUR", example = "15.50")
         Double estimatedFare,
 
-        @Schema(description = "Details about the driver")
-        DriverDetails driverDetails) {
+        @Schema(description = "Details about the driver") DriverDetails driverDetails) {
 
     @Builder
     @Schema(name = "DriverDetails", description = "Driver information visible to passengers")
@@ -74,6 +71,5 @@ public record PassengerRideResponse(
             Double rating,
 
             @Schema(description = "Total number of completed trips by the driver", example = "42")
-            Integer totalTrips) {
-    }
+            Integer totalTrips) {}
 }

@@ -1,14 +1,14 @@
 package com.cimhub.apigateway.filter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class RequestIdGatewayFilterTest {
 
@@ -23,17 +23,17 @@ class RequestIdGatewayFilterTest {
 
         filter.filter(exchange, chain).block();
 
-        String responseRequestId = exchange.getResponse().getHeaders().getFirst(RequestIdGatewayFilter.REQUEST_ID_HEADER);
+        String responseRequestId =
+                exchange.getResponse().getHeaders().getFirst(RequestIdGatewayFilter.REQUEST_ID_HEADER);
         assertNotNull(responseRequestId);
     }
 
     @Test
     void filter_whenHeaderPresent_shouldReuseRequestId() {
         String existingRequestId = "req-123";
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/trips")
-                        .header(RequestIdGatewayFilter.REQUEST_ID_HEADER, existingRequestId)
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/trips")
+                .header(RequestIdGatewayFilter.REQUEST_ID_HEADER, existingRequestId)
+                .build());
 
         GatewayFilterChain chain = ex -> {
             String propagated = ex.getRequest().getHeaders().getFirst(RequestIdGatewayFilter.REQUEST_ID_HEADER);
@@ -43,7 +43,8 @@ class RequestIdGatewayFilterTest {
 
         filter.filter(exchange, chain).block();
 
-        String responseRequestId = exchange.getResponse().getHeaders().getFirst(RequestIdGatewayFilter.REQUEST_ID_HEADER);
+        String responseRequestId =
+                exchange.getResponse().getHeaders().getFirst(RequestIdGatewayFilter.REQUEST_ID_HEADER);
         assertEquals(existingRequestId, responseRequestId);
     }
 

@@ -32,8 +32,7 @@ public class MongoConfig {
                 // Check and create indexes only if they don't exist
                 if (!indexExists(collection, "sourceLocation_2dsphere")) {
                     collection.createIndex(
-                            Indexes.geo2dsphere("sourceLocation"),
-                            new IndexOptions().name("sourceLocation_2dsphere"));
+                            Indexes.geo2dsphere("sourceLocation"), new IndexOptions().name("sourceLocation_2dsphere"));
                     log.info("✅ Created 2dsphere index on sourceLocation");
                 } else {
                     log.debug("Index 'sourceLocation_2dsphere' already exists, skipping creation");
@@ -51,8 +50,7 @@ public class MongoConfig {
                 // Optional: Create index on routeGeometry for route-based queries
                 if (!indexExists(collection, "routeGeometry_2dsphere")) {
                     collection.createIndex(
-                            Indexes.geo2dsphere("routeGeometry"),
-                            new IndexOptions().name("routeGeometry_2dsphere"));
+                            Indexes.geo2dsphere("routeGeometry"), new IndexOptions().name("routeGeometry_2dsphere"));
                     log.info("✅ Created 2dsphere index on routeGeometry");
                 } else {
                     log.debug("Index 'routeGeometry_2dsphere' already exists, skipping creation");

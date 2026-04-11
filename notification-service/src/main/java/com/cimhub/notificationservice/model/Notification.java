@@ -2,15 +2,14 @@ package com.cimhub.notificationservice.model;
 
 import com.cimhub.common.enums.NotificationType;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.Instant;
-import java.util.Map;
 
 @Document(collection = "notifications")
 @Data

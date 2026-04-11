@@ -4,13 +4,12 @@ import com.cimhub.common.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
-
-import java.time.Instant;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Passenger profile model that stores passenger-specific information.

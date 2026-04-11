@@ -7,6 +7,7 @@ import com.cimhub.common.exception.ErrorCode;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.exception.UserAlreadyExistsException;
 import com.cimhub.common.filter.RequestIdFilter;
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -15,8 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-
-import java.time.Instant;
 
 @Slf4j
 @RestControllerAdvice

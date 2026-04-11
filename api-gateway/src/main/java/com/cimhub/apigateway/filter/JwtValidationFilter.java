@@ -7,6 +7,8 @@ import com.cimhub.common.enums.RequestHeaderName;
 import com.cimhub.common.exception.DependencyUnavailableException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collection;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -20,9 +22,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.Collection;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -40,14 +39,16 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
 
         // Strip any incoming X-User-* headers to prevent identity spoofing
-        ServerHttpRequest sanitizedRequest = exchange.getRequest().mutate()
+        ServerHttpRequest sanitizedRequest = exchange.getRequest()
+                .mutate()
                 .headers(headers -> {
                     for (RequestHeaderName header : RequestHeaderName.values()) {
                         headers.remove(header.getHeaderName());
                     }
                 })
                 .build();
-        ServerWebExchange sanitizedExchange = exchange.mutate().request(sanitizedRequest).build();
+        ServerWebExchange sanitizedExchange =
+                exchange.mutate().request(sanitizedRequest).build();
 
         if (HttpMethod.OPTIONS.equals(sanitizedExchange.getRequest().getMethod())) {
             return chain.filter(sanitizedExchange);
@@ -69,12 +70,13 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
      * Attach user info to request if token is valid
      */
     private Mono<Void> authorize(
-            ServerWebExchange exchange,
-            GatewayFilterChain chain,
-            TokenValidationResponse response) {
+            ServerWebExchange exchange, GatewayFilterChain chain, TokenValidationResponse response) {
         if (!response.valid() || response.email() == null || response.role() == null) {
-            log.warn("Token validation failed or missing user info: valid={}, email={}, role={}",
-                    response.valid(), response.email(), response.role());
+            log.warn(
+                    "Token validation failed or missing user info: valid={}, email={}, role={}",
+                    response.valid(),
+                    response.email(),
+                    response.role());
             return Mono.error(new UnauthorizedException("Invalid or expired token, or missing user info"));
         }
 
@@ -86,8 +88,7 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 .header(RequestHeaderName.USER_ROLE.getHeaderName(), response.role())
                 .build();
 
-        return chain.filter(
-                exchange.mutate().request(modifiedRequest).build());
+        return chain.filter(exchange.mutate().request(modifiedRequest).build());
     }
 
     /**
@@ -101,9 +102,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
             return Mono.error(new UnauthorizedException("Missing Authorization header"));
         }
 
-        String token = authHeader
-                .substring(HeaderConstants.BEARER_PREFIX.length())
-                .trim();
+        String token =
+                authHeader.substring(HeaderConstants.BEARER_PREFIX.length()).trim();
 
         if (!isValidJwtFormat(token)) {
             log.warn("Malformed JWT token for path: {}", path);
@@ -117,7 +117,8 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
      * Validate JWT token with auth-service
      */
     private Mono<TokenValidationResponse> validateTokenWithAuthService(String token) {
-        return webClientBuilder.build()
+        return webClientBuilder
+                .build()
                 .post()
                 .uri(serviceProperties.getAuth().getValidateUrl())
                 .bodyValue(new TokenValidationRequest(token))
@@ -149,22 +150,21 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
                 || errorClass.contains("ReadTimeoutException")
                 || errorClass.contains("GatewayTimeoutException")
                 || (errorClass.contains("WebClientResponseException")
-                && error.getMessage() != null
-                && error.getMessage().contains("Connection"));
+                        && error.getMessage() != null
+                        && error.getMessage().contains("Connection"));
     }
 
     private boolean isPublicPath(String path) {
         return Stream.of(
-                securityProperties.getPublicPaths(),
-                securityProperties.getDocsPaths(),
-                securityProperties.getActuatorPaths())
+                        securityProperties.getPublicPaths(),
+                        securityProperties.getDocsPaths(),
+                        securityProperties.getActuatorPaths())
                 .flatMap(Collection::stream)
                 .anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
     private boolean isValidJwtFormat(String token) {
-        if (token == null)
-            return false;
+        if (token == null) return false;
         long dotCount = token.chars().filter(ch -> ch == '.').count();
         return dotCount == 2;
     }
@@ -176,16 +176,12 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
 
     /* Inner DTOs */
 
-    private record TokenValidationRequest(String token) {
-    }
+    private record TokenValidationRequest(String token) {}
 
-    private record AuthServiceResponse(TokenValidationResponse data) {
-    }
+    private record AuthServiceResponse(TokenValidationResponse data) {}
 
     private record TokenValidationResponse(
-            @JsonProperty("isValid") boolean isValid,
-            String email,
-            String role) {
+            @JsonProperty("isValid") boolean isValid, String email, String role) {
 
         public boolean valid() {
             return isValid;

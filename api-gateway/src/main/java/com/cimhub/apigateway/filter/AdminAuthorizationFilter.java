@@ -52,8 +52,7 @@ public class AdminAuthorizationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isAdminPath(String path) {
-        return securityProperties.getAdminPaths().stream()
-                .anyMatch(pattern -> pathMatcher.match(pattern, path));
+        return securityProperties.getAdminPaths().stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
     @Override

@@ -5,12 +5,11 @@ import com.cimhub.tripservice.dto.response.DriverTripResponse;
 import com.cimhub.tripservice.dto.response.TripResponse;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -19,9 +18,8 @@ public class TripMapper {
     private final TimezoneConversionService timezoneService;
 
     public TripResponse toTripResponse(Trip trip) {
-        String timezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
-                ? "UTC"
-                : trip.getTripTimezone();
+        String timezone =
+                (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank()) ? "UTC" : trip.getTripTimezone();
 
         ZonedDateTime tripStartDateTime = trip.getTripStartDateTimeUTC() != null
                 ? ZonedDateTime.ofInstant(trip.getTripStartDateTimeUTC(), ZoneId.of(timezone))
@@ -73,9 +71,8 @@ public class TripMapper {
      * original timezone and the caller-supplied user timezone.
      */
     public TripResponse toTripResponse(Trip trip, String userTimezone) {
-        String tripTimezone = (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank())
-                ? "UTC"
-                : trip.getTripTimezone();
+        String tripTimezone =
+                (trip.getTripTimezone() == null || trip.getTripTimezone().isBlank()) ? "UTC" : trip.getTripTimezone();
 
         ZonedDateTime tripTimeInOriginalZone = trip.getTripStartDateTimeUTC() != null
                 ? timezoneService.convertToTripTimezone(trip.getTripStartDateTimeUTC(), tripTimezone)
@@ -104,9 +101,8 @@ public class TripMapper {
     }
 
     public DriverTripResponse toDriverTripResponse(Trip trip) {
-        ZonedDateTime tripTimeInOriginalZone = timezoneService.convertToTripTimezone(
-                trip.getTripStartDateTimeUTC(),
-                trip.getTripTimezone());
+        ZonedDateTime tripTimeInOriginalZone =
+                timezoneService.convertToTripTimezone(trip.getTripStartDateTimeUTC(), trip.getTripTimezone());
 
         int bookedSeats = trip.getBookedSeats();
         int availableSeats = trip.getTotalSeats() - bookedSeats;

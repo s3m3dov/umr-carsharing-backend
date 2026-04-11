@@ -1,5 +1,10 @@
 package com.cimhub.authservice.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import com.cimhub.authservice.config.TokenProperties;
 import com.cimhub.authservice.dto.request.ChangePasswordRequest;
 import com.cimhub.authservice.dto.request.ConfirmResetPasswordRequest;
@@ -12,6 +17,8 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
+import java.util.Date;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,20 +27,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Date;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class PasswordManagementServiceTest {
 
-    @Mock private AuthUserRepository authUserRepository;
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private AuditService auditService;
+    @Mock
+    private AuthUserRepository authUserRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuditService auditService;
 
     private TokenProperties tokenProperties;
     private PasswordManagementService passwordManagementService;
@@ -42,12 +46,9 @@ class PasswordManagementServiceTest {
     void setUp() {
         tokenProperties = new TokenProperties();
         tokenProperties.setResetTokenExpiryMs(3600000L);
-        
-        passwordManagementService = new PasswordManagementService(
-                authUserRepository,
-                passwordEncoder,
-                auditService,
-                tokenProperties);
+
+        passwordManagementService =
+                new PasswordManagementService(authUserRepository, passwordEncoder, auditService, tokenProperties);
     }
 
     // ── initiatePasswordReset ─────────────────────────────────────────────
@@ -179,9 +180,10 @@ class PasswordManagementServiceTest {
         when(authUserRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("WrongPass", "real-hashed")).thenReturn(false);
 
-        assertThrows(UnauthorizedException.class,
-                () -> passwordManagementService.changePassword("user@example.com",
-                        new ChangePasswordRequest("WrongPass", "NewPass")));
+        assertThrows(
+                UnauthorizedException.class,
+                () -> passwordManagementService.changePassword(
+                        "user@example.com", new ChangePasswordRequest("WrongPass", "NewPass")));
 
         verify(authUserRepository, never()).save(any());
     }
@@ -190,9 +192,10 @@ class PasswordManagementServiceTest {
     void changePassword_whenUserNotFound_shouldThrowUnauthorized() {
         when(authUserRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
-        assertThrows(UnauthorizedException.class,
-                () -> passwordManagementService.changePassword("ghost@example.com",
-                        new ChangePasswordRequest("any", "any")));
+        assertThrows(
+                UnauthorizedException.class,
+                () -> passwordManagementService.changePassword(
+                        "ghost@example.com", new ChangePasswordRequest("any", "any")));
     }
 
     @Test
@@ -204,8 +207,9 @@ class PasswordManagementServiceTest {
         when(authUserRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("OldPass", "old-hashed")).thenReturn(true);
 
-        assertThrows(BadRequestException.class,
-                () -> passwordManagementService.changePassword("user@example.com",
-                        new ChangePasswordRequest("OldPass", "weak")));
+        assertThrows(
+                BadRequestException.class,
+                () -> passwordManagementService.changePassword(
+                        "user@example.com", new ChangePasswordRequest("OldPass", "weak")));
     }
 }

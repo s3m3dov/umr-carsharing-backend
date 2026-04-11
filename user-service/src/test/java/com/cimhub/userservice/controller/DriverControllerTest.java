@@ -1,23 +1,21 @@
 package com.cimhub.userservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.service.DriverService;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DriverControllerTest {
@@ -62,10 +60,7 @@ class DriverControllerTest {
         when(driverService.updateDriverProfile("driver@example.com", request)).thenReturn(driverResponse);
 
         var response = driverController.updateDriverProfile(
-                "driver@example.com",
-                UserType.DRIVER,
-                "driver@example.com",
-                request);
+                "driver@example.com", UserType.DRIVER, "driver@example.com", request);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Jane", response.getBody().getData().firstName());
@@ -73,7 +68,8 @@ class DriverControllerTest {
 
     @Test
     void getDriverProfile_withMismatchedOwner_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
+        assertThrows(
+                ForbiddenException.class,
                 () -> driverController.getDriverProfile("other@example.com", UserType.DRIVER, "driver@example.com"));
     }
 }

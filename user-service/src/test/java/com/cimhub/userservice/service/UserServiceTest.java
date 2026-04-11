@@ -1,5 +1,10 @@
 package com.cimhub.userservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.userservice.dto.response.UserResponse;
@@ -7,19 +12,13 @@ import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.DriverRepository;
 import com.cimhub.userservice.repository.PassengerRepository;
+import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -102,7 +101,6 @@ class UserServiceTest {
         when(driverRepository.findByUserId(userId)).thenReturn(Optional.empty());
         when(passengerRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> userService.getUserInfo(userId));
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserInfo(userId));
     }
 }

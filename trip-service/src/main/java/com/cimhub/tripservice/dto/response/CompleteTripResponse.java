@@ -2,9 +2,8 @@ package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.enums.TripStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "CompleteTripResponse", description = "Response after successfully completing a trip")
@@ -22,5 +21,4 @@ public record CompleteTripResponse(
         int autoCompletedRides,
 
         @Schema(description = "Timestamp when trip status was updated", example = "2026-04-06T09:50:00Z")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

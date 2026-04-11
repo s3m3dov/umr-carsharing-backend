@@ -1,5 +1,12 @@
 package com.cimhub.userservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
@@ -10,27 +17,18 @@ import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.DriverDocument;
 import com.cimhub.userservice.repository.DriverDocumentRepository;
 import com.cimhub.userservice.repository.DriverRepository;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminDriverServiceTest {
@@ -65,7 +63,8 @@ class AdminDriverServiceTest {
         DriverResponse response = adminDriverService.approveDriver("driver@example.com", "admin@example.com");
 
         assertEquals(DriverStatus.ACTIVE, response.driverStatus());
-        verify(auditService).logApprove(EntityType.DRIVER, "driver@example.com", "admin@example.com", "Driver approved");
+        verify(auditService)
+                .logApprove(EntityType.DRIVER, "driver@example.com", "admin@example.com", "Driver approved");
     }
 
     @Test
@@ -154,8 +153,7 @@ class AdminDriverServiceTest {
     void getDriverDocuments_whenDriverMissing_shouldThrowResourceNotFound() {
         when(driverRepository.findByUserId("missing-driver")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> adminDriverService.getDriverDocuments("missing-driver"));
+        assertThrows(ResourceNotFoundException.class, () -> adminDriverService.getDriverDocuments("missing-driver"));
 
         verify(driverDocumentRepository, never()).findByDriverId(any());
     }

@@ -1,5 +1,11 @@
 package com.cimhub.reviewservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
@@ -7,6 +13,8 @@ import com.cimhub.reviewservice.dto.response.ReviewResponse;
 import com.cimhub.reviewservice.model.Review;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.cimhub.reviewservice.repository.MongoReviewDataRepository;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,15 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminReviewServiceTest {
@@ -74,7 +73,8 @@ class AdminReviewServiceTest {
     @Test
     void listReviews_whenStatusProvided_shouldCallFilteredRepository() {
         PageRequest pageable = PageRequest.of(0, 10);
-        Page<Review> page = new PageImpl<>(List.of(Review.builder().reviewId("r-1").status(ReviewStatus.FLAGGED).build()));
+        Page<Review> page = new PageImpl<>(List.of(
+                Review.builder().reviewId("r-1").status(ReviewStatus.FLAGGED).build()));
         when(reviewDataRepository.findByStatus(ReviewStatus.FLAGGED, pageable)).thenReturn(page);
 
         Page<ReviewResponse> response = adminReviewService.listReviews(ReviewStatus.FLAGGED, pageable);
@@ -86,7 +86,8 @@ class AdminReviewServiceTest {
     @Test
     void listReviews_whenStatusIsNull_shouldCallFindAll() {
         PageRequest pageable = PageRequest.of(0, 10);
-        Page<Review> page = new PageImpl<>(List.of(Review.builder().reviewId("r-2").status(ReviewStatus.PUBLISHED).build()));
+        Page<Review> page = new PageImpl<>(List.of(
+                Review.builder().reviewId("r-2").status(ReviewStatus.PUBLISHED).build()));
         when(reviewDataRepository.findAll(pageable)).thenReturn(page);
 
         Page<ReviewResponse> response = adminReviewService.listReviews(null, pageable);
@@ -123,20 +124,24 @@ class AdminReviewServiceTest {
         verify(reviewDataRepository).save(review);
         assertEquals(ReviewStatus.PUBLISHED, review.getStatus());
         assertEquals(ReviewStatus.PUBLISHED, response.status());
-        verify(auditService).logPublish(EntityType.REVIEW, "review-3", "admin@example.com", "Review published by admin");
+        verify(auditService)
+                .logPublish(EntityType.REVIEW, "review-3", "admin@example.com", "Review published by admin");
     }
 
     @Test
     void removeReview_whenNotFound_shouldThrowResourceNotFound() {
         when(reviewDataRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> adminReviewService.removeReview("missing", "admin@example.com"));
+        assertThrows(
+                ResourceNotFoundException.class, () -> adminReviewService.removeReview("missing", "admin@example.com"));
     }
 
     @Test
     void publishReview_whenNotFound_shouldThrowResourceNotFound() {
         when(reviewDataRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> adminReviewService.publishReview("missing", "admin@example.com"));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminReviewService.publishReview("missing", "admin@example.com"));
     }
 }

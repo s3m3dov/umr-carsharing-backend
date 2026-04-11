@@ -1,12 +1,11 @@
 package com.cimhub.tripservice.service.util;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TimezoneConversionServiceTest {
 
@@ -61,10 +60,8 @@ class TimezoneConversionServiceTest {
     void formatInTimezone_shouldUseProvidedPattern() {
         Instant utcInstant = Instant.parse("2026-12-24T20:15:00Z");
 
-        String formatted = timezoneConversionService.formatInTimezone(
-                utcInstant,
-                "Europe/Berlin",
-                "yyyy-MM-dd HH:mm z");
+        String formatted =
+                timezoneConversionService.formatInTimezone(utcInstant, "Europe/Berlin", "yyyy-MM-dd HH:mm z");
 
         assertEquals("2026-12-24 21:15 CET", formatted);
     }

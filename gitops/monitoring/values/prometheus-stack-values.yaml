@@ -1,6 +1,6 @@
-# kube-prometheus-stack: Prometheus + Grafana + AlertManager
+---
 grafana:
-  adminPassword: admin
+  adminPassword: "admin"
   grafana.ini:
     server:
       root_url: "%(protocol)s://%(domain)s/grafana"
@@ -14,45 +14,44 @@ grafana:
       cpu: "300m"
   readinessProbe:
     httpGet:
-      path: /api/health
+      path: "/api/health"
       port: 3000
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 6
   livenessProbe:
     httpGet:
-      path: /api/health
+      path: "/api/health"
       port: 3000
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 5
   additionalDataSources:
-    - name: Loki
-      type: loki
-      uid: loki
-      url: http://loki.monitoring.svc.cluster.local:3100
-      access: proxy
-    - name: Tempo
-      type: tempo
-      uid: tempo
-      url: http://tempo.monitoring.svc.cluster.local:3200
-      access: proxy
-      jsonData:
-        tracesToLogsV2:
-          datasourceUid: loki
-        lokiSearch:
-          datasourceUid: loki
+  - name: "Loki"
+    type: "loki"
+    uid: "loki"
+    url: "http://loki.monitoring.svc.cluster.local:3100"
+    access: "proxy"
+  - name: "Tempo"
+    type: "tempo"
+    uid: "tempo"
+    url: "http://tempo.monitoring.svc.cluster.local:3200"
+    access: "proxy"
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: "loki"
+      lokiSearch:
+        datasourceUid: "loki"
   sidecar:
     dashboards:
-      searchNamespace: ALL
-
+      searchNamespace: "ALL"
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelector: {}
     serviceMonitorNamespaceSelector: {}
-    retention: 7d
+    retention: "7d"
     enableRemoteWriteReceiver: true
     resources:
       requests:
@@ -61,6 +60,5 @@ prometheus:
       limits:
         memory: "256Mi"
         cpu: "200m"
-
 alertmanager:
   enabled: false

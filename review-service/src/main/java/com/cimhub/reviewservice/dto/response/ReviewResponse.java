@@ -5,20 +5,16 @@ import com.cimhub.reviewservice.dto.examples.ReviewApiDoc;
 import com.cimhub.reviewservice.model.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Schema(
         name = "ReviewResponse",
         description = "Response containing review details",
-        example = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE
-)
-
+        example = ReviewApiDoc.SUBMIT_DRIVER_REVIEW_RESPONSE)
 @Builder
 public record ReviewResponse(
-        @Schema(description = "Unique review ID")
-        String reviewId,
+        @Schema(description = "Unique review ID") String reviewId,
 
         @Schema(description = "ID of the trip being reviewed")
         String tripId,
@@ -38,11 +34,9 @@ public record ReviewResponse(
         @Schema(description = "Type of reviewee (DRIVER or PASSENGER)")
         UserType revieweeType,
 
-        @Schema(description = "Rating from 1 to 5")
-        int rating,
+        @Schema(description = "Rating from 1 to 5") int rating,
 
-        @Schema(description = "Review comment text")
-        String comment,
+        @Schema(description = "Review comment text") String comment,
 
         @Schema(description = "Status of the review (PENDING or PUBLISHED)")
         ReviewStatus status,
@@ -53,5 +47,4 @@ public record ReviewResponse(
 
         @Schema(description = "Timestamp when the review was last updated", example = "2026-03-24T12:45:00.123Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

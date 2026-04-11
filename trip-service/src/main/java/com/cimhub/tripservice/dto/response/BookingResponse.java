@@ -1,17 +1,13 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.model.Points;
 import com.cimhub.common.enums.BookingStatus;
+import com.cimhub.common.model.Points;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
 import lombok.Builder;
 
-import java.time.Instant;
-
 @Builder
-@Schema(
-        name = "BookingResponse",
-        description = "Booking details response"
-)
+@Schema(name = "BookingResponse", description = "Booking details response")
 public record BookingResponse(
         @Schema(description = "Unique booking identifier", example = "booking_001")
         String bookingId,
@@ -28,8 +24,7 @@ public record BookingResponse(
         @Schema(description = "Vehicle license plate number", example = "HE-XX-1234")
         String vehicleNumber,
 
-        @Schema(description = "Passenger's pickup location")
-        Points pickupLocation,
+        @Schema(description = "Passenger's pickup location") Points pickupLocation,
 
         @Schema(description = "Passenger's drop-off location")
         Points dropoffLocation,
@@ -56,5 +51,4 @@ public record BookingResponse(
         Instant createdAt,
 
         @Schema(description = "Timestamp when booking was last updated", example = "2026-04-04T14:30:00Z")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

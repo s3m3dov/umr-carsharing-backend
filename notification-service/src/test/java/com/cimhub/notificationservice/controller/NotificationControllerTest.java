@@ -1,5 +1,10 @@
 package com.cimhub.notificationservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
@@ -9,6 +14,8 @@ import com.cimhub.notificationservice.dto.response.NotificationStatsResponse;
 import com.cimhub.notificationservice.exception.UnauthorizedNotificationAccessException;
 import com.cimhub.notificationservice.service.NotificationService;
 import com.cimhub.notificationservice.testsupport.NotificationFixtures;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,14 +25,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
@@ -51,19 +50,18 @@ class NotificationControllerTest {
                 .build();
         NotificationResponse created = NotificationFixtures.notificationResponse("not-1", "user-2", "user-1");
         when(notificationService.createNotification(CreateNotificationRequest.builder()
-                .recipientId("user-2")
-                .senderId("user-1")
-                .title("Title")
-                .message("Message")
-                .type(NotificationType.BOOKING_REQUESTED)
-                .relatedEntityId(null)
-                .metadata(Map.of("k", "v"))
-                .build())).thenReturn(created);
+                        .recipientId("user-2")
+                        .senderId("user-1")
+                        .title("Title")
+                        .message("Message")
+                        .type(NotificationType.BOOKING_REQUESTED)
+                        .relatedEntityId(null)
+                        .metadata(Map.of("k", "v"))
+                        .build()))
+                .thenReturn(created);
 
-        ResponseEntity<?> response = notificationController.createNotification(
-                "user-1",
-                UserType.PASSENGER.name(),
-                request);
+        ResponseEntity<?> response =
+                notificationController.createNotification("user-1", UserType.PASSENGER.name(), request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
@@ -78,7 +76,8 @@ class NotificationControllerTest {
                 .type(NotificationType.BOOKING_REQUESTED)
                 .build();
 
-        assertThrows(UnauthorizedNotificationAccessException.class,
+        assertThrows(
+                UnauthorizedNotificationAccessException.class,
                 () -> notificationController.createNotification("user-1", UserType.PASSENGER.name(), request));
     }
 
@@ -91,9 +90,11 @@ class NotificationControllerTest {
                 .message("Message")
                 .type(NotificationType.BOOKING_REQUESTED)
                 .build();
-        when(notificationService.createNotification(request)).thenReturn(NotificationFixtures.notificationResponse("n-1", "user-2", "other-user"));
+        when(notificationService.createNotification(request))
+                .thenReturn(NotificationFixtures.notificationResponse("n-1", "user-2", "other-user"));
 
-        ResponseEntity<?> response = notificationController.createNotification("admin-1", UserType.ADMIN.name(), request);
+        ResponseEntity<?> response =
+                notificationController.createNotification("admin-1", UserType.ADMIN.name(), request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         verify(notificationService).createNotification(request);
@@ -102,13 +103,11 @@ class NotificationControllerTest {
     @Test
     void listNotifications_whenOwner_shouldReturnOk() {
         when(notificationService.listNotifications("user-1", PageRequest.of(0, 10)))
-                .thenReturn(new PageImpl<>(List.of(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"))));
+                .thenReturn(
+                        new PageImpl<>(List.of(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"))));
 
         ResponseEntity<?> response = notificationController.listNotifications(
-                "user-1",
-                "user-1",
-                UserType.PASSENGER.name(),
-                PageRequest.of(0, 10));
+                "user-1", "user-1", UserType.PASSENGER.name(), PageRequest.of(0, 10));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(notificationService).listNotifications("user-1", PageRequest.of(0, 10));
@@ -116,14 +115,18 @@ class NotificationControllerTest {
 
     @Test
     void listNotifications_whenMissingAuthHeader_shouldThrow() {
-        assertThrows(UnauthorizedNotificationAccessException.class,
-                () -> notificationController.listNotifications("user-1", null, UserType.PASSENGER.name(), PageRequest.of(0, 10)));
+        assertThrows(
+                UnauthorizedNotificationAccessException.class,
+                () -> notificationController.listNotifications(
+                        "user-1", null, UserType.PASSENGER.name(), PageRequest.of(0, 10)));
     }
 
     @Test
     void listNotifications_whenDifferentUserNonAdmin_shouldThrow() {
-        assertThrows(UnauthorizedNotificationAccessException.class,
-                () -> notificationController.listNotifications("user-2", "user-1", UserType.PASSENGER.name(), PageRequest.of(0, 10)));
+        assertThrows(
+                UnauthorizedNotificationAccessException.class,
+                () -> notificationController.listNotifications(
+                        "user-2", "user-1", UserType.PASSENGER.name(), PageRequest.of(0, 10)));
     }
 
     @Test
@@ -132,10 +135,7 @@ class NotificationControllerTest {
                 .thenReturn(new PageImpl<>(List.of()));
 
         ResponseEntity<?> response = notificationController.listNotifications(
-                "user-2",
-                "admin-user",
-                UserType.ADMIN.name().toLowerCase(),
-                PageRequest.of(0, 10));
+                "user-2", "admin-user", UserType.ADMIN.name().toLowerCase(), PageRequest.of(0, 10));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(notificationService).listNotifications("user-2", PageRequest.of(0, 10));
@@ -143,10 +143,13 @@ class NotificationControllerTest {
 
     @Test
     void markAsRead_shouldValidateRecipientAccessAndDelegate() {
-        MarkNotificationReadRequest request = MarkNotificationReadRequest.builder().recipientId("user-1").build();
-        when(notificationService.markAsRead("n-1", "user-1")).thenReturn(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"));
+        MarkNotificationReadRequest request =
+                MarkNotificationReadRequest.builder().recipientId("user-1").build();
+        when(notificationService.markAsRead("n-1", "user-1"))
+                .thenReturn(NotificationFixtures.notificationResponse("n-1", "user-1", "sender"));
 
-        ResponseEntity<?> response = notificationController.markAsRead("n-1", "user-1", UserType.DRIVER.name(), request);
+        ResponseEntity<?> response =
+                notificationController.markAsRead("n-1", "user-1", UserType.DRIVER.name(), request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(notificationService).markAsRead("n-1", "user-1");
@@ -154,7 +157,10 @@ class NotificationControllerTest {
 
     @Test
     void markAllAsRead_shouldReturnStats() {
-        NotificationStatsResponse stats = NotificationStatsResponse.builder().recipientId("user-1").unreadCount(0).build();
+        NotificationStatsResponse stats = NotificationStatsResponse.builder()
+                .recipientId("user-1")
+                .unreadCount(0)
+                .build();
         when(notificationService.markAllAsRead("user-1")).thenReturn(stats);
 
         ResponseEntity<?> response = notificationController.markAllAsRead("user-1", "user-1", UserType.DRIVER.name());
@@ -165,7 +171,10 @@ class NotificationControllerTest {
 
     @Test
     void getStats_shouldReturnStats() {
-        NotificationStatsResponse stats = NotificationStatsResponse.builder().recipientId("user-1").unreadCount(3).build();
+        NotificationStatsResponse stats = NotificationStatsResponse.builder()
+                .recipientId("user-1")
+                .unreadCount(3)
+                .build();
         when(notificationService.getStats("user-1")).thenReturn(stats);
 
         ResponseEntity<?> response = notificationController.getStats("user-1", "user-1", UserType.PASSENGER.name());
@@ -176,7 +185,8 @@ class NotificationControllerTest {
 
     @Test
     void getStats_whenInvalidRoleString_shouldTreatAsNonAdminAndDenyAccess() {
-        assertThrows(UnauthorizedNotificationAccessException.class,
+        assertThrows(
+                UnauthorizedNotificationAccessException.class,
                 () -> notificationController.getStats("user-2", "user-1", "not-a-role"));
     }
 }

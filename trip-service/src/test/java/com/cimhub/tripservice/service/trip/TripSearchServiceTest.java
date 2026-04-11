@@ -1,24 +1,23 @@
 package com.cimhub.tripservice.service.trip;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.testsupport.Points;
 import com.cimhub.tripservice.dto.response.TripResponse;
-import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
-import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TripSearchServiceTest {
@@ -47,8 +46,8 @@ class TripSearchServiceTest {
         List<TripResponse> responses = tripSearchService.searchAvailableTrips("Europe/Berlin");
 
         assertEquals(2, responses.size());
-        assertTrue(responses.stream().allMatch(r -> r.tripStatus() == TripStatus.CREATED
-                || r.tripStatus() == TripStatus.AVAILABLE));
+        assertTrue(responses.stream()
+                .allMatch(r -> r.tripStatus() == TripStatus.CREATED || r.tripStatus() == TripStatus.AVAILABLE));
     }
 
     @Test

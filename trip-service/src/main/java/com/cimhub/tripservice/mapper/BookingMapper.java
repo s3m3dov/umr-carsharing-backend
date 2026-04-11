@@ -5,10 +5,9 @@ import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
+import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.time.ZonedDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -41,9 +40,8 @@ public class BookingMapper {
      * Trip may be null if it has been deleted; car type will be omitted in that case.
      */
     public PassengerRideResponse toPassengerRideResponse(Booking booking, Trip trip) {
-        ZonedDateTime rideStartInOriginalZone = timezoneService.convertToTimezone(
-                booking.getRideStartTimeUTC(),
-                booking.getRideTimezone());
+        ZonedDateTime rideStartInOriginalZone =
+                timezoneService.convertToTimezone(booking.getRideStartTimeUTC(), booking.getRideTimezone());
 
         String carType = trip != null ? trip.getCarType() : null;
 

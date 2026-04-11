@@ -9,14 +9,13 @@ import com.cimhub.userservice.dto.response.AdminVehicleResponse;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.model.Vehicle;
 import com.cimhub.userservice.vehicle.repository.VehicleRepository;
+import java.time.Instant;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Locale;
 
 @Slf4j
 @Service
@@ -31,7 +30,8 @@ public class AdminVehicleService {
     }
 
     public AdminVehicleResponse getVehicle(String vehicleId) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+        Vehicle vehicle = vehicleRepository
+                .findById(vehicleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + vehicleId));
         return mapToResponse(vehicle);
     }
@@ -64,7 +64,8 @@ public class AdminVehicleService {
     }
 
     public AdminVehicleResponse updateVehicle(String vehicleId, UpdateVehicleRequest request, String adminEmail) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+        Vehicle vehicle = vehicleRepository
+                .findById(vehicleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + vehicleId));
 
         if (request.vehicleName() != null) vehicle.setVehicleName(request.vehicleName());
@@ -80,7 +81,8 @@ public class AdminVehicleService {
     }
 
     public void deleteVehicle(String vehicleId, String adminEmail) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+        Vehicle vehicle = vehicleRepository
+                .findById(vehicleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + vehicleId));
         vehicleRepository.delete(vehicle);
         auditService.logDelete(EntityType.VEHICLE, vehicleId, adminEmail, "Vehicle deleted");

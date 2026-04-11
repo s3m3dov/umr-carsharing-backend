@@ -26,7 +26,8 @@ public class BookingService {
      * @throws ResourceNotFoundException if booking is not found
      */
     public BookingResponse getBooking(String bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository
+                .findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         return bookingMapper.toBookingResponse(booking);
     }

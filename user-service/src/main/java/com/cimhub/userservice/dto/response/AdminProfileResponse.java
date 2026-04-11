@@ -7,6 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record AdminProfileResponse(
         @Schema(description = "Admin unique identifier", example = "admin_001")
         String adminEmail,
+
         @Schema(description = "Authenticated user role", example = "ADMIN")
-        UserType role) {
-}
+        UserType role) {}

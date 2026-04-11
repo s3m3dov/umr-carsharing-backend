@@ -1,14 +1,13 @@
 package com.cimhub.userservice.vehicle.model;
 
 import jakarta.validation.constraints.NotBlank;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.Instant;
 
 /**
  * Vehicle model for storing vehicle information.

@@ -1,8 +1,17 @@
 package com.cimhub.apigateway.filter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
+import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,16 +23,6 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminAuthorizationFilterTest {
@@ -54,10 +53,9 @@ class AdminAuthorizationFilterTest {
 
     @Test
     void filter_withAdminPathAndAdminRole_shouldContinueFilterChain() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/admin/reviews")
-                        .header(HeaderConstants.X_USER_ROLE, UserType.ADMIN.name().toLowerCase(Locale.ROOT))
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/reviews")
+                .header(HeaderConstants.X_USER_ROLE, UserType.ADMIN.name().toLowerCase(Locale.ROOT))
+                .build());
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         filter.filter(exchange, chain).block();
@@ -68,10 +66,9 @@ class AdminAuthorizationFilterTest {
 
     @Test
     void filter_withAdminPathAndNonAdminRole_shouldReturnForbidden() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/admin/reviews")
-                        .header(HeaderConstants.X_USER_ROLE, UserType.DRIVER.name())
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/reviews")
+                .header(HeaderConstants.X_USER_ROLE, UserType.DRIVER.name())
+                .build());
 
         filter.filter(exchange, chain).block();
 
@@ -93,10 +90,9 @@ class AdminAuthorizationFilterTest {
 
     @Test
     void filter_withAdminPathAndPassengerRole_shouldReturnForbidden() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/admin/trips")
-                        .header(HeaderConstants.X_USER_ROLE, UserType.PASSENGER.name())
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/trips")
+                .header(HeaderConstants.X_USER_ROLE, UserType.PASSENGER.name())
+                .build());
 
         filter.filter(exchange, chain).block();
 

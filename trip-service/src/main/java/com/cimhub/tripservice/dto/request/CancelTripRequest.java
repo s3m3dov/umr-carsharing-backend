@@ -9,8 +9,7 @@ import lombok.Builder;
 @Schema(
         name = "CancelTripRequest",
         description = "Request to cancel a trip or booking",
-        example = TripApiDoc.CANCEL_TRIP_REQUEST
-)
+        example = TripApiDoc.CANCEL_TRIP_REQUEST)
 public record CancelTripRequest(
         @Schema(description = "Trip identifier to cancel", example = "trip_001")
         @NotBlank(message = "Trip ID is required")
@@ -20,5 +19,4 @@ public record CancelTripRequest(
         String rideId,
 
         @Schema(description = "Reason for cancellation", example = "Change of plans")
-        String cancellationReason) {
-}
+        String cancellationReason) {}

@@ -1,7 +1,7 @@
-# GCP overrides: expose Grafana via GCE Load Balancer
+---
 grafana:
   service:
-    type: NodePort
+    type: "NodePort"
     annotations:
-      cloud.google.com/neg: '{"ingress": true}'
-      cloud.google.com/backend-config: '{"default": "grafana-backend-config"}'
+      cloud.google.com/neg: "{\"ingress\": true}"
+      cloud.google.com/backend-config: "{\"default\": \"grafana-backend-config\"}"

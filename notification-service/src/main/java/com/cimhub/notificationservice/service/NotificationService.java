@@ -8,15 +8,14 @@ import com.cimhub.notificationservice.exception.NotificationNotFoundException;
 import com.cimhub.notificationservice.exception.UnauthorizedNotificationAccessException;
 import com.cimhub.notificationservice.model.Notification;
 import com.cimhub.notificationservice.repository.NotificationRepository;
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,21 +50,23 @@ public class NotificationService {
         NotificationResponse response = notificationMapper.toResponse(saved);
 
         realtimePublisher.publish(response);
-        realtimePublisher.publishUnreadCount(saved.getRecipientId(),
-                notificationRepository.countByRecipientIdAndReadFalse(saved.getRecipientId()));
+        realtimePublisher.publishUnreadCount(
+                saved.getRecipientId(), notificationRepository.countByRecipientIdAndReadFalse(saved.getRecipientId()));
 
         log.info("Notification {} created for recipient {}", saved.getNotificationId(), saved.getRecipientId());
         return response;
     }
 
     public Page<NotificationResponse> listNotifications(String recipientId, Pageable pageable) {
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(recipientId, pageable)
+        return notificationRepository
+                .findByRecipientIdOrderByCreatedAtDesc(recipientId, pageable)
                 .map(notificationMapper::toResponse);
     }
 
     @Transactional
     public NotificationResponse markAsRead(String notificationId, String recipientId) {
-        Notification notification = notificationRepository.findById(notificationId)
+        Notification notification = notificationRepository
+                .findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found: " + notificationId));
 
         if (!notification.getRecipientId().equals(recipientId)) {
@@ -78,7 +79,8 @@ public class NotificationService {
             notification.setUpdatedAt(Instant.now());
             notification = notificationRepository.save(notification);
 
-            realtimePublisher.publishUnreadCount(notification.getRecipientId(),
+            realtimePublisher.publishUnreadCount(
+                    notification.getRecipientId(),
                     notificationRepository.countByRecipientIdAndReadFalse(notification.getRecipientId()));
         }
 

@@ -1,12 +1,11 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.model.Points;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.model.Points;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.ZonedDateTime;
+import lombok.Builder;
 
 @Builder
 @Schema(name = "TripResponse", description = "Trip details as seen in search results")
@@ -23,11 +22,9 @@ public record TripResponse(
         @Schema(description = "Car type (e.g., SEDAN, SUV, VAN)", example = "SEDAN")
         String carType,
 
-        @Schema(description = "Trip starting location")
-        Points sourceAddress,
+        @Schema(description = "Trip starting location") Points sourceAddress,
 
-        @Schema(description = "Trip destination location")
-        Points destinationAddress,
+        @Schema(description = "Trip destination location") Points destinationAddress,
 
         @Schema(description = "Trip departure date and time in UTC", example = "2026-01-11T13:09:26Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -53,5 +50,4 @@ public record TripResponse(
         TripStatus tripStatus,
 
         @Schema(description = "Price per seat in EUR", example = "15.50")
-        double pricePerSeat) {
-}
+        double pricePerSeat) {}

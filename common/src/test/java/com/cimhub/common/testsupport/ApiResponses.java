@@ -4,8 +4,7 @@ import com.cimhub.common.dto.ApiResponseWrapper;
 
 public final class ApiResponses {
 
-    private ApiResponses() {
-    }
+    private ApiResponses() {}
 
     public static <T> ApiResponseWrapper<T> ok(T data) {
         return ApiResponseWrapper.success(data);

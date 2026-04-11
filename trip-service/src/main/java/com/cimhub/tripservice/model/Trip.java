@@ -6,20 +6,19 @@ import com.cimhub.tripservice.dto.osrm.Geometry;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.geo.Point;
-
-import java.time.Instant;
-import java.util.List;
 
 /**
  * Trip model - stores trip information for the carsharing platform.
@@ -78,6 +77,7 @@ public class Trip {
     private double pricePerSeat;
 
     private List<ObjectId> joinedBookingIds;
+
     @Builder.Default
     private Instant createdAt = Instant.now();
 

@@ -10,12 +10,10 @@ import lombok.Builder;
 @Schema(
         name = "SubmitReviewRequest",
         description = "Request to submit a review for a completed trip",
-        example = ReviewApiDoc.SUBMIT_REVIEW_REQUEST
-)
+        example = ReviewApiDoc.SUBMIT_REVIEW_REQUEST)
 @Builder
 public record SubmitReviewRequest(
-        @NotBlank(message = "tripId is required")
-        @Schema(description = "The ID of the trip being reviewed")
+        @NotBlank(message = "tripId is required") @Schema(description = "The ID of the trip being reviewed")
         String tripId,
 
         @NotBlank(message = "bookingId is required")
@@ -27,6 +25,4 @@ public record SubmitReviewRequest(
         @Schema(description = "Rating from 1 to 5", example = "5")
         int rating,
 
-        @Schema(description = "Optional review comment")
-        String comment) {
-}
+        @Schema(description = "Optional review comment") String comment) {}

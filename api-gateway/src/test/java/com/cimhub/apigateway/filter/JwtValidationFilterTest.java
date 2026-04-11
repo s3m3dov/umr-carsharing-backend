@@ -1,10 +1,20 @@
 package com.cimhub.apigateway.filter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.apigateway.config.SecurityProperties;
 import com.cimhub.apigateway.config.ServiceProperties;
 import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.UnauthorizedException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,17 +26,6 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JwtValidationFilterTest {
@@ -54,12 +53,11 @@ class JwtValidationFilterTest {
 
     @Test
     void filter_withPublicPath_shouldBypassValidationAndSanitizeIdentityHeaders() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/public/ping")
-                        .header(HeaderConstants.X_USER_ID, "spoofed-id")
-                        .header(HeaderConstants.X_USER_EMAIL, "spoofed@example.com")
-                        .header(HeaderConstants.X_USER_ROLE, UserType.ADMIN.name())
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/public/ping")
+                .header(HeaderConstants.X_USER_ID, "spoofed-id")
+                .header(HeaderConstants.X_USER_EMAIL, "spoofed@example.com")
+                .header(HeaderConstants.X_USER_ROLE, UserType.ADMIN.name())
+                .build());
 
         GatewayFilterChain chain = mutatedExchange -> {
             assertNull(mutatedExchange.getRequest().getHeaders().getFirst(HeaderConstants.X_USER_ID));
@@ -76,23 +74,22 @@ class JwtValidationFilterTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(
                 MockServerHttpRequest.get("/api/trips").build());
 
-        UnauthorizedException ex = assertThrows(
-                UnauthorizedException.class,
-                () -> filter.filter(exchange, unused -> reactor.core.publisher.Mono.empty()).block());
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> filter.filter(
+                        exchange, unused -> reactor.core.publisher.Mono.empty())
+                .block());
 
         assertEquals("Missing Authorization header", ex.getMessage());
     }
 
     @Test
     void filter_withMalformedToken_shouldThrowUnauthorized() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/trips")
-                        .header(HttpHeaders.AUTHORIZATION, HeaderConstants.BEARER_PREFIX + "malformed-token")
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/trips")
+                .header(HttpHeaders.AUTHORIZATION, HeaderConstants.BEARER_PREFIX + "malformed-token")
+                .build());
 
-        UnauthorizedException ex = assertThrows(
-                UnauthorizedException.class,
-                () -> filter.filter(exchange, unused -> Mono.empty()).block());
+        UnauthorizedException ex =
+                assertThrows(UnauthorizedException.class, () -> filter.filter(exchange, unused -> Mono.empty())
+                        .block());
 
         assertEquals("Malformed JWT token", ex.getMessage());
     }
@@ -109,16 +106,16 @@ class JwtValidationFilterTest {
         when(bodyUriSpec.uri(anyString())).thenReturn(bodyUriSpec);
         doReturn(headersSpec).when(bodyUriSpec).bodyValue(any());
         when(headersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(any(Class.class))).thenReturn(Mono.error(new RuntimeException("auth unavailable")));
+        when(responseSpec.bodyToMono(any(Class.class)))
+                .thenReturn(Mono.error(new RuntimeException("auth unavailable")));
 
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/trips")
-                        .header(HttpHeaders.AUTHORIZATION, HeaderConstants.BEARER_PREFIX + "a.b.c")
-                        .build());
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/trips")
+                .header(HttpHeaders.AUTHORIZATION, HeaderConstants.BEARER_PREFIX + "a.b.c")
+                .build());
 
-        UnauthorizedException ex = assertThrows(
-                UnauthorizedException.class,
-                () -> filter.filter(exchange, unused -> Mono.empty()).block());
+        UnauthorizedException ex =
+                assertThrows(UnauthorizedException.class, () -> filter.filter(exchange, unused -> Mono.empty())
+                        .block());
 
         assertEquals("Token validation failed", ex.getMessage());
     }

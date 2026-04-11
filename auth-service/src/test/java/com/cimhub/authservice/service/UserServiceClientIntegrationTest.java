@@ -1,16 +1,5 @@
 package com.cimhub.authservice.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestClient;
-
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,6 +9,16 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+
+import java.io.IOException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
 
 class UserServiceClientIntegrationTest {
 
@@ -51,8 +50,8 @@ class UserServiceClientIntegrationTest {
                         """))
                 .andRespond(withStatus(HttpStatus.CREATED));
 
-        assertDoesNotThrow(() -> userServiceClient.createPassengerSubProfile(
-                "passenger-1", "Jane", "Passenger", "+49 111", 31));
+        assertDoesNotThrow(
+                () -> userServiceClient.createPassengerSubProfile("passenger-1", "Jane", "Passenger", "+49 111", 31));
         server.verify();
     }
 
@@ -72,8 +71,8 @@ class UserServiceClientIntegrationTest {
                         """))
                 .andRespond(withStatus(HttpStatus.CREATED));
 
-        assertDoesNotThrow(() -> userServiceClient.createDriverSubProfile(
-                "driver-1", "John", "Driver", "+49 222", 44, "LIC-001"));
+        assertDoesNotThrow(
+                () -> userServiceClient.createDriverSubProfile("driver-1", "John", "Driver", "+49 222", 44, "LIC-001"));
         server.verify();
     }
 
@@ -84,8 +83,8 @@ class UserServiceClientIntegrationTest {
         server.expect(requestTo("http://user-service.test/api/passengers/passenger-1"))
                 .andRespond(withStatus(HttpStatus.CONFLICT));
 
-        assertDoesNotThrow(() -> userServiceClient.createPassengerSubProfile(
-                "passenger-1", "Jane", "Passenger", "+49 111", 31));
+        assertDoesNotThrow(
+                () -> userServiceClient.createPassengerSubProfile("passenger-1", "Jane", "Passenger", "+49 111", 31));
         server.verify();
     }
 
@@ -96,8 +95,9 @@ class UserServiceClientIntegrationTest {
         server.expect(requestTo("http://user-service.test/api/passengers/passenger-2"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userServiceClient.createPassengerSubProfile(
-                "passenger-2", "Jane", "Passenger", "+49 111", 31));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> userServiceClient.createPassengerSubProfile("passenger-2", "Jane", "Passenger", "+49 111", 31));
 
         assertTrue(ex.getMessage().contains("Failed to create passenger sub-profile"));
         server.verify();
@@ -108,8 +108,9 @@ class UserServiceClientIntegrationTest {
         server.expect(requestTo("http://user-service.test/api/drivers/driver-2"))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userServiceClient.createDriverSubProfile(
-                "driver-2", "John", "Driver", "+49 222", 44, "LIC-002"));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> userServiceClient.createDriverSubProfile("driver-2", "John", "Driver", "+49 222", 44, "LIC-002"));
 
         assertTrue(ex.getMessage().contains("Failed to create driver sub-profile"));
         server.verify();
@@ -120,8 +121,9 @@ class UserServiceClientIntegrationTest {
         server.expect(requestTo("http://user-service.test/api/drivers/driver-3"))
                 .andRespond(withException(new IOException("connection refused")));
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userServiceClient.createDriverSubProfile(
-                "driver-3", "John", "Driver", "+49 222", 44, "LIC-003"));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> userServiceClient.createDriverSubProfile("driver-3", "John", "Driver", "+49 222", 44, "LIC-003"));
 
         assertTrue(ex.getMessage().contains("Failed to create driver sub-profile"));
         assertTrue(ex.getCause() != null);

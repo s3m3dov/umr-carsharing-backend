@@ -5,8 +5,7 @@ import com.cimhub.common.exception.ForbiddenException;
 
 public final class OwnershipGuard {
 
-    private OwnershipGuard() {
-    }
+    private OwnershipGuard() {}
 
     public static void requireOwner(String authenticatedUserId, String targetUserId) {
         if (authenticatedUserId == null || authenticatedUserId.isBlank()) {

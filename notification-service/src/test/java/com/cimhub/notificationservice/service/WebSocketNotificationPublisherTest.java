@@ -1,7 +1,15 @@
 package com.cimhub.notificationservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
+import java.time.Instant;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,15 +18,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.time.Instant;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class WebSocketNotificationPublisherTest {
@@ -78,7 +77,8 @@ class WebSocketNotificationPublisherTest {
                 .updatedAt(Instant.parse("2030-01-01T00:00:00Z"))
                 .build();
 
-        doThrow(new RuntimeException("ws down")).when(messagingTemplate)
+        doThrow(new RuntimeException("ws down"))
+                .when(messagingTemplate)
                 .convertAndSend(any(String.class), any(NotificationResponse.class));
 
         assertThrows(RuntimeException.class, () -> webSocketNotificationPublisher.publish(notification));

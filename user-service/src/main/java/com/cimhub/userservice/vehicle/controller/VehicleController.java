@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 @RequestMapping("/api/vehicles")
 @RequiredArgsConstructor
-@Tag(name = "Vehicle Management", description = "Vehicle registration and management APIs. Allows drivers to register and manage their vehicles used for car sharing.")
+@Tag(
+        name = "Vehicle Management",
+        description =
+                "Vehicle registration and management APIs. Allows drivers to register and manage their vehicles used for car sharing.")
 public class VehicleController {
 
     private final VehicleService vehicleService;
@@ -41,26 +43,41 @@ public class VehicleController {
 
     @Operation(
             summary = "Get user vehicles",
-            description = "Retrieves all vehicles registered by a user. Returns active vehicles available for sharing."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Vehicles retrieved successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.GET_VEHICLES_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "No vehicles found for user",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.ERROR_NO_VEHICLES))
-            )
-    })
+            description = "Retrieves all vehicles registered by a user. Returns active vehicles available for sharing.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Vehicles retrieved successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = VehicleApiDoc.GET_VEHICLES_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "No vehicles found for user",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = VehicleApiDoc.ERROR_NO_VEHICLES)))
+            })
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<List<VehicleResponse>>> getUserVehicles(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
-            @PathVariable String userId) {
+                    @PathVariable
+                    String userId) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Getting vehicles for userId: {}", userId);
         List<VehicleResponse> resultList = vehicleService.findUserVehicles(userId);
@@ -69,34 +86,56 @@ public class VehicleController {
 
     @Operation(
             summary = "Register vehicle",
-            description = "Registers a new vehicle for a driver. Rejects duplicate registrations for the same driver or license plate."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Vehicle registered successfully",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = VehicleApiDoc.REGISTER_VEHICLE_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input or duplicate vehicle registration",
-                    content = @Content(mediaType = "application/json", examples = {
-                            @ExampleObject(name = "validation_error", value = VehicleApiDoc.ERROR_INVALID_VEHICLE_DATA),
-                            @ExampleObject(name = "vehicle_exists", value = VehicleApiDoc.ERROR_VEHICLE_EXISTS),
-                            @ExampleObject(name = "driver_has_vehicle", value = VehicleApiDoc.ERROR_DRIVER_HAS_VEHICLE)
-                    })
-            )
-    })
-    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+            description =
+                    "Registers a new vehicle for a driver. Rejects duplicate registrations for the same driver or license plate.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Vehicle registered successfully",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = VehicleApiDoc.REGISTER_VEHICLE_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Invalid input or duplicate vehicle registration",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = {
+                                            @ExampleObject(
+                                                    name = "validation_error",
+                                                    value = VehicleApiDoc.ERROR_INVALID_VEHICLE_DATA),
+                                            @ExampleObject(
+                                                    name = "vehicle_exists",
+                                                    value = VehicleApiDoc.ERROR_VEHICLE_EXISTS),
+                                            @ExampleObject(
+                                                    name = "driver_has_vehicle",
+                                                    value = VehicleApiDoc.ERROR_DRIVER_HAS_VEHICLE)
+                                        }))
+            })
+    @PostMapping(
+            value = "/register",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponseWrapper<VehicleResponse>> registerVehicle(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true) UserType userRole,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
+                    UserType userRole,
             @Valid @RequestBody RegisterVehicleRequest request) {
         OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, request.userId(), userRole);
         log.info("Registering vehicle for userId: {}", request.userId());
         VehicleResponse registeredVehicle = vehicleService.registerVehicle(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponseWrapper.success(registeredVehicle));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseWrapper.success(registeredVehicle));
     }
 }

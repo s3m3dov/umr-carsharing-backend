@@ -7,11 +7,10 @@ import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.model.Passenger;
 import com.cimhub.userservice.repository.PassengerRepository;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -34,11 +33,7 @@ public class PassengerService {
         passenger.setUserId(userId);
         passenger.setEmail(userId);
         ProfileUpdater.applyCommonProfileFields(
-                request,
-                passenger::setFirstName,
-                passenger::setLastName,
-                passenger::setPhoneNumber,
-                passenger::setAge);
+                request, passenger::setFirstName, passenger::setLastName, passenger::setPhoneNumber, passenger::setAge);
         passenger.setCreatedAt(now);
         passenger.setUpdatedAt(now);
         passenger.setCreatedBy(userId);
@@ -51,11 +46,7 @@ public class PassengerService {
         Passenger passenger = findPassengerOrThrow(userId);
 
         ProfileUpdater.applyCommonProfileUpdates(
-                request,
-                passenger::setFirstName,
-                passenger::setLastName,
-                passenger::setPhoneNumber,
-                passenger::setAge);
+                request, passenger::setFirstName, passenger::setLastName, passenger::setPhoneNumber, passenger::setAge);
 
         Instant now = Instant.now();
         passenger.setUpdatedAt(now);
@@ -77,9 +68,10 @@ public class PassengerService {
     }
 
     private PassengerResponse buildResponse(Passenger passenger) {
-        String resolvedEmail = (passenger.getEmail() == null || passenger.getEmail().isBlank())
-                ? passenger.getUserId()
-                : passenger.getEmail();
+        String resolvedEmail =
+                (passenger.getEmail() == null || passenger.getEmail().isBlank())
+                        ? passenger.getUserId()
+                        : passenger.getEmail();
 
         return PassengerResponse.builder()
                 .userId(passenger.getUserId())

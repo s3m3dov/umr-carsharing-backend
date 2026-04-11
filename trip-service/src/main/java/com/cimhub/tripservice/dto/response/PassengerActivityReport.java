@@ -4,8 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record PassengerActivityReport(
-        long totalBookings,
-        long activeBookings,
-        long completedBookings,
-        long cancelledBookings) {
-}
+        long totalBookings, long activeBookings, long completedBookings, long cancelledBookings) {}

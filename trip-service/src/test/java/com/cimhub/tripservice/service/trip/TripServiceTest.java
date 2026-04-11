@@ -1,23 +1,5 @@
 package com.cimhub.tripservice.service.trip;
 
-import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.exception.UnauthorizedException;
-import com.cimhub.tripservice.dto.response.StartTripResponse;
-import com.cimhub.tripservice.dto.response.TripResponse;
-import com.cimhub.tripservice.exception.InvalidTripStateException;
-import com.cimhub.tripservice.mapper.TripMapper;
-import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
-import com.cimhub.tripservice.repository.TripsRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,6 +8,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.StartTripResponse;
+import com.cimhub.tripservice.exception.InvalidTripStateException;
+import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.repository.TripsRepository;
+import java.time.Instant;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class TripServiceTest {
@@ -85,8 +83,7 @@ class TripServiceTest {
 
         when(tripsRepository.findById("trip-3")).thenReturn(Optional.of(trip));
 
-        assertThrows(InvalidTripStateException.class,
-                () -> tripService.updateStatus("trip-3", TripStatus.CANCELLED));
+        assertThrows(InvalidTripStateException.class, () -> tripService.updateStatus("trip-3", TripStatus.CANCELLED));
 
         verify(tripsRepository, never()).save(any());
     }
@@ -95,8 +92,7 @@ class TripServiceTest {
     void updateStatus_whenTripMissing_shouldThrowResourceNotFound() {
         when(tripsRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> tripService.updateStatus("missing", TripStatus.AVAILABLE));
+        assertThrows(ResourceNotFoundException.class, () -> tripService.updateStatus("missing", TripStatus.AVAILABLE));
     }
 
     @Test
@@ -107,8 +103,8 @@ class TripServiceTest {
 
         when(tripsRepository.findById("trip-4")).thenReturn(Optional.of(trip));
 
-        InvalidTripStateException ex = assertThrows(InvalidTripStateException.class,
-                () -> tripService.updateStatus("trip-4", TripStatus.CREATED));
+        InvalidTripStateException ex = assertThrows(
+                InvalidTripStateException.class, () -> tripService.updateStatus("trip-4", TripStatus.CREATED));
 
         assertTrue(ex.getMessage().contains("Cannot transition trip"));
         verify(tripsRepository, never()).save(any());
@@ -147,8 +143,7 @@ class TripServiceTest {
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(UnauthorizedException.class,
-                () -> tripService.startTrip("trip-1", "other-driver"));
+        assertThrows(UnauthorizedException.class, () -> tripService.startTrip("trip-1", "other-driver"));
 
         verify(tripsRepository, never()).save(any());
     }
@@ -163,8 +158,7 @@ class TripServiceTest {
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(InvalidTripStateException.class,
-                () -> tripService.startTrip("trip-1", "driver-1"));
+        assertThrows(InvalidTripStateException.class, () -> tripService.startTrip("trip-1", "driver-1"));
 
         verify(tripsRepository, never()).save(any());
     }
@@ -173,7 +167,6 @@ class TripServiceTest {
     void startTrip_whenTripMissing_shouldThrowResourceNotFound() {
         when(tripsRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> tripService.startTrip("missing", "driver-1"));
+        assertThrows(ResourceNotFoundException.class, () -> tripService.startTrip("missing", "driver-1"));
     }
 }

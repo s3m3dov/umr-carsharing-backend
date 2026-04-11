@@ -8,14 +8,13 @@ import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.model.Vehicle;
 import com.cimhub.userservice.vehicle.repository.VehicleRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -31,9 +30,7 @@ public class VehicleService {
         if (vehicles.isEmpty()) {
             throw new ResourceNotFoundException("No vehicles found for user: " + userId);
         }
-        return vehicles.stream()
-                .map(this::toVehicleResponse)
-                .collect(Collectors.toList());
+        return vehicles.stream().map(this::toVehicleResponse).collect(Collectors.toList());
     }
 
     public VehicleResponse registerVehicle(RegisterVehicleRequest request) {
@@ -63,7 +60,8 @@ public class VehicleService {
         newVehicle.setUpdatedAt(now);
 
         Vehicle savedVehicle = vehicleRepository.save(newVehicle);
-        auditService.logCreate(EntityType.VEHICLE, savedVehicle.getId(), request.userId(), "Vehicle registered by user");
+        auditService.logCreate(
+                EntityType.VEHICLE, savedVehicle.getId(), request.userId(), "Vehicle registered by user");
         log.info("Vehicle registered successfully: {}", request.vehicleNumber());
         return toVehicleResponse(savedVehicle);
     }

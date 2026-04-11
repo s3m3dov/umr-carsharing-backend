@@ -9,5 +9,4 @@ import lombok.Builder;
 public record MarkNotificationReadRequest(
         @NotBlank(message = "recipientId is required")
         @Schema(description = "Notification owner user ID", example = "jane.passenger@example.com")
-        String recipientId) {
-}
+        String recipientId) {}

@@ -1,19 +1,18 @@
 package com.cimhub.tripservice.service.notification;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.cimhub.tripservice.model.Booking;
 import com.cimhub.tripservice.model.Trip;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DriverNotificationServiceTest {
 
@@ -22,7 +21,8 @@ class DriverNotificationServiceTest {
         List<String> urls = new ArrayList<>();
         WebClient.Builder builder = WebClient.builder().exchangeFunction(request -> {
             urls.add(request.url().toString());
-            return reactor.core.publisher.Mono.just(ClientResponse.create(HttpStatus.OK).build());
+            return reactor.core.publisher.Mono.just(
+                    ClientResponse.create(HttpStatus.OK).build());
         });
 
         DriverNotificationService service = new DriverNotificationService(builder);
@@ -46,8 +46,9 @@ class DriverNotificationServiceTest {
 
     @Test
     void notifyMethods_whenNotificationCallFails_shouldSwallowException() {
-        WebClient.Builder builder = WebClient.builder().exchangeFunction(request ->
-                reactor.core.publisher.Mono.error(new RuntimeException("notification service unavailable")));
+        WebClient.Builder builder = WebClient.builder()
+                .exchangeFunction(request ->
+                        reactor.core.publisher.Mono.error(new RuntimeException("notification service unavailable")));
 
         DriverNotificationService service = new DriverNotificationService(builder);
         ReflectionTestUtils.setField(service, "notificationServiceBaseUrl", "http://notify.example");

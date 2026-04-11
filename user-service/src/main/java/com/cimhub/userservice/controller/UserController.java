@@ -34,25 +34,35 @@ public class UserController {
 
     @Operation(
             summary = "Get user information",
-            description = "Returns aggregated user info from role profiles (driver or passenger)."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User found and profile returned",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.GET_USER_RESPONSE))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User not found",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = UserApiDoc.ERROR_USER_NOT_FOUND))
-            )
-    })
+            description = "Returns aggregated user info from role profiles (driver or passenger).")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "User found and profile returned",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = UserApiDoc.GET_USER_RESPONSE))),
+                @ApiResponse(
+                        responseCode = "404",
+                        description = "User not found",
+                        content =
+                                @Content(
+                                        mediaType = "application/json",
+                                        examples = @ExampleObject(value = UserApiDoc.ERROR_USER_NOT_FOUND)))
+            })
     @GetMapping(value = "/{userId}")
     public ResponseEntity<ApiResponseWrapper<UserResponse>> getUserInfo(
-            @Parameter(description = "Injected by the gateway from the JWT. Do not set manually.", required = false, hidden = true) @RequestHeader(value = HeaderConstants.X_USER_ID, required = true) String authenticatedUserId,
+            @Parameter(
+                            description = "Injected by the gateway from the JWT. Do not set manually.",
+                            required = false,
+                            hidden = true)
+                    @RequestHeader(value = HeaderConstants.X_USER_ID, required = true)
+                    String authenticatedUserId,
             @Parameter(description = "User's unique identifier", required = true, example = "john.driver@example.com")
-            @PathVariable String userId) {
+                    @PathVariable
+                    String userId) {
         OwnershipGuard.requireOwner(authenticatedUserId, userId);
         log.info("Get user info for userId: {}", userId);
         UserResponse userInfo = userService.getUserInfo(userId);

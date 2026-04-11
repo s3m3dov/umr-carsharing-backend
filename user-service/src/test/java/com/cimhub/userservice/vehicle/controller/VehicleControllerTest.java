@@ -1,22 +1,21 @@
 package com.cimhub.userservice.vehicle.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.userservice.vehicle.dto.request.RegisterVehicleRequest;
 import com.cimhub.userservice.vehicle.dto.response.VehicleResponse;
 import com.cimhub.userservice.vehicle.service.VehicleService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VehicleControllerTest {
@@ -48,13 +47,8 @@ class VehicleControllerTest {
 
     @Test
     void registerVehicle_shouldReturnCreatedStatus() {
-        RegisterVehicleRequest request = new RegisterVehicleRequest(
-                "driver@example.com",
-                "Tesla",
-                "HE-XX-1234",
-                "sedan",
-                "white",
-                "5");
+        RegisterVehicleRequest request =
+                new RegisterVehicleRequest("driver@example.com", "Tesla", "HE-XX-1234", "sedan", "white", "5");
         when(vehicleService.registerVehicle(request))
                 .thenReturn(new VehicleResponse("HE-XX-1234", "Tesla | white", "5"));
 
@@ -67,7 +61,8 @@ class VehicleControllerTest {
 
     @Test
     void getUserVehicles_withMismatchedOwner_shouldThrowForbidden() {
-        assertThrows(ForbiddenException.class,
+        assertThrows(
+                ForbiddenException.class,
                 () -> vehicleController.getUserVehicles("other@example.com", UserType.DRIVER, "driver@example.com"));
     }
 }

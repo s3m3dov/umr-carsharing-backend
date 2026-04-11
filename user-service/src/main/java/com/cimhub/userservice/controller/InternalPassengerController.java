@@ -23,8 +23,7 @@ public class InternalPassengerController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> createPassengerProfile(
-            @PathVariable String userId,
-            @Valid @RequestBody CreatePassengerProfileRequest request) {
+            @PathVariable String userId, @Valid @RequestBody CreatePassengerProfileRequest request) {
         log.info("Internal: create passenger profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(passengerService.createPassengerProfile(userId, request)));

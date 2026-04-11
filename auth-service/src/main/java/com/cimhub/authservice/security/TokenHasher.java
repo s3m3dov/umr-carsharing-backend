@@ -1,11 +1,10 @@
 package com.cimhub.authservice.security;
 
-import lombok.experimental.UtilityClass;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TokenHasher {

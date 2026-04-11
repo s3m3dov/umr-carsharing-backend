@@ -2,9 +2,8 @@ package com.cimhub.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 @Schema(
@@ -22,8 +21,7 @@ import java.time.Instant;
                   "createdAt": "2026-03-30T12:00:00.000Z",
                   "updatedAt": "2026-03-30T12:05:45.456Z"
                 }
-                """
-)
+                """)
 public record AdminVehicleResponse(
         String id,
         String userId,
@@ -32,10 +30,11 @@ public record AdminVehicleResponse(
         String vehicleType,
         String vehicleColor,
         String seatingCapacity,
+
         @Schema(description = "Timestamp when vehicle was created (UTC)", example = "2026-03-30T12:00:00.000Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant createdAt,
+
         @Schema(description = "Timestamp when vehicle was last updated (UTC)", example = "2026-03-30T12:05:45.456Z")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-        Instant updatedAt) {
-}
+        Instant updatedAt) {}

@@ -1,5 +1,16 @@
 package com.cimhub.notificationservice.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.NotificationType;
 import com.cimhub.notificationservice.dto.request.CreateNotificationRequest;
 import com.cimhub.notificationservice.dto.response.NotificationResponse;
@@ -9,28 +20,16 @@ import com.cimhub.notificationservice.exception.NotificationNotFoundException;
 import com.cimhub.notificationservice.exception.UnauthorizedNotificationAccessException;
 import com.cimhub.notificationservice.model.Notification;
 import com.cimhub.notificationservice.repository.NotificationRepository;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -45,7 +44,8 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationRepository, new NotificationMapper(), realtimePublisher);
+        notificationService =
+                new NotificationService(notificationRepository, new NotificationMapper(), realtimePublisher);
     }
 
     @Test
@@ -178,8 +178,7 @@ class NotificationServiceTest {
                 .read(false)
                 .build();
 
-        when(notificationRepository.findByRecipientIdAndReadFalse("user-1"))
-                .thenReturn(List.of(first, second));
+        when(notificationRepository.findByRecipientIdAndReadFalse("user-1")).thenReturn(List.of(first, second));
 
         NotificationStatsResponse response = notificationService.markAllAsRead("user-1");
 

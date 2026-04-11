@@ -1,11 +1,10 @@
 package com.cimhub.common.exception;
 
+import com.cimhub.common.dto.response.ErrorDetail;
+import java.util.List;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
-
-import com.cimhub.common.dto.response.ErrorDetail;
-import java.util.List;
 
 /**
  * Base exception for business logic errors.
@@ -27,13 +26,15 @@ public abstract class BusinessException extends ErrorResponseException {
      * Create a business exception with ServiceErrorCode, message, and details.
      */
     protected BusinessException(ServiceErrorCode errorCode, String message, List<ErrorDetail> details) {
-        super(HttpStatusCode.valueOf(errorCode.getHttpStatus().value()),
-                createProblemDetail(errorCode, message, details), null);
+        super(
+                HttpStatusCode.valueOf(errorCode.getHttpStatus().value()),
+                createProblemDetail(errorCode, message, details),
+                null);
         this.errorCode = errorCode;
     }
 
-    private static ProblemDetail createProblemDetail(ServiceErrorCode errorCode, String message,
-            List<ErrorDetail> details) {
+    private static ProblemDetail createProblemDetail(
+            ServiceErrorCode errorCode, String message, List<ErrorDetail> details) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(errorCode.getHttpStatus());
         problemDetail.setDetail(message != null ? message : errorCode.getDefaultMessage());
 

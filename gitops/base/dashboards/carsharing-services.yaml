@@ -1,174 +1,109 @@
-apiVersion: v1
-kind: ConfigMap
+---
+apiVersion: "v1"
+kind: "ConfigMap"
 metadata:
-  name: carsharing-services-dashboard
-  namespace: monitoring
+  name: "carsharing-services-dashboard"
+  namespace: "monitoring"
   labels:
     grafana_dashboard: "1"
 data:
-  carsharing-services.json: |
-    {
-      "annotations": {
-        "list": [
-          {
-            "builtIn": 1,
-            "datasource": "-- Grafana --",
-            "enable": true,
-            "hide": true,
-            "iconColor": "rgba(0, 211, 255, 1)",
-            "name": "Annotations & Alerts",
-            "type": "dashboard"
-          }
-        ]
-      },
-      "editable": true,
-      "gnetId": null,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "panels": [
-        {
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"},
-              "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
-              "mappings": [],
-              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 80}]}
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-          "id": 2,
-          "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
-          "pluginVersion": "8.0.0",
-          "targets": [
-            {
-              "expr": "sum(rate(http_server_requests_seconds_count{application=~\".+\"}[5m])) by (application)",
-              "refId": "A",
-              "legendFormat": "{{application}}"
-            }
-          ],
-          "title": "Request Rate (req/sec)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"},
-              "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
-              "mappings": [],
-              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.01}, {"color": "red", "value": 0.05}]}
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-          "id": 3,
-          "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
-          "pluginVersion": "8.0.0",
-          "targets": [
-            {
-              "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\",application=~\".+\"}[5m])) by (application) / sum(rate(http_server_requests_seconds_count{application=~\".+\"}[5m])) by (application)",
-              "refId": "A",
-              "legendFormat": "{{application}}"
-            }
-          ],
-          "title": "Error Rate (5xx)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"},
-              "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
-              "mappings": [],
-              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.5}, {"color": "red", "value": 1}]},
-              "unit": "s"
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-          "id": 4,
-          "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
-          "pluginVersion": "8.0.0",
-          "targets": [
-            {
-              "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=~\".+\"}[5m])) by (application, le))",
-              "refId": "A",
-              "legendFormat": "p99 {{application}}"
-            }
-          ],
-          "title": "P99 Latency",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"},
-              "custom": {"axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": {"tooltip": false, "viz": false, "legend": false}, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}},
-              "mappings": [],
-              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 0.7}, {"color": "red", "value": 0.9}]},
-              "unit": "percentunit"
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-          "id": 5,
-          "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
-          "pluginVersion": "8.0.0",
-          "targets": [
-            {
-              "expr": "jvm_memory_used_bytes{area=\"heap\",application=~\".+\"} / jvm_memory_max_bytes{area=\"heap\",application=~\".+\"}",
-              "refId": "A",
-              "legendFormat": "{{application}}"
-            }
-          ],
-          "title": "JVM Heap Usage %",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"},
-              "custom": {"hideFrom": {"tooltip": false, "viz": false, "legend": false}},
-              "mappings": [],
-              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
-          "id": 6,
-          "options": {"legend": {"displayMode": "list", "placement": "right"}, "pieType": "pie"},
-          "pluginVersion": "8.0.0",
-          "targets": [
-            {
-              "expr": "sum(rate(http_server_requests_seconds_count{application=~\".+\"}[5m])) by (status)",
-              "refId": "A",
-              "legendFormat": "{{status}}"
-            }
-          ],
-          "title": "Requests by Status Code (last 5m)",
-          "type": "piechart"
-        }
-      ],
-      "refresh": "30s",
-      "schemaVersion": 27,
-      "style": "dark",
-      "tags": ["carsharing", "services"],
-      "templating": {
-        "list": []
-      },
-      "time": {
-        "from": "now-6h",
-        "to": "now"
-      },
-      "timepicker": {},
-      "timezone": "",
-      "title": "CarSharing Services",
-      "uid": "carsharing-services",
-      "version": 0
-    }
+  carsharing-services.json: "{\n  \"annotations\": {\n    \"list\": [\n      {\n \
+    \       \"builtIn\": 1,\n        \"datasource\": \"-- Grafana --\",\n        \"\
+    enable\": true,\n        \"hide\": true,\n        \"iconColor\": \"rgba(0, 211,\
+    \ 255, 1)\",\n        \"name\": \"Annotations & Alerts\",\n        \"type\": \"\
+    dashboard\"\n      }\n    ]\n  },\n  \"editable\": true,\n  \"gnetId\": null,\n\
+    \  \"graphTooltip\": 0,\n  \"id\": null,\n  \"links\": [],\n  \"panels\": [\n\
+    \    {\n      \"datasource\": \"Prometheus\",\n      \"fieldConfig\": {\n    \
+    \    \"defaults\": {\n          \"color\": {\"mode\": \"palette-classic\"},\n\
+    \          \"custom\": {\"axisLabel\": \"\", \"axisPlacement\": \"auto\", \"barAlignment\"\
+    : 0, \"drawStyle\": \"line\", \"fillOpacity\": 10, \"gradientMode\": \"none\"\
+    , \"hideFrom\": {\"tooltip\": false, \"viz\": false, \"legend\": false}, \"lineInterpolation\"\
+    : \"linear\", \"lineWidth\": 1, \"pointSize\": 5, \"scaleDistribution\": {\"type\"\
+    : \"linear\"}, \"showPoints\": \"auto\", \"spanNulls\": false, \"stacking\": {\"\
+    group\": \"A\", \"mode\": \"none\"}, \"thresholdsStyle\": {\"mode\": \"off\"}},\n\
+    \          \"mappings\": [],\n          \"thresholds\": {\"mode\": \"absolute\"\
+    , \"steps\": [{\"color\": \"green\", \"value\": null}, {\"color\": \"red\", \"\
+    value\": 80}]}\n        },\n        \"overrides\": []\n      },\n      \"gridPos\"\
+    : {\"h\": 8, \"w\": 12, \"x\": 0, \"y\": 0},\n      \"id\": 2,\n      \"options\"\
+    : {\"legend\": {\"calcs\": [], \"displayMode\": \"list\", \"placement\": \"bottom\"\
+    }, \"tooltip\": {\"mode\": \"single\"}},\n      \"pluginVersion\": \"8.0.0\",\n\
+    \      \"targets\": [\n        {\n          \"expr\": \"sum(rate(http_server_requests_seconds_count{application=~\\\
+    \".+\\\"}[5m])) by (application)\",\n          \"refId\": \"A\",\n          \"\
+    legendFormat\": \"{{application}}\"\n        }\n      ],\n      \"title\": \"\
+    Request Rate (req/sec)\",\n      \"type\": \"timeseries\"\n    },\n    {\n   \
+    \   \"datasource\": \"Prometheus\",\n      \"fieldConfig\": {\n        \"defaults\"\
+    : {\n          \"color\": {\"mode\": \"palette-classic\"},\n          \"custom\"\
+    : {\"axisLabel\": \"\", \"axisPlacement\": \"auto\", \"barAlignment\": 0, \"drawStyle\"\
+    : \"line\", \"fillOpacity\": 10, \"gradientMode\": \"none\", \"hideFrom\": {\"\
+    tooltip\": false, \"viz\": false, \"legend\": false}, \"lineInterpolation\": \"\
+    linear\", \"lineWidth\": 1, \"pointSize\": 5, \"scaleDistribution\": {\"type\"\
+    : \"linear\"}, \"showPoints\": \"auto\", \"spanNulls\": false, \"stacking\": {\"\
+    group\": \"A\", \"mode\": \"none\"}, \"thresholdsStyle\": {\"mode\": \"off\"}},\n\
+    \          \"mappings\": [],\n          \"thresholds\": {\"mode\": \"absolute\"\
+    , \"steps\": [{\"color\": \"green\", \"value\": null}, {\"color\": \"yellow\"\
+    , \"value\": 0.01}, {\"color\": \"red\", \"value\": 0.05}]}\n        },\n    \
+    \    \"overrides\": []\n      },\n      \"gridPos\": {\"h\": 8, \"w\": 12, \"\
+    x\": 12, \"y\": 0},\n      \"id\": 3,\n      \"options\": {\"legend\": {\"calcs\"\
+    : [], \"displayMode\": \"list\", \"placement\": \"bottom\"}, \"tooltip\": {\"\
+    mode\": \"single\"}},\n      \"pluginVersion\": \"8.0.0\",\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"sum(rate(http_server_requests_seconds_count{status=~\\\
+    \"5..\\\",application=~\\\".+\\\"}[5m])) by (application) / sum(rate(http_server_requests_seconds_count{application=~\\\
+    \".+\\\"}[5m])) by (application)\",\n          \"refId\": \"A\",\n          \"\
+    legendFormat\": \"{{application}}\"\n        }\n      ],\n      \"title\": \"\
+    Error Rate (5xx)\",\n      \"type\": \"timeseries\"\n    },\n    {\n      \"datasource\"\
+    : \"Prometheus\",\n      \"fieldConfig\": {\n        \"defaults\": {\n       \
+    \   \"color\": {\"mode\": \"palette-classic\"},\n          \"custom\": {\"axisLabel\"\
+    : \"\", \"axisPlacement\": \"auto\", \"barAlignment\": 0, \"drawStyle\": \"line\"\
+    , \"fillOpacity\": 10, \"gradientMode\": \"none\", \"hideFrom\": {\"tooltip\"\
+    : false, \"viz\": false, \"legend\": false}, \"lineInterpolation\": \"linear\"\
+    , \"lineWidth\": 1, \"pointSize\": 5, \"scaleDistribution\": {\"type\": \"linear\"\
+    }, \"showPoints\": \"auto\", \"spanNulls\": false, \"stacking\": {\"group\": \"\
+    A\", \"mode\": \"none\"}, \"thresholdsStyle\": {\"mode\": \"off\"}},\n       \
+    \   \"mappings\": [],\n          \"thresholds\": {\"mode\": \"absolute\", \"steps\"\
+    : [{\"color\": \"green\", \"value\": null}, {\"color\": \"yellow\", \"value\"\
+    : 0.5}, {\"color\": \"red\", \"value\": 1}]},\n          \"unit\": \"s\"\n   \
+    \     },\n        \"overrides\": []\n      },\n      \"gridPos\": {\"h\": 8, \"\
+    w\": 12, \"x\": 0, \"y\": 8},\n      \"id\": 4,\n      \"options\": {\"legend\"\
+    : {\"calcs\": [], \"displayMode\": \"list\", \"placement\": \"bottom\"}, \"tooltip\"\
+    : {\"mode\": \"single\"}},\n      \"pluginVersion\": \"8.0.0\",\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=~\\\
+    \".+\\\"}[5m])) by (application, le))\",\n          \"refId\": \"A\",\n      \
+    \    \"legendFormat\": \"p99 {{application}}\"\n        }\n      ],\n      \"\
+    title\": \"P99 Latency\",\n      \"type\": \"timeseries\"\n    },\n    {\n   \
+    \   \"datasource\": \"Prometheus\",\n      \"fieldConfig\": {\n        \"defaults\"\
+    : {\n          \"color\": {\"mode\": \"palette-classic\"},\n          \"custom\"\
+    : {\"axisLabel\": \"\", \"axisPlacement\": \"auto\", \"barAlignment\": 0, \"drawStyle\"\
+    : \"line\", \"fillOpacity\": 10, \"gradientMode\": \"none\", \"hideFrom\": {\"\
+    tooltip\": false, \"viz\": false, \"legend\": false}, \"lineInterpolation\": \"\
+    linear\", \"lineWidth\": 1, \"pointSize\": 5, \"scaleDistribution\": {\"type\"\
+    : \"linear\"}, \"showPoints\": \"auto\", \"spanNulls\": false, \"stacking\": {\"\
+    group\": \"A\", \"mode\": \"none\"}, \"thresholdsStyle\": {\"mode\": \"off\"}},\n\
+    \          \"mappings\": [],\n          \"thresholds\": {\"mode\": \"absolute\"\
+    , \"steps\": [{\"color\": \"green\", \"value\": null}, {\"color\": \"yellow\"\
+    , \"value\": 0.7}, {\"color\": \"red\", \"value\": 0.9}]},\n          \"unit\"\
+    : \"percentunit\"\n        },\n        \"overrides\": []\n      },\n      \"gridPos\"\
+    : {\"h\": 8, \"w\": 12, \"x\": 12, \"y\": 8},\n      \"id\": 5,\n      \"options\"\
+    : {\"legend\": {\"calcs\": [], \"displayMode\": \"list\", \"placement\": \"bottom\"\
+    }, \"tooltip\": {\"mode\": \"single\"}},\n      \"pluginVersion\": \"8.0.0\",\n\
+    \      \"targets\": [\n        {\n          \"expr\": \"jvm_memory_used_bytes{area=\\\
+    \"heap\\\",application=~\\\".+\\\"} / jvm_memory_max_bytes{area=\\\"heap\\\",application=~\\\
+    \".+\\\"}\",\n          \"refId\": \"A\",\n          \"legendFormat\": \"{{application}}\"\
+    \n        }\n      ],\n      \"title\": \"JVM Heap Usage %\",\n      \"type\"\
+    : \"timeseries\"\n    },\n    {\n      \"datasource\": \"Prometheus\",\n     \
+    \ \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\"mode\"\
+    : \"palette-classic\"},\n          \"custom\": {\"hideFrom\": {\"tooltip\": false,\
+    \ \"viz\": false, \"legend\": false}},\n          \"mappings\": [],\n        \
+    \  \"thresholds\": {\"mode\": \"absolute\", \"steps\": [{\"color\": \"green\"\
+    , \"value\": null}]}\n        },\n        \"overrides\": []\n      },\n      \"\
+    gridPos\": {\"h\": 8, \"w\": 24, \"x\": 0, \"y\": 16},\n      \"id\": 6,\n   \
+    \   \"options\": {\"legend\": {\"displayMode\": \"list\", \"placement\": \"right\"\
+    }, \"pieType\": \"pie\"},\n      \"pluginVersion\": \"8.0.0\",\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"sum(rate(http_server_requests_seconds_count{application=~\\\
+    \".+\\\"}[5m])) by (status)\",\n          \"refId\": \"A\",\n          \"legendFormat\"\
+    : \"{{status}}\"\n        }\n      ],\n      \"title\": \"Requests by Status Code\
+    \ (last 5m)\",\n      \"type\": \"piechart\"\n    }\n  ],\n  \"refresh\": \"30s\"\
+    ,\n  \"schemaVersion\": 27,\n  \"style\": \"dark\",\n  \"tags\": [\"carsharing\"\
+    , \"services\"],\n  \"templating\": {\n    \"list\": []\n  },\n  \"time\": {\n\
+    \    \"from\": \"now-6h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n\
+    \  \"timezone\": \"\",\n  \"title\": \"CarSharing Services\",\n  \"uid\": \"carsharing-services\"\
+    ,\n  \"version\": 0\n}\n"

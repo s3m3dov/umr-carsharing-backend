@@ -34,8 +34,7 @@ public class InternalPathBlockingFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isInternalPath(String path) {
-        return securityProperties.getInternalPaths().stream()
-                .anyMatch(pattern -> pathMatcher.match(pattern, path));
+        return securityProperties.getInternalPaths().stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
     @Override

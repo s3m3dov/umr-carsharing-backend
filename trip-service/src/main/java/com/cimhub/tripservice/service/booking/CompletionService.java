@@ -1,6 +1,8 @@
 package com.cimhub.tripservice.service.booking;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.common.service.AuditService;
@@ -9,22 +11,19 @@ import com.cimhub.tripservice.dto.response.CompleteTripResponse;
 import com.cimhub.tripservice.exception.RideNotCompletableException;
 import com.cimhub.tripservice.exception.TripNotInProgressException;
 import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import com.cimhub.tripservice.service.trip.TripService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +47,9 @@ public class CompletionService {
     public CompleteRideResponse completeRide(String bookingId, String driverId) {
         log.info("Driver {} completing ride: {}", driverId, bookingId);
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Booking not found with id: " + bookingId));
+        Booking booking = bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
         if (!booking.getDriverId().equals(driverId)) {
             throw new UnauthorizedException("You are not authorized to complete this ride");
@@ -61,9 +60,9 @@ public class CompletionService {
                     String.format("Ride %s cannot be completed — current status: %s", bookingId, booking.getStatus()));
         }
 
-        Trip trip = tripsRepository.findById(booking.getTripId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trip not found with id: " + booking.getTripId()));
+        Trip trip = tripsRepository
+                .findById(booking.getTripId())
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + booking.getTripId()));
 
         booking.setStatus(BookingStatus.COMPLETED);
         booking.setUpdatedAt(Instant.now());
@@ -92,9 +91,9 @@ public class CompletionService {
     public CompleteTripResponse completeTrip(String tripId, String driverId) {
         log.info("Driver {} completing trip: {}", driverId, tripId);
 
-        Trip trip = tripsRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trip not found with id: " + tripId));
+        Trip trip = tripsRepository
+                .findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
 
         if (!trip.getDriverId().equals(driverId)) {
             throw new UnauthorizedException("You are not authorized to complete this trip");
@@ -117,19 +116,23 @@ public class CompletionService {
             booking.setStatus(BookingStatus.COMPLETED);
             booking.setUpdatedAt(Instant.now());
             bookingRepository.save(booking);
-            auditService.logComplete(EntityType.BOOKING, booking.getBookingId(), driverId,
-                    "Ride auto-completed on trip completion");
+            auditService.logComplete(
+                    EntityType.BOOKING, booking.getBookingId(), driverId, "Ride auto-completed on trip completion");
             driverNotificationService.notifyTripCompleted(trip, booking);
         }
 
         tripService.updateStatus(tripId, TripStatus.COMPLETED);
         auditService.logComplete(EntityType.TRIP, tripId, driverId, "Trip completed by driver");
 
-        Trip completedTrip = tripsRepository.findById(tripId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trip not found with id: " + tripId));
+        Trip completedTrip = tripsRepository
+                .findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trip not found with id: " + tripId));
 
-        log.info("Trip {} completed by driver {}. {} remaining rides auto-completed", tripId, driverId, activeBookings.size());
+        log.info(
+                "Trip {} completed by driver {}. {} remaining rides auto-completed",
+                tripId,
+                driverId,
+                activeBookings.size());
         return CompleteTripResponse.builder()
                 .tripId(completedTrip.getTripId())
                 .driverId(completedTrip.getDriverId())

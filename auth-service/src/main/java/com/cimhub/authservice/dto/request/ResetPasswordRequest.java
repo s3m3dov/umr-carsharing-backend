@@ -9,5 +9,4 @@ public record ResetPasswordRequest(
         @Schema(description = "User email address", example = "user@example.com")
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
-        String email
-) {}
+        String email) {}

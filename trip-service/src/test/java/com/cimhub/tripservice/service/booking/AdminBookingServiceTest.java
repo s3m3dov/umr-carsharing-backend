@@ -1,15 +1,24 @@
 package com.cimhub.tripservice.service.booking;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
-import com.cimhub.tripservice.model.Booking;
-import com.cimhub.common.enums.BookingStatus;
-import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.mapper.BookingMapper;
+import com.cimhub.tripservice.model.Booking;
+import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,16 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBookingServiceTest {
@@ -61,15 +60,13 @@ class AdminBookingServiceTest {
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         BookingResponse response = adminBookingService.updateBooking(
-                "booking-1",
-                new UpdateBookingRequest(BookingStatus.CONFIRMED, 2),
-                "admin@example.com"
-        );
+                "booking-1", new UpdateBookingRequest(BookingStatus.CONFIRMED, 2), "admin@example.com");
 
         assertEquals(BookingStatus.CONFIRMED, response.status());
         assertEquals(2, response.requestedSeats());
 
-        verify(auditService).logUpdate(EntityType.BOOKING, "booking-1", "admin@example.com", "Booking updated by admin");
+        verify(auditService)
+                .logUpdate(EntityType.BOOKING, "booking-1", "admin@example.com", "Booking updated by admin");
     }
 
     @Test
@@ -86,7 +83,8 @@ class AdminBookingServiceTest {
         verify(bookingRepository).save(bookingCaptor.capture());
         assertEquals(BookingStatus.CANCELLED, bookingCaptor.getValue().getStatus());
 
-        verify(auditService).logCancel(EntityType.BOOKING, "booking-2", "admin@example.com", "Booking cancelled by admin");
+        verify(auditService)
+                .logCancel(EntityType.BOOKING, "booking-2", "admin@example.com", "Booking cancelled by admin");
     }
 
     @Test
@@ -121,9 +119,10 @@ class AdminBookingServiceTest {
     void updateBooking_whenNotFound_shouldThrowResourceNotFound() {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () ->
-                adminBookingService.updateBooking("missing",
-                        new UpdateBookingRequest(BookingStatus.CONFIRMED, 1), "admin@example.com"));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminBookingService.updateBooking(
+                        "missing", new UpdateBookingRequest(BookingStatus.CONFIRMED, 1), "admin@example.com"));
     }
 
     @Test
@@ -147,8 +146,9 @@ class AdminBookingServiceTest {
     void cancelBooking_whenNotFound_shouldThrowResourceNotFound() {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () ->
-                adminBookingService.cancelBooking("missing", "admin@example.com"));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminBookingService.cancelBooking("missing", "admin@example.com"));
     }
 
     @Test
@@ -161,8 +161,8 @@ class AdminBookingServiceTest {
         when(bookingRepository.findById("booking-3")).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        BookingResponse response = adminBookingService.updateBooking(
-                "booking-3", new UpdateBookingRequest(null, 4), "admin@example.com");
+        BookingResponse response =
+                adminBookingService.updateBooking("booking-3", new UpdateBookingRequest(null, 4), "admin@example.com");
 
         assertEquals(BookingStatus.REQUESTED, response.status());
         assertEquals(4, response.requestedSeats());

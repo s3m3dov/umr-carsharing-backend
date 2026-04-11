@@ -1,11 +1,17 @@
 package com.cimhub.tripservice.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.exception.ForbiddenException;
 import com.cimhub.tripservice.dto.request.UpdateBookingRequest;
 import com.cimhub.tripservice.dto.response.BookingResponse;
-import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.tripservice.service.booking.AdminBookingService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBookingControllerTest {
@@ -60,8 +59,12 @@ class AdminBookingControllerTest {
     @Test
     void updateAndCancel_withAdminRole_shouldDelegate() {
         UpdateBookingRequest request = new UpdateBookingRequest(BookingStatus.CONFIRMED, 2);
-        BookingResponse updated = BookingResponse.builder().bookingId("b-2").status(BookingStatus.CONFIRMED).build();
-        when(adminBookingService.updateBooking("b-2", request, "admin@example.com")).thenReturn(updated);
+        BookingResponse updated = BookingResponse.builder()
+                .bookingId("b-2")
+                .status(BookingStatus.CONFIRMED)
+                .build();
+        when(adminBookingService.updateBooking("b-2", request, "admin@example.com"))
+                .thenReturn(updated);
 
         ResponseEntity<ApiResponseWrapper<BookingResponse>> updateResponse =
                 adminBookingController.updateBooking("ADMIN", "admin@example.com", "b-2", request);
@@ -95,15 +98,15 @@ class AdminBookingControllerTest {
         Pageable pageable = PageRequest.of(0, 1);
         UpdateBookingRequest request = new UpdateBookingRequest(BookingStatus.CANCELLED, 1);
 
-        assertThrows(ForbiddenException.class,
-                () -> adminBookingController.listBookings("PASSENGER", pageable));
-        assertThrows(ForbiddenException.class,
-                () -> adminBookingController.getBooking("DRIVER", "b-1"));
-        assertThrows(ForbiddenException.class,
+        assertThrows(ForbiddenException.class, () -> adminBookingController.listBookings("PASSENGER", pageable));
+        assertThrows(ForbiddenException.class, () -> adminBookingController.getBooking("DRIVER", "b-1"));
+        assertThrows(
+                ForbiddenException.class,
                 () -> adminBookingController.updateBooking("USER", "admin@example.com", "b-2", request));
-        assertThrows(ForbiddenException.class,
+        assertThrows(
+                ForbiddenException.class,
                 () -> adminBookingController.cancelBooking("guest", "admin@example.com", "b-3"));
-        assertThrows(ForbiddenException.class,
-                () -> adminBookingController.getPassengerBookings("DRIVER", "p-1", pageable));
+        assertThrows(
+                ForbiddenException.class, () -> adminBookingController.getPassengerBookings("DRIVER", "p-1", pageable));
     }
 }

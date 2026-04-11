@@ -1,15 +1,27 @@
 package com.cimhub.tripservice.service.trip;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cimhub.common.enums.EntityType;
+import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.tripservice.dto.response.AdminTripResponse;
 import com.cimhub.tripservice.exception.AlreadyCancelledException;
-import com.cimhub.tripservice.model.Trip;
-import com.cimhub.common.enums.TripStatus;
-import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.mapper.TripMapper;
+import com.cimhub.tripservice.model.Trip;
+import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,19 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminTripServiceTest {
@@ -106,8 +105,9 @@ class AdminTripServiceTest {
     void cancelTrip_whenNotFound_shouldThrowResourceNotFound() {
         when(tripsRepository.findById("missing-trip")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () ->
-                adminTripService.cancelTrip("missing-trip", "admin@example.com"));
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> adminTripService.cancelTrip("missing-trip", "admin@example.com"));
     }
 
     @Test
@@ -118,8 +118,7 @@ class AdminTripServiceTest {
 
         when(tripsRepository.findById("trip-1")).thenReturn(Optional.of(trip));
 
-        assertThrows(AlreadyCancelledException.class, () ->
-                adminTripService.cancelTrip("trip-1", "admin@example.com"));
+        assertThrows(AlreadyCancelledException.class, () -> adminTripService.cancelTrip("trip-1", "admin@example.com"));
 
         verify(tripsRepository, never()).save(any(Trip.class));
         verify(auditService, never()).logCancel(any(), any(), any(), any());
@@ -165,7 +164,8 @@ class AdminTripServiceTest {
 
         Page<Trip> tripPage = new PageImpl<>(List.of(trip), pageable, 1);
         when(tripsRepository.findAll(pageable)).thenReturn(tripPage);
-        when(tripsRepository.findByTripStatusInAndTripStartDateTimeUTCAfter(any(), any(), eq(pageable))).thenReturn(tripPage);
+        when(tripsRepository.findByTripStatusInAndTripStartDateTimeUTCAfter(any(), any(), eq(pageable)))
+                .thenReturn(tripPage);
         when(tripsRepository.findByTripStatusIn(any(), eq(pageable))).thenReturn(tripPage);
 
         Page<AdminTripResponse> listed = adminTripService.listTrips(pageable);

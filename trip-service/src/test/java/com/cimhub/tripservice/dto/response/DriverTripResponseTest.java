@@ -1,14 +1,13 @@
 package com.cimhub.tripservice.dto.response;
 
-import com.cimhub.common.model.Points;
-import com.cimhub.common.enums.TripStatus;
-import org.junit.jupiter.api.Test;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import static com.cimhub.common.testsupport.Points.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.model.Points;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class DriverTripResponseTest {
 

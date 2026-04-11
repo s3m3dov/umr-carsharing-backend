@@ -2,9 +2,8 @@ package com.cimhub.tripservice.dto.response;
 
 import com.cimhub.common.enums.AuditAction;
 import com.cimhub.common.enums.EntityType;
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 public record AuditLogResponse(
@@ -15,6 +14,4 @@ public record AuditLogResponse(
         String performedBy,
         String details,
         String serviceName,
-        Instant timestamp
-) {
-}
+        Instant timestamp) {}

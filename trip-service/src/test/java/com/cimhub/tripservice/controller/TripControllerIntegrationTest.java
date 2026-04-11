@@ -1,31 +1,31 @@
 package com.cimhub.tripservice.controller;
 
-import com.cimhub.common.exception.ResourceNotFoundException;
-import com.cimhub.common.exception.UnauthorizedException;
-import com.cimhub.common.constant.HeaderConstants;
-import com.cimhub.tripservice.dto.response.CompleteTripResponse;
-import com.cimhub.tripservice.dto.response.TripResponse;
-import com.cimhub.tripservice.exception.TripNotInProgressException;
-import com.cimhub.tripservice.model.OperationMessage;
-import com.cimhub.common.enums.TripStatus;
-import com.cimhub.tripservice.service.trip.ActiveRidesService;
-import com.cimhub.tripservice.service.booking.CancellationService;
-import com.cimhub.tripservice.service.booking.CompletionService;
-import com.cimhub.tripservice.service.trip.OfferRideService;
-import com.cimhub.tripservice.service.geo.TripGeospatialService;
-import com.cimhub.tripservice.service.trip.TripService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.cimhub.common.constant.HeaderConstants;
+import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.ResourceNotFoundException;
+import com.cimhub.common.exception.UnauthorizedException;
+import com.cimhub.tripservice.dto.response.CompleteTripResponse;
+import com.cimhub.tripservice.dto.response.TripResponse;
+import com.cimhub.tripservice.exception.TripNotInProgressException;
+import com.cimhub.tripservice.model.OperationMessage;
+import com.cimhub.tripservice.service.booking.CancellationService;
+import com.cimhub.tripservice.service.booking.CompletionService;
+import com.cimhub.tripservice.service.geo.TripGeospatialService;
+import com.cimhub.tripservice.service.trip.ActiveRidesService;
+import com.cimhub.tripservice.service.trip.OfferRideService;
+import com.cimhub.tripservice.service.trip.TripService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TripController.class)
 class TripControllerIntegrationTest {
@@ -73,8 +73,7 @@ class TripControllerIntegrationTest {
                 .tripStatus(TripStatus.COMPLETED)
                 .autoCompletedRides(2)
                 .build();
-        when(completionService.completeTrip("trip-1", "driver-1"))
-                .thenReturn(response);
+        when(completionService.completeTrip("trip-1", "driver-1")).thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -89,7 +88,8 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenTripNotFound_shouldReturn404() throws Exception {
         doThrow(new ResourceNotFoundException("Trip not found with id: trip-99"))
-                .when(completionService).completeTrip("trip-99", "driver-1");
+                .when(completionService)
+                .completeTrip("trip-99", "driver-1");
 
         mockMvc.perform(post("/api/trips/trip-99/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -102,7 +102,8 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenDriverIsNotOwner_shouldReturn401() throws Exception {
         doThrow(new UnauthorizedException("You are not authorized to complete this trip"))
-                .when(completionService).completeTrip("trip-1", "intruder");
+                .when(completionService)
+                .completeTrip("trip-1", "intruder");
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
                         .header(HeaderConstants.X_USER_ID, "intruder")
@@ -115,7 +116,8 @@ class TripControllerIntegrationTest {
     @Test
     void completeTrip_whenTripNotInProgress_shouldReturn409() throws Exception {
         doThrow(new TripNotInProgressException("Trip trip-1 cannot be completed — current status: AVAILABLE"))
-                .when(completionService).completeTrip("trip-1", "driver-1");
+                .when(completionService)
+                .completeTrip("trip-1", "driver-1");
 
         mockMvc.perform(post("/api/trips/trip-1/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -141,8 +143,7 @@ class TripControllerIntegrationTest {
                 .tripStatus(TripStatus.COMPLETED)
                 .autoCompletedRides(0)
                 .build();
-        when(completionService.completeTrip("trip-2", "driver-2"))
-                .thenReturn(response);
+        when(completionService.completeTrip("trip-2", "driver-2")).thenReturn(response);
 
         mockMvc.perform(post("/api/trips/trip-2/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-2")
