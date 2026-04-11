@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.trip;
 
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.service.AuditService;
@@ -14,7 +14,6 @@ import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.repository.VehicleDocumentRepository;
 import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import com.cimhub.tripservice.service.route.OsrmRouteClient;
-import com.cimhub.tripservice.service.trip.OfferRideService;
 import com.cimhub.tripservice.testsupport.TripFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

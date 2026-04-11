@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.trip;
 
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.response.DriverTripResponse;
@@ -11,7 +11,6 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.mapper.TripMapper;
-import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

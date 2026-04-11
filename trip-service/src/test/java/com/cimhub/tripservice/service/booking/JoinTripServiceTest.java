@@ -1,4 +1,4 @@
-package com.cimhub.tripservice.service;
+package com.cimhub.tripservice.service.booking;
 
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
@@ -14,7 +14,6 @@ import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.model.TripStatus;
 import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
-import com.cimhub.tripservice.service.booking.JoinTripService;
 import com.cimhub.tripservice.service.notification.DriverNotificationService;
 import com.cimhub.tripservice.testsupport.TripFixtures;
 import org.junit.jupiter.api.BeforeEach;
