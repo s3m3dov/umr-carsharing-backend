@@ -17,9 +17,6 @@ import java.time.ZonedDateTime;
 )
 @Builder
 public record OfferRideRequest(
-        @Schema(description = "Driver's user ID", example = "john.driver@example.com")
-        String driverId,
-
         @Schema(description = "Trip starting location")
         Points sourceAddress,
 
