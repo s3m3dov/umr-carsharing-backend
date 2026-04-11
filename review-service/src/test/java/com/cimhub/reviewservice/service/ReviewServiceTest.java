@@ -52,8 +52,6 @@ class ReviewServiceTest {
     @Test
     void submitDriverReview_withValidData_shouldPersistAndAudit() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("passenger-1")
-                .userRole(UserType.PASSENGER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(5)
@@ -72,7 +70,7 @@ class ReviewServiceTest {
             return review;
         });
 
-        ReviewResponse response = reviewService.submitDriverReview(request);
+        ReviewResponse response = reviewService.submitDriverReview("passenger-1", UserType.PASSENGER, request);
 
         assertEquals("review-1", response.reviewId());
         assertEquals("passenger-1", response.reviewerId());
@@ -86,8 +84,6 @@ class ReviewServiceTest {
     @Test
     void submitDriverReview_whenBookingBelongsToAnotherPassenger_shouldThrowUnauthorized() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("passenger-1")
-                .userRole(UserType.PASSENGER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(4)
@@ -101,14 +97,13 @@ class ReviewServiceTest {
         when(tripServiceClient.getTripDriverId("trip-1")).thenReturn("driver-1");
         when(tripServiceClient.getBookingPassengerId("booking-1")).thenReturn("another-passenger");
 
-        assertThrows(UnauthorizedReviewerException.class, () -> reviewService.submitDriverReview(request));
+        assertThrows(UnauthorizedReviewerException.class,
+                () -> reviewService.submitDriverReview("passenger-1", UserType.PASSENGER, request));
     }
 
     @Test
     void submitPassengerReview_withValidData_shouldPersistAndAudit() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("driver-1")
-                .userRole(UserType.DRIVER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(5)
@@ -127,7 +122,7 @@ class ReviewServiceTest {
             return review;
         });
 
-        ReviewResponse response = reviewService.submitPassengerReview(request);
+        ReviewResponse response = reviewService.submitPassengerReview("driver-1", UserType.DRIVER, request);
 
         assertEquals("review-2", response.reviewId());
         assertEquals("driver-1", response.reviewerId());
@@ -141,8 +136,6 @@ class ReviewServiceTest {
     @Test
     void submitPassengerReview_whenTripOrBookingNotCompleted_shouldThrow() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("driver-1")
-                .userRole(UserType.DRIVER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(4)
@@ -152,7 +145,8 @@ class ReviewServiceTest {
         when(userRepository.existsByUserId("driver-1")).thenReturn(true);
         when(tripServiceClient.isTripCompleted("trip-1")).thenReturn(false);
 
-        assertThrows(TripNotCompletedException.class, () -> reviewService.submitPassengerReview(request));
+        assertThrows(TripNotCompletedException.class,
+                () -> reviewService.submitPassengerReview("driver-1", UserType.DRIVER, request));
     }
 
     @Test
@@ -202,8 +196,6 @@ class ReviewServiceTest {
     @Test
     void submitDriverReview_whenAlreadyReviewedSameTrip_shouldThrowReviewAlreadyExists() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("passenger-1")
-                .userRole(UserType.PASSENGER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(3)
@@ -214,17 +206,16 @@ class ReviewServiceTest {
         when(tripServiceClient.isTripCompleted("trip-1")).thenReturn(true);
         when(tripServiceClient.isBookingCompleted("booking-1")).thenReturn(true);
         when(reviewRepository.existsByReviewerIdAndTripIdAndBookingId("passenger-1", "trip-1", "booking-1"))
-                .thenReturn(true); // already reviewed
+                .thenReturn(true);
 
-        assertThrows(ReviewAlreadyExistsException.class, () -> reviewService.submitDriverReview(request));
+        assertThrows(ReviewAlreadyExistsException.class,
+                () -> reviewService.submitDriverReview("passenger-1", UserType.PASSENGER, request));
         verify(reviewRepository, never()).save(any());
     }
 
     @Test
     void submitPassengerReview_whenBookingBelongsToAnotherDriver_shouldThrowUnauthorized() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("driver-1")
-                .userRole(UserType.DRIVER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(4)
@@ -238,14 +229,13 @@ class ReviewServiceTest {
                 .thenReturn(false);
         when(tripServiceClient.getTripDriverId("trip-1")).thenReturn("another-driver");
 
-        assertThrows(UnauthorizedReviewerException.class, () -> reviewService.submitPassengerReview(request));
+        assertThrows(UnauthorizedReviewerException.class,
+                () -> reviewService.submitPassengerReview("driver-1", UserType.DRIVER, request));
     }
 
     @Test
     void submitDriverReview_whenBookingNotCompleted_shouldThrowTripNotCompleted() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("passenger-1")
-                .userRole(UserType.PASSENGER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(5)
@@ -254,9 +244,10 @@ class ReviewServiceTest {
 
         when(userRepository.existsByUserId("passenger-1")).thenReturn(true);
         when(tripServiceClient.isTripCompleted("trip-1")).thenReturn(true);
-        when(tripServiceClient.isBookingCompleted("booking-1")).thenReturn(false); // booking not done
+        when(tripServiceClient.isBookingCompleted("booking-1")).thenReturn(false);
 
-        assertThrows(TripNotCompletedException.class, () -> reviewService.submitDriverReview(request));
+        assertThrows(TripNotCompletedException.class,
+                () -> reviewService.submitDriverReview("passenger-1", UserType.PASSENGER, request));
         verify(reviewRepository, never()).save(any());
     }
 }

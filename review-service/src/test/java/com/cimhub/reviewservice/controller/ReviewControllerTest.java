@@ -35,39 +35,39 @@ class ReviewControllerTest {
     @Test
     void submitDriverReview_shouldReturnCreatedResponse() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("passenger@example.com")
-                .userRole(UserType.PASSENGER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(5)
                 .comment("Great")
                 .build();
         var responseBody = ReviewFixtures.reviewResponse("review-1");
-        when(reviewService.submitDriverReview(request)).thenReturn(responseBody);
+        when(reviewService.submitDriverReview("passenger@example.com", UserType.PASSENGER, request))
+                .thenReturn(responseBody);
 
-        ResponseEntity<?> response = reviewController.submitDriverReview(request);
+        ResponseEntity<?> response = reviewController.submitDriverReview(
+                "passenger@example.com", UserType.PASSENGER, request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        verify(reviewService).submitDriverReview(request);
+        verify(reviewService).submitDriverReview("passenger@example.com", UserType.PASSENGER, request);
     }
 
     @Test
     void submitPassengerReview_shouldReturnCreatedResponse() {
         SubmitReviewRequest request = SubmitReviewRequest.builder()
-                .userId("driver@example.com")
-                .userRole(UserType.DRIVER)
                 .tripId("trip-1")
                 .bookingId("booking-1")
                 .rating(5)
                 .comment("Great")
                 .build();
         var responseBody = ReviewFixtures.reviewResponse("review-2");
-        when(reviewService.submitPassengerReview(request)).thenReturn(responseBody);
+        when(reviewService.submitPassengerReview("driver@example.com", UserType.DRIVER, request))
+                .thenReturn(responseBody);
 
-        ResponseEntity<?> response = reviewController.submitPassengerReview(request);
+        ResponseEntity<?> response = reviewController.submitPassengerReview(
+                "driver@example.com", UserType.DRIVER, request);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        verify(reviewService).submitPassengerReview(request);
+        verify(reviewService).submitPassengerReview("driver@example.com", UserType.DRIVER, request);
     }
 
     @Test
