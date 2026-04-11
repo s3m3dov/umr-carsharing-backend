@@ -60,6 +60,7 @@ public class TripMapper {
                 .pricePerSeat(trip.getPricePerSeat())
                 .routeDistance(trip.getRouteDistance())
                 .routeDuration(trip.getRouteDuration())
+                .routeGeometry(trip.getRouteGeometry())
                 .tripStartDateTimeUTC(trip.getTripStartDateTimeUTC())
                 .tripTimezone(trip.getTripTimezone())
                 .createdAt(trip.getCreatedAt())
@@ -127,6 +128,7 @@ public class TripMapper {
                 .passengers(new ArrayList<>())
                 .routeDistanceInKm(trip.getRouteDistance() / 1000.0)
                 .routeDurationInMinutes(trip.getRouteDuration() / 60.0)
+                .routeGeometry(trip.getRouteGeometry())
                 .pricePerSeat(trip.getPricePerSeat())
                 .estimatedEarnings(estimatedEarnings)
                 .build();
