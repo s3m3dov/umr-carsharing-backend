@@ -37,7 +37,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createPassengerSubProfile_shouldSendExpectedRequestOnSuccess() {
-        server.expect(requestTo("http://user-service.test/api/passengers/passenger-1"))
+        server.expect(requestTo("http://user-service.test/api/internal/passengers/passenger-1"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header("Content-Type", MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().json("""
@@ -57,7 +57,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createDriverSubProfile_shouldSendExpectedRequestOnSuccess() {
-        server.expect(requestTo("http://user-service.test/api/drivers/driver-1"))
+        server.expect(requestTo("http://user-service.test/api/internal/drivers/driver-1"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(header("Content-Type", MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().json("""
@@ -80,7 +80,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createPassengerSubProfile_whenConflict_shouldTreatAsIdempotentSuccess() {
-        server.expect(requestTo("http://user-service.test/api/passengers/passenger-1"))
+        server.expect(requestTo("http://user-service.test/api/internal/passengers/passenger-1"))
                 .andRespond(withStatus(HttpStatus.CONFLICT));
 
         assertDoesNotThrow(
@@ -92,7 +92,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createPassengerSubProfile_whenClientError_shouldPropagateAsRuntimeException() {
-        server.expect(requestTo("http://user-service.test/api/passengers/passenger-2"))
+        server.expect(requestTo("http://user-service.test/api/internal/passengers/passenger-2"))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
         RuntimeException ex = assertThrows(
@@ -105,7 +105,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createDriverSubProfile_whenServerError_shouldPropagateAsRuntimeException() {
-        server.expect(requestTo("http://user-service.test/api/drivers/driver-2"))
+        server.expect(requestTo("http://user-service.test/api/internal/drivers/driver-2"))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
 
         RuntimeException ex = assertThrows(
@@ -118,7 +118,7 @@ class UserServiceClientIntegrationTest {
 
     @Test
     void createDriverSubProfile_whenNetworkFailure_shouldPropagateAsRuntimeException() {
-        server.expect(requestTo("http://user-service.test/api/drivers/driver-3"))
+        server.expect(requestTo("http://user-service.test/api/internal/drivers/driver-3"))
                 .andRespond(withException(new IOException("connection refused")));
 
         RuntimeException ex = assertThrows(
