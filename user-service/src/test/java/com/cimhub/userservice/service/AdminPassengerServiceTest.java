@@ -116,6 +116,7 @@ class AdminPassengerServiceTest {
         assertEquals("Passenger", response.lastName());
         assertEquals("999", response.phoneNumber());
         assertEquals(31, response.age());
+        assertEquals("p3@example.com", response.email());
         verify(auditService).logUpdate(EntityType.PASSENGER, "p3@example.com", "admin@example.com",
                 "Passenger info updated");
     }

@@ -2,6 +2,7 @@ package com.cimhub.userservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
 import com.cimhub.common.enums.UserType;
+import com.cimhub.common.constant.HeaderNames;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.util.AdminGuard;
 import com.cimhub.userservice.dto.examples.UserApiDoc;
@@ -39,8 +40,8 @@ public class AdminController {
     })
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseWrapper<AdminProfileResponse>> getAdminProfile(
-            @Parameter(description = "User role from JWT token", required = true) @RequestHeader("X-User-Role") String userRole,
-            @Parameter(description = "Admin email from JWT token", required = true) @RequestHeader("X-User-Email") String adminEmail) {
+            @Parameter(description = "User role from JWT token", required = true) @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
+            @Parameter(description = "Admin email from JWT token", required = true) @RequestHeader(HeaderNames.USER_EMAIL) String adminEmail) {
         AdminGuard.requireAdmin(userRole);
         if (adminEmail == null || adminEmail.isBlank()) {
             throw new BadRequestException("Admin email is required");

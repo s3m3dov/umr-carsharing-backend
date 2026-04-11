@@ -69,15 +69,23 @@ public class PassengerService {
         if (passenger == null) {
             throw new ResourceNotFoundException("Passenger not found: " + userId);
         }
+        if (passenger.getEmail() == null || passenger.getEmail().isBlank()) {
+            passenger.setEmail(passenger.getUserId());
+            passengerRepository.save(passenger);
+        }
         return passenger;
     }
 
     private PassengerResponse buildResponse(Passenger passenger) {
+        String resolvedEmail = (passenger.getEmail() == null || passenger.getEmail().isBlank())
+                ? passenger.getUserId()
+                : passenger.getEmail();
+
         return PassengerResponse.builder()
                 .userId(passenger.getUserId())
                 .firstName(passenger.getFirstName())
                 .lastName(passenger.getLastName())
-                .email(passenger.getEmail())
+                .email(resolvedEmail)
                 .userType(passenger.getUserType())
                 .phoneNumber(passenger.getPhoneNumber())
                 .age(passenger.getAge())

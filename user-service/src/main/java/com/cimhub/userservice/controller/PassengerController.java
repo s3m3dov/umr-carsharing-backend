@@ -1,6 +1,9 @@
 package com.cimhub.userservice.controller;
 
 import com.cimhub.common.dto.ApiResponseWrapper;
+import com.cimhub.common.enums.UserType;
+import com.cimhub.common.constant.HeaderNames;
+import com.cimhub.common.util.OwnershipGuard;
 import com.cimhub.userservice.dto.request.CreatePassengerProfileRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -33,7 +36,11 @@ public class PassengerController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> getPassengerProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Get passenger profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.getPassengerProfile(userId)));
     }
@@ -46,8 +53,12 @@ public class PassengerController {
     })
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> createPassengerProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody CreatePassengerProfileRequest request) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Create passenger profile for userId: {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponseWrapper.success(passengerService.createPassengerProfile(userId, request)));
@@ -60,8 +71,12 @@ public class PassengerController {
     })
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponseWrapper<PassengerResponse>> updatePassengerProfile(
+            @RequestHeader(HeaderNames.USER_ID) String authenticatedUserId,
+            @RequestHeader(HeaderNames.USER_ROLE) UserType userRole,
             @Parameter(description = "Passenger user ID (email)", required = true) @PathVariable String userId,
             @Valid @RequestBody UpdatePassengerRequest request) {
+        OwnershipGuard.requireRoleOrAdmin(userRole, UserType.PASSENGER);
+        OwnershipGuard.requireOwnerOrAdmin(authenticatedUserId, userId, userRole);
         log.info("Update passenger profile for userId: {}", userId);
         return ResponseEntity.ok(ApiResponseWrapper.success(passengerService.updatePassengerProfile(userId, request)));
     }

@@ -144,6 +144,7 @@ class DriverServiceTest {
         assertEquals("+0987654321", response.phoneNumber());
         assertEquals(25, response.age());
         assertEquals("DL123456", response.licenseNumber());
+        assertEquals(userId, response.email());
 
         verify(driverRepository).save(any(Driver.class));
     }

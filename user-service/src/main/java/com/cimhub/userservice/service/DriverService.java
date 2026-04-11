@@ -72,15 +72,23 @@ public class DriverService {
         if (driver == null) {
             throw new ResourceNotFoundException("Driver not found: " + userId);
         }
+        if (driver.getEmail() == null || driver.getEmail().isBlank()) {
+            driver.setEmail(driver.getUserId());
+            driverRepository.save(driver);
+        }
         return driver;
     }
 
     private DriverResponse buildResponse(Driver driver) {
+        String resolvedEmail = (driver.getEmail() == null || driver.getEmail().isBlank())
+                ? driver.getUserId()
+                : driver.getEmail();
+
         return DriverResponse.builder()
                 .userId(driver.getUserId())
                 .firstName(driver.getFirstName())
                 .lastName(driver.getLastName())
-                .email(driver.getEmail())
+                .email(resolvedEmail)
                 .userType(driver.getUserType())
                 .phoneNumber(driver.getPhoneNumber())
                 .age(driver.getAge())

@@ -3,6 +3,7 @@ package com.cimhub.userservice.dto.response;
 import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ public record DriverResponse(
         String userId,
         String firstName,
         String lastName,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         String email,
         UserType userType,
         String phoneNumber,

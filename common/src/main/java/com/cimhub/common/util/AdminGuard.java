@@ -12,6 +12,12 @@ public final class AdminGuard {
     private AdminGuard() {
     }
 
+    public static void requireAdmin(UserType userRole) {
+        if (!UserType.ADMIN.equals(userRole)) {
+            throw new ForbiddenException("Admin access required");
+        }
+    }
+
     public static void requireAdmin(String userRole) {
         if (!UserType.ADMIN.name().equalsIgnoreCase(userRole)) {
             throw new ForbiddenException("Admin access required");

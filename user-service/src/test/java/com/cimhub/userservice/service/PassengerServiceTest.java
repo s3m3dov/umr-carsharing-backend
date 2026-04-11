@@ -136,6 +136,7 @@ class PassengerServiceTest {
         assertEquals("Smith", response.lastName());
         assertEquals("+0987654321", response.phoneNumber());
         assertEquals(30, response.age());
+        assertEquals(userId, response.email());
 
         verify(passengerRepository).save(any(Passenger.class));
     }

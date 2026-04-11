@@ -16,7 +16,7 @@ class AdminControllerTest {
 
     @Test
     void getAdminProfile_withAdminHeaders_shouldReturnProfile() {
-        var response = adminController.getAdminProfile("ADMIN", "admin@example.com");
+        var response = adminController.getAdminProfile(UserType.ADMIN, "admin@example.com");
 
         ApiResponseWrapper<AdminProfileResponse> body = response.getBody();
         assertEquals(200, response.getStatusCode().value());
@@ -26,12 +26,12 @@ class AdminControllerTest {
 
     @Test
     void getAdminProfile_withBlankEmail_shouldThrowBadRequest() {
-        assertThrows(BadRequestException.class, () -> adminController.getAdminProfile("ADMIN", "   "));
+        assertThrows(BadRequestException.class, () -> adminController.getAdminProfile(UserType.ADMIN, "   "));
     }
 
     @Test
     void getAdminProfile_withNonAdminRole_shouldThrowForbidden() {
         assertThrows(ForbiddenException.class,
-                () -> adminController.getAdminProfile("PASSENGER", "admin@example.com"));
+                () -> adminController.getAdminProfile(UserType.PASSENGER, "admin@example.com"));
     }
 }
