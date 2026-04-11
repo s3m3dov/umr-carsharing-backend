@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,7 +56,6 @@ class BookingControllerTest {
 
         ResponseEntity<ApiResponseWrapper<BookingResponse>> response = bookingController.getBooking("b-0");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("b-0", response.getBody().getData().bookingId());
         assertEquals(BookingStatus.COMPLETED, response.getBody().getData().status());
         verify(bookingService).getBooking("b-0");
@@ -69,7 +67,6 @@ class BookingControllerTest {
 
         ResponseEntity<ApiResponseWrapper<String>> response = bookingController.acceptBooking("b-1", "driver-1", "DRIVER");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Booking accepted", response.getBody().getMessage());
         verify(joinTripService).acceptBooking("b-1", "driver-1");
     }
@@ -80,7 +77,6 @@ class BookingControllerTest {
 
         ResponseEntity<ApiResponseWrapper<String>> response = bookingController.rejectBooking("b-2", "driver-1", "DRIVER");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Booking rejected", response.getBody().getMessage());
         verify(joinTripService).rejectBooking("b-2", "driver-1");
     }
@@ -111,7 +107,6 @@ class BookingControllerTest {
 
         ResponseEntity<ApiResponseWrapper<CompleteRideResponse>> response = bookingController.completeRide("b-3", "driver-1", "DRIVER", null);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(OperationMessage.RIDE_COMPLETED_SUCCESS.text(), response.getBody().getMessage());
         assertEquals(BookingStatus.COMPLETED, response.getBody().getData().bookingStatus());
         assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());

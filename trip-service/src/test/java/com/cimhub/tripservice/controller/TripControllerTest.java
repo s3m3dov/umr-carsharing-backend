@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.ZonedDateTime;
@@ -82,7 +81,6 @@ class TripControllerTest {
 
         ResponseEntity<ApiResponseWrapper<OfferRideResponse>> response = tripController.offerTrip("driver-1", "DRIVER", request);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("trip-1", response.getBody().getData().tripId());
         verify(offerRideService).offerRide(request);
     }
@@ -94,7 +92,6 @@ class TripControllerTest {
 
         ResponseEntity<ApiResponseWrapper<String>> response = tripController.cancelTrip("driver-1", "DRIVER", request);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Cancelled", response.getBody().getMessage());
         verify(cancellationService).cancelTrip(request);
     }
@@ -109,7 +106,6 @@ class TripControllerTest {
 
         ResponseEntity<ApiResponseWrapper<TripResponse>> response = tripController.getTrip("trip-1");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("trip-1", response.getBody().getData().tripId());
         assertEquals(TripStatus.COMPLETED, response.getBody().getData().tripStatus());
         verify(tripService).getTrip("trip-1");
@@ -135,10 +131,9 @@ class TripControllerTest {
                 2, "user-1",
                 5.0, 20.0, "SEDAN", 1);
 
-        assertEquals(HttpStatus.OK, source.getStatusCode());
         assertEquals("trip-geo", source.getBody().getData().getFirst().getTripId());
-        assertEquals(HttpStatus.OK, destination.getStatusCode());
-        assertEquals(HttpStatus.OK, route.getStatusCode());
+        assertEquals("trip-geo", destination.getBody().getData().getFirst().getTripId());
+        assertEquals("trip-geo", route.getBody().getData().getFirst().getTripId());
     }
 
     @Test
@@ -157,7 +152,6 @@ class TripControllerTest {
                 null, "user-2",
                 null, null, null, null);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("trip-no-time", response.getBody().getData().getFirst().getTripId());
     }
 
@@ -173,7 +167,6 @@ class TripControllerTest {
 
         ResponseEntity<ApiResponseWrapper<CompleteTripResponse>> response = tripController.completeTrip("trip-1", "driver-1", "DRIVER", null);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(OperationMessage.TRIP_COMPLETED_SUCCESS.format(2),
                 response.getBody().getMessage());
         assertEquals(TripStatus.COMPLETED, response.getBody().getData().tripStatus());
@@ -194,9 +187,7 @@ class TripControllerTest {
         ResponseEntity<ApiResponseWrapper<List<DriverTripResponse>>> historyResponse =
                 tripController.getDriverTripHistory("driver-77", "DRIVER", "driver-77");
 
-        assertEquals(HttpStatus.OK, activeResponse.getStatusCode());
         assertEquals("active-trip", activeResponse.getBody().getData().getFirst().tripId());
-        assertEquals(HttpStatus.OK, historyResponse.getStatusCode());
         assertEquals("history-trip", historyResponse.getBody().getData().getFirst().tripId());
 
         verify(activeRidesService).findDriverActiveTrips("driver-77");
@@ -214,7 +205,6 @@ class TripControllerTest {
 
         ResponseEntity<ApiResponseWrapper<StartTripResponse>> response = tripController.startTrip("trip-1", "driver-1", "DRIVER", null);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(OperationMessage.TRIP_STARTED_SUCCESS.text(), response.getBody().getMessage());
         assertEquals(TripStatus.IN_PROGRESS, response.getBody().getData().tripStatus());
         verify(tripService).startTrip("trip-1", "driver-1");

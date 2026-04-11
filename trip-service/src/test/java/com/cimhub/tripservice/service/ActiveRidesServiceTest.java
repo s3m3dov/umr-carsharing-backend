@@ -57,6 +57,8 @@ class ActiveRidesServiceTest {
         activeRidesService = new ActiveRidesService(tripsRepository, bookingRepository, tripMapper, bookingMapper);
     }
 
+    // ── driver rides ─────────────────────────────────────────────────────────
+
     @Test
     void findDriverActiveTrips_shouldMapSeatAndEarningFields() {
         Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 2, 9.5);
@@ -112,6 +114,8 @@ class ActiveRidesServiceTest {
         assertEquals(null, responses.getFirst().carType());
     }
 
+    // ── passenger rides ──────────────────────────────────────────────────────
+
     @Test
     void findPassengerRideHistory_shouldUseHistoryStatuses() {
         when(bookingRepository.findByPassengerIdAndStatusIn("passenger-3",
@@ -141,6 +145,8 @@ class ActiveRidesServiceTest {
         assertEquals(4, responses.getFirst().bookedSeats());
         assertEquals(40.0, responses.getFirst().estimatedEarnings());
     }
+
+    // ── fixtures ─────────────────────────────────────────────────────────────
 
     private Trip buildTrip(String tripId, TripStatus status, int totalSeats, int bookedSeats, double pricePerSeat) {
         Trip trip = new Trip();

@@ -63,6 +63,8 @@ class CancellationServiceTest {
                 driverNotificationService);
     }
 
+    // ── cancelRide ───────────────────────────────────────────────────────────
+
     @Test
     void cancelRide_whenPassengerNotOwner_shouldThrowUnauthorized() {
         Booking booking = Booking.builder()
@@ -224,6 +226,8 @@ class CancellationServiceTest {
         assertEquals(BookingStatus.CANCELLED, captor.getValue().getStatus());
         assertNotNull(captor.getValue().getUpdatedAt());
     }
+
+    // ── cancelTrip ───────────────────────────────────────────────────────────
 
     @Test
     void cancelRide_whenTripNotFound_shouldThrowResourceNotFound() {
