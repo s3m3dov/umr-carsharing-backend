@@ -55,6 +55,7 @@ and this project adheres to **Semantic Versioning**
 - Moved OpenAPI example classes to `dto.examples` package
 - Removed unused `Points` model from common module
 - Updated references after package and class renames
+- Refactored tests to use `Points.of()` factory method across trip-service
 
 ### Added
 
@@ -65,6 +66,8 @@ and this project adheres to **Semantic Versioning**
 - Controller and config coverage tests for user-service
 - Unit tests for `DriverService`, `PassengerService`, and `UserService`
 - Test coverage improvements with fixtures and parameterized test methods
+- Testing documentation with 89 test files
+- Fixed request paths with response validation in HTTP tests
 - `GET  /api/passengers/{userId}` — retrieve passenger profile
 - `POST /api/passengers/{userId}` — initialize passenger sub-profile (called automatically during signup; also idempotent for manual use)
 - `PUT  /api/passengers/{userId}` — update passenger name / phone / age
