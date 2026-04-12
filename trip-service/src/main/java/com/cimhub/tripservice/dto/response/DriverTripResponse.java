@@ -1,5 +1,6 @@
 package com.cimhub.tripservice.dto.response;
 
+import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.TripStatus;
 import com.cimhub.common.model.Points;
 import com.cimhub.tripservice.dto.osrm.Geometry;
@@ -72,6 +73,15 @@ public record DriverTripResponse(
     public record PassengerInfo(
             @Schema(description = "Passenger's user ID", example = "jane.passenger@example.com")
             String userId,
+
+            @Schema(description = "Passenger's first name", example = "Jane")
+            String firstName,
+
+            @Schema(description = "Passenger's last name", example = "Doe")
+            String lastName,
+
+            @Schema(description = "Current booking status", example = "CONFIRMED")
+            BookingStatus bookingStatus,
 
             @Schema(description = "Number of seats booked by this passenger", example = "1")
             int bookedSeats,

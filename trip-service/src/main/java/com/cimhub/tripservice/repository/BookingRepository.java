@@ -18,6 +18,8 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     // Find all bookings for a trip
     List<Booking> findByTripId(String tripId);
 
+    List<Booking> findByTripIdInAndStatusIn(List<String> tripIds, List<BookingStatus> statuses);
+
     // Check if passenger already booked this trip
     boolean existsByPassengerIdAndTripId(String passengerId, String tripId);
 

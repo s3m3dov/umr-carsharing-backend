@@ -8,6 +8,7 @@ import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -101,6 +102,10 @@ public class TripMapper {
     }
 
     public DriverTripResponse toDriverTripResponse(Trip trip) {
+        return toDriverTripResponse(trip, new ArrayList<>());
+    }
+
+    public DriverTripResponse toDriverTripResponse(Trip trip, List<DriverTripResponse.PassengerInfo> passengers) {
         ZonedDateTime tripTimeInOriginalZone =
                 timezoneService.convertToTripTimezone(trip.getTripStartDateTimeUTC(), trip.getTripTimezone());
 
@@ -121,7 +126,7 @@ public class TripMapper {
                 .totalSeats(trip.getTotalSeats())
                 .availableSeats(availableSeats)
                 .bookedSeats(bookedSeats)
-                .passengers(new ArrayList<>())
+                .passengers(passengers)
                 .routeDistanceInKm(trip.getRouteDistance() / 1000.0)
                 .routeDurationInMinutes(trip.getRouteDuration() / 60.0)
                 .routeGeometry(trip.getRouteGeometry())
