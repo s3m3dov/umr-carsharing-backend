@@ -49,6 +49,7 @@ auth:
       - /api/auth/validate
       - /api/auth/reset-password
       - /api/auth/reset-password/confirm
+      - /api/internal/**
     docs-paths:
       - /v3/api-docs/**
       - /swagger-ui/**

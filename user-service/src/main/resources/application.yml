@@ -47,3 +47,7 @@ springdoc:
     path: /swagger-ui.html
   server:
     url: /user-service
+
+services:
+  auth:
+    base-url: ${AUTH_SERVICE_URL:http://auth-service:8080}
