@@ -1,6 +1,7 @@
 package com.cimhub.tripservice.service.trip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,8 +14,10 @@ import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Booking;
+import com.cimhub.tripservice.model.Passenger;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.BookingRepository;
+import com.cimhub.tripservice.repository.PassengerRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import com.cimhub.tripservice.service.util.TimezoneConversionService;
 import java.time.Instant;
@@ -36,6 +39,9 @@ class ActiveRidesServiceTest {
     @Mock
     private BookingRepository bookingRepository;
 
+    @Mock
+    private PassengerRepository passengerRepository;
+
     private ActiveRidesService activeRidesService;
 
     @Mock
@@ -51,7 +57,8 @@ class ActiveRidesServiceTest {
         timezoneConversionService = new TimezoneConversionService();
         tripMapper = new TripMapper(timezoneConversionService);
         bookingMapper = new BookingMapper(timezoneConversionService);
-        activeRidesService = new ActiveRidesService(tripsRepository, bookingRepository, tripMapper, bookingMapper);
+        activeRidesService = new ActiveRidesService(
+                tripsRepository, bookingRepository, passengerRepository, tripMapper, bookingMapper);
     }
 
     // ── driver rides ─────────────────────────────────────────────────────────
@@ -63,6 +70,10 @@ class ActiveRidesServiceTest {
         when(tripsRepository.findByDriverIdAndTripStatusIn(
                         "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
                 .thenReturn(List.of(trip));
+        when(bookingRepository.findByTripIdInAndStatusIn(
+                        List.of("trip-1"), List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+                .thenReturn(List.of());
+        when(passengerRepository.findByUserIdIn(List.of())).thenReturn(List.of());
 
         List<DriverTripResponse> responses = activeRidesService.findDriverActiveTrips("driver-1");
 
@@ -72,10 +83,83 @@ class ActiveRidesServiceTest {
         assertEquals(2, response.availableSeats());
         assertEquals(2, response.bookedSeats());
         assertEquals(19.0, response.estimatedEarnings());
+        assertTrue(response.passengers().isEmpty());
 
         verify(tripsRepository)
                 .findByDriverIdAndTripStatusIn(
                         "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS));
+        verify(bookingRepository)
+                .findByTripIdInAndStatusIn(
+                        List.of("trip-1"), List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void findDriverActiveTrips_shouldPopulatePassengerNamesAndStatus() {
+        Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 1, 10.0);
+        Booking booking = buildBooking("b-1", "trip-1", BookingStatus.CONFIRMED, "Europe/Berlin");
+        Passenger passenger = buildPassenger("passenger-1", "Jane", "Doe");
+
+        when(tripsRepository.findByDriverIdAndTripStatusIn(
+                        "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
+                .thenReturn(List.of(trip));
+        when(bookingRepository.findByTripIdInAndStatusIn(
+                        List.of("trip-1"), List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+                .thenReturn(List.of(booking));
+        when(passengerRepository.findByUserIdIn(List.of("passenger-1"))).thenReturn(List.of(passenger));
+
+        List<DriverTripResponse> responses = activeRidesService.findDriverActiveTrips("driver-1");
+
+        assertEquals(1, responses.size());
+        List<DriverTripResponse.PassengerInfo> passengers = responses.getFirst().passengers();
+        assertEquals(1, passengers.size());
+        DriverTripResponse.PassengerInfo info = passengers.getFirst();
+        assertEquals("passenger-1", info.userId());
+        assertEquals("Jane", info.firstName());
+        assertEquals("Doe", info.lastName());
+        assertEquals(BookingStatus.CONFIRMED, info.bookingStatus());
+        assertEquals(2, info.bookedSeats());
+    }
+
+    @Test
+    void findDriverActiveTrips_shouldReturnNullNames_whenPassengerNotInDb() {
+        Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 1, 10.0);
+        Booking booking = buildBooking("b-1", "trip-1", BookingStatus.CONFIRMED, "Europe/Berlin");
+
+        when(tripsRepository.findByDriverIdAndTripStatusIn(
+                        "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
+                .thenReturn(List.of(trip));
+        when(bookingRepository.findByTripIdInAndStatusIn(
+                        List.of("trip-1"), List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+                .thenReturn(List.of(booking));
+        when(passengerRepository.findByUserIdIn(List.of("passenger-1"))).thenReturn(List.of());
+
+        List<DriverTripResponse> responses = activeRidesService.findDriverActiveTrips("driver-1");
+
+        assertEquals(1, responses.size());
+        DriverTripResponse.PassengerInfo info =
+                responses.getFirst().passengers().getFirst();
+        assertNull(info.firstName());
+        assertNull(info.lastName());
+        assertEquals(BookingStatus.CONFIRMED, info.bookingStatus());
+        assertEquals("passenger-1", info.userId());
+    }
+
+    @Test
+    void findDriverActiveTrips_shouldNotQueryPassengers_whenNoBookings() {
+        Trip trip = buildTrip("trip-1", TripStatus.AVAILABLE, 4, 0, 10.0);
+
+        when(tripsRepository.findByDriverIdAndTripStatusIn(
+                        "driver-1", List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS)))
+                .thenReturn(List.of(trip));
+        when(bookingRepository.findByTripIdInAndStatusIn(
+                        List.of("trip-1"), List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS)))
+                .thenReturn(List.of());
+        when(passengerRepository.findByUserIdIn(List.of())).thenReturn(List.of());
+
+        List<DriverTripResponse> responses = activeRidesService.findDriverActiveTrips("driver-1");
+
+        assertEquals(1, responses.size());
+        assertTrue(responses.getFirst().passengers().isEmpty());
     }
 
     @Test
@@ -184,5 +268,13 @@ class ActiveRidesServiceTest {
         booking.setPickupLocation(Points.of(0, 0, ""));
         booking.setDropoffLocation(Points.of(0, 0, ""));
         return booking;
+    }
+
+    private Passenger buildPassenger(String userId, String firstName, String lastName) {
+        Passenger passenger = new Passenger();
+        passenger.setUserId(userId);
+        passenger.setFirstName(firstName);
+        passenger.setLastName(lastName);
+        return passenger;
     }
 }

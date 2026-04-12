@@ -7,8 +7,10 @@ import com.cimhub.tripservice.dto.response.PassengerRideResponse;
 import com.cimhub.tripservice.mapper.BookingMapper;
 import com.cimhub.tripservice.mapper.TripMapper;
 import com.cimhub.tripservice.model.Booking;
+import com.cimhub.tripservice.model.Passenger;
 import com.cimhub.tripservice.model.Trip;
 import com.cimhub.tripservice.repository.BookingRepository;
+import com.cimhub.tripservice.repository.PassengerRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +25,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ActiveRidesService {
 
+    private static final List<BookingStatus> ACTIVE_PASSENGER_STATUSES =
+            List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS);
+
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
+    private final PassengerRepository passengerRepository;
     private final TripMapper tripMapper;
     private final BookingMapper bookingMapper;
 
@@ -32,7 +38,45 @@ public class ActiveRidesService {
         log.info("Fetching active trips for driver: {}", driverId);
         List<Trip> activeTrips = tripsRepository.findByDriverIdAndTripStatusIn(
                 driverId, List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS));
-        return activeTrips.stream().map(tripMapper::toDriverTripResponse).collect(Collectors.toList());
+
+        if (activeTrips.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> tripIds = activeTrips.stream().map(Trip::getTripId).toList();
+        List<Booking> bookings = bookingRepository.findByTripIdInAndStatusIn(tripIds, ACTIVE_PASSENGER_STATUSES);
+        Map<String, List<Booking>> bookingsByTripId =
+                bookings.stream().collect(Collectors.groupingBy(Booking::getTripId));
+
+        List<String> passengerIds =
+                bookings.stream().map(Booking::getPassengerId).distinct().toList();
+        Map<String, Passenger> passengersByUserId = passengerRepository.findByUserIdIn(passengerIds).stream()
+                .collect(Collectors.toMap(Passenger::getUserId, Function.identity()));
+
+        return activeTrips.stream()
+                .map(trip -> tripMapper.toDriverTripResponse(
+                        trip,
+                        buildPassengerInfoList(
+                                bookingsByTripId.getOrDefault(trip.getTripId(), List.of()), passengersByUserId)))
+                .collect(Collectors.toList());
+    }
+
+    private List<DriverTripResponse.PassengerInfo> buildPassengerInfoList(
+            List<Booking> bookings, Map<String, Passenger> passengersByUserId) {
+        return bookings.stream()
+                .map(booking -> {
+                    Passenger passenger = passengersByUserId.get(booking.getPassengerId());
+                    return DriverTripResponse.PassengerInfo.builder()
+                            .userId(booking.getPassengerId())
+                            .firstName(passenger != null ? passenger.getFirstName() : null)
+                            .lastName(passenger != null ? passenger.getLastName() : null)
+                            .bookingStatus(booking.getStatus())
+                            .bookedSeats(booking.getRequestedSeats())
+                            .pickupLocation(booking.getPickupLocation())
+                            .dropoffLocation(booking.getDropoffLocation())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     public List<DriverTripResponse> findDriverTripHistory(String driverId) {
