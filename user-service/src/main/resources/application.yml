@@ -51,3 +51,9 @@ springdoc:
 services:
   auth:
     base-url: ${AUTH_SERVICE_URL:http://auth-service:8080}
+  trip:
+    base-url: ${TRIP_SERVICE_URL:http://trip-service:8080}
+  review:
+    base-url: ${REVIEW_SERVICE_URL:http://review-service:8080}
+  notification:
+    base-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8080}

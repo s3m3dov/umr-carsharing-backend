@@ -13,4 +13,6 @@ public interface VehicleRepository extends MongoRepository<Vehicle, String> {
     boolean existsByUserId(@Param("userId") String userId);
 
     boolean existsByVehicleNumber(@Param("vehicleNumber") String vehicleNumber);
+
+    void deleteByUserId(@Param("userId") String userId);
 }

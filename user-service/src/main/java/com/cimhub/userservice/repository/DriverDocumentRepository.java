@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DriverDocumentRepository extends MongoRepository<DriverDocument, String> {
     List<DriverDocument> findByDriverId(String driverId);
+
+    void deleteByDriverId(String driverId);
 }
