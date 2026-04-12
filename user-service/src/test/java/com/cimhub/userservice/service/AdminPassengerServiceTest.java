@@ -12,6 +12,7 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
+import com.cimhub.userservice.client.AuthServiceClient;
 import com.cimhub.userservice.dto.request.CreatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.model.Passenger;
@@ -38,11 +39,14 @@ class AdminPassengerServiceTest {
     @Mock
     private AuditService auditService;
 
+    @Mock
+    private AuthServiceClient authServiceClient;
+
     private AdminPassengerService adminPassengerService;
 
     @BeforeEach
     void setUp() {
-        adminPassengerService = new AdminPassengerService(passengerRepository, auditService);
+        adminPassengerService = new AdminPassengerService(passengerRepository, auditService, authServiceClient);
     }
 
     @Test
@@ -126,6 +130,7 @@ class AdminPassengerServiceTest {
         adminPassengerService.deletePassenger("p4@example.com", "admin@example.com");
 
         verify(passengerRepository).delete(passenger);
+        verify(authServiceClient).deleteUser("p4@example.com");
         verify(auditService)
                 .logDelete(EntityType.PASSENGER, "p4@example.com", "admin@example.com", "Passenger deleted");
     }

@@ -4,6 +4,7 @@ import com.cimhub.common.enums.DriverStatus;
 import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
+import com.cimhub.userservice.client.AuthServiceClient;
 import com.cimhub.userservice.dto.request.BulkDriverActionRequest;
 import com.cimhub.userservice.dto.request.UpdateDriverRequest;
 import com.cimhub.userservice.dto.response.DriverDocumentResponse;
@@ -30,6 +31,7 @@ public class AdminDriverService {
     private final DriverRepository driverRepository;
     private final DriverDocumentRepository driverDocumentRepository;
     private final AuditService auditService;
+    private final AuthServiceClient authServiceClient;
 
     public Page<DriverResponse> listDrivers(DriverStatus status, Pageable pageable) {
         if (status != null) {
@@ -116,6 +118,7 @@ public class AdminDriverService {
     public void deleteDriver(String driverId, String adminEmail) {
         findDriverOrThrow(driverId);
         driverRepository.deleteByUserId(driverId);
+        authServiceClient.deleteUser(driverId);
         auditService.logDelete(EntityType.DRIVER, driverId, adminEmail, "Driver deleted");
         log.info("Driver {} deleted by {}", driverId, adminEmail);
     }

@@ -68,4 +68,10 @@ public class AuthService {
             return new ValidateTokenResponse(false, null, null);
         }
     }
+
+    public void deleteUser(String userId) {
+        log.info("Deleting user from auth-service: {}", userId);
+        authUserRepository.deleteById(userId);
+        auditService.logDelete(EntityType.USER, userId, "system", "User deleted via internal API");
+    }
 }

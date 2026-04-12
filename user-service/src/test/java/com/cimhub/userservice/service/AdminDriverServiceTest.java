@@ -12,6 +12,7 @@ import com.cimhub.common.enums.EntityType;
 import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
+import com.cimhub.userservice.client.AuthServiceClient;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.DriverDocument;
@@ -42,11 +43,15 @@ class AdminDriverServiceTest {
     @Mock
     private AuditService auditService;
 
+    @Mock
+    private AuthServiceClient authServiceClient;
+
     private AdminDriverService adminDriverService;
 
     @BeforeEach
     void setUp() {
-        adminDriverService = new AdminDriverService(driverRepository, driverDocumentRepository, auditService);
+        adminDriverService =
+                new AdminDriverService(driverRepository, driverDocumentRepository, auditService, authServiceClient);
     }
 
     @Test
@@ -146,6 +151,7 @@ class AdminDriverServiceTest {
         adminDriverService.deleteDriver("driver-5", "admin@example.com");
 
         verify(driverRepository).deleteByUserId("driver-5");
+        verify(authServiceClient).deleteUser("driver-5");
         verify(auditService).logDelete(EntityType.DRIVER, "driver-5", "admin@example.com", "Driver deleted");
     }
 
