@@ -13,6 +13,22 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.9.4] – Distributed Deletion and Internal Security (2026-04-12)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Distributed User Deletion**: Deleting a driver or passenger profile in `user-service` now automatically triggers account deletion in `auth-service` via a new internal REST client.
+- **Internal API**: Added `InternalUserController` to `auth-service` to handle service-to-service user management.
+- **Security Documentation**: Documented the "Perimeter Defense" strategy and identified risks for internal service-to-service APIs in `.docs/security/README.md`.
+
+### Fixed
+
+- **Internal API Security**: Correctly configured `auth-service` to permit unauthenticated access to `/api/internal/**` from within the cluster network, resolving potential 401 Unauthorized errors for service-to-service calls.
+
+---
+
 ## [v0.9.3] – Registration, Identity Flow, Standardized Responses & Test Coverage (2026-04-12)
 
 **Author:** s3m3dov (Hikmat Samadov)
