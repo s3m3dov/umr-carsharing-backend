@@ -13,7 +13,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.3] – Registration, Identity Flow, Test Coverage & Code Formatting (2026-04-11)
+## [v0.9.3] – Registration, Identity Flow, Standardized Responses & Test Coverage (2026-04-12)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -35,9 +35,12 @@ and this project adheres to **Semantic Versioning**
 - Added default actuator path to `SecurityProperties`
 - Adjusted actuator path configuration and cleaned up `SecurityProperties`
 - Improved validation and exception handling in auth-service
+- Added `GlobalExceptionHandler` to integration tests in `trip-service` for better error response validation and coverage
+- Cleaned up redundant test cases and improved test resource management across service integration tests
 
 ### Changed
 
+- **Standardized success responses**: Replaced `ApiResponseWrapper` with `ApiSuccess` across all services and tests to ensure consistent success payload structure
 - **Standardized identity propagation**: All microservices now retrieve user identity exclusively from gateway-injected headers (`X-User-Id`, `X-User-Role`, `X-User-Email`)
 - **Refactored Trip-Service**: Removed legacy `effectiveUserId` and `driverId` request parameters; user identity is now passed as service method parameters derived from headers
 - **Refactored Review-Service**: Removed `userId` and `userRole` from `SubmitReviewRequest` DTO; identity is now handled via secure headers
@@ -72,9 +75,13 @@ and this project adheres to **Semantic Versioning**
 - Refactored tests to use `Points.of()` factory method across trip-service
 - Added API gateway component scanning for the common package
 - **OfferRide Flow**: Removed unused fields and failure response handling for streamlined ride creation logic
+- Updated `UserServiceClientIntegrationTest` to use internal API endpoints for profile verification
+- Extracted common package scanning into separate configuration in `trip-service` and improved test isolation by mocking `MongoTemplate` in integration tests
+- Applied further project-wide consistent formatting and removed unused Spotless configuration
 
 ### Added
 
+- **Passenger cache in Trip-Service**: Introduced `Passenger` model and repository in `trip-service` to store local passenger profile data, enabling faster lookups and detailed passenger information in active ride responses
 - **Spotless code formatter** integration for automated Java and Maven XML formatting
 - **Identity flow diagrams** to `api-architecture` documentation illustrating gateway and service interactions
 - `HeaderConstants` in common module to centralize X-User-Id, X-User-Role, and X-User-Email header keys
@@ -104,6 +111,7 @@ and this project adheres to **Semantic Versioning**
   - Enabled kube-state-metrics and disabled unused Prometheus components
   - Simplified Fluent Bit parser configuration and refined resource limits
   - Configured Loki and Prometheus retention settings and enabled Grafana persistence
+- Enhanced `ActiveRidesService` to include passenger names and booking status in driver active trip responses
 
 ### Security
 
