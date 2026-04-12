@@ -13,7 +13,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.4] – Distributed Deletion and Internal Security (2026-04-12)
+## [v0.6.10] – Distributed Deletion and Internal Security (2026-04-12)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -29,119 +29,137 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.3] – Registration, Identity Flow, Standardized Responses & Test Coverage (2026-04-12)
+## [v0.6.9] – Tooling, Monitoring & Test Coverage (2026-04-12)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
-### Fixed
+### Added
 
-- **Test alignment**: Updated integration and unit tests to match new service method signatures and header-based identity flows
-- Removed redundant header mismatch validation tests across services
-- `GET /api/users/{userId}` returning null `firstName`, `lastName`, `phoneNumber` after signup — root cause was auth-service and user-service both writing to the same `users` MongoDB collection; auth-service saved a credentials-only document first, user-service found it and threw 409, auth-service silently ignored the conflict, leaving the null-field document in place forever
-- Secured user profile flows and preserved email field consistency during updates
-- Added classifier to spring-boot-maven-plugin to produce plain jar for dependencies
-- Expanded actuator path exclusions to match wildcard patterns
-- Removed redundant actuator path exclusions in API gateway
-- Resolved compilation and test failures due to missing imports and constructor changes
-- Improved validation annotations on DTOs and entities
-- Added optimistic locking for seat booking concurrency
-- Enforced identity and role-based access control
-- Enforced vehicle uniqueness with exception-based flows
-- Tightened profile validation and admin endpoint consistency
-- Added default actuator path to `SecurityProperties`
-- Adjusted actuator path configuration and cleaned up `SecurityProperties`
-- Improved validation and exception handling in auth-service
-- Added `GlobalExceptionHandler` to integration tests in `trip-service` for better error response validation and coverage
-- Cleaned up redundant test cases and improved test resource management across service integration tests
+- **Spotless code formatter** integration for automated Java and Maven XML formatting.
+- Testing documentation with 89 test files.
+- Unit tests for `DriverService`, `PassengerService`, `UserService`, and internal profile controllers.
+- Controller and config coverage tests for user-service.
+- Focused tests for low-coverage services and service integration tests with grouped trip test structure.
 
 ### Changed
 
-- **Standardized success responses**: Replaced `ApiResponseWrapper` with `ApiSuccess` across all services and tests to ensure consistent success payload structure
-- **Standardized identity propagation**: All microservices now retrieve user identity exclusively from gateway-injected headers (`X-User-Id`, `X-User-Role`, `X-User-Email`)
-- **Refactored Trip-Service**: Removed legacy `effectiveUserId` and `driverId` request parameters; user identity is now passed as service method parameters derived from headers
-- **Refactored Review-Service**: Removed `userId` and `userRole` from `SubmitReviewRequest` DTO; identity is now handled via secure headers
-- **OpenAPI documentation**: Marked gateway-injected headers as hidden in Swagger UI to clarify they are not intended for client-side submission
-- Simplified controllers across all services by removing redundant identity mismatch validation (now enforced at gateway)
-- Updated API documentation examples for review-service, trip-service, and user-service to align with new identity flow
-- Improved code readability with project-wide consistent formatting via Spotless
-- **auth-service** credentials are stored in `users` and user-service is profile-only (`drivers`/`passengers`)
-- **Signup flow** is fully server-side: auth-service creates auth user then role profile (`passenger` or `driver`) during `POST /api/auth/signup`; the Flutter client receives a JWT and is done — no follow-up calls required
-- `licenseNumber` is stored exclusively in the `drivers` collection. `GET /api/users/{userId}` aggregates role profile data from `drivers`/`passengers`
-- `POST /api/users/profile` removed; role profile creation uses `POST /api/passengers/{userId}` and `POST /api/drivers/{userId}`
-- Refactored profile management to internal user-service controllers (`InternalPassengerController` / `InternalDriverController`) and removed direct external profile controllers
-- Simplified ownership validation with `OwnershipGuard` and removed unused `UserType` handling from `UserController`
-- Reorganized service classes into domain-specific packages
-- Reorganized service tests by domain packages
-- Removed duplicated trip status enums in trip-service
-- Replaced OSM route service with configurable OSRM client
-- Centralized trip and ride response mapping with `BookingMapper` and `TripMapper`
-- Centralized controller role checks
-- Validated and encapsulated route search inputs
-- Improved notification wiring and configurability
-- Split `AuthService` into focused services with utility classes for reusable functionality
-- Migrated user-service to separate `Driver`/`Passenger` models
-- Replaced Lombok `@Data` on persistence models with explicit accessors
-- Extracted reusable profile update contracts
-- Refactored review-service to reduce duplication and harden validation
-- Improved error handling in API gateway and review-service
-- Standardized package naming conventions
-- Moved OpenAPI example classes to `dto.examples` package
-- Removed unused `Points` model from common module
-- Updated references after package and class renames
-- Refactored tests to use `Points.of()` factory method across trip-service
-- Added API gateway component scanning for the common package
-- **OfferRide Flow**: Removed unused fields and failure response handling for streamlined ride creation logic
-- Updated `UserServiceClientIntegrationTest` to use internal API endpoints for profile verification
-- Extracted common package scanning into separate configuration in `trip-service` and improved test isolation by mocking `MongoTemplate` in integration tests
-- Applied further project-wide consistent formatting and removed unused Spotless configuration
+- **Monitoring refinements**: Enabled kube-state-metrics, Loki/Prometheus retention settings, and Grafana persistence; simplified Fluent Bit parser configuration.
+- Improved code readability with project-wide consistent formatting via Spotless.
+- Reorganized service tests by domain packages.
+- Updated `UserServiceClientIntegrationTest` to use internal API endpoints for profile verification.
+- Updated REST-client test paths and response validation.
 
-### Added
+### Fixed
 
-- **Passenger cache in Trip-Service**: Introduced `Passenger` model and repository in `trip-service` to store local passenger profile data, enabling faster lookups and detailed passenger information in active ride responses
-- **Spotless code formatter** integration for automated Java and Maven XML formatting
-- **Identity flow diagrams** to `api-architecture` documentation illustrating gateway and service interactions
-- `HeaderConstants` in common module to centralize X-User-Id, X-User-Role, and X-User-Email header keys
-- Enforcement of validated and lowercased identity headers at API gateway level
-- Route geometry to trip, ride, and booking responses
-- OpenAPI response examples for user-service admin controllers
-- Service integration tests with grouped trip test structure
-- Admin self profile endpoint in user-service
-- Focused tests for low-coverage services
-- Controller and config coverage tests for user-service
-- Unit tests for `DriverService`, `PassengerService`, and `UserService`
-- Unit tests for `InternalDriverController` and `InternalPassengerController`
-- Test coverage improvements with fixtures and parameterized test methods
-- Testing documentation with 89 test files
-- REST-client test updates for non-existent user and driver vehicle status assertions
-- Fixed request paths with response validation in HTTP tests
-- `GET  /api/passengers/{userId}` — retrieve passenger profile
-- `POST /api/passengers/{userId}` — initialize passenger sub-profile (called automatically during signup; also idempotent for manual use)
-- `PUT  /api/passengers/{userId}` — update passenger name / phone / age
-- `GET  /api/drivers/{userId}` — retrieve driver profile including `licenseNumber` and `driverStatus`
-- `POST /api/drivers/{userId}` — initialize driver sub-profile with `licenseNumber` (called automatically during signup)
-- `PUT  /api/drivers/{userId}` — update driver name / phone / age / license number
-- Driver sub-profile auto-created on first GET if missing (lazy creation fallback)
-- Auth-service rolls back the auth `users` document if user-service profile creation fails, keeping both stores consistent
-- Review-service Docker build pipeline now includes trip-service dependency artifacts
-- **Monitoring refinements**: 
-  - Enabled kube-state-metrics and disabled unused Prometheus components
-  - Simplified Fluent Bit parser configuration and refined resource limits
-  - Configured Loki and Prometheus retention settings and enabled Grafana persistence
-- Enhanced `ActiveRidesService` to include passenger names and booking status in driver active trip responses
-
-### Security
-
-- Admin signup hardening with expanded analysis
-- API gateway internal-path blocking filter for passenger/driver profile routes to prevent direct external access
+- **Test alignment**: Updated integration and unit tests to match new service method signatures and header-based identity flows.
+- Removed redundant header mismatch validation tests across services.
+- Resolved compilation and test failures due to missing imports and constructor changes.
+- Added `GlobalExceptionHandler` to integration tests in `trip-service` for better error response validation.
+- Cleaned up redundant test cases and improved test resource management.
+- Added classifier to `spring-boot-maven-plugin` to produce plain jars for dependencies.
 
 ### Documentation
 
-- Updated references after package and class renames
-- Noted admin role signup hardening analysis
+- Updated references after package and class renames.
 
 ---
 
-## [v0.9.2] – Trip Start, Retrieval & Test Coverage (2026-04-06)
+## [v0.6.8] – Service Logic & Quality Improvements (2026-04-12)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Passenger cache in Trip-Service**: Local storage for faster lookups and detailed passenger information in active ride responses.
+- Route geometry to trip, ride, and booking responses.
+- Enhanced `ActiveRidesService` to include passenger names and booking status.
+- Optimistic locking for seat booking concurrency.
+
+### Changed
+
+- **Refactored Trip-Service**: Removed legacy `effectiveUserId` and `driverId` request parameters; identity is now derived from headers.
+- **Refactored Review-Service**: Identity and role handling moved to secure headers.
+- Centralized trip and ride response mapping with `BookingMapper` and `TripMapper`.
+- Replaced OSM route service with configurable OSRM client.
+- Reorganized service classes into domain-specific packages.
+- Simplified ownership validation with `OwnershipGuard`.
+- Improved validation annotations on DTOs and entities.
+
+### Fixed
+
+- Enforced vehicle uniqueness with exception-based flows.
+- Expanded actuator path exclusions to match wildcard patterns and cleaned up `SecurityProperties`.
+- Adjusted actuator path configuration in API gateway.
+
+---
+
+## [v0.6.7] – Refined Profile Management & Auth Flow (2026-04-12)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- `GET /api/passengers/{userId}`, `POST /api/passengers/{userId}`, `PUT /api/passengers/{userId}` for passenger profile management.
+- `GET /api/drivers/{userId}`, `POST /api/drivers/{userId}`, `PUT /api/drivers/{userId}` for driver profile management.
+- Driver sub-profile auto-creation (lazy fallback) if missing on first retrieval.
+- Admin self profile endpoint in user-service.
+
+### Changed
+
+- **Signup flow overhaul**: Signup is now fully server-side; auth-service creates the credentials and then triggers role profile creation in user-service.
+- **Data Isolation**: Auth-service stores credentials in `users`, while user-service isolates profiles in `drivers`/`passengers` collections.
+- `licenseNumber` is stored exclusively in the `drivers` collection.
+- Auth-service now rolls back auth document creation if user-service profile initialization fails.
+- Migrated user-service to separate `Driver`/`Passenger` models.
+- Refactored profile management to internal user-service controllers.
+
+### Fixed
+
+- **Profile Initialization Bug**: Fixed root cause of `GET /api/users/{userId}` returning null fields after signup due to MongoDB collection conflicts.
+- Secured user profile flows and preserved email field consistency during updates.
+- Tightened profile validation and admin endpoint consistency.
+- Improved validation and exception handling in auth-service.
+
+### Security
+
+- Admin signup hardening with expanded analysis.
+
+### Documentation
+
+- Noted admin role signup hardening analysis.
+
+---
+
+## [v0.6.6] – Identity Flow & API Standardization (2026-04-12)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Identity flow diagrams** to documentation illustrating gateway-service interactions.
+- `HeaderConstants` in common module to centralize `X-User-Id`, `X-User-Role`, and `X-User-Email` keys.
+- Enforcement of validated and lowercased identity headers at API gateway level.
+
+### Changed
+
+- **Standardized success responses**: Replaced `ApiResponseWrapper` with `ApiSuccess` across all services for consistent payload structure.
+- **Standardized identity propagation**: Services now retrieve user identity exclusively from gateway-injected headers.
+- **OpenAPI documentation**: Marked gateway-injected headers as hidden in Swagger UI.
+- Simplified controllers by removing redundant identity mismatch validation.
+
+### Security
+
+- **Internal Path Protection**: API gateway now blocks direct external access to passenger/driver profile routes.
+- Enforced role-based access control and identity validation at the perimeter.
+
+### Fixed
+
+- Removed redundant actuator path exclusions in API gateway.
+- Enforced identity and role-based access control consistency.
+
+---
+
+## [v0.6.5] – Trip Start, Retrieval & Test Coverage (2026-04-06)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -158,7 +176,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.1] – Testing & Enhancements (2026-04-05)
+## [v0.6.4] – Testing & Enhancements (2026-04-05)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -196,7 +214,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.9.0] – Monitoring, Admin Panel & Audit Logging (2026-03-30)
+## [v0.6.3] – Monitoring, Admin Panel & Audit Logging (2026-03-30)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -230,7 +248,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.8.0] – Service Enhancements & Documentation (2026-03-30)
+## [v0.6.2] – Service Enhancements & Documentation (2026-03-30)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
@@ -285,7 +303,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [v0.7.0] – Review Service & Identity Enhancements (2026-03-30)
+## [v0.6.1] – Review Service & Identity Enhancements (2026-03-30)
 
 **Author:** s3m3dov (Hikmat Samadov)
 
