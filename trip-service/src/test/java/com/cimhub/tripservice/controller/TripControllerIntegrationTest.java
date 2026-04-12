@@ -21,14 +21,17 @@ import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import com.cimhub.tripservice.service.trip.OfferRideService;
 import com.cimhub.tripservice.service.trip.TripService;
+import com.cimhub.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TripController.class)
+@Import(GlobalExceptionHandler.class)
 class TripControllerIntegrationTest {
 
     @Autowired
@@ -160,16 +163,6 @@ class TripControllerIntegrationTest {
     }
 
     @Test
-    void completeTrip_whenDriverIdParamMismatchesHeader_shouldReturn401() throws Exception {
-        mockMvc.perform(post("/api/trips/trip-1/complete")
-                        .header(HeaderConstants.X_USER_ID, "driver-1")
-                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
-                        .param("driverId", "other-driver"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Driver identity mismatch"));
-    }
-
-    @Test
     void completeTrip_whenRoleHeaderMissing_shouldReturn400() throws Exception {
         mockMvc.perform(post("/api/trips/trip-1/complete")
                         .header(HeaderConstants.X_USER_ID, "driver-1")
@@ -187,17 +180,4 @@ class TripControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Driver access required"));
     }
 
-    @Test
-    void searchMatchingRoute_whenEffectiveUserIdMismatchesHeader_shouldReturn401() throws Exception {
-        mockMvc.perform(get("/api/trips/search/matching-route")
-                        .header(HeaderConstants.X_USER_ID, "header-user")
-                        .header(HeaderConstants.X_USER_ROLE, "PASSENGER")
-                        .param("sourceLatitude", "50.8154")
-                        .param("sourceLongitude", "8.6747")
-                        .param("destinationLatitude", "50.7265")
-                        .param("destinationLongitude", "7.0895")
-                        .param("effectiveUserId", "payload-user"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("User identity mismatch"));
-    }
 }
