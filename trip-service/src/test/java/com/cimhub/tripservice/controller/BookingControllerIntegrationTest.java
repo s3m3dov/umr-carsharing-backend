@@ -2,6 +2,7 @@ package com.cimhub.tripservice.controller;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.BookingStatus;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.GlobalExceptionHandler;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.BookingResponse;
@@ -19,7 +21,6 @@ import com.cimhub.tripservice.service.booking.BookingService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;
 import com.cimhub.tripservice.service.booking.JoinTripService;
-import com.cimhub.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

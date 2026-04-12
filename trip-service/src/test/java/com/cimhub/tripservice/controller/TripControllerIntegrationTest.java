@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.cimhub.common.constant.HeaderConstants;
 import com.cimhub.common.enums.TripStatus;
+import com.cimhub.common.exception.GlobalExceptionHandler;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.exception.UnauthorizedException;
 import com.cimhub.tripservice.dto.response.CompleteTripResponse;
@@ -21,7 +22,6 @@ import com.cimhub.tripservice.service.geo.TripGeospatialService;
 import com.cimhub.tripservice.service.trip.ActiveRidesService;
 import com.cimhub.tripservice.service.trip.OfferRideService;
 import com.cimhub.tripservice.service.trip.TripService;
-import com.cimhub.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -179,5 +179,4 @@ class TripControllerIntegrationTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Driver access required"));
     }
-
 }
