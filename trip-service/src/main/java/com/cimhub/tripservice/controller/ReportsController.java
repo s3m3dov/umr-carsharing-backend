@@ -50,9 +50,11 @@ public class ReportsController {
                             required = false,
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
-                    String userRole) {
+                    String userRole,
+            @Parameter(description = "Filter start timestamp (ISO-8601)") @RequestParam(required = false) Instant from,
+            @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(reportsService.getDriverPerformanceReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getDriverPerformanceReport(from, to)));
     }
 
     @Operation(summary = "Bookings summary report", description = "Generate bookings summary report")
@@ -72,9 +74,11 @@ public class ReportsController {
                             required = false,
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
-                    String userRole) {
+                    String userRole,
+            @Parameter(description = "Filter start timestamp (ISO-8601)") @RequestParam(required = false) Instant from,
+            @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(reportsService.getBookingSummaryReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getBookingSummaryReport(from, to)));
     }
 
     @Operation(summary = "Revenue report", description = "Generate revenue report")
@@ -94,9 +98,11 @@ public class ReportsController {
                             required = false,
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
-                    String userRole) {
+                    String userRole,
+            @Parameter(description = "Filter start timestamp (ISO-8601)") @RequestParam(required = false) Instant from,
+            @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(reportsService.getRevenueReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getRevenueReport(from, to)));
     }
 
     @Operation(summary = "Passenger activity report", description = "Generate passenger activity report")
@@ -116,9 +122,11 @@ public class ReportsController {
                             required = false,
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
-                    String userRole) {
+                    String userRole,
+            @Parameter(description = "Filter start timestamp (ISO-8601)") @RequestParam(required = false) Instant from,
+            @Parameter(description = "Filter end timestamp (ISO-8601)") @RequestParam(required = false) Instant to) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(reportsService.getPassengerActivityReport()));
+        return ResponseEntity.ok(ApiSuccess.success(reportsService.getPassengerActivityReport(from, to)));
     }
 
     @Operation(summary = "List audit logs", description = "Get paginated audit logs with optional filters")

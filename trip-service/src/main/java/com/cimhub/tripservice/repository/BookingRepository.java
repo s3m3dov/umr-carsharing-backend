@@ -36,8 +36,6 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
 
     List<Booking> findByPassengerIdAndStatusIn(String passengerId, List<BookingStatus> statuses);
 
-    // Find bookings by status
-    List<Booking> findByStatus(BookingStatus status);
 
     // Find bookings by passenger and status
     List<Booking> findByPassengerIdAndStatus(String passengerId, BookingStatus status);
@@ -46,8 +44,6 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     Page<Booking> findAll(Pageable pageable);
 
     Page<Booking> findByPassengerId(String passengerId, Pageable pageable);
-
-    long countByStatus(BookingStatus status);
 
     void deleteByPassengerId(String passengerId);
 
