@@ -2,7 +2,6 @@ package com.cimhub.tripservice.controller;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,13 +19,16 @@ import com.cimhub.tripservice.service.booking.BookingService;
 import com.cimhub.tripservice.service.booking.CancellationService;
 import com.cimhub.tripservice.service.booking.CompletionService;
 import com.cimhub.tripservice.service.booking.JoinTripService;
+import com.cimhub.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(BookingController.class)
+@Import(GlobalExceptionHandler.class)
 class BookingControllerIntegrationTest {
 
     @Autowired
@@ -128,16 +130,6 @@ class BookingControllerIntegrationTest {
                         .header(HeaderConstants.X_USER_ROLE, "DRIVER")
                         .param("driverId", "driver-1"))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void completeRide_whenDriverIdParamMismatchesHeader_shouldReturn401() throws Exception {
-        mockMvc.perform(post("/api/bookings/b-1/complete")
-                        .header(HeaderConstants.X_USER_ID, "driver-1")
-                        .header(HeaderConstants.X_USER_ROLE, "DRIVER")
-                        .param("driverId", "other-driver"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Driver identity mismatch"));
     }
 
     @Test

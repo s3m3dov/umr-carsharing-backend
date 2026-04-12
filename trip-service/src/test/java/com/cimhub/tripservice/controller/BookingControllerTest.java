@@ -99,7 +99,7 @@ class BookingControllerTest {
         when(completionService.completeRide("b-3", "driver-1")).thenReturn(completeRideResponse);
 
         ResponseEntity<ApiSuccess<CompleteRideResponse>> response =
-                bookingController.completeRide("b-3", "driver-1", "DRIVER");
+                bookingController.completeRide("b-3", "driver-1", "DRIVER", null);
 
         assertEquals(
                 OperationMessage.RIDE_COMPLETED_SUCCESS.text(),
