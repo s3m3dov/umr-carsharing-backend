@@ -27,6 +27,14 @@ public class NotificationService {
     private final RealtimeNotificationPublisher realtimePublisher;
 
     @Transactional
+    public void deleteUserData(String userId) {
+        log.info("Deleting all notifications for user: {}", userId);
+        notificationRepository.deleteByRecipientId(userId);
+        notificationRepository.deleteBySenderId(userId);
+        log.info("Successfully deleted all notifications for user: {}", userId);
+    }
+
+    @Transactional
     public NotificationResponse createNotification(CreateNotificationRequest request) {
         if (request.senderId() != null && request.senderId().equals(request.recipientId())) {
             throw new InvalidNotificationSenderException("senderId and recipientId cannot be the same");
