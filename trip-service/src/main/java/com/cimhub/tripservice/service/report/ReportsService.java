@@ -18,7 +18,9 @@ import com.cimhub.tripservice.repository.TripsRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -39,70 +43,121 @@ public class ReportsService {
     private final BookingRepository bookingRepository;
     private final MongoTemplate mongoTemplate;
 
-    public DriverPerformanceReport getDriverPerformanceReport() {
-        long completed = tripsRepository.countByTripStatus(TripStatus.COMPLETED);
-        long cancelled = tripsRepository.countByTripStatus(TripStatus.CANCELLED);
-        long inProgress = tripsRepository.countByTripStatus(TripStatus.IN_PROGRESS);
-        long available = tripsRepository.countByTripStatus(TripStatus.AVAILABLE);
+    public DriverPerformanceReport getDriverPerformanceReport(Instant from, Instant to) {
+        Criteria criteria = createDateCriteria("createdAt", from, to);
 
-        List<Trip> tripsWithDrivers = tripsRepository.findDistinctDriverIds();
-        long totalDrivers =
-                tripsWithDrivers.stream().map(Trip::getDriverId).distinct().count();
+        // Get distinct drivers count efficiently
+        Query distinctDriversQuery = new Query(criteria);
+        long totalDrivers = mongoTemplate
+                .findDistinct(distinctDriversQuery, "driverId", Trip.class, String.class)
+                .size();
+
+        // Get trip counts by status using aggregation
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria), Aggregation.group("tripStatus").count().as("count"));
+
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Trip.class, Map.class);
+        Map<String, Long> counts = results.getMappedResults().stream()
+                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
 
         return DriverPerformanceReport.builder()
                 .totalDrivers(totalDrivers)
-                .totalTripsCompleted(completed)
-                .totalTripsCancelled(cancelled)
-                .totalTripsInProgress(inProgress)
-                .totalTripsAvailable(available)
+                .totalTripsCompleted(counts.getOrDefault(TripStatus.COMPLETED.name(), 0L))
+                .totalTripsCancelled(counts.getOrDefault(TripStatus.CANCELLED.name(), 0L))
+                .totalTripsInProgress(counts.getOrDefault(TripStatus.IN_PROGRESS.name(), 0L))
+                .totalTripsAvailable(counts.getOrDefault(TripStatus.AVAILABLE.name(), 0L))
                 .build();
     }
 
-    public BookingSummaryReport getBookingSummaryReport() {
-        long total = bookingRepository.count();
-        long confirmed = bookingRepository.countByStatus(BookingStatus.CONFIRMED);
-        long cancelled = bookingRepository.countByStatus(BookingStatus.CANCELLED);
-        long requested = bookingRepository.countByStatus(BookingStatus.REQUESTED);
-        long completed = bookingRepository.countByStatus(BookingStatus.COMPLETED);
-        long rejected = bookingRepository.countByStatus(BookingStatus.REJECTED);
+    public BookingSummaryReport getBookingSummaryReport(Instant from, Instant to) {
+        Criteria criteria = createDateCriteria("createdAt", from, to);
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria), Aggregation.group("status").count().as("count"));
+
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Booking.class, Map.class);
+        Map<String, Long> counts = results.getMappedResults().stream()
+                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
+
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
 
         return BookingSummaryReport.builder()
                 .totalBookings(total)
-                .confirmedBookings(confirmed)
-                .cancelledBookings(cancelled)
-                .requestedBookings(requested)
-                .completedBookings(completed)
-                .rejectedBookings(rejected)
+                .confirmedBookings(counts.getOrDefault(BookingStatus.CONFIRMED.name(), 0L))
+                .cancelledBookings(counts.getOrDefault(BookingStatus.CANCELLED.name(), 0L))
+                .requestedBookings(counts.getOrDefault(BookingStatus.REQUESTED.name(), 0L))
+                .completedBookings(counts.getOrDefault(BookingStatus.COMPLETED.name(), 0L))
+                .rejectedBookings(counts.getOrDefault(BookingStatus.REJECTED.name(), 0L))
                 .build();
     }
 
-    public RevenueReport getRevenueReport() {
-        List<Booking> completedBookings = bookingRepository.findByStatus(BookingStatus.COMPLETED);
-        double totalRevenue = completedBookings.stream()
-                .mapToDouble(Booking::getEstimatedPrice)
-                .sum();
-        double avgRevenue = completedBookings.isEmpty() ? 0.0 : totalRevenue / completedBookings.size();
+    public RevenueReport getRevenueReport(Instant from, Instant to) {
+        Criteria criteria = createDateCriteria("createdAt", from, to);
+        criteria.and("status").is(BookingStatus.COMPLETED);
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria),
+                Aggregation.group()
+                        .sum("estimatedPrice")
+                        .as("totalRevenue")
+                        .avg("estimatedPrice")
+                        .as("averageRevenue")
+                        .count()
+                        .as("count"));
+
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Booking.class, Map.class);
+        Map result = results.getUniqueMappedResult();
+
+        if (result == null) {
+            return RevenueReport.builder()
+                    .totalCompletedBookings(0)
+                    .totalRevenue(0.0)
+                    .averageRevenuePerBooking(0.0)
+                    .build();
+        }
 
         return RevenueReport.builder()
-                .totalCompletedBookings(completedBookings.size())
-                .totalRevenue(totalRevenue)
-                .averageRevenuePerBooking(avgRevenue)
+                .totalCompletedBookings(((Long) result.get("count")).intValue())
+                .totalRevenue((Double) result.get("totalRevenue"))
+                .averageRevenuePerBooking((Double) result.get("averageRevenue"))
                 .build();
     }
 
-    public PassengerActivityReport getPassengerActivityReport() {
-        long total = bookingRepository.count();
-        long active = bookingRepository.countByStatus(BookingStatus.CONFIRMED)
-                + bookingRepository.countByStatus(BookingStatus.IN_PROGRESS);
-        long completed = bookingRepository.countByStatus(BookingStatus.COMPLETED);
-        long cancelled = bookingRepository.countByStatus(BookingStatus.CANCELLED);
+    public PassengerActivityReport getPassengerActivityReport(Instant from, Instant to) {
+        Criteria criteria = createDateCriteria("createdAt", from, to);
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria), Aggregation.group("status").count().as("count"));
+
+        AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Booking.class, Map.class);
+        Map<String, Long> counts = results.getMappedResults().stream()
+                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
+
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
+        long active = counts.getOrDefault(BookingStatus.CONFIRMED.name(), 0L)
+                + counts.getOrDefault(BookingStatus.IN_PROGRESS.name(), 0L);
 
         return PassengerActivityReport.builder()
                 .totalBookings(total)
                 .activeBookings(active)
-                .completedBookings(completed)
-                .cancelledBookings(cancelled)
+                .completedBookings(counts.getOrDefault(BookingStatus.COMPLETED.name(), 0L))
+                .cancelledBookings(counts.getOrDefault(BookingStatus.CANCELLED.name(), 0L))
                 .build();
+    }
+
+    private Criteria createDateCriteria(String field, Instant from, Instant to) {
+        Criteria criteria = new Criteria();
+        if (from != null || to != null) {
+            Criteria timeCriteria = Criteria.where(field);
+            if (from != null) {
+                timeCriteria = timeCriteria.gte(from);
+            }
+            if (to != null) {
+                timeCriteria = timeCriteria.lte(to);
+            }
+            return timeCriteria;
+        }
+        return criteria;
     }
 
     public Page<AuditLogResponse> getAuditLogs(

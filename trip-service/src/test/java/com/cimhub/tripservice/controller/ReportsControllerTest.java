@@ -52,21 +52,37 @@ class ReportsControllerTest {
         PassengerActivityReport passengers =
                 PassengerActivityReport.builder().totalBookings(8).build();
 
-        when(reportsService.getDriverPerformanceReport()).thenReturn(drivers);
-        when(reportsService.getBookingSummaryReport()).thenReturn(bookings);
-        when(reportsService.getRevenueReport()).thenReturn(revenue);
-        when(reportsService.getPassengerActivityReport()).thenReturn(passengers);
+        Instant from = Instant.parse("2026-01-01T00:00:00Z");
+        Instant to = Instant.parse("2026-01-02T00:00:00Z");
 
-        ResponseEntity<ApiSuccess<DriverPerformanceReport>> r1 = reportsController.driverReport("ADMIN");
-        ResponseEntity<ApiSuccess<BookingSummaryReport>> r2 = reportsController.bookingsReport("admin");
-        ResponseEntity<ApiSuccess<RevenueReport>> r3 = reportsController.revenueReport("ADMIN");
-        ResponseEntity<ApiSuccess<PassengerActivityReport>> r4 = reportsController.passengerReport("ADMIN");
+        when(reportsService.getDriverPerformanceReport(from, to)).thenReturn(drivers);
+        when(reportsService.getBookingSummaryReport(from, to)).thenReturn(bookings);
+        when(reportsService.getRevenueReport(from, to)).thenReturn(revenue);
+        when(reportsService.getPassengerActivityReport(from, to)).thenReturn(passengers);
+
+        ResponseEntity<ApiSuccess<DriverPerformanceReport>> r1 = reportsController.driverReport("ADMIN", from, to);
+        ResponseEntity<ApiSuccess<BookingSummaryReport>> r2 = reportsController.bookingsReport("admin", from, to);
+        ResponseEntity<ApiSuccess<RevenueReport>> r3 = reportsController.revenueReport("ADMIN", from, to);
+        ResponseEntity<ApiSuccess<PassengerActivityReport>> r4 = reportsController.passengerReport("ADMIN", from, to);
 
         assertEquals(HttpStatus.OK, r1.getStatusCode());
         assertEquals(5, r1.getBody().getData().totalDrivers());
         assertEquals(10, r2.getBody().getData().totalBookings());
         assertEquals(120.0, r3.getBody().getData().totalRevenue());
         assertEquals(8, r4.getBody().getData().totalBookings());
+    }
+
+    @Test
+    void reportEndpoints_withoutDates_shouldReturnReports() {
+        DriverPerformanceReport drivers =
+                DriverPerformanceReport.builder().totalDrivers(5).build();
+
+        when(reportsService.getDriverPerformanceReport(null, null)).thenReturn(drivers);
+
+        ResponseEntity<ApiSuccess<DriverPerformanceReport>> r1 = reportsController.driverReport("ADMIN", null, null);
+
+        assertEquals(HttpStatus.OK, r1.getStatusCode());
+        assertEquals(5, r1.getBody().getData().totalDrivers());
     }
 
     @Test
@@ -107,10 +123,10 @@ class ReportsControllerTest {
     @Test
     void endpoints_withNonAdminRole_shouldThrowForbidden() {
         Pageable pageable = PageRequest.of(0, 1);
-        assertThrows(ForbiddenException.class, () -> reportsController.driverReport("PASSENGER"));
-        assertThrows(ForbiddenException.class, () -> reportsController.bookingsReport("DRIVER"));
-        assertThrows(ForbiddenException.class, () -> reportsController.revenueReport("guest"));
-        assertThrows(ForbiddenException.class, () -> reportsController.passengerReport("USER"));
+        assertThrows(ForbiddenException.class, () -> reportsController.driverReport("PASSENGER", null, null));
+        assertThrows(ForbiddenException.class, () -> reportsController.bookingsReport("DRIVER", null, null));
+        assertThrows(ForbiddenException.class, () -> reportsController.revenueReport("guest", null, null));
+        assertThrows(ForbiddenException.class, () -> reportsController.passengerReport("USER", null, null));
         assertThrows(
                 ForbiddenException.class,
                 () -> reportsController.listAuditLogs("DRIVER", null, null, null, null, null, pageable));

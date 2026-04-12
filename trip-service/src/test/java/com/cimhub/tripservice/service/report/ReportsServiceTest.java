@@ -3,6 +3,8 @@ package com.cimhub.tripservice.service.report;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.cimhub.common.enums.AuditAction;
@@ -22,6 +24,7 @@ import com.cimhub.tripservice.repository.BookingRepository;
 import com.cimhub.tripservice.repository.TripsRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Query;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,21 +57,22 @@ class ReportsServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getDriverPerformanceReport_shouldAggregateCounts() {
-        Trip t1 = new Trip();
-        t1.setDriverId("d1");
-        Trip t2 = new Trip();
-        t2.setDriverId("d2");
-        Trip t3 = new Trip();
-        t3.setDriverId("d1");
+        when(mongoTemplate.findDistinct(any(Query.class), eq("driverId"), eq(Trip.class), eq(String.class)))
+                .thenReturn(List.of("d1", "d2"));
 
-        when(tripsRepository.countByTripStatus(TripStatus.COMPLETED)).thenReturn(10L);
-        when(tripsRepository.countByTripStatus(TripStatus.CANCELLED)).thenReturn(2L);
-        when(tripsRepository.countByTripStatus(TripStatus.IN_PROGRESS)).thenReturn(1L);
-        when(tripsRepository.countByTripStatus(TripStatus.AVAILABLE)).thenReturn(3L);
-        when(tripsRepository.findDistinctDriverIds()).thenReturn(List.of(t1, t2, t3));
+        AggregationResults<Map> aggregationResults = mock(AggregationResults.class);
+        when(aggregationResults.getMappedResults())
+                .thenReturn(List.of(
+                        Map.of("_id", TripStatus.COMPLETED.name(), "count", 10L),
+                        Map.of("_id", TripStatus.CANCELLED.name(), "count", 2L),
+                        Map.of("_id", TripStatus.IN_PROGRESS.name(), "count", 1L),
+                        Map.of("_id", TripStatus.AVAILABLE.name(), "count", 3L)));
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq(Trip.class), eq(Map.class)))
+                .thenReturn(aggregationResults);
 
-        DriverPerformanceReport report = reportsService.getDriverPerformanceReport();
+        DriverPerformanceReport report = reportsService.getDriverPerformanceReport(null, null);
 
         assertEquals(2L, report.totalDrivers());
         assertEquals(10L, report.totalTripsCompleted());
@@ -76,15 +82,20 @@ class ReportsServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getBookingSummaryReport_shouldAggregateStatusCounts() {
-        when(bookingRepository.count()).thenReturn(20L);
-        when(bookingRepository.countByStatus(BookingStatus.CONFIRMED)).thenReturn(7L);
-        when(bookingRepository.countByStatus(BookingStatus.CANCELLED)).thenReturn(5L);
-        when(bookingRepository.countByStatus(BookingStatus.REQUESTED)).thenReturn(4L);
-        when(bookingRepository.countByStatus(BookingStatus.COMPLETED)).thenReturn(3L);
-        when(bookingRepository.countByStatus(BookingStatus.REJECTED)).thenReturn(1L);
+        AggregationResults<Map> aggregationResults = mock(AggregationResults.class);
+        when(aggregationResults.getMappedResults())
+                .thenReturn(List.of(
+                        Map.of("_id", BookingStatus.CONFIRMED.name(), "count", 7L),
+                        Map.of("_id", BookingStatus.CANCELLED.name(), "count", 5L),
+                        Map.of("_id", BookingStatus.REQUESTED.name(), "count", 4L),
+                        Map.of("_id", BookingStatus.COMPLETED.name(), "count", 3L),
+                        Map.of("_id", BookingStatus.REJECTED.name(), "count", 1L)));
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq(Booking.class), eq(Map.class)))
+                .thenReturn(aggregationResults);
 
-        BookingSummaryReport report = reportsService.getBookingSummaryReport();
+        BookingSummaryReport report = reportsService.getBookingSummaryReport(null, null);
 
         assertEquals(20L, report.totalBookings());
         assertEquals(7L, report.confirmedBookings());
@@ -95,46 +106,58 @@ class ReportsServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getRevenueReport_shouldComputeTotalAndAverage() {
-        Booking b1 = new Booking();
-        b1.setEstimatedPrice(10.0);
-        Booking b2 = new Booking();
-        b2.setEstimatedPrice(20.0);
+        AggregationResults<Map> aggregationResults = mock(AggregationResults.class);
+        when(aggregationResults.getUniqueMappedResult())
+                .thenReturn(Map.of(
+                        "totalRevenue", 30.0,
+                        "averageRevenue", 15.0,
+                        "count", 2L));
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq(Booking.class), eq(Map.class)))
+                .thenReturn(aggregationResults);
 
-        when(bookingRepository.findByStatus(BookingStatus.COMPLETED)).thenReturn(List.of(b1, b2));
+        RevenueReport report = reportsService.getRevenueReport(null, null);
 
-        RevenueReport report = reportsService.getRevenueReport();
-
-        assertEquals(2L, report.totalCompletedBookings());
+        assertEquals(2, report.totalCompletedBookings());
         assertEquals(30.0, report.totalRevenue());
         assertEquals(15.0, report.averageRevenuePerBooking());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getRevenueReport_whenNoBookings_shouldReturnZeroAverage() {
-        when(bookingRepository.findByStatus(BookingStatus.COMPLETED)).thenReturn(List.of());
+        AggregationResults<Map> aggregationResults = mock(AggregationResults.class);
+        when(aggregationResults.getUniqueMappedResult()).thenReturn(null);
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq(Booking.class), eq(Map.class)))
+                .thenReturn(aggregationResults);
 
-        RevenueReport report = reportsService.getRevenueReport();
+        RevenueReport report = reportsService.getRevenueReport(null, null);
 
-        assertEquals(0L, report.totalCompletedBookings());
+        assertEquals(0, report.totalCompletedBookings());
         assertEquals(0.0, report.totalRevenue());
         assertEquals(0.0, report.averageRevenuePerBooking());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void getPassengerActivityReport_shouldComputeActiveCompletedCancelled() {
-        when(bookingRepository.count()).thenReturn(15L);
-        when(bookingRepository.countByStatus(BookingStatus.CONFIRMED)).thenReturn(4L);
-        when(bookingRepository.countByStatus(BookingStatus.IN_PROGRESS)).thenReturn(3L);
-        when(bookingRepository.countByStatus(BookingStatus.COMPLETED)).thenReturn(5L);
-        when(bookingRepository.countByStatus(BookingStatus.CANCELLED)).thenReturn(2L);
+        AggregationResults<Map> aggregationResults = mock(AggregationResults.class);
+        when(aggregationResults.getMappedResults())
+                .thenReturn(List.of(
+                        Map.of("_id", BookingStatus.CONFIRMED.name(), "count", 4L),
+                        Map.of("_id", BookingStatus.IN_PROGRESS.name(), "count", 3L),
+                        Map.of("_id", BookingStatus.COMPLETED.name(), "count", 5L),
+                        Map.of("_id", BookingStatus.CANCELLED.name(), "count", 3L))); // Total 15
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq(Booking.class), eq(Map.class)))
+                .thenReturn(aggregationResults);
 
-        PassengerActivityReport report = reportsService.getPassengerActivityReport();
+        PassengerActivityReport report = reportsService.getPassengerActivityReport(null, null);
 
         assertEquals(15L, report.totalBookings());
         assertEquals(7L, report.activeBookings());
         assertEquals(5L, report.completedBookings());
-        assertEquals(2L, report.cancelledBookings());
+        assertEquals(3L, report.cancelledBookings());
     }
 
     @Test

@@ -28,14 +28,9 @@ public interface TripsRepository extends MongoRepository<Trip, String> {
 
     Page<Trip> findByDriverId(String driverId, Pageable pageable);
 
-    long countByTripStatus(TripStatus status);
-
     long countByDriverId(String driverId);
 
     List<Trip> findByDriverIdAndTripStatus(String driverId, TripStatus status);
-
-    @Query(value = "{ 'driverId': { $exists: true, $ne: null } }", fields = "{ 'driverId': 1 }")
-    List<Trip> findDistinctDriverIds();
 
     void deleteByDriverId(String driverId);
 }
