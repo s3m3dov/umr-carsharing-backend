@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface PassengerRepository extends MongoRepository<Passenger, String> {
 
     List<Passenger> findByUserIdIn(List<String> userIds);
+
+    void deleteByUserId(String userId);
 }

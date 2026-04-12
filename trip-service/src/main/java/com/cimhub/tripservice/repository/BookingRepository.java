@@ -5,6 +5,8 @@ import com.cimhub.tripservice.model.Booking;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -41,10 +43,13 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findByPassengerIdAndStatus(String passengerId, BookingStatus status);
 
     // Admin paginated queries
-    org.springframework.data.domain.Page<Booking> findAll(org.springframework.data.domain.Pageable pageable);
+    Page<Booking> findAll(Pageable pageable);
 
-    org.springframework.data.domain.Page<Booking> findByPassengerId(
-            String passengerId, org.springframework.data.domain.Pageable pageable);
+    Page<Booking> findByPassengerId(String passengerId, Pageable pageable);
 
     long countByStatus(BookingStatus status);
+
+    void deleteByPassengerId(String passengerId);
+
+    void deleteByDriverId(String driverId);
 }
