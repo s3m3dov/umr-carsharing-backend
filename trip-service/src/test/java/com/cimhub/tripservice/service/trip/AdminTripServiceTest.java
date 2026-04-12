@@ -168,7 +168,7 @@ class AdminTripServiceTest {
                 .thenReturn(tripPage);
         when(tripsRepository.findByTripStatusIn(any(), eq(pageable))).thenReturn(tripPage);
 
-        Page<AdminTripResponse> listed = adminTripService.listTrips(pageable);
+        Page<AdminTripResponse> listed = adminTripService.listTrips(null, pageable);
         Page<AdminTripResponse> upcoming = adminTripService.getUpcomingTrips(pageable);
         Page<AdminTripResponse> history = adminTripService.getTripHistory(pageable);
 

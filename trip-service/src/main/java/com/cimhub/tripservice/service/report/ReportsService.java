@@ -48,17 +48,20 @@ public class ReportsService {
 
         // Get distinct drivers count efficiently
         Query distinctDriversQuery = new Query(criteria);
+        distinctDriversQuery.addCriteria(Criteria.where("driverId").ne(null));
         long totalDrivers = mongoTemplate
                 .findDistinct(distinctDriversQuery, "driverId", Trip.class, String.class)
                 .size();
 
         // Get trip counts by status using aggregation
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(criteria), Aggregation.group("tripStatus").count().as("count"));
+                Aggregation.match(criteria),
+                Aggregation.group("tripStatus").count().as("count"));
 
         AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Trip.class, Map.class);
         Map<String, Long> counts = results.getMappedResults().stream()
-                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
+                .collect(Collectors.toMap(
+                        m -> String.valueOf(m.get("_id")), m -> ((Number) m.get("count")).longValue()));
 
         return DriverPerformanceReport.builder()
                 .totalDrivers(totalDrivers)
@@ -77,7 +80,8 @@ public class ReportsService {
 
         AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Booking.class, Map.class);
         Map<String, Long> counts = results.getMappedResults().stream()
-                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
+                .collect(Collectors.toMap(
+                        m -> String.valueOf(m.get("_id")), m -> ((Number) m.get("count")).longValue()));
 
         long total = counts.values().stream().mapToLong(Long::longValue).sum();
 
@@ -97,10 +101,14 @@ public class ReportsService {
 
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(criteria),
+                Aggregation.project()
+                        .and("pricePerSeat")
+                        .multiply("requestedSeats")
+                        .as("revenue"),
                 Aggregation.group()
-                        .sum("estimatedPrice")
+                        .sum("revenue")
                         .as("totalRevenue")
-                        .avg("estimatedPrice")
+                        .avg("revenue")
                         .as("averageRevenue")
                         .count()
                         .as("count"));
@@ -117,9 +125,9 @@ public class ReportsService {
         }
 
         return RevenueReport.builder()
-                .totalCompletedBookings(((Long) result.get("count")).intValue())
-                .totalRevenue((Double) result.get("totalRevenue"))
-                .averageRevenuePerBooking((Double) result.get("averageRevenue"))
+                .totalCompletedBookings(((Number) result.get("count")).intValue())
+                .totalRevenue(((Number) result.get("totalRevenue")).doubleValue())
+                .averageRevenuePerBooking(((Number) result.get("averageRevenue")).doubleValue())
                 .build();
     }
 
@@ -131,7 +139,8 @@ public class ReportsService {
 
         AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, Booking.class, Map.class);
         Map<String, Long> counts = results.getMappedResults().stream()
-                .collect(Collectors.toMap(m -> m.get("_id").toString(), m -> (Long) m.get("count")));
+                .collect(Collectors.toMap(
+                        m -> String.valueOf(m.get("_id")), m -> ((Number) m.get("count")).longValue()));
 
         long total = counts.values().stream().mapToLong(Long::longValue).sum();
         long active = counts.getOrDefault(BookingStatus.CONFIRMED.name(), 0L)

@@ -13,6 +13,29 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
+## [v0.6.11] – Admin Filtering & Report Refactoring (2026-04-12)
+
+**Author:** s3m3dov (Hikmat Samadov)
+
+### Added
+
+- **Admin Status Filtering**: Added optional `status` query parameter to admin trip and booking list endpoints (`GET /api/admin/trips` and `GET /api/admin/bookings`).
+- **Date Filtering for Reports**: Added optional `startDate` and `endDate` parameters to all driver performance, booking, and revenue report endpoints.
+- **Repository Enhancements**: Added paginated `findByStatus` and `findByTripStatus` methods to `BookingRepository` and `TripsRepository`.
+
+### Changed
+
+- **Report Logic Refactoring**: Migrated `ReportsService` to use MongoDB aggregation pipelines for more efficient calculation of revenue and performance metrics.
+- **Simplified Booking Model**: Removed redundant `estimatedPrice` / `estimatedFare` fields from `Booking` model and DTOs; revenue is now calculated dynamically from `pricePerSeat` and `requestedSeats`.
+- **API Documentation**: Updated Swagger examples and parameter descriptions for admin and report endpoints.
+
+### Fixed
+
+- **Report Type Casting**: Resolved potential `ClassCastException` in report aggregation results by using robust number parsing for MongoDB numeric types.
+- **Test Alignment**: Updated all related unit and integration tests to match new method signatures and model structures.
+
+---
+
 ## [v0.6.10] – Distributed Deletion and Internal Security (2026-04-12)
 
 **Author:** s3m3dov (Hikmat Samadov)

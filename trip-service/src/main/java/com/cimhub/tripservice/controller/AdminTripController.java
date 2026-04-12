@@ -45,7 +45,7 @@ public class AdminTripController {
 
     private final AdminTripService adminTripService;
 
-    @Operation(summary = "List all trips", description = "Paginated list of all trips")
+    @Operation(summary = "List all trips", description = "Paginated list of all trips with optional status filter")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -63,9 +63,12 @@ public class AdminTripController {
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole,
+            @Parameter(description = "Optional filter by trip status", example = "CREATED")
+                    @RequestParam(required = false)
+                    com.cimhub.common.enums.TripStatus status,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(adminTripService.listTrips(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminTripService.listTrips(status, pageable)));
     }
 
     @Operation(summary = "Get trip detail", description = "Retrieve detailed information about a specific trip")

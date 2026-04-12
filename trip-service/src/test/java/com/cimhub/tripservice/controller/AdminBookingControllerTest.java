@@ -42,11 +42,11 @@ class AdminBookingControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         BookingResponse booking = BookingResponse.builder().bookingId("b-1").build();
         Page<BookingResponse> page = new PageImpl<>(List.of(booking), pageable, 1);
-        when(adminBookingService.listBookings(pageable)).thenReturn(page);
+        when(adminBookingService.listBookings(null, pageable)).thenReturn(page);
         when(adminBookingService.getBooking("b-1")).thenReturn(booking);
 
         ResponseEntity<ApiSuccess<Page<BookingResponse>>> listResponse =
-                adminBookingController.listBookings("ADMIN", pageable);
+                adminBookingController.listBookings("ADMIN", null, pageable);
         ResponseEntity<ApiSuccess<BookingResponse>> getResponse = adminBookingController.getBooking("ADMIN", "b-1");
 
         assertEquals(HttpStatus.OK, listResponse.getStatusCode());
@@ -97,7 +97,7 @@ class AdminBookingControllerTest {
         Pageable pageable = PageRequest.of(0, 1);
         UpdateBookingRequest request = new UpdateBookingRequest(BookingStatus.CANCELLED, 1);
 
-        assertThrows(ForbiddenException.class, () -> adminBookingController.listBookings("PASSENGER", pageable));
+        assertThrows(ForbiddenException.class, () -> adminBookingController.listBookings("PASSENGER", null, pageable));
         assertThrows(ForbiddenException.class, () -> adminBookingController.getBooking("DRIVER", "b-1"));
         assertThrows(
                 ForbiddenException.class,

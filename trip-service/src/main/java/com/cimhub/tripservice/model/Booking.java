@@ -54,7 +54,6 @@ public class Booking {
     private Instant rideStartTimeUTC;
     private String rideTimezone;
 
-    private double estimatedPrice;
     private double pricePerSeat;
 
     private Instant createdAt;

@@ -40,13 +40,14 @@ class AdminTripControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         AdminTripResponse trip = AdminTripResponse.builder().tripId("trip-1").build();
         Page<AdminTripResponse> page = new PageImpl<>(List.of(trip), pageable, 1);
-        when(adminTripService.listTrips(pageable)).thenReturn(page);
+        when(adminTripService.listTrips(null, pageable)).thenReturn(page);
 
-        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> response = adminTripController.listTrips("ADMIN", pageable);
+        ResponseEntity<ApiSuccess<Page<AdminTripResponse>>> response =
+                adminTripController.listTrips("ADMIN", null, pageable);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().getData().getTotalElements());
-        verify(adminTripService).listTrips(pageable);
+        verify(adminTripService).listTrips(null, pageable);
     }
 
     @Test
@@ -93,7 +94,7 @@ class AdminTripControllerTest {
     void endpoints_withNonAdminRole_shouldThrowForbidden() {
         Pageable pageable = PageRequest.of(0, 1);
 
-        assertThrows(ForbiddenException.class, () -> adminTripController.listTrips("PASSENGER", pageable));
+        assertThrows(ForbiddenException.class, () -> adminTripController.listTrips("PASSENGER", null, pageable));
         assertThrows(ForbiddenException.class, () -> adminTripController.getTrip("DRIVER", "trip-1"));
         assertThrows(ForbiddenException.class, () -> adminTripController.getUpcomingTrips("USER", pageable));
         assertThrows(ForbiddenException.class, () -> adminTripController.getTripHistory("GUEST", pageable));

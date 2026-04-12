@@ -179,7 +179,6 @@ class AdminBookingServiceTest {
         booking.setVehicleNumber("HE-XX-9999");
         booking.setRequestedSeats(2);
         booking.setStatus(BookingStatus.CONFIRMED);
-        booking.setEstimatedPrice(25.0);
         booking.setPricePerSeat(12.5);
         booking.setRideStartTimeUTC(Instant.parse("2026-09-01T10:00:00Z"));
         booking.setRideTimezone("UTC");
@@ -190,13 +189,12 @@ class AdminBookingServiceTest {
         when(bookingRepository.findAll(pageable)).thenReturn(page);
         when(bookingRepository.findByPassengerId("passenger-9", pageable)).thenReturn(page);
 
-        Page<BookingResponse> listed = adminBookingService.listBookings(pageable);
+        Page<BookingResponse> listed = adminBookingService.listBookings(null, pageable);
         Page<BookingResponse> byPassenger = adminBookingService.getPassengerBookings("passenger-9", pageable);
 
         assertEquals(1, listed.getTotalElements());
         assertEquals("booking-9", listed.getContent().getFirst().bookingId());
         assertEquals("driver-9", listed.getContent().getFirst().driverId());
-        assertEquals(25.0, listed.getContent().getFirst().estimatedPrice());
 
         assertEquals(1, byPassenger.getTotalElements());
         assertEquals("passenger-9", byPassenger.getContent().getFirst().passengerId());

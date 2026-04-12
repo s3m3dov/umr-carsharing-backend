@@ -36,7 +36,6 @@ class PassengerRideResponseTest {
                 .rideDistanceInKm(10.0)
                 .rideDurationInMinutes(18.0)
                 .pricePerSeat(12.5)
-                .estimatedFare(12.5)
                 .driverDetails(driverDetails)
                 .build();
 

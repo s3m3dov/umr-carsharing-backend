@@ -264,7 +264,6 @@ class ActiveRidesServiceTest {
         booking.setRideStartTimeUTC(
                 ZonedDateTime.of(2026, 3, 1, 10, 0, 0, 0, ZoneId.of("UTC")).toInstant());
         booking.setPricePerSeat(12.5);
-        booking.setEstimatedPrice(25.0);
         booking.setPickupLocation(Points.of(0, 0, ""));
         booking.setDropoffLocation(Points.of(0, 0, ""));
         return booking;
