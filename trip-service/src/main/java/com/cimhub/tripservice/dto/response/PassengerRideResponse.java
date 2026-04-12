@@ -56,9 +56,6 @@ public record PassengerRideResponse(
         @Schema(description = "Price per seat for this ride in EUR", example = "15.50")
         Double pricePerSeat,
 
-        @Schema(description = "Estimated fare for this ride in EUR", example = "15.50")
-        Double estimatedFare,
-
         @Schema(description = "Details about the driver") DriverDetails driverDetails) {
 
     @Builder

@@ -26,7 +26,6 @@ public class BookingMapper {
                 .dropoffLocation(b.getDropoffLocation())
                 .requestedSeats(b.getRequestedSeats())
                 .status(b.getStatus())
-                .estimatedPrice(b.getEstimatedPrice())
                 .pricePerSeat(b.getPricePerSeat())
                 .rideStartTimeUTC(b.getRideStartTimeUTC())
                 .rideTimezone(b.getRideTimezone())
@@ -59,7 +58,6 @@ public class BookingMapper {
                 .bookedSeats(booking.getRequestedSeats())
                 .routeGeometry(trip != null ? trip.getRouteGeometry() : null)
                 .pricePerSeat(booking.getPricePerSeat())
-                .estimatedFare(booking.getEstimatedPrice())
                 .build();
     }
 }

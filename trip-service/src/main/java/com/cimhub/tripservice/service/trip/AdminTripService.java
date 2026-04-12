@@ -26,7 +26,10 @@ public class AdminTripService {
     private final AuditService auditService;
     private final TripMapper tripMapper;
 
-    public Page<AdminTripResponse> listTrips(Pageable pageable) {
+    public Page<AdminTripResponse> listTrips(TripStatus status, Pageable pageable) {
+        if (status != null) {
+            return tripsRepository.findByTripStatus(status, pageable).map(tripMapper::toAdminTripResponse);
+        }
         return tripsRepository.findAll(pageable).map(tripMapper::toAdminTripResponse);
     }
 

@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +22,8 @@ public interface TripsRepository extends MongoRepository<Trip, String> {
     // Admin paginated queries
     Page<Trip> findByTripStatusInAndTripStartDateTimeUTCAfter(
             List<TripStatus> statuses, Instant after, Pageable pageable);
+
+    Page<Trip> findByTripStatus(TripStatus status, Pageable pageable);
 
     Page<Trip> findByTripStatusIn(List<TripStatus> statuses, Pageable pageable);
 

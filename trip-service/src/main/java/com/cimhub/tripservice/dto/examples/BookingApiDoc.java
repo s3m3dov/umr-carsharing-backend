@@ -60,10 +60,8 @@ public final class BookingApiDoc {
                   "vehicleNumber": "HE-XX-1234",
                   "rideStatus": "CONFIRMED",
                   "tripStartDateTime": "2024-03-25T08:00:00Z",
-                  "bookedSeats": 1,
-                  "estimatedFare": 12.50
-                }
-              ],
+                  "bookedSeats": 1
+                  }              ],
               "message": "Operation successful"
             }""";
 

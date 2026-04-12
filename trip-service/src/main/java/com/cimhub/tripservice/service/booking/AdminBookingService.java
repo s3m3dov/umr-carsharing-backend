@@ -25,7 +25,10 @@ public class AdminBookingService {
     private final AuditService auditService;
     private final BookingMapper bookingMapper;
 
-    public Page<BookingResponse> listBookings(Pageable pageable) {
+    public Page<BookingResponse> listBookings(BookingStatus status, Pageable pageable) {
+        if (status != null) {
+            return bookingRepository.findByStatus(status, pageable).map(bookingMapper::toBookingResponse);
+        }
         return bookingRepository.findAll(pageable).map(bookingMapper::toBookingResponse);
     }
 

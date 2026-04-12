@@ -35,9 +35,6 @@ public record BookingResponse(
         @Schema(description = "Current booking status", example = "CONFIRMED")
         BookingStatus status,
 
-        @Schema(description = "Estimated total price in EUR", example = "15.50")
-        double estimatedPrice,
-
         @Schema(description = "Price per seat in EUR", example = "15.50")
         double pricePerSeat,
 

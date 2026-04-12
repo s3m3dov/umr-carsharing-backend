@@ -46,7 +46,9 @@ public class AdminBookingController {
 
     private final AdminBookingService adminBookingService;
 
-    @Operation(summary = "List all bookings", description = "Paginated list of all bookings")
+    @Operation(
+            summary = "List all bookings",
+            description = "Paginated list of all bookings with optional status filter")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -64,9 +66,12 @@ public class AdminBookingController {
                             hidden = true)
                     @RequestHeader(value = HeaderConstants.X_USER_ROLE, required = true)
                     String userRole,
+            @Parameter(description = "Optional filter by booking status", example = "REJECTED")
+                    @RequestParam(required = false)
+                    com.cimhub.common.enums.BookingStatus status,
             Pageable pageable) {
         AdminGuard.requireAdmin(userRole);
-        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.listBookings(pageable)));
+        return ResponseEntity.ok(ApiSuccess.success(adminBookingService.listBookings(status, pageable)));
     }
 
     @Operation(summary = "Get booking detail", description = "Retrieve detailed information about a specific booking")
