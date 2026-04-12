@@ -31,4 +31,8 @@ public interface MongoReviewDataRepository extends MongoRepository<Review, Strin
     Page<Review> findByStatus(ReviewStatus status, Pageable pageable);
 
     long countByStatus(ReviewStatus status);
+
+    void deleteByReviewerId(String reviewerId);
+
+    void deleteByRevieweeId(String revieweeId);
 }

@@ -92,6 +92,15 @@ public class ReviewService {
         return calculateAverageRating(passengerId, UserType.PASSENGER);
     }
 
+    @Transactional
+    public void deleteUserData(String userId) {
+        log.info("Deleting all review-related data for user: {}", userId);
+        reviewRepository.deleteByReviewerId(userId);
+        reviewRepository.deleteByRevieweeId(userId);
+        userRepository.deleteByUserId(userId);
+        log.info("Successfully deleted all review-related data for user: {}", userId);
+    }
+
     private ReviewResponse submitReview(
             String userId,
             UserType userRole,
