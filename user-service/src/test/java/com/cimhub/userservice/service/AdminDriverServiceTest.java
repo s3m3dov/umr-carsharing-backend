@@ -13,11 +13,15 @@ import com.cimhub.common.enums.UserType;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.client.AuthServiceClient;
+import com.cimhub.userservice.client.NotificationServiceClient;
+import com.cimhub.userservice.client.ReviewServiceClient;
+import com.cimhub.userservice.client.TripServiceClient;
 import com.cimhub.userservice.dto.response.DriverResponse;
 import com.cimhub.userservice.model.Driver;
 import com.cimhub.userservice.model.DriverDocument;
 import com.cimhub.userservice.repository.DriverDocumentRepository;
 import com.cimhub.userservice.repository.DriverRepository;
+import com.cimhub.userservice.vehicle.repository.VehicleRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -41,17 +45,36 @@ class AdminDriverServiceTest {
     private DriverDocumentRepository driverDocumentRepository;
 
     @Mock
+    private VehicleRepository vehicleRepository;
+
+    @Mock
     private AuditService auditService;
 
     @Mock
     private AuthServiceClient authServiceClient;
 
+    @Mock
+    private TripServiceClient tripServiceClient;
+
+    @Mock
+    private ReviewServiceClient reviewServiceClient;
+
+    @Mock
+    private NotificationServiceClient notificationServiceClient;
+
     private AdminDriverService adminDriverService;
 
     @BeforeEach
     void setUp() {
-        adminDriverService =
-                new AdminDriverService(driverRepository, driverDocumentRepository, auditService, authServiceClient);
+        adminDriverService = new AdminDriverService(
+                driverRepository,
+                driverDocumentRepository,
+                vehicleRepository,
+                auditService,
+                authServiceClient,
+                tripServiceClient,
+                reviewServiceClient,
+                notificationServiceClient);
     }
 
     @Test
@@ -151,7 +174,12 @@ class AdminDriverServiceTest {
         adminDriverService.deleteDriver("driver-5", "admin@example.com");
 
         verify(driverRepository).deleteByUserId("driver-5");
+        verify(driverDocumentRepository).deleteByDriverId("driver-5");
+        verify(vehicleRepository).deleteByUserId("driver-5");
         verify(authServiceClient).deleteUser("driver-5");
+        verify(tripServiceClient).deleteUserData("driver-5");
+        verify(reviewServiceClient).deleteUserData("driver-5");
+        verify(notificationServiceClient).deleteUserData("driver-5");
         verify(auditService).logDelete(EntityType.DRIVER, "driver-5", "admin@example.com", "Driver deleted");
     }
 

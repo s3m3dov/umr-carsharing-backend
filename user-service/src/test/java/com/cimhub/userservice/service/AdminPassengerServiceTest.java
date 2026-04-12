@@ -13,6 +13,9 @@ import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.client.AuthServiceClient;
+import com.cimhub.userservice.client.NotificationServiceClient;
+import com.cimhub.userservice.client.ReviewServiceClient;
+import com.cimhub.userservice.client.TripServiceClient;
 import com.cimhub.userservice.dto.request.CreatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
 import com.cimhub.userservice.model.Passenger;
@@ -42,11 +45,26 @@ class AdminPassengerServiceTest {
     @Mock
     private AuthServiceClient authServiceClient;
 
+    @Mock
+    private TripServiceClient tripServiceClient;
+
+    @Mock
+    private ReviewServiceClient reviewServiceClient;
+
+    @Mock
+    private NotificationServiceClient notificationServiceClient;
+
     private AdminPassengerService adminPassengerService;
 
     @BeforeEach
     void setUp() {
-        adminPassengerService = new AdminPassengerService(passengerRepository, auditService, authServiceClient);
+        adminPassengerService = new AdminPassengerService(
+                passengerRepository,
+                auditService,
+                authServiceClient,
+                tripServiceClient,
+                reviewServiceClient,
+                notificationServiceClient);
     }
 
     @Test
@@ -131,6 +149,9 @@ class AdminPassengerServiceTest {
 
         verify(passengerRepository).delete(passenger);
         verify(authServiceClient).deleteUser("p4@example.com");
+        verify(tripServiceClient).deleteUserData("p4@example.com");
+        verify(reviewServiceClient).deleteUserData("p4@example.com");
+        verify(notificationServiceClient).deleteUserData("p4@example.com");
         verify(auditService)
                 .logDelete(EntityType.PASSENGER, "p4@example.com", "admin@example.com", "Passenger deleted");
     }
