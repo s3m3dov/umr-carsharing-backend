@@ -36,4 +36,6 @@ public interface TripsRepository extends MongoRepository<Trip, String> {
 
     @Query(value = "{ 'driverId': { $exists: true, $ne: null } }", fields = "{ 'driverId': 1 }")
     List<Trip> findDistinctDriverIds();
+
+    void deleteByDriverId(String driverId);
 }

@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface VehicleDocumentRepository extends MongoRepository<VehicleDocument, String> {
 
     Optional<VehicleDocument> findByUserId(String userId);
+
+    void deleteByUserId(String userId);
 }
