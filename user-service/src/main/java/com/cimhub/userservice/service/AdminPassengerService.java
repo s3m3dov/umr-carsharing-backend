@@ -5,6 +5,9 @@ import com.cimhub.common.exception.BadRequestException;
 import com.cimhub.common.exception.ResourceNotFoundException;
 import com.cimhub.common.service.AuditService;
 import com.cimhub.userservice.client.AuthServiceClient;
+import com.cimhub.userservice.client.NotificationServiceClient;
+import com.cimhub.userservice.client.ReviewServiceClient;
+import com.cimhub.userservice.client.TripServiceClient;
 import com.cimhub.userservice.dto.request.CreatePassengerRequest;
 import com.cimhub.userservice.dto.request.UpdatePassengerRequest;
 import com.cimhub.userservice.dto.response.PassengerResponse;
@@ -25,6 +28,9 @@ public class AdminPassengerService {
     private final PassengerRepository passengerRepository;
     private final AuditService auditService;
     private final AuthServiceClient authServiceClient;
+    private final TripServiceClient tripServiceClient;
+    private final ReviewServiceClient reviewServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
 
     public Page<PassengerResponse> listPassengers(Pageable pageable) {
         return passengerRepository.findAll(pageable).map(this::mapToResponse);
@@ -57,6 +63,9 @@ public class AdminPassengerService {
         Passenger passenger = findPassengerOrThrow(passengerId);
         passengerRepository.delete(passenger);
         authServiceClient.deleteUser(passengerId);
+        tripServiceClient.deleteUserData(passengerId);
+        reviewServiceClient.deleteUserData(passengerId);
+        notificationServiceClient.deleteUserData(passengerId);
         auditService.logDelete(EntityType.PASSENGER, passengerId, adminEmail, "Passenger deleted");
         log.info("Passenger {} deleted by {}", passengerId, adminEmail);
     }
