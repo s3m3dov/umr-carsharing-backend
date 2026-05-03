@@ -13,32 +13,32 @@ PROJECT_ROOT=$(get_project_root "$SCRIPT_DIR" 3)
 # Read configuration from ConfigMap or environment variables
 CLUSTER_NAME="${GKE_CLUSTER_NAME:-$(get_configmap_value "GKE_CLUSTER_NAME" "$PROJECT_ROOT")}"
 REGION="${GCP_REGION:-$(get_configmap_value "GCP_REGION" "$PROJECT_ROOT")}"
-PROJECT_ID="${GCP_PROJECT_ID:-$(get_configmap_value "GCP_PROJECT_ID" "$PROJECT_ROOT")}"
+GCP_PROJECT_ID="${GCP_PROJECT_ID:-$(get_configmap_value "GCP_PROJECT_ID" "$PROJECT_ROOT")}"
 
 echo "🚀 Configuring kubectl for GKE Autopilot cluster..."
 echo ""
 echo "📋 Configuration:"
 echo "   Cluster: $CLUSTER_NAME"
 echo "   Region: $REGION"
-echo "   Project: $PROJECT_ID"
+echo "   Project: $GCP_PROJECT_ID"
 echo ""
 
 # Validate configuration
 validate_config "GKE_CLUSTER_NAME" "$CLUSTER_NAME" "gitops/base/configmap.yaml"
 validate_config "GCP_REGION" "$REGION" "gitops/base/configmap.yaml"
-validate_config "GCP_PROJECT_ID" "$PROJECT_ID" "gitops/base/configmap.yaml"
+validate_config "GCP_PROJECT_ID" "$GCP_PROJECT_ID" "gitops/base/configmap.yaml"
 
 # Check required commands
 require_command "gcloud" "https://cloud.google.com/sdk/docs/install"
 
 # Set the project
-echo "🔧 Setting GCP project..."
-gcloud config set project "$PROJECT_ID"
+gcloud config set project "$GCP_PROJECT_ID"
 
-# Check if cluster exists
-echo ""
-echo "🔍 Verifying cluster exists..."
-if ! gcloud container clusters describe "$CLUSTER_NAME" --region="$REGION" &> /dev/null; then
+# Get credentials
+echo "🔑 Fetching cluster credentials..."
+gcloud container clusters get-credentials "$CLUSTER_NAME" \
+    --region="$REGION" \
+    --project="$GCP_PROJECT_ID"
     echo "❌ Error: Cluster '$CLUSTER_NAME' not found in region '$REGION'"
     echo ""
     echo "Available clusters:"
