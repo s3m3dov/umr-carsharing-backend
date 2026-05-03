@@ -28,8 +28,8 @@ This project follows a "Manual GitOps" pattern. Git is the single source of trut
 Monitoring subcommands: `install`, `uninstall`, `status`
 
 After installing monitoring:
-- **Grafana** — http://localhost:8888/grafana (local) · http://35.186.208.67/grafana (GCP)
-- **Swagger** — http://localhost:8888/swagger-ui.html (local) · http://35.186.208.67/swagger-ui.html (GCP)
+- **Grafana** — http://localhost:8888/grafana (local) · http://35.228.204.85/grafana (GCP)
+- **Swagger** — http://localhost:8888/swagger-ui.html (local) · http://35.228.204.85/swagger-ui.html (GCP)
 
 Both are served through the API Gateway on the same domain — no separate ingress or port-forward needed.
 
@@ -253,7 +253,7 @@ See [Monitoring & Observability Guide](monitoring.md) for full details.
 ./gitops.sh gcp monitoring install        # Install monitoring stack (optional)
 ```
 
-Production URL: http://35.186.208.67
+Production URL: http://35.228.204.85
 
 ---
 

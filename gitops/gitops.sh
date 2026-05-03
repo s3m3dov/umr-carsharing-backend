@@ -278,7 +278,7 @@ USAGE:
         - Optional: for visual cluster management in production
 
   Production Access:
-      URL: http://35.186.208.67
+      URL: http://35.228.204.85
       Load balancer takes ~2 minutes after deploy to route traffic
 
 ═══════════════════════════════════════════════════════════════════════════
@@ -607,7 +607,7 @@ elif [ "$TARGET" == "gcp" ]; then
             echo "❌ Error: Command 'ingress' is not supported for target 'gcp'"
             echo ""
             echo "💡 GKE uses an external load balancer. No port-forwarding needed."
-            echo "   Access your application at: http://35.186.208.67"
+            echo "   Access your application at: http://35.228.204.85"
             exit 1
             ;;
         

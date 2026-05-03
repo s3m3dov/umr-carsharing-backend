@@ -21,10 +21,10 @@ If this is your first time setting up the GCP project, GKE cluster, or Artifact 
 All GCP settings are centralized in [`gitops/base/configmap.yaml`](file:///Users/hsamadov/Projects/_umr/umr-carsharing/carsharing-backend/gitops/base/configmap.yaml):
 
 ```yaml
-GCP_PROJECT_ID: "groovy-vector-482912-b0"
+GCP_PROJECT_ID: "project-08acfdb6-8102-494d-8ee"
 GCP_REGION: "europe-north1"
 GKE_CLUSTER_NAME: "autopilot-cluster-1"
-EXTERNAL_IP: "35.186.208.67"
+EXTERNAL_IP: "35.228.204.85"
 ```
 
 ## MongoDB Atlas Setup
@@ -141,9 +141,9 @@ kubectl logs -n carsharing -l app=auth-service --tail=50
 
 ### 6. Access the Application
 
-- **Swagger UI**: <http://35.186.208.67/swagger-ui.html>
-- **Health Check**: <http://35.186.208.67/actuator/health>
-- **API Gateway**: <http://35.186.208.67>
+- **Swagger UI**: <http://35.228.204.85/swagger-ui.html>
+- **Health Check**: <http://35.228.204.85/actuator/health>
+- **API Gateway**: <http://35.228.204.85>
 
 ## Selective Deployment
 
@@ -261,7 +261,7 @@ kubectl scale deployment auth-service --replicas=2 -n carsharing
 
 ```bash
 kubectl set image deployment/auth-service \
-  auth-service=eu.gcr.io/groovy-vector-482912-b0/auth-service:v1.0.0 \
+  auth-service=eu.gcr.io/project-08acfdb6-8102-494d-8ee/auth-service:v1.0.0 \
   -n carsharing
 ```
 
@@ -282,7 +282,7 @@ kubectl get configmap carsharing-config -n carsharing -o yaml
 For automated deployments, set these environment variables in your CI/CD pipeline:
 
 ```bash
-export GCP_PROJECT_ID=groovy-vector-482912-b0
+export GCP_PROJECT_ID=project-08acfdb6-8102-494d-8ee
 export GCP_REGION=europe-north1
 export GKE_CLUSTER_NAME=autopilot-carsharing-cluster-01
 export GCP_IMAGE_TAG=$CI_COMMIT_SHA  # or version tag
