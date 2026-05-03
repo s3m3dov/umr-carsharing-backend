@@ -36,9 +36,9 @@ gcloud config set project "$GCP_PROJECT_ID"
 
 # Get credentials
 echo "🔑 Fetching cluster credentials..."
-gcloud container clusters get-credentials "$CLUSTER_NAME" \
+if ! gcloud container clusters get-credentials "$CLUSTER_NAME" \
     --region="$REGION" \
-    --project="$GCP_PROJECT_ID"
+    --project="$GCP_PROJECT_ID"; then
     echo "❌ Error: Cluster '$CLUSTER_NAME' not found in region '$REGION'"
     echo ""
     echo "Available clusters:"
@@ -47,13 +47,6 @@ gcloud container clusters get-credentials "$CLUSTER_NAME" \
 fi
 
 echo "✅ Cluster found"
-
-# Get cluster credentials
-echo ""
-echo "🔑 Getting cluster credentials..."
-gcloud container clusters get-credentials "$CLUSTER_NAME" \
-    --region="$REGION" \
-    --project="$PROJECT_ID"
 
 # Install gke-gcloud-auth-plugin if not already installed
 if ! command -v gke-gcloud-auth-plugin &> /dev/null; then
