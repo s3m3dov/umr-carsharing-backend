@@ -9,7 +9,7 @@ data:
   GCP_PROJECT_ID: "project-08acfdb6-8102-494d-8ee"
   GCP_REGION: "europe-north1"
   GKE_CLUSTER_NAME: "autopilot-cluster-1"
-  EXTERNAL_IP: "35.228.204.85"
+  EXTERNAL_IP: "34.54.55.0"
   AUTH_SERVICE_PORT: "8089"
   USER_SERVICE_PORT: "8081"
   VEHICLE_SERVICE_PORT: "8082"

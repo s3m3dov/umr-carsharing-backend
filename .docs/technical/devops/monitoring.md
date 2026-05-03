@@ -40,14 +40,14 @@ Grafana is routed through the API Gateway at the `/grafana` subpath — no separ
 | Environment | URL | Credentials |
 |-------------|-----|-------------|
 | Local | http://localhost:8888/grafana | admin / admin |
-| GCP | http://35.228.204.85/grafana | admin / admin |
+| GCP | http://34.54.55.0/grafana | admin / admin |
 
 Swagger UI is available on the same domain:
 
 | Environment | URL |
 |-------------|-----|
 | Local | http://localhost:8888/swagger-ui.html |
-| GCP | http://35.228.204.85/swagger-ui.html |
+| GCP | http://34.54.55.0/swagger-ui.html |
 
 ### How it works
 

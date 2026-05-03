@@ -24,7 +24,7 @@ All GCP settings are centralized in [`gitops/base/configmap.yaml`](file:///Users
 GCP_PROJECT_ID: "project-08acfdb6-8102-494d-8ee"
 GCP_REGION: "europe-north1"
 GKE_CLUSTER_NAME: "autopilot-cluster-1"
-EXTERNAL_IP: "35.228.204.85"
+EXTERNAL_IP: "34.54.55.0"
 ```
 
 ## MongoDB Atlas Setup
@@ -141,9 +141,9 @@ kubectl logs -n carsharing -l app=auth-service --tail=50
 
 ### 6. Access the Application
 
-- **Swagger UI**: <http://35.228.204.85/swagger-ui.html>
-- **Health Check**: <http://35.228.204.85/actuator/health>
-- **API Gateway**: <http://35.228.204.85>
+- **Swagger UI**: <http://34.54.55.0/swagger-ui.html>
+- **Health Check**: <http://34.54.55.0/actuator/health>
+- **API Gateway**: <http://34.54.55.0>
 
 ## Selective Deployment
 
