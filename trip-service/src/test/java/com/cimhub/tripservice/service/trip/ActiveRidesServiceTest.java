@@ -113,6 +113,7 @@ class ActiveRidesServiceTest {
         List<DriverTripResponse.PassengerInfo> passengers = responses.getFirst().passengers();
         assertEquals(1, passengers.size());
         DriverTripResponse.PassengerInfo info = passengers.getFirst();
+        assertEquals("b-1", info.bookingId());
         assertEquals("passenger-1", info.userId());
         assertEquals("Jane", info.firstName());
         assertEquals("Doe", info.lastName());
@@ -141,6 +142,7 @@ class ActiveRidesServiceTest {
         assertNull(info.firstName());
         assertNull(info.lastName());
         assertEquals(BookingStatus.CONFIRMED, info.bookingStatus());
+        assertEquals("b-1", info.bookingId());
         assertEquals("passenger-1", info.userId());
     }
 
@@ -217,10 +219,16 @@ class ActiveRidesServiceTest {
     void findDriverTripHistory_shouldMapCompletedAndCancelledTrips() {
         Trip completed = buildTrip("trip-c", TripStatus.COMPLETED, 4, 4, 10.0);
         Trip cancelled = buildTrip("trip-x", TripStatus.CANCELLED, 4, 1, 10.0);
+        Booking booking = buildBooking("b-history", "trip-c", BookingStatus.COMPLETED, "Europe/Berlin");
+        Passenger passenger = buildPassenger("passenger-1", "Jane", "Doe");
 
         when(tripsRepository.findByDriverIdAndTripStatusIn(
                         "driver-2", List.of(TripStatus.COMPLETED, TripStatus.CANCELLED)))
                 .thenReturn(List.of(completed, cancelled));
+        when(bookingRepository.findByTripIdInAndStatusIn(
+                        List.of("trip-c", "trip-x"), List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED)))
+                .thenReturn(List.of(booking));
+        when(passengerRepository.findByUserIdIn(List.of("passenger-1"))).thenReturn(List.of(passenger));
 
         List<DriverTripResponse> responses = activeRidesService.findDriverTripHistory("driver-2");
 
@@ -228,6 +236,8 @@ class ActiveRidesServiceTest {
         assertEquals("trip-c", responses.getFirst().tripId());
         assertEquals(4, responses.getFirst().bookedSeats());
         assertEquals(40.0, responses.getFirst().estimatedEarnings());
+        assertEquals("b-history", responses.getFirst().passengers().getFirst().bookingId());
+        assertEquals("passenger-1", responses.getFirst().passengers().getFirst().userId());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────────

@@ -71,6 +71,9 @@ public record DriverTripResponse(
     @Builder
     @Schema(name = "PassengerInfo", description = "Information about a passenger booking on this trip")
     public record PassengerInfo(
+            @Schema(description = "Booking identifier for this passenger's ride", example = "booking_001")
+            String bookingId,
+
             @Schema(description = "Passenger's user ID", example = "jane.passenger@example.com")
             String userId,
 

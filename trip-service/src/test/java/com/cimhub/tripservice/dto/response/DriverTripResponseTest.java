@@ -17,6 +17,7 @@ class DriverTripResponseTest {
         Points destination = of(52.6, 13.5, "Destination");
 
         DriverTripResponse.PassengerInfo passengerInfo = DriverTripResponse.PassengerInfo.builder()
+                .bookingId("booking-1")
                 .userId("p-1")
                 .bookedSeats(2)
                 .pickupLocation(source)
@@ -47,6 +48,7 @@ class DriverTripResponseTest {
         assertEquals("driver-1", response.driverId());
         assertEquals(TripStatus.AVAILABLE, response.tripStatus());
         assertEquals(1, response.passengers().size());
+        assertEquals("booking-1", response.passengers().getFirst().bookingId());
         assertEquals("p-1", response.passengers().getFirst().userId());
         assertEquals(2, response.passengers().getFirst().bookedSeats());
     }
