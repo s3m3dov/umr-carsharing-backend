@@ -27,6 +27,8 @@ public class ActiveRidesService {
 
     private static final List<BookingStatus> ACTIVE_PASSENGER_STATUSES =
             List.of(BookingStatus.CONFIRMED, BookingStatus.IN_PROGRESS);
+    private static final List<BookingStatus> HISTORY_PASSENGER_STATUSES =
+            List.of(BookingStatus.COMPLETED, BookingStatus.CANCELLED);
 
     private final TripsRepository tripsRepository;
     private final BookingRepository bookingRepository;
@@ -39,26 +41,7 @@ public class ActiveRidesService {
         List<Trip> activeTrips = tripsRepository.findByDriverIdAndTripStatusIn(
                 driverId, List.of(TripStatus.CREATED, TripStatus.AVAILABLE, TripStatus.IN_PROGRESS));
 
-        if (activeTrips.isEmpty()) {
-            return List.of();
-        }
-
-        List<String> tripIds = activeTrips.stream().map(Trip::getTripId).toList();
-        List<Booking> bookings = bookingRepository.findByTripIdInAndStatusIn(tripIds, ACTIVE_PASSENGER_STATUSES);
-        Map<String, List<Booking>> bookingsByTripId =
-                bookings.stream().collect(Collectors.groupingBy(Booking::getTripId));
-
-        List<String> passengerIds =
-                bookings.stream().map(Booking::getPassengerId).distinct().toList();
-        Map<String, Passenger> passengersByUserId = passengerRepository.findByUserIdIn(passengerIds).stream()
-                .collect(Collectors.toMap(Passenger::getUserId, Function.identity()));
-
-        return activeTrips.stream()
-                .map(trip -> tripMapper.toDriverTripResponse(
-                        trip,
-                        buildPassengerInfoList(
-                                bookingsByTripId.getOrDefault(trip.getTripId(), List.of()), passengersByUserId)))
-                .collect(Collectors.toList());
+        return buildDriverTripResponses(activeTrips, ACTIVE_PASSENGER_STATUSES);
     }
 
     private List<DriverTripResponse.PassengerInfo> buildPassengerInfoList(
@@ -68,6 +51,7 @@ public class ActiveRidesService {
                     Passenger passenger = passengersByUserId.get(booking.getPassengerId());
                     return DriverTripResponse.PassengerInfo.builder()
                             .userId(booking.getPassengerId())
+                            .bookingId(booking.getBookingId())
                             .firstName(passenger != null ? passenger.getFirstName() : null)
                             .lastName(passenger != null ? passenger.getLastName() : null)
                             .bookingStatus(booking.getStatus())
@@ -83,7 +67,30 @@ public class ActiveRidesService {
         log.info("Fetching trip history for driver: {}", driverId);
         List<Trip> pastTrips = tripsRepository.findByDriverIdAndTripStatusIn(
                 driverId, List.of(TripStatus.COMPLETED, TripStatus.CANCELLED));
-        return pastTrips.stream().map(tripMapper::toDriverTripResponse).collect(Collectors.toList());
+        return buildDriverTripResponses(pastTrips, HISTORY_PASSENGER_STATUSES);
+    }
+
+    private List<DriverTripResponse> buildDriverTripResponses(List<Trip> trips, List<BookingStatus> passengerStatuses) {
+        if (trips.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> tripIds = trips.stream().map(Trip::getTripId).toList();
+        List<Booking> bookings = bookingRepository.findByTripIdInAndStatusIn(tripIds, passengerStatuses);
+        Map<String, List<Booking>> bookingsByTripId =
+                bookings.stream().collect(Collectors.groupingBy(Booking::getTripId));
+
+        List<String> passengerIds =
+                bookings.stream().map(Booking::getPassengerId).distinct().toList();
+        Map<String, Passenger> passengersByUserId = passengerRepository.findByUserIdIn(passengerIds).stream()
+                .collect(Collectors.toMap(Passenger::getUserId, Function.identity()));
+
+        return trips.stream()
+                .map(trip -> tripMapper.toDriverTripResponse(
+                        trip,
+                        buildPassengerInfoList(
+                                bookingsByTripId.getOrDefault(trip.getTripId(), List.of()), passengersByUserId)))
+                .collect(Collectors.toList());
     }
 
     public List<PassengerRideResponse> findPassengerActiveRides(String passengerId) {
